@@ -2,42 +2,18 @@ import { createRouter, createWebHistory } from "vue-router"
 
 const routes = [
 	{
-		path: "/nce/theme-settings",
+		path: "/themes/theme-settings",
 		name: "ThemeSettings",
 		component: () => import("@/pages/ThemeSettingsPage.vue"),
 	},
 	{
-		path: "/nce/preview",
+		path: "/themes/preview",
 		name: "ThemePreview",
 		component: () => import("@/pages/ThemePreviewPage.vue"),
 		meta: { standalone: true },
 	},
 	{
-		path: "/nce/builder",
-		redirect: "/nce/builder/new",
-	},
-	{
-		path: "/nce/builder/:formName",
-		name: "FormBuilder",
-		component: () => import("@/pages/FormBuilderPage.vue"),
-	},
-	{
-		path: "/nce/forms",
-		name: "FormList",
-		component: () => import("@/pages/FormListPage.vue"),
-	},
-	{
-		path: "/nce/form/:formName",
-		name: "FormNew",
-		component: () => import("@/pages/FormPage.vue"),
-	},
-	{
-		path: "/nce/form/:formName/:docName",
-		name: "FormEdit",
-		component: () => import("@/pages/FormPage.vue"),
-	},
-	{
-		path: "/nce",
+		path: "/themes",
 		name: "Home",
 		component: () => import("@/pages/HomePage.vue"),
 	},

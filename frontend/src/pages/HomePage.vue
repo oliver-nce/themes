@@ -1,25 +1,19 @@
 <template>
 	<div class="home-page">
-		<h1 class="home-title">NCE Builder</h1>
-		<p class="home-subtitle">Site theming, form design, and data-connected portals.</p>
+		<h1 class="home-title">Themes</h1>
+		<p class="home-subtitle">Site theming and visual customization.</p>
 
 		<div class="card-grid">
-			<router-link to="/nce/theme-settings" class="home-card">
+			<router-link to="/themes/theme-settings" class="home-card">
 				<div class="card-icon">🎨</div>
 				<div class="card-label">Theme Settings</div>
 				<div class="card-desc">Configure site-wide colours, typography, and layout variables.</div>
 			</router-link>
 
-			<router-link to="/nce/builder/new" class="home-card">
-				<div class="card-icon">🧱</div>
-				<div class="card-label">Form Builder</div>
-				<div class="card-desc">Design drag-and-drop forms on a grid canvas.</div>
-			</router-link>
-
-			<router-link to="/nce/forms" class="home-card">
-				<div class="card-icon">📋</div>
-				<div class="card-label">Forms</div>
-				<div class="card-desc">View and manage saved form definitions.</div>
+			<router-link to="/themes/preview" class="home-card">
+				<div class="card-icon">👁️</div>
+				<div class="card-label">Theme Preview</div>
+				<div class="card-desc">See how your theme looks on real pages.</div>
 			</router-link>
 		</div>
 	</div>

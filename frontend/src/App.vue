@@ -2,10 +2,10 @@
 	<!-- Standalone pages (e.g. preview) render without the shell -->
 	<router-view v-if="isStandalone" />
 
-	<div v-else id="nce-builder-app" class="h-screen flex">
+	<div v-else id="themes-app" class="h-screen flex">
 		<aside class="w-56 border-r bg-gray-50 dark:bg-gray-900 flex flex-col">
 			<div class="px-4 py-3 font-semibold text-sm text-gray-700 dark:text-gray-200 border-b">
-				NCE Builder
+				Themes
 			</div>
 			<nav class="flex-1 px-2 py-3 space-y-1">
 				<router-link
@@ -33,8 +33,7 @@ const route = useRoute()
 const isStandalone = computed(() => !!route.meta.standalone)
 
 const navLinks = [
-	{ label: "Theme Settings", to: "/nce/theme-settings" },
-	{ label: "Form Builder", to: "/nce/builder/new" },
-	{ label: "Forms", to: "/nce/forms" },
+	{ label: "Theme Settings", to: "/themes/theme-settings" },
+	{ label: "Theme Preview", to: "/themes/preview" },
 ]
 </script>

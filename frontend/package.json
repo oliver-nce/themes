@@ -1,5 +1,5 @@
 {
-  "name": "nce-builder-frontend",
+  "name": "themes-frontend",
   "private": true,
   "version": "0.0.1",
   "type": "module",
@@ -9,10 +9,6 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@formkit/icons": "^1.6.0",
-    "@formkit/pro": "^0.127.0",
-    "@formkit/themes": "^1.6.0",
-    "@formkit/vue": "^1.6.0",
     "@tailwindcss/forms": "^0.5.11",
     "@tailwindcss/typography": "^0.5.19",
     "feather-icons": "^4.29.2",

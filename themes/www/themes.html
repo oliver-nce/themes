@@ -1,0 +1,16 @@
+{%- extends "templates/web.html" -%}
+
+{%- block title -%}Themes{%- endblock -%}
+
+{%- block head_include -%}
+{%- set _v = frappe.utils.now_datetime().timestamp() | int -%}
+<link rel="stylesheet" href="/assets/themes/frontend/assets/themes.css?v={{ _v }}">
+<link rel="stylesheet" href="/assets/themes/css/nce_theme.css?v={{ _v }}">
+<script>window.csrf_token = "{{ frappe.session.csrf_token }}";</script>
+{%- endblock -%}
+
+{%- block page_content -%}
+<div id="app"></div>
+{%- set _v = frappe.utils.now_datetime().timestamp() | int -%}
+<script type="module" src="/assets/themes/frontend/assets/themes.js?v={{ _v }}"></script>
+{%- endblock -%}

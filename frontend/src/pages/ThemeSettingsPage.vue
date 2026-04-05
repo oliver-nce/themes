@@ -39,7 +39,7 @@
 			v-else-if="!themeDoc.data"
 			class="py-12 text-center text-red-600 text-sm"
 		>
-			Failed to load theme settings. Make sure the NCE Theme Settings
+			Failed to load theme settings. Make sure the Theme Settings
 			DocType exists and you have System Manager permissions.
 		</div>
 
@@ -324,8 +324,8 @@ function openPreview() {
 		return
 	}
 	previewWin = window.open(
-		"/nce/preview",
-		"nce-preview",
+		"/themes/preview",
+		"themes-preview",
 		"width=1200,height=900,scrollbars=yes",
 	)
 	if (previewWin) {
@@ -616,7 +616,7 @@ const regenerating = ref(false)
 
 const themeDoc = createResource({
 	url: "frappe.client.get",
-	params: { doctype: "NCE Theme Settings", name: "NCE Theme Settings" },
+	params: { doctype: "Theme Settings", name: "Theme Settings" },
 	auto: true,
 	onSuccess(data: any) {
 		if (!data) return
@@ -639,7 +639,7 @@ async function handleSave() {
 			doc[key] = key === "dark_mode" ? (form[key] ? 1 : 0) : form[key]
 		}
 
-		const res = await fetch("/api/resource/NCE Theme Settings/NCE Theme Settings", {
+		const res = await fetch("/api/resource/Theme Settings/Theme Settings", {
 			method: "PUT",
 			headers: {
 				"Content-Type": "application/json",
@@ -667,7 +667,7 @@ async function handleSave() {
 }
 
 const regenerateResource = createResource({
-	url: "nce_builder.api.regenerate_theme_css",
+	url: "themes.api.regenerate_theme_css",
 	onSuccess() {
 		regenerating.value = false
 		themeDoc.reload()

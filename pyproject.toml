@@ -1,9 +1,9 @@
 [project]
-name = "nce_builder"
+name = "themes"
 authors = [
     { name = "Oliver Reid", email = "oliver_reid@me.com" }
 ]
-description = "NCE Builder — Site-wide theming and dynamic form rendering for Frappe"
+description = "Themes — Site-wide theming for Frappe"
 requires-python = ">=3.10"
 readme = "README.md"
 dynamic = ["version"]

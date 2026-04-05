@@ -1,6 +1,6 @@
 import { reactive } from 'vue'
 
-// Default theme values matching NCE Theme Settings DocType defaults
+// Default theme values matching Theme Settings DocType defaults
 export const defaultThemeColors = {
   primary_color: "#3B82F6",      // Blue
   secondary_color: "#10B981",    // Green

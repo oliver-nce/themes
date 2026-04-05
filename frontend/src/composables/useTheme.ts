@@ -6,7 +6,7 @@ const themeLoaded = ref(false)
 export function useTheme() {
 	const themeSettings = createResource({
 		url: "frappe.client.get",
-		params: { doctype: "NCE Theme Settings", name: "NCE Theme Settings" },
+		params: { doctype: "Theme Settings", name: "Theme Settings" },
 	})
 
 	async function loadTheme() {

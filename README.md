@@ -1,18 +1,17 @@
-# NCE Builder
+# Themes
 
-Frappe v15/v16 custom app for site-wide theming and dynamic form rendering using FormKit + Frappe UI.
+Frappe v15/v16 custom app for site-wide theming.
 
 ## Features
 
-- **PathFinder** — Miller column navigator for DocType field relationships with 5 output modes (Jinja Tag, Text Block, Field Path, Related List, Button Action)
-- **Site-wide theming** — FormKit Themes + Tailwind CSS variable sets stored in a DocType (planned)
-- **Dynamic form rendering** — FormKit JSON schema forms targeting Frappe DocTypes (planned)
+- **Site-wide theming** — CSS custom properties stored in a DocType, loaded on every page
+- **Visual theme editor** — Configure colors, typography, layout, and custom CSS from a Vue 3 SPA
 
 ## Install
 
 ```bash
-bench get-app https://github.com/oliver-nce/nce-builder.git
-bench --site your-site install-app nce_builder
+bench get-app https://github.com/YOUR_USERNAME/themes.git
+bench --site your-site install-app themes
 ```
 
 ## License

@@ -14,26 +14,25 @@ function stubIconsPlugin() {
 }
 
 export default defineConfig({
-	base: "/assets/nce_builder/frontend/",
+	base: "/assets/themes/frontend/",
 	plugins: [stubIconsPlugin(), vue()],
 	resolve: {
 		alias: {
 			"@": path.resolve(__dirname, "src"),
 			"tailwind.config.js": path.resolve(__dirname, "tailwind.config.js"),
-			"@pathfinder": path.resolve(__dirname, "../nce_builder/public/js/path_finder"),
 		},
 	},
 	build: {
 		chunkSizeWarningLimit: 1500,
-		outDir: "../nce_builder/public/frontend",
+		outDir: "../themes/public/frontend",
 		emptyOutDir: true,
 		target: "es2015",
 		sourcemap: true,
 		rollupOptions: {
 			output: {
-				entryFileNames: "assets/nce-builder.js",
-				chunkFileNames: "assets/nce-builder-[name].js",
-				assetFileNames: "assets/nce-builder.[ext]",
+				entryFileNames: "assets/themes.js",
+				chunkFileNames: "assets/themes-[name].js",
+				assetFileNames: "assets/themes.[ext]",
 			},
 		},
 	},

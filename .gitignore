@@ -33,7 +33,7 @@ var/
 *.log
 
 # Frappe build output
-nce_builder/public/dist/
+themes/public/dist/
 *.map
 
 # Cursor AI rules (symlinked from shared config)
