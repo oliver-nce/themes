@@ -79,6 +79,90 @@ def _hsl_to_hex(h, s, l):
 	return f"#{f(0):02x}{f(8):02x}{f(4):02x}"
 
 
+def _srgb_to_linear(c):
+	return c / 12.92 if c <= 0.04045 else ((c + 0.055) / 1.055) ** 2.4
+
+
+def _linear_to_srgb(c):
+	return 12.92 * c if c <= 0.0031308 else 1.055 * (c ** (1 / 2.4)) - 0.055
+
+
+def _hex_to_oklch(hex_color):
+	"""Convert hex to OKLCH (L, C, h). Matches frontend color-shades.ts."""
+	hex_color = hex_color.lstrip("#")
+	r = _srgb_to_linear(int(hex_color[0:2], 16) / 255)
+	g = _srgb_to_linear(int(hex_color[2:4], 16) / 255)
+	b = _srgb_to_linear(int(hex_color[4:6], 16) / 255)
+
+	l = 0.4122214708 * r + 0.5363325363 * g + 0.0514459929 * b
+	m = 0.2119034982 * r + 0.6806995451 * g + 0.1073969566 * b
+	s = 0.0883024619 * r + 0.2817188376 * g + 0.6299787005 * b
+
+	l_ = math.cbrt(l)
+	m_ = math.cbrt(m)
+	s_ = math.cbrt(s)
+
+	L = 0.2104542553 * l_ + 0.793617785 * m_ - 0.0040720468 * s_
+	a = 1.9779984951 * l_ - 2.428592205 * m_ + 0.4505937099 * s_
+	b_val = 0.0259040371 * l_ + 0.7827717662 * m_ - 0.808675766 * s_
+
+	C = math.sqrt(a * a + b_val * b_val)
+	h = (math.degrees(math.atan2(b_val, a)) + 360) % 360
+	return L, C, h
+
+
+def _oklch_to_hex(L, C, h):
+	"""Convert OKLCH (L, C, h) to hex. Matches frontend color-shades.ts."""
+	h_rad = math.radians(h)
+	a = C * math.cos(h_rad)
+	b_val = C * math.sin(h_rad)
+
+	l_ = L + 0.3963377774 * a + 0.2158037573 * b_val
+	m_ = L - 0.1055613458 * a - 0.0638541728 * b_val
+	s_ = L - 0.0894841775 * a - 1.291485548 * b_val
+
+	l = l_**3
+	m = m_**3
+	s = s_**3
+
+	r_lin = +4.0767416621 * l - 3.3077115913 * m + 0.2309699292 * s
+	g_lin = -1.2684380046 * l + 2.6097574011 * m - 0.3413193965 * s
+	b_lin = -0.0041960863 * l - 0.7034186147 * m + 1.707614701 * s
+
+	def clamp_byte(v):
+		return round(255 * max(0, min(1, _linear_to_srgb(max(0, min(1, v))))))
+
+	return f"#{clamp_byte(r_lin):02x}{clamp_byte(g_lin):02x}{clamp_byte(b_lin):02x}"
+
+
+def _max_chroma_in_gamut(L, h, upper):
+	"""Largest chroma at (L, h) inside sRGB. Matches frontend color-shades.ts."""
+	h_rad = math.radians(h)
+	cos_h = math.cos(h_rad)
+	sin_h = math.sin(h_rad)
+	lo = 0.0
+	hi = upper
+	for _ in range(24):
+		mid = (lo + hi) / 2
+		a = mid * cos_h
+		b_val = mid * sin_h
+		l_ = L + 0.3963377774 * a + 0.2158037573 * b_val
+		m_ = L - 0.1055613458 * a - 0.0638541728 * b_val
+		s_ = L - 0.0894841775 * a - 1.291485548 * b_val
+		l = l_**3
+		m = m_**3
+		s = s_**3
+		r = +4.0767416621 * l - 3.3077115913 * m + 0.2309699292 * s
+		g = -1.2684380046 * l + 2.6097574011 * m - 0.3413193965 * s
+		b = -0.0041960863 * l - 0.7034186147 * m + 1.707614701 * s
+		eps = 1e-6
+		if r < -eps or r > 1 + eps or g < -eps or g > 1 + eps or b < -eps or b > 1 + eps:
+			hi = mid
+		else:
+			lo = mid
+	return lo
+
+
 # Tailwind-style shade targets — same as color-shades.ts
 _SHADE_TARGETS = [
 	(50, 0.97),
