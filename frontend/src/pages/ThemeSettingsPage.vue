@@ -1,43 +1,72 @@
 <template>
 	<div class="max-w-6xl mx-auto px-6 py-4">
 		<!-- Header -->
-		<div class="flex items-center justify-between mb-5">
-			<div>
-				<h1 class="text-xl font-semibold text-gray-900">Theme Editor</h1>
-				<p class="text-sm text-gray-500 mt-0.5">
-					Editing <strong>{{ editorMeta.theme_name || "—" }}</strong>
-				</p>
-			</div>
-			<div class="flex items-center gap-3">
-				<select
-					v-if="themesList.data?.length"
-					v-model="selectedTheme"
-					class="text-sm border border-gray-300 rounded-md px-2 py-1.5 bg-white"
-					:disabled="switchingTheme"
-					@change="onThemeChange"
-				>
-					<option v-for="t in themesList.data" :key="t.name" :value="t.name">
-						{{ t.theme_name }}
-					</option>
-				</select>
-				<div class="flex gap-2">
-				<Button variant="outline" @click="openPreview">
-					Open Preview ↗
-				</Button>
-				<Button
-					variant="outline"
-					:loading="regenerating"
-					@click="regenerateCSS"
-				>
-					Regenerate CSS
-				</Button>
-				<Button
-					variant="solid"
-					:loading="saving"
-					@click="handleSave"
-				>
-					Save Changes
-				</Button>
+		<div class="editor-header">
+			<div class="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+				<div>
+					<h1 class="editor-title">Theme Editor</h1>
+					<p class="editor-subtitle mt-0.5">
+						Editing <strong>{{ editorMeta.theme_name || "—" }}</strong>
+						<span v-if="editingTheme && siteActiveTheme && editingTheme !== siteActiveTheme" class="editor-warn">
+							· not live on site
+						</span>
+						<span v-if="siteActiveThemeName" class="editor-muted">
+							· Site active: <strong>{{ siteActiveThemeName }}</strong>
+						</span>
+					</p>
+				</div>
+				<div class="editor-toolbar flex flex-col sm:flex-row sm:flex-wrap items-stretch sm:items-center gap-3 lg:justify-end lg:max-w-[70%]">
+					<select
+						v-if="themesList.data?.length"
+						v-model="selectedTheme"
+						class="theme-select"
+						:style="{ minWidth: themeSelectWidth }"
+						:disabled="loadingTheme"
+						@change="onThemeChange"
+					>
+						<option v-for="t in themesList.data" :key="t.name" :value="t.name">
+							{{ themeOptionLabel(t) }}
+						</option>
+					</select>
+					<div class="editor-actions flex flex-wrap gap-2 justify-end">
+						<Button variant="outline" class="theme-btn theme-btn-outline" @click="openPreview">
+							Open Preview ↗
+						</Button>
+						<Button
+							variant="outline"
+							class="theme-btn theme-btn-outline"
+							:disabled="!isDirty || loadingTheme"
+							@click="revertChanges"
+						>
+							Revert
+						</Button>
+						<Button
+							variant="outline"
+							class="theme-btn theme-btn-outline"
+							:loading="saving"
+							:disabled="!isDirty || loadingTheme"
+							@click="handleSave"
+						>
+							Save Changes
+						</Button>
+						<Button
+							variant="outline"
+							class="theme-btn theme-btn-outline"
+							:disabled="loadingTheme"
+							@click="openSaveAsDialog"
+						>
+							Save as new theme
+						</Button>
+						<Button
+							variant="solid"
+							class="theme-btn theme-btn-primary"
+							:loading="applying"
+							:disabled="loadingTheme || editingTheme === siteActiveTheme"
+							@click="requestApplyToSite"
+						>
+							Apply to site
+						</Button>
+					</div>
 				</div>
 			</div>
 		</div>
@@ -328,16 +357,65 @@
 
 				<section>
 					<h2 class="section-title">Published CSS</h2>
-					<p v-if="editorMeta.css_hash" class="text-sm text-gray-600">
-						Active version published to <code>nce_theme.css</code>
+					<p v-if="editorMeta.is_active && editorMeta.css_hash" class="text-sm text-gray-600">
+						Live theme published to <code>nce_theme.css</code>
 						(hash: {{ editorMeta.css_hash }})
 					</p>
-					<p v-else class="text-sm text-gray-400">
-						Save the theme to publish CSS to the site
+					<p v-else-if="editorMeta.is_active" class="text-sm text-gray-400">
+						Save to publish CSS to the site
+					</p>
+					<p v-else class="text-sm text-gray-500">
+						Saving updates this theme only. Use <strong>Apply to site</strong> to go live.
 					</p>
 				</section>
 			</div>
 		</template>
+
+		<!-- Unsaved changes prompt -->
+		<Teleport to="body">
+			<div
+				v-if="confirmDialog.open"
+				class="fixed inset-0 z-50 flex items-center justify-center bg-black/30 p-4"
+				@click.self="closeConfirmDialog"
+			>
+				<div class="bg-white rounded-lg shadow-xl p-5 max-w-md w-full">
+					<h3 class="text-base font-semibold text-gray-900">{{ confirmDialog.title }}</h3>
+					<p class="text-sm text-gray-600 mt-2">{{ confirmDialog.message }}</p>
+					<div class="flex flex-wrap gap-2 justify-end mt-5">
+						<Button variant="outline" @click="closeConfirmDialog">Cancel</Button>
+						<Button variant="outline" @click="confirmDiscardAndContinue">Discard changes</Button>
+						<Button variant="solid" :loading="confirmDialog.busy" @click="confirmSaveAndContinue">
+							Save &amp; continue
+						</Button>
+					</div>
+				</div>
+			</div>
+
+			<div
+				v-if="saveAsDialog.open"
+				class="fixed inset-0 z-50 flex items-center justify-center bg-black/30 p-4"
+				@click.self="closeSaveAsDialog"
+			>
+				<div class="bg-white rounded-lg shadow-xl p-5 max-w-md w-full">
+					<h3 class="text-base font-semibold text-gray-900">Save as new theme</h3>
+					<p class="text-sm text-gray-600 mt-2">Create a new theme from the current settings.</p>
+					<input
+						v-model="saveAsDialog.name"
+						type="text"
+						class="mt-3 w-full border border-gray-300 rounded-md px-3 py-2 text-sm"
+						placeholder="Theme name"
+						@keyup.enter="submitSaveAs"
+					/>
+					<p v-if="saveAsDialog.error" class="text-sm text-red-600 mt-2">{{ saveAsDialog.error }}</p>
+					<div class="flex gap-2 justify-end mt-4">
+						<Button variant="outline" @click="closeSaveAsDialog">Cancel</Button>
+						<Button variant="solid" :loading="saveAsDialog.busy" @click="submitSaveAs">
+							Create theme
+						</Button>
+					</div>
+				</div>
+			</div>
+		</Teleport>
 	</div>
 </template>
 
@@ -674,16 +752,69 @@ const lineHeightCSS = computed(
 // ─── Data fetching ────────────────────────────────────────────────
 
 const saving = ref(false)
-const regenerating = ref(false)
-const switchingTheme = ref(false)
+const applying = ref(false)
+const loadingTheme = ref(false)
 const editorLoaded = ref(false)
 const editorError = ref("")
 const switchError = ref("")
 const selectedTheme = ref("")
+const editingTheme = ref("")
+const siteActiveTheme = ref("")
+const savedSnapshot = ref<Record<string, any>>({})
+
 const editorMeta = reactive({
 	theme: "",
 	theme_name: "",
 	css_hash: "",
+	is_active: false,
+})
+
+const confirmDialog = reactive({
+	open: false,
+	title: "",
+	message: "",
+	action: "" as "" | "switch" | "apply",
+	pendingTheme: "",
+	busy: false,
+})
+
+const saveAsDialog = reactive({
+	open: false,
+	name: "",
+	error: "",
+	busy: false,
+})
+
+const siteActiveThemeName = computed(() => {
+	const row = themesList.data?.find((t: any) => t.name === siteActiveTheme.value)
+	return row?.theme_name || siteActiveTheme.value || ""
+})
+
+function themeOptionLabel(t: { theme_name: string; is_active?: boolean }) {
+	return t.is_active ? `${t.theme_name} · live on site` : t.theme_name
+}
+
+const themeSelectWidth = computed(() => {
+	const labels = (themesList.data || []).map((t: any) => themeOptionLabel(t))
+	const chars = Math.max(20, ...labels.map((l: string) => l.length), 0)
+	return `${Math.min(Math.max(chars * 0.62, 14), 26)}rem`
+})
+
+function buildPayloadFromForm(): Record<string, any> {
+	const payload: Record<string, any> = {}
+	for (const key of PAYLOAD_FIELDS) {
+		payload[key] = key === "dark_mode" ? (form[key] ? 1 : 0) : form[key]
+	}
+	return payload
+}
+
+function captureSnapshot(payload?: Record<string, any>) {
+	savedSnapshot.value = JSON.parse(JSON.stringify(payload || buildPayloadFromForm()))
+}
+
+const isDirty = computed(() => {
+	if (!editorLoaded.value) return false
+	return JSON.stringify(buildPayloadFromForm()) !== JSON.stringify(savedSnapshot.value)
 })
 
 function applyPayloadToForm(payload: Record<string, any>) {
@@ -704,102 +835,236 @@ function applyPayloadToForm(payload: Record<string, any>) {
 const themesList = createResource({
 	url: "themes.api.list_themes",
 	auto: true,
+	onSuccess(data: any[]) {
+		if (!data?.length || editingTheme.value) return
+		const active = data.find((t) => t.is_active)?.name || data[0].name
+		if (active) loadTheme(active)
+	},
 })
 
 const editorResource = createResource({
-	url: "themes.api.get_active_theme_editor",
-	auto: true,
+	url: "themes.api.get_theme_editor",
+	auto: false,
 	onSuccess(data: any) {
+		loadingTheme.value = false
 		editorError.value = ""
 		switchError.value = ""
 		editorLoaded.value = false
 		if (!data) {
-			editorError.value = "No active theme configured."
+			editorError.value = "Theme not found."
 			return
 		}
+		editingTheme.value = data.theme || ""
+		selectedTheme.value = data.theme || ""
+		siteActiveTheme.value = data.site_active_theme || siteActiveTheme.value
 		editorMeta.theme = data.theme || ""
 		editorMeta.theme_name = data.theme_name || data.theme || ""
 		editorMeta.css_hash = data.css_hash || ""
-		selectedTheme.value = data.theme || ""
+		editorMeta.is_active = !!data.is_active
 		if (data.theme_name) form.theme_name = data.theme_name
 		applyPayloadToForm(data.payload || {})
+		captureSnapshot(data.payload || {})
 		editorLoaded.value = true
+		applyLiveThemeVars()
 	},
 	onError(err: any) {
+		loadingTheme.value = false
 		editorLoaded.value = false
 		editorError.value =
-			err?.message || "Failed to load theme editor. Check Site Theme Config and permissions."
+			err?.message || "Failed to load theme. Check permissions."
 	},
 })
+
+async function loadTheme(theme: string) {
+	if (!theme) return
+	loadingTheme.value = true
+	editorError.value = ""
+	try {
+		await editorResource.submit({ theme })
+	} catch {
+		// onError sets editorError
+	}
+}
 
 const saveResource = createResource({
-	url: "themes.api.save_active_theme",
+	url: "themes.api.save_theme",
 	onSuccess(data: any) {
 		if (data?.css_hash) editorMeta.css_hash = data.css_hash
-		editorResource.reload()
+		editorMeta.is_active = !!data?.is_active
+		captureSnapshot()
 	},
 })
 
-const switchThemeResource = createResource({
-	url: "themes.api.set_active_theme",
-	onSuccess() {
-		switchError.value = ""
-		editorResource.reload()
+const createThemeResource = createResource({
+	url: "themes.api.create_theme",
+	onSuccess(data: any) {
+		saveAsDialog.open = false
+		saveAsDialog.busy = false
+		themesList.reload()
+		if (data?.theme) loadTheme(data.theme)
 	},
 	onError(err: any) {
-		selectedTheme.value = editorMeta.theme
-		switchError.value = err?.message || "Could not switch theme."
+		saveAsDialog.error = err?.message || "Could not create theme."
+		saveAsDialog.busy = false
 	},
 })
 
-async function onThemeChange() {
-	if (!selectedTheme.value || selectedTheme.value === editorMeta.theme) return
-	switchingTheme.value = true
-	switchError.value = ""
-	try {
-		await switchThemeResource.submit({ theme: selectedTheme.value })
-	} catch {
-		// onError handler restores selection and sets switchError
-	} finally {
-		switchingTheme.value = false
+const applyThemeResource = createResource({
+	url: "themes.api.set_active_theme",
+	onSuccess(data: any) {
+		switchError.value = ""
+		siteActiveTheme.value = data?.theme || editingTheme.value
+		editorMeta.is_active = true
+		if (data?.css_hash) editorMeta.css_hash = data.css_hash
+		themesList.reload()
+	},
+	onError(err: any) {
+		switchError.value = err?.message || "Could not apply theme to site."
+	},
+})
+
+function openConfirmDialog(action: "switch" | "apply", pendingTheme = "") {
+	confirmDialog.action = action
+	confirmDialog.pendingTheme = pendingTheme
+	confirmDialog.title = "Unsaved changes"
+	if (action === "switch") {
+		const name =
+			themesList.data?.find((t: any) => t.name === pendingTheme)?.theme_name || pendingTheme
+		confirmDialog.message = `Save your changes before switching to "${name}"?`
+	} else {
+		confirmDialog.message = "Save your changes before applying this theme to the site?"
 	}
+	confirmDialog.open = true
+}
+
+function closeConfirmDialog() {
+	if (confirmDialog.busy) return
+	confirmDialog.open = false
+	confirmDialog.action = ""
+	confirmDialog.pendingTheme = ""
+}
+
+async function confirmSaveAndContinue() {
+	confirmDialog.busy = true
+	try {
+		await handleSave()
+		if (confirmDialog.action === "switch") {
+			await loadTheme(confirmDialog.pendingTheme)
+		} else if (confirmDialog.action === "apply") {
+			await applyToSiteConfirmed()
+		}
+		closeConfirmDialog()
+	} catch {
+		// keep dialog open
+	} finally {
+		confirmDialog.busy = false
+	}
+}
+
+async function confirmDiscardAndContinue() {
+	if (confirmDialog.action === "switch") {
+		closeConfirmDialog()
+		await loadTheme(confirmDialog.pendingTheme)
+		return
+	}
+	revertChanges()
+	closeConfirmDialog()
+	await applyToSiteConfirmed()
+}
+
+function onThemeChange() {
+	const next = selectedTheme.value
+	const current = editingTheme.value
+	if (!next || next === current) return
+	if (isDirty.value) {
+		selectedTheme.value = current
+		openConfirmDialog("switch", next)
+		return
+	}
+	loadTheme(next)
+}
+
+function revertChanges() {
+	applyPayloadToForm(savedSnapshot.value)
 }
 
 async function handleSave() {
 	saving.value = true
 	try {
-		const payload: Record<string, any> = {}
-		for (const key of PAYLOAD_FIELDS) {
-			payload[key] = key === "dark_mode" ? (form[key] ? 1 : 0) : form[key]
-		}
-		await saveResource.submit({ payload })
+		const payload = buildPayloadFromForm()
+		await saveResource.submit({ theme: editingTheme.value, payload })
 	} catch (err) {
 		console.error("Save error:", err)
+		throw err
 	} finally {
 		saving.value = false
 	}
 }
 
-const regenerateResource = createResource({
-	url: "themes.api.regenerate_theme_css",
-	onSuccess(data: any) {
-		regenerating.value = false
-		if (data?.css_hash) editorMeta.css_hash = data.css_hash
-		editorResource.reload()
-	},
-	onError() {
-		regenerating.value = false
-	},
-})
-
-function regenerateCSS() {
-	regenerating.value = true
-	regenerateResource.submit({})
+function openSaveAsDialog() {
+	saveAsDialog.name = `${editorMeta.theme_name || "Theme"} copy`
+	saveAsDialog.error = ""
+	saveAsDialog.open = true
 }
 
-// Push live changes to the preview window (debounced)
+function closeSaveAsDialog() {
+	if (saveAsDialog.busy) return
+	saveAsDialog.open = false
+	saveAsDialog.name = ""
+	saveAsDialog.error = ""
+}
+
+async function submitSaveAs() {
+	const name = saveAsDialog.name.trim()
+	if (!name) {
+		saveAsDialog.error = "Enter a theme name."
+		return
+	}
+	saveAsDialog.busy = true
+	saveAsDialog.error = ""
+	try {
+		const payload = buildPayloadFromForm()
+		await createThemeResource.submit({ theme_name: name, payload })
+	} catch {
+		// onError sets saveAsDialog.error
+	}
+}
+
+function requestApplyToSite() {
+	if (editingTheme.value === siteActiveTheme.value) return
+	if (isDirty.value) {
+		openConfirmDialog("apply")
+		return
+	}
+	applyToSiteConfirmed()
+}
+
+async function applyToSiteConfirmed() {
+	applying.value = true
+	switchError.value = ""
+	try {
+		await applyThemeResource.submit({ theme: editingTheme.value })
+		await editorResource.submit({ theme: editingTheme.value })
+	} catch {
+		// onError sets switchError
+	} finally {
+		applying.value = false
+	}
+}
+
+// Push live theme vars to the page + preview window (debounced preview)
+function applyLiveThemeVars() {
+	if (!editorLoaded.value) return
+	const vars = computeCSSVariables()
+	const root = document.documentElement
+	for (const [key, value] of Object.entries(vars)) {
+		if (value) root.style.setProperty(key, value)
+	}
+}
+
 let pushTimer: ReturnType<typeof setTimeout> | null = null
 watch(form, () => {
+	applyLiveThemeVars()
 	if (pushTimer) clearTimeout(pushTimer)
 	pushTimer = setTimeout(pushToPreview, 80)
 }, { deep: true })
@@ -807,6 +1072,127 @@ watch(form, () => {
 
 <style scoped>
 .section-title {
-	@apply text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3;
+	@apply text-sm font-semibold uppercase tracking-wide mb-3;
+	color: var(--nce-color-muted, #6b7280);
+	font-family: var(--nce-font-heading, inherit);
+}
+
+.editor-header {
+	margin-bottom: 1.25rem;
+	padding: 1rem 1.25rem;
+	border-radius: var(--nce-border-radius, 0.375rem);
+	border: 1px solid var(--nce-color-border, #e5e7eb);
+	background: var(--nce-color-surface, #f9fafb);
+	box-shadow: var(--nce-shadow, 0 1px 2px rgba(0, 0, 0, 0.06));
+}
+
+.editor-title {
+	font-size: calc(var(--nce-font-size, 14px) * 1.375);
+	font-weight: 600;
+	font-family: var(--nce-font-heading, inherit);
+	color: var(--nce-color-heading, #111827);
+}
+
+.editor-subtitle {
+	font-size: calc(var(--nce-font-size, 14px) * 0.875);
+	font-family: var(--nce-font-family, inherit);
+	color: var(--nce-color-text, #374151);
+}
+
+.editor-subtitle strong {
+	color: var(--nce-color-heading, #111827);
+	font-weight: 600;
+}
+
+.editor-warn {
+	color: var(--nce-color-warning, #d97706);
+	font-weight: 500;
+}
+
+.editor-muted {
+	color: var(--nce-color-muted, #9ca3af);
+}
+
+.theme-select {
+	flex: 1 1 auto;
+	max-width: 26rem;
+	width: 100%;
+	appearance: none;
+	cursor: pointer;
+	background-color: var(--nce-color-bg, #ffffff);
+	background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%236b7280' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+	background-repeat: no-repeat;
+	background-position: right 0.75rem center;
+	background-size: 1rem;
+	border: 1px solid var(--nce-color-border, #d1d5db);
+	border-radius: var(--nce-border-radius, 0.375rem);
+	color: var(--nce-color-text, #1f2937);
+	font-family: var(--nce-font-family, inherit);
+	font-size: var(--nce-font-size, 14px);
+	line-height: 1.45;
+	padding: 0.5625rem 2.5rem 0.5625rem 0.875rem;
+	transition:
+		border-color var(--nce-transition-speed, 200ms),
+		box-shadow var(--nce-transition-speed, 200ms),
+		background-color var(--nce-transition-speed, 200ms);
+}
+
+.theme-select:hover:not(:disabled) {
+	border-color: var(--nce-color-primary, #3b82f6);
+	background-color: var(--nce-color-surface, #f9fafb);
+}
+
+.theme-select:focus {
+	outline: none;
+	border-color: var(--nce-color-focus, #3b82f6);
+	box-shadow: 0 0 0 3px color-mix(in srgb, var(--nce-color-focus, #3b82f6) 22%, transparent);
+}
+
+.theme-select:disabled {
+	opacity: 0.55;
+	cursor: not-allowed;
+}
+
+.editor-actions :deep(.theme-btn) {
+	font-family: var(--nce-font-family, inherit) !important;
+	font-size: calc(var(--nce-font-size, 14px) * 0.875) !important;
+	font-weight: 500 !important;
+	border-radius: var(--nce-border-radius, 0.375rem) !important;
+	transition:
+		background-color var(--nce-transition-speed, 200ms),
+		border-color var(--nce-transition-speed, 200ms),
+		color var(--nce-transition-speed, 200ms),
+		filter var(--nce-transition-speed, 200ms) !important;
+	white-space: nowrap;
+	padding-inline: 0.875rem !important;
+	padding-block: 0.5rem !important;
+	box-shadow: none !important;
+}
+
+.editor-actions :deep(.theme-btn-outline) {
+	border: 1px solid var(--nce-color-border, #d1d5db) !important;
+	background-color: var(--nce-color-bg, #ffffff) !important;
+	color: var(--nce-color-text, #374151) !important;
+}
+
+.editor-actions :deep(.theme-btn-outline:hover:not(:disabled)) {
+	background-color: var(--nce-color-row-alt, #f3f4f6) !important;
+	border-color: var(--nce-color-primary, #3b82f6) !important;
+	color: var(--nce-color-heading, #111827) !important;
+}
+
+.editor-actions :deep(.theme-btn-primary) {
+	background-color: var(--nce-color-primary, #111827) !important;
+	border: 1px solid var(--nce-color-primary, #111827) !important;
+	color: #ffffff !important;
+}
+
+.editor-actions :deep(.theme-btn-primary:hover:not(:disabled)) {
+	filter: brightness(1.08);
+}
+
+.editor-actions :deep(.theme-btn:disabled) {
+	opacity: 0.45;
+	cursor: not-allowed;
 }
 </style>
