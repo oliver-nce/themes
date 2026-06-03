@@ -6,7 +6,6 @@
 				<h1 class="text-xl font-semibold text-gray-900">Theme Editor</h1>
 				<p class="text-sm text-gray-500 mt-0.5">
 					Editing <strong>{{ editorMeta.theme_name || "—" }}</strong>
-					<span v-if="editorMeta.version" class="text-gray-400">({{ editorMeta.version }})</span>
 				</p>
 			</div>
 			<div class="flex items-center gap-3">
@@ -41,6 +40,10 @@
 				</Button>
 				</div>
 			</div>
+		</div>
+
+		<div v-if="switchError" class="mb-4 rounded-md bg-red-50 text-red-700 text-sm px-4 py-2">
+			{{ switchError }}
 		</div>
 
 		<!-- Loading -->
@@ -631,10 +634,10 @@ const regenerating = ref(false)
 const switchingTheme = ref(false)
 const editorLoaded = ref(false)
 const editorError = ref("")
+const switchError = ref("")
 const selectedTheme = ref("")
 const editorMeta = reactive({
 	theme: "",
-	version: "",
 	theme_name: "",
 	css_hash: "",
 })
@@ -661,13 +664,13 @@ const editorResource = createResource({
 	auto: true,
 	onSuccess(data: any) {
 		editorError.value = ""
+		switchError.value = ""
 		editorLoaded.value = false
 		if (!data) {
 			editorError.value = "No active theme configured."
 			return
 		}
 		editorMeta.theme = data.theme || ""
-		editorMeta.version = data.version || ""
 		editorMeta.theme_name = data.theme_name || data.theme || ""
 		editorMeta.css_hash = data.css_hash || ""
 		selectedTheme.value = data.theme || ""
@@ -693,16 +696,19 @@ const saveResource = createResource({
 const switchThemeResource = createResource({
 	url: "themes.api.set_active_theme",
 	onSuccess() {
+		switchError.value = ""
 		editorResource.reload()
 	},
-	onError() {
+	onError(err: any) {
 		selectedTheme.value = editorMeta.theme
+		switchError.value = err?.message || "Could not switch theme."
 	},
 })
 
 function onThemeChange() {
 	if (!selectedTheme.value || selectedTheme.value === editorMeta.theme) return
 	switchingTheme.value = true
+	switchError.value = ""
 	switchThemeResource.submit(
 		{ theme: selectedTheme.value },
 		{

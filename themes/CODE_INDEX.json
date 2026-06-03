@@ -9,17 +9,18 @@
                 "api.py": "Whitelisted API: get_active_theme_editor(), save_active_theme(), set_active_theme(), regenerate_theme_css(), list_themes()",
                 "install.py": "after_install hook: creates empty Site Theme Config on fresh install",
                 "init_theme.py": "One-time theme initialisation script: creates Theme Settings with defaults and regenerates CSS. Run via bench execute.",
-                "patches/v1_0/migrate_theme_settings_to_nce_theme.py": "Post-migrate patch: Theme Settings → NCE Theme Default + Theme Version + Site Theme Config"
+                "patches/v1_0/migrate_theme_settings_to_nce_theme.py": "Post-migrate patch: Theme Settings → NCE Theme Default",
+                "patches/v1_0/collapse_theme_versions_to_nce_theme.py": "Copy legacy Theme Version JSON onto NCE Theme.theme_json"
             },
             "utils": {
                 "utils/theme_color_utils.py": "Color math helpers: OKLCH shade generation, shadow building, token maps (BORDER_RADIUS_MAP, etc.)",
-                "utils/css_writer.py": "CSS generation and publish: generate_css(), publish_version(), TOKEN_FIELDS writes nce_theme.css"
+                "utils/css_writer.py": "CSS generation and publish: generate_css(), publish_theme(), TOKEN_FIELDS"
             },
             "doctypes": {
-                "themes/doctype/theme_settings/": "Legacy Single doctype holding theme tokens. on_update() is a no-op (deprecated); CSS publishing moves to Theme Version + Site Theme Config.",
-                "themes/doctype/nce_theme/": "Theme registry DocType: theme_name, slug, is_default, status.",
-                "themes/doctype/theme_version/": "Versioned token payload per theme; theme_json + published flag.",
-                "themes/doctype/site_theme_config/": "Single: active_theme, active_version, css_hash; on_update publishes CSS."
+                "themes/doctype/theme_settings/": "Legacy Single doctype (deprecated).",
+                "themes/doctype/nce_theme/": "Theme registry + definition: theme_name, slug, is_default, status, theme_json.",
+                "themes/doctype/theme_version/": "Deprecated — use NCE Theme.theme_json instead.",
+                "themes/doctype/site_theme_config/": "Single: active_theme, css_hash; on_update publishes CSS."
             },
             "static_files": {
                 "public/css/": "Generated theme CSS (nce_theme.css)",

@@ -112,14 +112,24 @@ def _write_css_file(css: str) -> str:
     return path
 
 
-def publish_version(version_name: str) -> dict:
-    """Read a Theme Version, regenerate nce_theme.css, update Site Theme Config."""
-    version = frappe.get_doc("Theme Version", version_name)
-    payload = json.loads(version.theme_json or "{}")
+def publish_theme(theme_name: str) -> dict:
+    """Read an NCE Theme, regenerate nce_theme.css, update Site Theme Config."""
+    theme = frappe.get_doc("NCE Theme", theme_name)
+    payload = json.loads(theme.theme_json or "{}")
     css = generate_css(payload)
     _write_css_file(css)
     css_hash = hashlib.sha1(css.encode("utf-8")).hexdigest()[:8]
     frappe.db.set_single_value("Site Theme Config", "css_hash", css_hash)
     frappe.clear_cache()
-    return {"status": "ok", "version": version_name, "css_hash": css_hash,
-            "bytes": len(css)}
+    return {"status": "ok", "theme": theme_name, "css_hash": css_hash, "bytes": len(css)}
+
+
+def publish_version(version_name: str) -> dict:
+    """Legacy shim: copy Theme Version JSON onto NCE Theme, then publish."""
+    parent = frappe.db.get_value("Theme Version", version_name, "parent_theme")
+    theme_json = frappe.db.get_value("Theme Version", version_name, "theme_json")
+    if parent and theme_json and not frappe.db.get_value("NCE Theme", parent, "theme_json"):
+        frappe.db.set_value("NCE Theme", parent, "theme_json", theme_json)
+    if not parent:
+        frappe.throw(f"Theme Version {version_name} not found")
+    return publish_theme(parent)

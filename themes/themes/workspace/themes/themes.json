@@ -1,6 +1,6 @@
 {
  "charts": [],
- "content": "[{\"id\":\"hdr_overview\",\"type\":\"header\",\"data\":{\"text\":\"<span class=\\\"h4\\\"><b>Themes</b></span>\",\"col\":12}},{\"id\":\"sc_editor\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Theme Editor\",\"col\":3}},{\"id\":\"sc_switch\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Switch Theme\",\"col\":3}},{\"id\":\"sc_themes\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Themes\",\"col\":3}},{\"id\":\"sc_versions\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Theme Versions\",\"col\":3}}]",
+ "content": "[{\"id\":\"hdr_overview\",\"type\":\"header\",\"data\":{\"text\":\"<span class=\\\"h4\\\"><b>Themes</b></span>\",\"col\":12}},{\"id\":\"sc_editor\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Theme Editor\",\"col\":4}},{\"id\":\"sc_switch\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Switch Theme\",\"col\":4}},{\"id\":\"sc_themes\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Themes\",\"col\":4}}]",
  "creation": "2026-03-15 00:00:00.000000",
  "custom_blocks": [],
  "docstatus": 0,
@@ -15,8 +15,7 @@
   {"hidden": 0, "is_query_report": 0, "label": "Theme Management", "link_count": 0, "onboard": 0, "type": "Card Break"},
   {"hidden": 0, "is_query_report": 0, "label": "Theme Editor", "link_to": "theme-editor", "link_type": "Page", "onboard": 0, "type": "Link"},
   {"hidden": 0, "is_query_report": 0, "label": "Switch Theme", "link_to": "site-theme-switch", "link_type": "Page", "onboard": 0, "type": "Link"},
-  {"hidden": 0, "is_query_report": 0, "label": "NCE Theme", "link_to": "NCE Theme", "link_type": "DocType", "onboard": 0, "type": "Link"},
-  {"hidden": 0, "is_query_report": 0, "label": "Theme Version", "link_to": "Theme Version", "link_type": "DocType", "onboard": 0, "type": "Link"}
+  {"hidden": 0, "is_query_report": 0, "label": "NCE Theme", "link_to": "NCE Theme", "link_type": "DocType", "onboard": 0, "type": "Link"}
  ],
  "modified": "2026-06-03 00:00:00.000000",
  "modified_by": "Administrator",
@@ -33,8 +32,7 @@
  "shortcuts": [
   {"color": "Green", "doc_view": "", "label": "Theme Editor", "link_to": "theme-editor", "type": "Page"},
   {"color": "Blue", "doc_view": "", "label": "Switch Theme", "link_to": "site-theme-switch", "type": "Page"},
-  {"color": "Grey", "doc_view": "List", "label": "Themes", "link_to": "NCE Theme", "type": "DocType"},
-  {"color": "Grey", "doc_view": "List", "label": "Theme Versions", "link_to": "Theme Version", "type": "DocType"}
+  {"color": "Grey", "doc_view": "List", "label": "Themes", "link_to": "NCE Theme", "type": "DocType"}
  ],
  "title": "Themes"
 }

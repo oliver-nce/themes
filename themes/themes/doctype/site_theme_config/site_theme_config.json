@@ -3,11 +3,11 @@
  "creation": "2026-06-03 00:00:00.000000",
  "doctype": "DocType",
  "engine": "InnoDB",
- "field_order": ["active_theme", "active_version", "css_hash"],
+ "field_order": ["active_theme", "css_hash", "active_version"],
  "fields": [
-  {"fieldname": "active_theme", "fieldtype": "Link", "label": "Active Theme", "options": "NCE Theme"},
-  {"fieldname": "active_version", "fieldtype": "Link", "label": "Active Version", "options": "Theme Version"},
-  {"fieldname": "css_hash", "fieldtype": "Data", "label": "CSS Hash", "read_only": 1}
+  {"fieldname": "active_theme", "fieldtype": "Link", "label": "Active Theme", "options": "NCE Theme", "reqd": 1},
+  {"fieldname": "css_hash", "fieldtype": "Data", "label": "CSS Hash", "read_only": 1},
+  {"fieldname": "active_version", "fieldtype": "Link", "hidden": 1, "label": "Active Version (deprecated)", "options": "Theme Version", "read_only": 1}
  ],
  "index_web_pages_for_search": 0,
  "issingle": 1,
