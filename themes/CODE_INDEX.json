@@ -9,8 +9,12 @@
                 "api.py": "Whitelisted API: regenerate_theme_css()",
                 "init_theme.py": "One-time theme initialisation script: creates Theme Settings with defaults and regenerates CSS. Run via bench execute."
             },
+            "utils": {
+                "utils/theme_color_utils.py": "Color math helpers: OKLCH shade generation, shadow building, token maps (BORDER_RADIUS_MAP, etc.)",
+                "utils/css_writer.py": "CSS generation and publish: generate_css(), publish_version() writes nce_theme.css"
+            },
             "doctypes": {
-                "themes/doctype/theme_settings/": "Single doctype holding all theme tokens (colors, fonts, spacing, radius, shadow). on_update() compiles and writes nce_theme.css."
+                "themes/doctype/theme_settings/": "Legacy Single doctype holding theme tokens. on_update() is a no-op (deprecated); CSS publishing moves to Theme Version + Site Theme Config."
             },
             "static_files": {
                 "public/css/": "Generated theme CSS (nce_theme.css)",
