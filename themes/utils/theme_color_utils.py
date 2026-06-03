@@ -182,15 +182,22 @@ def _base_chroma_at_600(hue):
 	return _max_chroma_in_gamut(_OKLCH_L_600, hue, 0.37)
 
 
+_L100 = 0.93
+_L950 = 0.16
+
+
 def _lightness_with_gamma(shade, base_l, gamma):
-	if not gamma or shade <= 100 or shade >= 950:
+	"""Power-curve lightness between pinned 100 and 950 stops."""
+	if not gamma:
 		return base_l
-	peak = 600
-	span = 950 - 100
-	dist = abs(shade - peak) / span
-	bell = max(0.0, 1.0 - (dist / 0.42) ** 1.4)
-	shift = (gamma / 100.0) * 0.14 * bell
-	return max(0.06, min(0.985, base_l + shift))
+	if shade <= 100 or shade >= 950:
+		return base_l
+	t = (shade - 100) / (950 - 100)
+	mix = abs(gamma) / 100.0
+	exp = 2 ** (-gamma / 40.0)
+	curved = _L100 + (t**exp) * (_L950 - _L100)
+	blended = base_l * (1 - mix) + curved * mix
+	return max(0.06, min(0.985, blended))
 
 
 def _extreme_chroma_scale(target_l, use_c):

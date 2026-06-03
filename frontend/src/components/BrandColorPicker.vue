@@ -30,7 +30,7 @@
 
 			<div class="adjust-sliders mt-2">
 				<div class="adjust-row">
-					<label>Gamma</label>
+					<label>Lightness</label>
 					<input
 						type="range"
 						min="-100"

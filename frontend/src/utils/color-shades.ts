@@ -5,7 +5,7 @@ export interface ColorShade {
 
 export interface OklchColorParams {
   hue: number;
-  /** -100…100, 0 = baseline OKLCH lightness curve */
+  /** -100…100 lightness curve (0 = baseline OKLCH scale) */
   gamma: number;
   /** 0…200, 100 = max in-gamut chroma at 600 */
   saturation: number;
@@ -134,17 +134,23 @@ const SHADE_TARGETS: Array<{ shade: number; l: number }> = [
   { shade: 950, l: 0.16 },
 ];
 
-/** Pin 100/950; shift midtones lighter (+gamma) or darker (-gamma). */
+const L100 = 0.93;
+const L950 = 0.16;
+
+/**
+ * Power-curve lightness scale between pinned stops 100 and 950.
+ * gamma=0 → original OKLCH targets; +gamma lightens mids; −gamma darkens mids.
+ */
 function lightnessWithGamma(shade: number, baseL: number, gamma: number): number {
-  if (gamma === 0 || shade <= 100 || shade >= 950) {
-    return baseL;
-  }
-  const peak = 600;
-  const span = 950 - 100;
-  const dist = Math.abs(shade - peak) / span;
-  const bell = Math.max(0, 1 - (dist / 0.42) ** 1.4);
-  const shift = (gamma / 100) * 0.14 * bell;
-  return Math.max(0.06, Math.min(0.985, baseL + shift));
+  if (gamma === 0) return baseL;
+  if (shade <= 100 || shade >= 950) return baseL;
+
+  const t = (shade - 100) / (950 - 100);
+  const mix = Math.abs(gamma) / 100;
+  const exp = Math.pow(2, -gamma / 40);
+  const curved = L100 + Math.pow(t, exp) * (L950 - L100);
+  const blended = baseL * (1 - mix) + curved * mix;
+  return Math.max(0.06, Math.min(0.985, blended));
 }
 
 function extremeChromaScale(targetL: number, useC: number): number {
