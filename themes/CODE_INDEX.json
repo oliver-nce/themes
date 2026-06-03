@@ -5,9 +5,11 @@
         "themes": {
             "purpose": "Frappe custom app for site-wide CSS theming",
             "entry_points": {
-                "hooks.py": "Frappe app metadata, CSS loading, SPA routing, Apps screen entry",
-                "api.py": "Whitelisted API: regenerate_theme_css()",
-                "init_theme.py": "One-time theme initialisation script: creates Theme Settings with defaults and regenerates CSS. Run via bench execute."
+                "hooks.py": "Frappe app metadata, CSS loading, SPA routing, Apps screen entry, after_install",
+                "api.py": "Whitelisted API: set_active_theme(), regenerate_theme_css(), list_themes()",
+                "install.py": "after_install hook: creates empty Site Theme Config on fresh install",
+                "init_theme.py": "One-time theme initialisation script: creates Theme Settings with defaults and regenerates CSS. Run via bench execute.",
+                "patches/v1_0/migrate_theme_settings_to_nce_theme.py": "Post-migrate patch: Theme Settings → NCE Theme Default + Theme Version + Site Theme Config"
             },
             "utils": {
                 "utils/theme_color_utils.py": "Color math helpers: OKLCH shade generation, shadow building, token maps (BORDER_RADIUS_MAP, etc.)",
@@ -15,7 +17,9 @@
             },
             "doctypes": {
                 "themes/doctype/theme_settings/": "Legacy Single doctype holding theme tokens. on_update() is a no-op (deprecated); CSS publishing moves to Theme Version + Site Theme Config.",
-                "themes/doctype/nce_theme/": "Theme registry DocType: theme_name, slug, is_default, status."
+                "themes/doctype/nce_theme/": "Theme registry DocType: theme_name, slug, is_default, status.",
+                "themes/doctype/theme_version/": "Versioned token payload per theme; theme_json + published flag.",
+                "themes/doctype/site_theme_config/": "Single: active_theme, active_version, css_hash; on_update publishes CSS."
             },
             "static_files": {
                 "public/css/": "Generated theme CSS (nce_theme.css)",

@@ -1,0 +1,27 @@
+{
+ "actions": [],
+ "creation": "2026-06-03 00:00:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": ["active_theme", "active_version", "css_hash"],
+ "fields": [
+  {"fieldname": "active_theme", "fieldtype": "Link", "label": "Active Theme", "options": "NCE Theme"},
+  {"fieldname": "active_version", "fieldtype": "Link", "label": "Active Version", "options": "Theme Version"},
+  {"fieldname": "css_hash", "fieldtype": "Data", "label": "CSS Hash", "read_only": 1}
+ ],
+ "index_web_pages_for_search": 0,
+ "issingle": 1,
+ "links": [],
+ "modified": "2026-06-03 00:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Themes",
+ "name": "Site Theme Config",
+ "owner": "Administrator",
+ "permissions": [
+  {"create": 1, "delete": 1, "email": 1, "print": 1, "read": 1, "role": "System Manager", "share": 1, "write": 1}
+ ],
+ "sort_field": "creation",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 1
+}

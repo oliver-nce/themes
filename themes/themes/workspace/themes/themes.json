@@ -1,6 +1,6 @@
 {
  "charts": [],
- "content": "[{\"id\": \"hdr_overview\", \"type\": \"header\", \"data\": {\"text\": \"<span class=\\\"h4\\\"><b>Themes</b></span>\", \"col\": 12}}]",
+ "content": "[{\"id\":\"hdr_overview\",\"type\":\"header\",\"data\":{\"text\":\"<span class=\\\"h4\\\"><b>Themes</b></span>\",\"col\":12}},{\"id\":\"sc_switch\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Switch Theme\",\"col\":4}},{\"id\":\"sc_themes\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Themes\",\"col\":4}},{\"id\":\"sc_versions\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Theme Versions\",\"col\":4}}]",
  "creation": "2026-03-15 00:00:00.000000",
  "custom_blocks": [],
  "docstatus": 0,
@@ -11,8 +11,13 @@
  "idx": 0,
  "is_hidden": 0,
  "label": "Themes",
- "links": [],
- "modified": "2026-03-15 00:00:00.000000",
+ "links": [
+  {"hidden": 0, "is_query_report": 0, "label": "Theme Management", "link_count": 0, "onboard": 0, "type": "Card Break"},
+  {"hidden": 0, "is_query_report": 0, "label": "NCE Theme", "link_to": "NCE Theme", "link_type": "DocType", "onboard": 0, "type": "Link"},
+  {"hidden": 0, "is_query_report": 0, "label": "Theme Version", "link_to": "Theme Version", "link_type": "DocType", "onboard": 0, "type": "Link"},
+  {"hidden": 0, "is_query_report": 0, "label": "Site Theme Config", "link_to": "Site Theme Config", "link_type": "DocType", "onboard": 0, "type": "Link"}
+ ],
+ "modified": "2026-06-03 00:00:00.000000",
  "modified_by": "Administrator",
  "module": "Themes",
  "name": "Themes",
@@ -24,6 +29,10 @@
  "restrict_to_domain": "",
  "roles": [],
  "sequence_id": 100.0,
- "shortcuts": [],
+ "shortcuts": [
+  {"color": "Blue", "doc_view": "", "label": "Switch Theme", "link_to": "Site Theme Config", "type": "DocType"},
+  {"color": "Grey", "doc_view": "List", "label": "Themes", "link_to": "NCE Theme", "type": "DocType"},
+  {"color": "Grey", "doc_view": "List", "label": "Theme Versions", "link_to": "Theme Version", "type": "DocType"}
+ ],
  "title": "Themes"
 }

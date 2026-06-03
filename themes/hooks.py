@@ -25,3 +25,5 @@ add_to_apps_screen = [
 		"route": "/app/themes",
 	}
 ]
+
+after_install = "themes.install.after_install"
