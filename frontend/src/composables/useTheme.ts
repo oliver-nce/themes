@@ -4,16 +4,15 @@ import { createResource } from "frappe-ui"
 const themeLoaded = ref(false)
 
 export function useTheme() {
-	const themeSettings = createResource({
-		url: "frappe.client.get",
-		params: { doctype: "Theme Settings", name: "Theme Settings" },
+	const themeEditor = createResource({
+		url: "themes.api.get_active_theme_editor",
 	})
 
 	async function loadTheme() {
 		if (themeLoaded.value) return
-		await themeSettings.reload()
-		if (themeSettings.data) {
-			applyThemeVars(themeSettings.data)
+		await themeEditor.reload()
+		if (themeEditor.data?.payload) {
+			applyThemeVars(themeEditor.data.payload)
 			themeLoaded.value = true
 		}
 	}
@@ -28,5 +27,5 @@ export function useTheme() {
 		}
 	}
 
-	return { themeSettings, loadTheme, themeLoaded }
+	return { themeEditor, loadTheme, themeLoaded }
 }

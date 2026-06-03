@@ -3,12 +3,25 @@
 		<!-- Header -->
 		<div class="flex items-center justify-between mb-5">
 			<div>
-				<h1 class="text-xl font-semibold text-gray-900">Theme Settings</h1>
+				<h1 class="text-xl font-semibold text-gray-900">Theme Editor</h1>
 				<p class="text-sm text-gray-500 mt-0.5">
-					Configure site-wide colours, typography, and layout
+					Editing <strong>{{ editorMeta.theme_name || "—" }}</strong>
+					<span v-if="editorMeta.version" class="text-gray-400">({{ editorMeta.version }})</span>
 				</p>
 			</div>
-			<div class="flex gap-2">
+			<div class="flex items-center gap-3">
+				<select
+					v-if="themesList.data?.length"
+					v-model="selectedTheme"
+					class="text-sm border border-gray-300 rounded-md px-2 py-1.5 bg-white"
+					:disabled="switchingTheme"
+					@change="onThemeChange"
+				>
+					<option v-for="t in themesList.data" :key="t.name" :value="t.name">
+						{{ t.theme_name }}
+					</option>
+				</select>
+				<div class="flex gap-2">
 				<Button variant="outline" @click="openPreview">
 					Open Preview ↗
 				</Button>
@@ -26,25 +39,25 @@
 				>
 					Save Changes
 				</Button>
+				</div>
 			</div>
 		</div>
 
 		<!-- Loading -->
-		<div v-if="themeDoc.loading" class="py-12 text-center text-gray-400 text-sm">
-			Loading theme settings…
+		<div v-if="editorResource.loading" class="py-12 text-center text-gray-400 text-sm">
+			Loading theme editor…
 		</div>
 
 		<!-- Error -->
 		<div
-			v-else-if="!themeDoc.data"
+			v-else-if="editorError"
 			class="py-12 text-center text-red-600 text-sm"
 		>
-			Failed to load theme settings. Make sure the Theme Settings
-			DocType exists and you have System Manager permissions.
+			{{ editorError }}
 		</div>
 
 		<!-- Main content -->
-		<template v-else>
+		<template v-else-if="editorLoaded">
 			<!-- Tab bar -->
 			<nav class="flex gap-1 border-b border-gray-200 mb-6">
 				<button
@@ -291,13 +304,13 @@
 				</section>
 
 				<section>
-					<h2 class="section-title">Generated CSS</h2>
-					<pre
-						v-if="themeDoc.data?.compiled_css"
-						class="text-xs font-mono bg-gray-900 text-green-400 rounded-lg p-4 overflow-x-auto max-h-64"
-					>{{ themeDoc.data.compiled_css }}</pre>
+					<h2 class="section-title">Published CSS</h2>
+					<p v-if="editorMeta.css_hash" class="text-sm text-gray-600">
+						Active version published to <code>nce_theme.css</code>
+						(hash: {{ editorMeta.css_hash }})
+					</p>
 					<p v-else class="text-sm text-gray-400">
-						Save the theme to generate CSS output
+						Save the theme to publish CSS to the site
 					</p>
 				</section>
 			</div>
@@ -489,6 +502,8 @@ const ALL_FIELDS = [
 	"tailwind_overrides",
 ] as const
 
+const PAYLOAD_FIELDS = ALL_FIELDS.filter((k) => k !== "theme_name")
+
 type FormKey = (typeof ALL_FIELDS)[number]
 
 const DEFAULTS: Record<FormKey, any> = {
@@ -613,52 +628,99 @@ const lineHeightCSS = computed(
 
 const saving = ref(false)
 const regenerating = ref(false)
+const switchingTheme = ref(false)
+const editorLoaded = ref(false)
+const editorError = ref("")
+const selectedTheme = ref("")
+const editorMeta = reactive({
+	theme: "",
+	version: "",
+	theme_name: "",
+	css_hash: "",
+})
 
-const themeDoc = createResource({
-	url: "frappe.client.get",
-	params: { doctype: "Theme Settings", name: "Theme Settings" },
+function applyPayloadToForm(payload: Record<string, any>) {
+	for (const key of ALL_FIELDS) {
+		if (key === "theme_name") continue
+		const val = payload[key]
+		if (key === "dark_mode") {
+			form[key] = !!val
+		} else if (val !== undefined && val !== null) {
+			form[key] = val
+		}
+	}
+}
+
+const themesList = createResource({
+	url: "themes.api.list_themes",
+	auto: true,
+})
+
+const editorResource = createResource({
+	url: "themes.api.get_active_theme_editor",
 	auto: true,
 	onSuccess(data: any) {
-		if (!data) return
-		for (const key of ALL_FIELDS) {
-			const val = data[key]
-			if (key === "dark_mode") {
-				form[key] = !!val
-			} else if (val !== undefined && val !== null) {
-				form[key] = val
-			}
+		editorError.value = ""
+		editorLoaded.value = false
+		if (!data) {
+			editorError.value = "No active theme configured."
+			return
 		}
+		editorMeta.theme = data.theme || ""
+		editorMeta.version = data.version || ""
+		editorMeta.theme_name = data.theme_name || data.theme || ""
+		editorMeta.css_hash = data.css_hash || ""
+		selectedTheme.value = data.theme || ""
+		if (data.theme_name) form.theme_name = data.theme_name
+		applyPayloadToForm(data.payload || {})
+		editorLoaded.value = true
+	},
+	onError(err: any) {
+		editorLoaded.value = false
+		editorError.value =
+			err?.message || "Failed to load theme editor. Check Site Theme Config and permissions."
 	},
 })
+
+const saveResource = createResource({
+	url: "themes.api.save_active_theme",
+	onSuccess(data: any) {
+		if (data?.css_hash) editorMeta.css_hash = data.css_hash
+		editorResource.reload()
+	},
+})
+
+const switchThemeResource = createResource({
+	url: "themes.api.set_active_theme",
+	onSuccess() {
+		editorResource.reload()
+	},
+	onError() {
+		selectedTheme.value = editorMeta.theme
+	},
+})
+
+function onThemeChange() {
+	if (!selectedTheme.value || selectedTheme.value === editorMeta.theme) return
+	switchingTheme.value = true
+	switchThemeResource.submit(
+		{ theme: selectedTheme.value },
+		{
+			onFinish() {
+				switchingTheme.value = false
+			},
+		},
+	)
+}
 
 async function handleSave() {
 	saving.value = true
 	try {
-		const doc: Record<string, any> = {}
-		for (const key of ALL_FIELDS) {
-			doc[key] = key === "dark_mode" ? (form[key] ? 1 : 0) : form[key]
+		const payload: Record<string, any> = {}
+		for (const key of PAYLOAD_FIELDS) {
+			payload[key] = key === "dark_mode" ? (form[key] ? 1 : 0) : form[key]
 		}
-
-		const res = await fetch("/api/resource/Theme Settings/Theme Settings", {
-			method: "PUT",
-			headers: {
-				"Content-Type": "application/json",
-				"X-Frappe-CSRF-Token": window.csrf_token
-					|| document.cookie.match(/(?:^|;\s*)csrf_token=([^;]*)/)?.[1]
-					|| "",
-			},
-			credentials: "include",
-			body: JSON.stringify(doc),
-		})
-
-		if (!res.ok) {
-			const errText = await res.text()
-			console.error("Save failed:", res.status, errText)
-			throw new Error(`Save failed: ${res.status}`)
-		}
-
-		themeDoc.reload()
-		regenerateCSS()
+		await saveResource.submit({ payload })
 	} catch (err) {
 		console.error("Save error:", err)
 	} finally {
@@ -668,9 +730,10 @@ async function handleSave() {
 
 const regenerateResource = createResource({
 	url: "themes.api.regenerate_theme_css",
-	onSuccess() {
+	onSuccess(data: any) {
 		regenerating.value = false
-		themeDoc.reload()
+		if (data?.css_hash) editorMeta.css_hash = data.css_hash
+		editorResource.reload()
 	},
 	onError() {
 		regenerating.value = false

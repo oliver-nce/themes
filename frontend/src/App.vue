@@ -33,7 +33,7 @@ const route = useRoute()
 const isStandalone = computed(() => !!route.meta.standalone)
 
 const navLinks = [
-	{ label: "Theme Settings", to: "/themes/theme-settings" },
+	{ label: "Theme Editor", to: "/themes/theme-settings" },
 	{ label: "Theme Preview", to: "/themes/preview" },
 ]
 </script>

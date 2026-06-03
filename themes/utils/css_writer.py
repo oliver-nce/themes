@@ -43,6 +43,9 @@ MIGRATED_FIELDS = list(COLOR_FIELDS.keys()) + [
     "container_max_width", "tailwind_overrides", "custom_css",
 ]
 
+# SPA editor payload keys (MIGRATED_FIELDS + stored-but-not-CSS fields)
+TOKEN_FIELDS = MIGRATED_FIELDS + ["dark_mode"]
+
 
 def generate_css(payload: dict) -> str:
     """Build the full :root { --nce-* } CSS block from a token payload dict."""

@@ -6,14 +6,14 @@
             "purpose": "Frappe custom app for site-wide CSS theming",
             "entry_points": {
                 "hooks.py": "Frappe app metadata, CSS loading, SPA routing, Apps screen entry, after_install",
-                "api.py": "Whitelisted API: set_active_theme(), regenerate_theme_css(), list_themes()",
+                "api.py": "Whitelisted API: get_active_theme_editor(), save_active_theme(), set_active_theme(), regenerate_theme_css(), list_themes()",
                 "install.py": "after_install hook: creates empty Site Theme Config on fresh install",
                 "init_theme.py": "One-time theme initialisation script: creates Theme Settings with defaults and regenerates CSS. Run via bench execute.",
                 "patches/v1_0/migrate_theme_settings_to_nce_theme.py": "Post-migrate patch: Theme Settings → NCE Theme Default + Theme Version + Site Theme Config"
             },
             "utils": {
                 "utils/theme_color_utils.py": "Color math helpers: OKLCH shade generation, shadow building, token maps (BORDER_RADIUS_MAP, etc.)",
-                "utils/css_writer.py": "CSS generation and publish: generate_css(), publish_version() writes nce_theme.css"
+                "utils/css_writer.py": "CSS generation and publish: generate_css(), publish_version(), TOKEN_FIELDS writes nce_theme.css"
             },
             "doctypes": {
                 "themes/doctype/theme_settings/": "Legacy Single doctype holding theme tokens. on_update() is a no-op (deprecated); CSS publishing moves to Theme Version + Site Theme Config.",

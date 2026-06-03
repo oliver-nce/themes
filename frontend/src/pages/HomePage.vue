@@ -6,7 +6,7 @@
 		<div class="card-grid">
 			<router-link to="/themes/theme-settings" class="home-card">
 				<div class="card-icon">🎨</div>
-				<div class="card-label">Theme Settings</div>
+				<div class="card-label">Theme Editor</div>
 				<div class="card-desc">Configure site-wide colours, typography, and layout variables.</div>
 			</router-link>
 
