@@ -1,20 +1,24 @@
 import frappe
 
 
+def _delete_all_rows(doctype: str) -> bool:
+    """Delete every row for a DocType without loading its Document controller."""
+    if not frappe.db.table_exists(doctype):
+        return False
+    frappe.db.delete(doctype)
+    return True
+
+
 def execute():
     """Remove deprecated Theme Version and Theme Settings DocTypes from the database."""
     removed = False
 
-    if frappe.db.exists("DocType", "Theme Version"):
-        for name in frappe.get_all("Theme Version", pluck="name"):
-            frappe.delete_doc("Theme Version", name, force=1, ignore_permissions=True)
+    if _delete_all_rows("Theme Version"):
         removed = True
 
     if frappe.db.exists("DocType", "Theme Settings"):
-        if frappe.db.exists("Theme Settings", "Theme Settings"):
-            frappe.delete_doc(
-                "Theme Settings", "Theme Settings", force=1, ignore_permissions=True
-            )
+        frappe.db.delete("Singles", {"doctype": "Theme Settings"})
+        _delete_all_rows("Theme Settings")
         removed = True
 
     for doctype in ("Theme Version", "Theme Settings"):
