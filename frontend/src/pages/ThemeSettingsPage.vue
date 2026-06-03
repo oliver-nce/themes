@@ -644,6 +644,9 @@ const editorMeta = reactive({
 
 function applyPayloadToForm(payload: Record<string, any>) {
 	for (const key of ALL_FIELDS) {
+		form[key] = DEFAULTS[key]
+	}
+	for (const key of ALL_FIELDS) {
 		if (key === "theme_name") continue
 		const val = payload[key]
 		if (key === "dark_mode") {
@@ -705,18 +708,17 @@ const switchThemeResource = createResource({
 	},
 })
 
-function onThemeChange() {
+async function onThemeChange() {
 	if (!selectedTheme.value || selectedTheme.value === editorMeta.theme) return
 	switchingTheme.value = true
 	switchError.value = ""
-	switchThemeResource.submit(
-		{ theme: selectedTheme.value },
-		{
-			onFinish() {
-				switchingTheme.value = false
-			},
-		},
-	)
+	try {
+		await switchThemeResource.submit({ theme: selectedTheme.value })
+	} catch {
+		// onError handler restores selection and sets switchError
+	} finally {
+		switchingTheme.value = false
+	}
 }
 
 async function handleSave() {
