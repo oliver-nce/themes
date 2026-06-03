@@ -122,14 +122,3 @@ def publish_theme(theme_name: str) -> dict:
     frappe.db.set_single_value("Site Theme Config", "css_hash", css_hash)
     frappe.clear_cache()
     return {"status": "ok", "theme": theme_name, "css_hash": css_hash, "bytes": len(css)}
-
-
-def publish_version(version_name: str) -> dict:
-    """Legacy shim: copy Theme Version JSON onto NCE Theme, then publish."""
-    parent = frappe.db.get_value("Theme Version", version_name, "parent_theme")
-    theme_json = frappe.db.get_value("Theme Version", version_name, "theme_json")
-    if parent and theme_json and not frappe.db.get_value("NCE Theme", parent, "theme_json"):
-        frappe.db.set_value("NCE Theme", parent, "theme_json", theme_json)
-    if not parent:
-        frappe.throw(f"Theme Version {version_name} not found")
-    return publish_theme(parent)

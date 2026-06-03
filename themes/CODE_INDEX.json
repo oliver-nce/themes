@@ -7,19 +7,19 @@
             "entry_points": {
                 "hooks.py": "Frappe app metadata, CSS loading, SPA routing, Apps screen entry, after_install",
                 "api.py": "Whitelisted API: get_active_theme_editor(), save_active_theme(), set_active_theme(), regenerate_theme_css(), list_themes()",
-                "install.py": "after_install hook: creates empty Site Theme Config on fresh install",
-                "init_theme.py": "One-time theme initialisation script: creates Theme Settings with defaults and regenerates CSS. Run via bench execute.",
-                "patches/v1_0/migrate_theme_settings_to_nce_theme.py": "Post-migrate patch: Theme Settings → NCE Theme Default",
-                "patches/v1_0/collapse_theme_versions_to_nce_theme.py": "Copy legacy Theme Version JSON onto NCE Theme.theme_json"
+                "install.py": "after_install hook: Site Theme Config + NCE Theme Default on fresh install",
+                "init_theme.py": "One-time init script: ensure NCE Theme Default exists and publish CSS. Run via bench execute.",
+                "patches/v1_0/migrate_theme_settings_to_nce_theme.py": "Post-migrate patch: legacy Theme Settings → NCE Theme Default",
+                "patches/v1_0/collapse_theme_versions_to_nce_theme.py": "Copy legacy Theme Version JSON onto NCE Theme.theme_json",
+                "patches/v1_0/remove_legacy_theme_doctypes.py": "Drop Theme Version and Theme Settings from database"
             },
             "utils": {
                 "utils/theme_color_utils.py": "Color math helpers: OKLCH shade generation, shadow building, token maps (BORDER_RADIUS_MAP, etc.)",
-                "utils/css_writer.py": "CSS generation and publish: generate_css(), publish_theme(), TOKEN_FIELDS"
+                "utils/css_writer.py": "CSS generation and publish: generate_css(), publish_theme(), TOKEN_FIELDS",
+                "utils/default_theme.py": "Default token payload for new NCE Theme installs"
             },
             "doctypes": {
-                "themes/doctype/theme_settings/": "Legacy Single doctype (deprecated).",
                 "themes/doctype/nce_theme/": "Theme registry + definition: theme_name, slug, is_default, status, theme_json.",
-                "themes/doctype/theme_version/": "Deprecated — use NCE Theme.theme_json instead.",
                 "themes/doctype/site_theme_config/": "Single: active_theme, css_hash; on_update publishes CSS."
             },
             "static_files": {
@@ -45,7 +45,7 @@
                 "src/pages/HomePage.vue": "Landing page with links to settings and preview"
             },
             "composables": {
-                "src/composables/useTheme.ts": "Loads Theme Settings via frappe-ui createResource and applies CSS vars to document root",
+                "src/composables/useTheme.ts": "Loads active theme via get_active_theme_editor API and applies CSS vars",
                 "src/composables/useThemeDefaults.ts": "Default theme color/typography values"
             },
             "components": {

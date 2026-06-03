@@ -21,11 +21,11 @@ bench --site themes-fresh-test.local migrate
 |-------|----------|
 | `install-app themes` | Completes with no traceback |
 | `after_install` | Empty **Site Theme Config** row exists |
-| Migration patch | Creates **NCE Theme** `Default` (from empty legacy Theme Settings) |
+| Migration patch | Creates **NCE Theme** `Default` via `after_install` (legacy Theme Settings removed) |
 | `active_theme` | Set to `Default` |
 | `nce_theme.css` | File exists under `apps/themes/themes/public/css/` |
 
-Phase 4 note: **Theme Version is not required.** Do not create Theme Version records.
+Phase 5 note: **Theme Version** and **Theme Settings** DocTypes are removed.
 
 ## 3. Automated checks
 

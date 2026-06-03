@@ -33,7 +33,14 @@ Frappe v15 app (`themes`) for site-wide CSS theming via `--nce-*` tokens in `nce
 - New themes auto-copy Default's `theme_json` on insert
 - Theme Versions removed from workspace UI (DocType still exists, deprecated)
 
-### Bug fixes
+### Phase 5 — Legacy cleanup
+
+- **Theme Version** and **Theme Settings** DocTypes removed from app + DB patch
+- `active_version` field removed from Site Theme Config
+- `publish_version()` shim removed; `init_theme.py` and `after_install` use NCE Theme Default
+- Default token payload in `utils/default_theme.py`
+
+### Bug fixes (earlier)
 
 - Workspace crash: Single DocType shortcut → Desk **Pages** (`theme-editor`, `site-theme-switch`)
 - Theme dropdown freeze: `switchingTheme` stuck true (fixed with `async/finally`)
@@ -57,7 +64,7 @@ Vue Theme Editor (/themes/theme-settings)
 2. **Theme Editor** → dropdown to switch → edit → **Save Changes**
 3. Optional: **Switch Theme** desk page → Site Theme Config form
 
-**Do not use Theme Version** for normal work.
+**Do not use Theme Version or Theme Settings** — removed in Phase 5.
 
 ---
 
@@ -91,12 +98,8 @@ Hard-refresh browser after deploy.
 
 | Item | Notes |
 |------|--------|
-| **Theme Version DocType** | Still in DB; deprecated, not in workspace. Could remove in future cleanup. |
-| **Legacy Theme Settings** | Still exists; editor no longer uses it. |
 | **Workspace fixture sync** | If shortcuts stale, edit Workspace "Themes" or re-import fixture after migrate. |
 | **URL shortcuts in Desk** | Require full `https://…` URL; use **Page** shortcuts instead. |
-| **Default version name bug** | Old migrations may show `TV-Default-{version_no:04d}` — cosmetic only. |
-| **`docs/themes-app-restructure-coding-plan.md`** | Committed; Phase 2 task list |
 | **Fresh install test (Task 13 step 6)** | Pending on staging bench — see `docs/fresh-install-verification.md` |
 | **Per-page theming** | Postponed by design. |
 | **`dark_mode`** | Stored in `theme_json`, not emitted to CSS (by choice). |

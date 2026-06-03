@@ -34,7 +34,7 @@ def execute():
             frappe.db.set_value("NCE Theme", theme_name, "theme_json", theme_json)
 
     cfg = frappe.get_single("Site Theme Config")
-    if cfg.active_version:
+    if frappe.db.has_column("Site Theme Config", "active_version") and cfg.active_version:
         frappe.db.set_single_value("Site Theme Config", "active_version", None)
 
     if cfg.active_theme:

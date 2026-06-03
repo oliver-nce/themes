@@ -2,7 +2,7 @@
 	<div class="preview-page" :style="pageStyle">
 		<!-- Floating banner -->
 		<div class="sticky top-0 z-50 bg-gray-900 text-white text-center text-xs py-1.5 tracking-wide">
-			LIVE THEME PREVIEW — changes from Theme Settings appear here instantly
+			LIVE THEME PREVIEW — changes from Theme Editor appear here instantly
 		</div>
 
 		<div class="max-w-5xl mx-auto px-8 py-10 space-y-12">

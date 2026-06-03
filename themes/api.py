@@ -46,7 +46,7 @@ def save_active_theme(payload):
 
 
 @frappe.whitelist()
-def set_active_theme(theme: str, version: str | None = None):
+def set_active_theme(theme: str):
     """Switch the site to a different theme and regenerate nce_theme.css."""
     frappe.only_for("System Manager")
     if not frappe.db.exists("NCE Theme", theme):
