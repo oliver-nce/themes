@@ -44,7 +44,13 @@ MIGRATED_FIELDS = list(COLOR_FIELDS.keys()) + [
 ]
 
 # SPA editor payload keys (MIGRATED_FIELDS + stored-but-not-CSS fields)
-TOKEN_FIELDS = MIGRATED_FIELDS + ["dark_mode"]
+TOKEN_FIELDS = MIGRATED_FIELDS + [
+    "dark_mode",
+    "primary_color_gamma",
+    "primary_color_saturation",
+    "secondary_color_gamma",
+    "secondary_color_saturation",
+]
 
 
 def generate_css(payload: dict) -> str:
@@ -60,7 +66,11 @@ def generate_css(payload: dict) -> str:
         v = g(f)
         if not v:
             continue
-        for shade_num, shade_hex in _generate_shades(v):
+        gamma = g(f"{f}_gamma") or 0
+        saturation = g(f"{f}_saturation")
+        if saturation is None:
+            saturation = 100
+        for shade_num, shade_hex in _generate_shades(v, gamma=gamma, saturation=saturation):
             lines.append(f"\t--nce-{var}-{shade_num}: {shade_hex};")
     ff = g("font_family")
     lines.append(

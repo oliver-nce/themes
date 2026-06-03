@@ -175,29 +175,52 @@ _SHADE_TARGETS = [
 ]
 
 
-def _generate_shades(base_hex):
-	"""Generate 11-stop shade scale (50–950) from a base hex colour.
+_OKLCH_L_600 = 0.48
 
-	Uses OKLCH for perceptually uniform lightness steps.
-	Keeps the base colour's hue constant, uses its chroma as the
-	maximum, and gently desaturates at the light/dark extremes
-	where sRGB gamut narrows and full chroma looks artificial.
-	"""
+
+def _base_chroma_at_600(hue):
+	return _max_chroma_in_gamut(_OKLCH_L_600, hue, 0.37)
+
+
+def _lightness_with_gamma(shade, base_l, gamma):
+	if not gamma or shade <= 100 or shade >= 950:
+		return base_l
+	peak = 600
+	span = 950 - 100
+	dist = abs(shade - peak) / span
+	bell = max(0.0, 1.0 - (dist / 0.42) ** 1.4)
+	shift = (gamma / 100.0) * 0.14 * bell
+	return max(0.06, min(0.985, base_l + shift))
+
+
+def _extreme_chroma_scale(target_l, use_c):
+	if target_l >= 0.90:
+		t = (target_l - 0.90) / 0.07
+		return use_c * max(0.15, 1.0 - t * 0.85)
+	if target_l <= 0.25:
+		t = (0.25 - target_l) / 0.09
+		return use_c * max(0.5, 1.0 - t * 0.5)
+	return use_c
+
+
+def _generate_shades(base_hex, gamma=0, saturation=100):
+	"""Generate 11-stop shade scale (50–950) from a base hex colour."""
 	if not base_hex or len(base_hex) < 7:
 		return []
+
 	_L, base_C, h = _hex_to_oklch(base_hex)
+	gamma = float(gamma or 0)
+	saturation = float(saturation if saturation is not None else 100)
+
+	if gamma != 0 or saturation != 100:
+		base_C = _base_chroma_at_600(h) * (saturation / 100.0)
+
 	result = []
 	for shade, target_l in _SHADE_TARGETS:
-		# Cap to sRGB gamut at this lightness
+		target_l = _lightness_with_gamma(shade, target_l, gamma)
 		max_c = _max_chroma_in_gamut(target_l, h, base_C * 1.5)
 		use_c = min(base_C, max_c)
-		# Desaturate at extremes for subtle tints / deep shades
-		if target_l >= 0.90:
-			t = (target_l - 0.90) / 0.07  # 0→1 from L=0.90 to L=0.97
-			use_c *= max(0.15, 1.0 - t * 0.85)
-		elif target_l <= 0.25:
-			t = (0.25 - target_l) / 0.09  # 0→1 from L=0.25 to L=0.16
-			use_c *= max(0.5, 1.0 - t * 0.5)
+		use_c = _extreme_chroma_scale(target_l, use_c)
 		use_c = min(use_c, max_c)
 		result.append((shade, _oklch_to_hex(target_l, use_c, h)))
 	return result

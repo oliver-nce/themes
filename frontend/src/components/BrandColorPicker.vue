@@ -2,7 +2,6 @@
 	<div class="relative" ref="wrapper">
 		<label class="block text-sm font-medium text-gray-700 mb-1">{{ label }}</label>
 
-		<!-- Compact trigger -->
 		<button
 			type="button"
 			class="flex items-center gap-2 px-2 py-1.5 rounded-md border border-gray-200 hover:border-gray-300 bg-white transition-colors w-full"
@@ -10,16 +9,15 @@
 		>
 			<span
 				class="w-6 h-6 rounded shrink-0 border border-gray-100"
-				:style="{ backgroundColor: modelValue || '#3B82F6' }"
+				:style="{ backgroundColor: displayHex }"
 			/>
-			<span class="text-xs font-mono text-gray-600 truncate">{{ modelValue || '#3B82F6' }}</span>
+			<span class="text-xs font-mono text-gray-600 truncate">{{ displayHex }}</span>
 			<span class="ml-auto text-gray-400 text-[10px]">&#9660;</span>
 		</button>
 
-		<!-- Shade strip below trigger -->
-		<div v-if="showShades && shades.length" class="flex gap-px mt-1.5 rounded overflow-hidden">
+		<div v-if="showShades && displayShades.length" class="flex gap-px mt-1.5 rounded overflow-hidden">
 			<div
-				v-for="s in shades"
+				v-for="s in displayShades"
 				:key="s.shade"
 				class="flex-1 group relative"
 			>
@@ -29,61 +27,50 @@
 			</div>
 		</div>
 
-		<!-- Backdrop + Picker panel (centered in viewport) -->
 		<Teleport to="body">
 			<div v-if="open" class="fixed inset-0 z-40" @click="open = false" />
 			<div v-if="open" class="picker-panel">
 				<div class="picker-layout">
-					<!-- Left: Grid + Hex row -->
 					<div class="picker-left">
-						<!-- Color grid -->
 						<div class="color-grid">
-							<!-- Top row: anchor colors -->
 							<div
 								v-for="(hex, i) in topRow"
 								:key="'t-' + i"
 								class="grid-cell"
-								:class="{ selected: selectedHex === hex }"
+								:class="{ selected: isNearHue(hex) }"
 								:style="{ backgroundColor: hex }"
-								@click="selectFromGrid(hex)"
+								@click="selectHueFromHex(hex)"
 							/>
-							<!-- Spacer -->
 							<div v-for="i in 12" :key="'sp-' + i" class="grid-spacer" />
-							<!-- Gray row -->
 							<template v-for="(hex, i) in grayRow" :key="'g-' + i">
-								<div
-									v-if="hex === null"
-									class="grid-cell no-fill"
-								/>
+								<div v-if="hex === null" class="grid-cell no-fill" />
 								<div
 									v-else
 									class="grid-cell"
-									:class="{ selected: selectedHex === hex }"
+									:class="{ selected: isNearHue(hex) }"
 									:style="{ backgroundColor: hex }"
-									@click="selectFromGrid(hex)"
+									@click="selectHueFromHex(hex)"
 								/>
 							</template>
-							<!-- Color rows -->
 							<template v-for="(row, ri) in gridRows" :key="'r-' + ri">
 								<div
 									v-for="(hex, ci) in row"
 									:key="'c-' + ri + '-' + ci"
 									class="grid-cell"
-									:class="{ selected: selectedHex === hex }"
+									:class="{ selected: isNearHue(hex) }"
 									:style="{ backgroundColor: hex }"
-									@click="selectFromGrid(hex)"
+									@click="selectHueFromHex(hex)"
 								/>
 							</template>
 						</div>
 
-						<!-- Hex row -->
 						<div class="hex-row">
 							<input
 								type="text"
-								:value="currentHex"
+								:value="displayHex"
 								maxlength="7"
 								class="hex-input"
-								@input="onHexInput($event)"
+								readonly
 							/>
 							<button class="hex-btn" title="Copy hex" @click="copyHex">
 								<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
@@ -100,64 +87,67 @@
 						</div>
 					</div>
 
-					<!-- Right: Swatch + Sliders + Apply -->
 					<div class="picker-right">
 						<div class="picker-top-row">
-							<div class="swatch-large" :style="{ backgroundColor: currentHex }" />
+							<div class="swatch-large" :style="{ backgroundColor: displayHex }" />
 						</div>
 
-						<!-- HSV Sliders -->
-						<div class="hsv-sliders">
-							<div class="hsv-row">
-								<label>H</label>
-								<input
-									type="range"
-									class="hue-slider"
-									min="0" max="360"
-									:value="hsv.h"
-									@input="hsv.h = +($event.target as HTMLInputElement).value; selectedHex = ''"
-								/>
-								<input
-									type="number"
-									min="0" max="360"
-									:value="hsv.h"
-									@input="hsv.h = clamp(+($event.target as HTMLInputElement).value, 0, 360); selectedHex = ''"
-								/>
+						<div class="hue-only">
+							<label>Hue</label>
+							<input
+								type="range"
+								class="hue-slider"
+								min="0"
+								max="360"
+								:value="Math.round(params.hue)"
+								@input="onHueInput($event)"
+							/>
+						</div>
+
+						<div v-if="liveShades.length" class="shade-strip">
+							<div
+								v-for="s in liveShades"
+								:key="s.shade"
+								class="shade-cell group"
+								:title="`${s.shade}: ${s.hex}`"
+							>
+								<div class="shade-swatch" :style="{ backgroundColor: s.hex }" />
+								<span class="shade-label">{{ s.shade }}</span>
 							</div>
-							<div class="hsv-row">
-								<label>S</label>
+						</div>
+
+						<div class="adjust-sliders">
+							<div class="adjust-row">
+								<label>Gamma</label>
 								<input
 									type="range"
-									class="sat-slider"
-									min="0" max="100"
-									:value="hsv.s"
+									min="-100"
+									max="100"
+									:value="params.gamma"
+									@input="params.gamma = +($event.target as HTMLInputElement).value"
+								/>
+								<span class="adjust-value">{{ params.gamma }}</span>
+							</div>
+							<div class="adjust-row">
+								<label>Saturation</label>
+								<input
+									type="range"
+									min="0"
+									max="200"
+									:value="params.saturation"
 									:style="{ background: satGradient }"
-									@input="hsv.s = +($event.target as HTMLInputElement).value; selectedHex = ''"
+									@input="params.saturation = +($event.target as HTMLInputElement).value"
 								/>
-								<input
-									type="number"
-									min="0" max="100"
-									:value="hsv.s"
-									@input="hsv.s = clamp(+($event.target as HTMLInputElement).value, 0, 100); selectedHex = ''"
-								/>
+								<span class="adjust-value">{{ params.saturation }}%</span>
 							</div>
-							<div class="hsv-row">
-								<label>V</label>
-								<input
-									type="range"
-									class="val-slider"
-									min="0" max="100"
-									:value="hsv.v"
-									:style="{ background: valGradient }"
-									@input="hsv.v = +($event.target as HTMLInputElement).value; selectedHex = ''"
-								/>
-								<input
-									type="number"
-									min="0" max="100"
-									:value="hsv.v"
-									@input="hsv.v = clamp(+($event.target as HTMLInputElement).value, 0, 100); selectedHex = ''"
-								/>
-							</div>
+							<button
+								type="button"
+								class="reset-btn"
+								:disabled="!canReset"
+								@click="resetAdjustments"
+							>
+								Reset to base scale
+							</button>
 						</div>
 
 						<button class="apply-btn" @click="apply">Apply</button>
@@ -170,93 +160,126 @@
 
 <script setup lang="ts">
 import { ref, reactive, computed, watch } from "vue"
-import { generateShades } from "@/utils/color-shades"
+import {
+	color600FromParams,
+	generateShadesFromParams,
+	hexToOklch,
+	paramsFromHex,
+	type OklchColorParams,
+} from "@/utils/color-shades"
 
 const props = withDefaults(defineProps<{
 	label: string
 	modelValue: string
+	gamma?: number
+	saturation?: number
 	showShades?: boolean
 }>(), {
+	gamma: 0,
+	saturation: 100,
 	showShades: false,
 })
 
 const emit = defineEmits<{
 	"update:modelValue": [value: string]
+	"update:gamma": [value: number]
+	"update:saturation": [value: number]
 }>()
 
 const open = ref(false)
 const showCopied = ref(false)
-const selectedHex = ref("")
 const hasEyeDropper = typeof window !== "undefined" && "EyeDropper" in window
+const params = reactive<OklchColorParams>({ hue: 250, gamma: 0, saturation: 100 })
+let skipHueReset = false
 
-const hsv = reactive({ h: 210, s: 85, v: 94 })
+function loadParamsFromProps() {
+	skipHueReset = true
+	const loaded = paramsFromHex(
+		props.modelValue || "#3B82F6",
+		props.gamma ?? 0,
+		props.saturation ?? 100,
+	)
+	params.hue = loaded.hue
+	params.gamma = props.gamma ?? 0
+	params.saturation = props.saturation ?? 100
+	requestAnimationFrame(() => { skipHueReset = false })
+}
 
-// Sync HSV from modelValue on open
 watch(open, (val) => {
-	if (val && props.modelValue) {
-		const parsed = hexToHSV(props.modelValue)
-		hsv.h = parsed.h
-		hsv.s = parsed.s
-		hsv.v = parsed.v
-		selectedHex.value = ""
-	}
+	if (val) loadParamsFromProps()
 })
 
-const shades = computed(() =>
-	props.showShades ? generateShades(props.modelValue) : [],
+watch(
+	() => params.hue,
+	(_newHue, oldHue) => {
+		if (skipHueReset || oldHue === undefined || !open.value) return
+		params.gamma = 0
+		params.saturation = 100
+	},
 )
 
-// ─── HSV ↔ Hex ─────────────────────────────────────
+const liveShades = computed(() => generateShadesFromParams(params))
 
-function hsvToHex(h: number, s: number, v: number): string {
-	s /= 100; v /= 100
-	const c = v * s
-	const x = c * (1 - Math.abs((h / 60) % 2 - 1))
-	const m = v - c
-	let r: number, g: number, b: number
-	if (h < 60) { r = c; g = x; b = 0 }
-	else if (h < 120) { r = x; g = c; b = 0 }
-	else if (h < 180) { r = 0; g = c; b = x }
-	else if (h < 240) { r = 0; g = x; b = c }
-	else if (h < 300) { r = x; g = 0; b = c }
-	else { r = c; g = 0; b = x }
-	const toH = (n: number) => Math.round((n + m) * 255).toString(16).padStart(2, "0")
-	return `#${toH(r)}${toH(g)}${toH(b)}`.toUpperCase()
+const displayHex = computed(() => color600FromParams(params))
+
+const displayShades = computed(() => {
+	if (!props.showShades) return []
+	const p = paramsFromHex(
+		props.modelValue || "#3B82F6",
+		props.gamma ?? 0,
+		props.saturation ?? 100,
+	)
+	return generateShadesFromParams(p)
+})
+
+const canReset = computed(
+	() => params.gamma !== 0 || params.saturation !== 100,
+)
+
+const satGradient = computed(() => {
+	const mid = color600FromParams({ ...params, saturation: 100 })
+	const low = color600FromParams({ ...params, saturation: 0 })
+	return `linear-gradient(to right, ${low}, ${mid})`
+})
+
+function onHueInput(e: Event) {
+	params.hue = +((e.target as HTMLInputElement).value)
 }
 
-function hexToHSV(hex: string) {
-	hex = hex.replace("#", "")
-	const r = parseInt(hex.substr(0, 2), 16) / 255
-	const g = parseInt(hex.substr(2, 2), 16) / 255
-	const b = parseInt(hex.substr(4, 2), 16) / 255
-	const max = Math.max(r, g, b), min = Math.min(r, g, b)
-	const d = max - min
-	let h = 0
-	const s = max === 0 ? 0 : d / max
-	const v = max
-	if (d !== 0) {
-		if (max === r) h = 60 * ((g - b) / d + (g < b ? 6 : 0))
-		else if (max === g) h = 60 * ((b - r) / d + 2)
-		else h = 60 * ((r - g) / d + 4)
-	}
-	if (h < 0) h += 360
-	return { h: Math.round(h), s: Math.round(s * 100), v: Math.round(v * 100) }
+function selectHueFromHex(hex: string) {
+	params.hue = hexToOklch(hex).h
 }
 
-function clamp(v: number, lo: number, hi: number) { return Math.max(lo, Math.min(hi, v)) }
+function isNearHue(hex: string) {
+	const diff = Math.abs(hexToOklch(hex).h - params.hue)
+	return Math.min(diff, 360 - diff) < 8
+}
 
-// ─── Computed ───────────────────────────────────────
+function resetAdjustments() {
+	params.gamma = 0
+	params.saturation = 100
+}
 
-const currentHex = computed(() => hsvToHex(hsv.h, hsv.s, hsv.v))
+function copyHex() {
+	navigator.clipboard.writeText(displayHex.value)
+	showCopied.value = true
+	setTimeout(() => { showCopied.value = false }, 2000)
+}
 
-const satGradient = computed(
-	() => `linear-gradient(to right, #888, hsl(${hsv.h},100%,50%))`,
-)
-const valGradient = computed(
-	() => `linear-gradient(to right, #000, hsl(${hsv.h},100%,50%))`,
-)
+async function useEyeDropper() {
+	try {
+		const dropper = new (window as any).EyeDropper()
+		const result = await dropper.open()
+		params.hue = hexToOklch(result.sRGBHex.toUpperCase()).h
+	} catch { /* cancelled */ }
+}
 
-// ─── Grid data (Apple NSColorPanel) ─────────────────
+function apply() {
+	emit("update:modelValue", displayHex.value)
+	emit("update:gamma", params.gamma)
+	emit("update:saturation", params.saturation)
+	open.value = false
+}
 
 const topRow = [
 	"#FF2600", "#FF9300", "#FFFB00", "#00F900", "#00FDFF", "#0433FF",
@@ -279,50 +302,6 @@ const gridRows = [
 	["#93D9F7","#A4C7FF","#B18CFF","#DF90FC","#F4A4C1","#FFB5AE","#FFC4AA","#FED9A8","#FFE4A9","#FEFBB8","#F2F8B8","#CBE8B5"],
 	["#D1E6F1","#D4E4FE","#D7CEFD","#F0CAFD","#F9D2E2","#FFDBD9","#FEE2D5","#FFEDD6","#FFF2D4","#FEFCDD","#F7FADB","#E0EDD4"],
 ]
-
-// ─── Actions ────────────────────────────────────────
-
-function selectFromGrid(hex: string) {
-	const parsed = hexToHSV(hex)
-	hsv.h = parsed.h
-	hsv.s = parsed.s
-	hsv.v = parsed.v
-	selectedHex.value = hex
-}
-
-function onHexInput(e: Event) {
-	const val = (e.target as HTMLInputElement).value
-	if (/^#[0-9A-Fa-f]{6}$/.test(val)) {
-		const parsed = hexToHSV(val)
-		hsv.h = parsed.h
-		hsv.s = parsed.s
-		hsv.v = parsed.v
-	}
-}
-
-function copyHex() {
-	navigator.clipboard.writeText(currentHex.value)
-	showCopied.value = true
-	setTimeout(() => { showCopied.value = false }, 2000)
-}
-
-async function useEyeDropper() {
-	try {
-		const dropper = new (window as any).EyeDropper()
-		const result = await dropper.open()
-		const hex = result.sRGBHex.toUpperCase()
-		const parsed = hexToHSV(hex)
-		hsv.h = parsed.h
-		hsv.s = parsed.s
-		hsv.v = parsed.v
-		selectedHex.value = ""
-	} catch { /* user cancelled */ }
-}
-
-function apply() {
-	emit("update:modelValue", currentHex.value)
-	open.value = false
-}
 </script>
 
 <style scoped>
@@ -353,17 +332,15 @@ function apply() {
 .picker-right {
 	display: flex;
 	flex-direction: column;
-	justify-content: space-between;
-	min-width: 200px;
+	min-width: 240px;
+	gap: 10px;
 }
 
 .picker-top-row {
 	display: flex;
 	gap: 12px;
-	margin-bottom: 12px;
 }
 
-/* Grid */
 .color-grid {
 	display: grid;
 	grid-template-columns: repeat(12, 20px);
@@ -378,7 +355,6 @@ function apply() {
 	cursor: pointer;
 	border: 1px solid rgba(0,0,0,0.1);
 	transition: transform 0.1s, box-shadow 0.1s;
-	padding: 0;
 }
 .grid-cell:hover {
 	transform: scale(1.15);
@@ -403,7 +379,6 @@ function apply() {
 	cursor: default;
 }
 
-/* Swatch */
 .swatch-large {
 	width: 60px;
 	height: 60px;
@@ -412,48 +387,32 @@ function apply() {
 	box-shadow: 0 2px 8px rgba(0,0,0,0.1);
 }
 
-/* HSV Sliders */
-.hsv-sliders {
-	display: flex;
-	flex-direction: column;
-	gap: 6px;
-	margin-bottom: 12px;
-}
-.hsv-row {
+.hue-only {
 	display: flex;
 	align-items: center;
 	gap: 8px;
 }
-.hsv-row label {
-	width: 14px;
+.hue-only label {
 	font-size: 11px;
 	font-weight: 600;
 	color: #666;
+	width: 28px;
 }
-.hsv-row input[type="range"] {
+.hue-only input[type="range"] {
 	flex: 1;
-	height: 10px;
-	border-radius: 5px;
+	height: 12px;
+	border-radius: 6px;
 	-webkit-appearance: none;
 	cursor: pointer;
 }
-.hsv-row input[type="range"]::-webkit-slider-thumb {
+.hue-only input[type="range"]::-webkit-slider-thumb {
 	-webkit-appearance: none;
 	width: 16px;
 	height: 16px;
 	border-radius: 50%;
 	background: white;
 	border: 2px solid #666;
-	cursor: pointer;
 	box-shadow: 0 1px 3px rgba(0,0,0,0.3);
-}
-.hsv-row input[type="number"] {
-	width: 48px;
-	padding: 3px 4px;
-	border: 1px solid #ccc;
-	border-radius: 4px;
-	font-size: 11px;
-	text-align: center;
 }
 .hue-slider {
 	background: linear-gradient(to right,
@@ -461,7 +420,86 @@ function apply() {
 		hsl(180,100%,50%), hsl(240,100%,50%), hsl(300,100%,50%), hsl(360,100%,50%));
 }
 
-/* Hex row */
+.shade-strip {
+	display: flex;
+	gap: 1px;
+	border-radius: 6px;
+	overflow: hidden;
+}
+.shade-cell {
+	flex: 1;
+	min-width: 0;
+}
+.shade-swatch {
+	height: 22px;
+}
+.shade-label {
+	display: block;
+	text-align: center;
+	font-size: 7px;
+	color: #888;
+	margin-top: 2px;
+}
+
+.adjust-sliders {
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+}
+.adjust-row {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+}
+.adjust-row label {
+	width: 64px;
+	font-size: 11px;
+	font-weight: 600;
+	color: #666;
+}
+.adjust-row input[type="range"] {
+	flex: 1;
+	height: 10px;
+	border-radius: 5px;
+	-webkit-appearance: none;
+	cursor: pointer;
+}
+.adjust-row input[type="range"]::-webkit-slider-thumb {
+	-webkit-appearance: none;
+	width: 14px;
+	height: 14px;
+	border-radius: 50%;
+	background: white;
+	border: 2px solid #666;
+	box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+}
+.adjust-value {
+	width: 40px;
+	font-size: 10px;
+	color: #666;
+	text-align: right;
+	font-variant-numeric: tabular-nums;
+}
+
+.reset-btn {
+	align-self: flex-start;
+	padding: 4px 10px;
+	font-size: 11px;
+	border: 1px solid #ddd;
+	border-radius: 5px;
+	background: #fafafa;
+	color: #444;
+	cursor: pointer;
+}
+.reset-btn:hover:not(:disabled) {
+	background: #f0f0f0;
+	border-color: #ccc;
+}
+.reset-btn:disabled {
+	opacity: 0.45;
+	cursor: default;
+}
+
 .hex-row {
 	display: flex;
 	align-items: center;
@@ -475,6 +513,7 @@ function apply() {
 	border-radius: 4px;
 	font-family: monospace;
 	font-size: 12px;
+	background: #fafafa;
 }
 .hex-btn {
 	width: 28px;
@@ -499,7 +538,6 @@ function apply() {
 	white-space: nowrap;
 }
 
-/* Apply */
 .apply-btn {
 	width: 100%;
 	padding: 7px 0;
@@ -511,6 +549,7 @@ function apply() {
 	font-weight: 600;
 	cursor: pointer;
 	transition: background 0.15s;
+	margin-top: 4px;
 }
 .apply-btn:hover {
 	background: #333;

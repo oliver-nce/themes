@@ -89,7 +89,11 @@
 							:key="c.key"
 							:label="c.label"
 							:model-value="form[c.key]"
+							:gamma="form[c.gammaKey]"
+							:saturation="form[c.satKey]"
 							@update:model-value="form[c.key] = $event"
+							@update:gamma="form[c.gammaKey] = $event"
+							@update:saturation="form[c.satKey] = $event"
 							show-shades
 						/>
 					</div>
@@ -107,6 +111,10 @@
 							@update:model-value="form[c.key] = $event"
 							:primary-color="form.primary_color"
 							:secondary-color="form.secondary_color"
+							:primary-gamma="form.primary_color_gamma"
+							:primary-saturation="form.primary_color_saturation"
+							:secondary-gamma="form.secondary_color_gamma"
+							:secondary-saturation="form.secondary_color_saturation"
 						/>
 					</div>
 				</section>
@@ -123,6 +131,10 @@
 							@update:model-value="form[c.key] = $event"
 							:primary-color="form.primary_color"
 							:secondary-color="form.secondary_color"
+							:primary-gamma="form.primary_color_gamma"
+							:primary-saturation="form.primary_color_saturation"
+							:secondary-gamma="form.secondary_color_gamma"
+							:secondary-saturation="form.secondary_color_saturation"
 						/>
 					</div>
 				</section>
@@ -139,6 +151,10 @@
 							@update:model-value="form[c.key] = $event"
 							:primary-color="form.primary_color"
 							:secondary-color="form.secondary_color"
+							:primary-gamma="form.primary_color_gamma"
+							:primary-saturation="form.primary_color_saturation"
+							:secondary-gamma="form.secondary_color_gamma"
+							:secondary-saturation="form.secondary_color_saturation"
 						/>
 					</div>
 				</section>
@@ -241,6 +257,10 @@
 							@update:model-value="form.shadow_color = $event"
 							:primary-color="form.primary_color"
 							:secondary-color="form.secondary_color"
+							:primary-gamma="form.primary_color_gamma"
+							:primary-saturation="form.primary_color_saturation"
+							:secondary-gamma="form.secondary_color_gamma"
+							:secondary-saturation="form.secondary_color_saturation"
 						/>
 					</div>
 				</section>
@@ -441,7 +461,13 @@ function computeCSSVariables(): Record<string, string> {
 	for (const [field, varPrefix] of SHADE_FIELDS) {
 		const hex = form[field as FormKey]
 		if (!hex) continue
-		const shades = generateShades(hex)
+		const gammaKey = `${field}_gamma` as FormKey
+		const satKey = `${field}_saturation` as FormKey
+		const hasAdjust = field === "primary_color" || field === "secondary_color"
+		const shades = generateShades(hex, hasAdjust ? {
+			gamma: form[gammaKey] ?? 0,
+			saturation: form[satKey] ?? 100,
+		} : undefined)
 		for (const s of shades) {
 			vars[`--nce-${varPrefix}-${s.shade}`] = s.hex
 			vars[`--${varPrefix}-${s.shade}`] = s.hex
@@ -473,7 +499,11 @@ const tabs = [
 const ALL_FIELDS = [
 	"theme_name",
 	"primary_color",
+	"primary_color_gamma",
+	"primary_color_saturation",
 	"secondary_color",
+	"secondary_color_gamma",
+	"secondary_color_saturation",
 	"accent_color",
 	"success_color",
 	"info_color",
@@ -512,7 +542,11 @@ type FormKey = (typeof ALL_FIELDS)[number]
 const DEFAULTS: Record<FormKey, any> = {
 	theme_name: "Default",
 	primary_color: "#3B82F6",
+	primary_color_gamma: 0,
+	primary_color_saturation: 100,
 	secondary_color: "#10B981",
+	secondary_color_gamma: 0,
+	secondary_color_saturation: 100,
 	accent_color: "#8B5CF6",
 	success_color: "#10B981",
 	info_color: "#3B82F6",
@@ -549,8 +583,18 @@ const form = reactive<Record<FormKey, any>>({ ...DEFAULTS })
 // ─── Colour group definitions ─────────────────────────────────────
 
 const brandColors = [
-	{ key: "primary_color", label: "Primary" },
-	{ key: "secondary_color", label: "Secondary" },
+	{
+		key: "primary_color",
+		gammaKey: "primary_color_gamma",
+		satKey: "primary_color_saturation",
+		label: "Primary",
+	},
+	{
+		key: "secondary_color",
+		gammaKey: "secondary_color_gamma",
+		satKey: "secondary_color_saturation",
+		label: "Secondary",
+	},
 ]
 
 const statusColors = [

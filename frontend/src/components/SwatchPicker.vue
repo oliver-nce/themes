@@ -84,6 +84,10 @@ const props = defineProps<{
 	modelValue: string
 	primaryColor: string
 	secondaryColor: string
+	primaryGamma?: number
+	primarySaturation?: number
+	secondaryGamma?: number
+	secondarySaturation?: number
 }>()
 
 const emit = defineEmits<{
@@ -97,8 +101,18 @@ function pick(hex: string) {
 	open.value = false
 }
 
-const primaryShades = computed(() => generateShades(props.primaryColor))
-const secondaryShades = computed(() => generateShades(props.secondaryColor))
+const primaryShades = computed(() =>
+	generateShades(props.primaryColor, {
+		gamma: props.primaryGamma ?? 0,
+		saturation: props.primarySaturation ?? 100,
+	}),
+)
+const secondaryShades = computed(() =>
+	generateShades(props.secondaryColor, {
+		gamma: props.secondaryGamma ?? 0,
+		saturation: props.secondarySaturation ?? 100,
+	}),
+)
 
 const grayShades = [
 	{ shade: 50, hex: "#F9FAFB" },
