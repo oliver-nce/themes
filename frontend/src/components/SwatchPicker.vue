@@ -2,74 +2,116 @@
 	<div class="relative" ref="wrapper">
 		<label class="block text-sm font-medium text-gray-700 mb-1">{{ label }}</label>
 
-		<!-- Compact trigger -->
 		<button
 			type="button"
 			class="flex items-center gap-2 px-2 py-1.5 rounded-md border border-gray-200 hover:border-gray-300 bg-white transition-colors w-full"
-			@click="open = !open"
+			@click="openPicker"
 		>
 			<span
 				class="w-6 h-6 rounded shrink-0 border border-gray-100"
 				:style="{ backgroundColor: modelValue || '#ffffff' }"
 			/>
-			<span class="text-xs font-mono text-gray-600 truncate">{{ modelValue || '—' }}</span>
+			<span class="text-xs font-mono text-gray-600 truncate">{{ modelValue || "—" }}</span>
 			<span class="ml-auto text-gray-400 text-[10px]">&#9660;</span>
 		</button>
 
-		<!-- Popover (centered in viewport) -->
 		<Teleport to="body">
-			<div v-if="open" class="fixed inset-0 z-40" @click="open = false" />
+			<div v-if="open" class="fixed inset-0 z-40" @click="closePicker" />
 			<div
 				v-if="open"
-				class="fixed z-50 top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white border border-gray-200 rounded-lg shadow-xl p-3 w-72"
+				class="swatch-popover fixed z-50 top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2"
 			>
-				<!-- Primary row -->
-				<div class="mb-2">
-					<div class="text-[10px] font-medium text-gray-400 uppercase tracking-wide mb-1">Primary</div>
-					<div class="grid grid-cols-11 gap-[5px]">
-						<button
-							v-for="s in primaryShades"
-							:key="'p-' + s.shade"
-							class="swatch"
-							:class="{ 'swatch-active': modelValue === s.hex }"
-							:style="{ backgroundColor: s.hex }"
-							:title="s.shade + ' — ' + s.hex"
-							@click="pick(s.hex)"
-						/>
+				<template v-if="view === 'grid'">
+					<div class="mb-2">
+						<div class="row-label">Primary</div>
+						<div class="swatch-grid">
+							<button
+								v-for="s in primaryShades"
+								:key="'p-' + s.shade"
+								type="button"
+								class="swatch"
+								:class="{ 'swatch-active': isActive(s.hex) }"
+								:style="{ backgroundColor: s.hex }"
+								:title="s.shade + ' — ' + s.hex"
+								@click="pick(s.hex)"
+							/>
+						</div>
 					</div>
-				</div>
 
-				<!-- Secondary row -->
-				<div class="mb-2">
-					<div class="text-[10px] font-medium text-gray-400 uppercase tracking-wide mb-1">Secondary</div>
-					<div class="grid grid-cols-11 gap-[5px]">
-						<button
-							v-for="s in secondaryShades"
-							:key="'s-' + s.shade"
-							class="swatch"
-							:class="{ 'swatch-active': modelValue === s.hex }"
-							:style="{ backgroundColor: s.hex }"
-							:title="s.shade + ' — ' + s.hex"
-							@click="pick(s.hex)"
-						/>
+					<div class="mb-2">
+						<div class="row-label">Secondary</div>
+						<div class="swatch-grid">
+							<button
+								v-for="s in secondaryShades"
+								:key="'s-' + s.shade"
+								type="button"
+								class="swatch"
+								:class="{ 'swatch-active': isActive(s.hex) }"
+								:style="{ backgroundColor: s.hex }"
+								:title="s.shade + ' — ' + s.hex"
+								@click="pick(s.hex)"
+							/>
+						</div>
 					</div>
-				</div>
 
-				<!-- Gray row -->
-				<div>
-					<div class="text-[10px] font-medium text-gray-400 uppercase tracking-wide mb-1">Gray</div>
-					<div class="grid grid-cols-11 gap-[5px]">
-						<button
-							v-for="s in grayShades"
-							:key="'g-' + s.shade"
-							class="swatch"
-							:class="{ 'swatch-active': modelValue === s.hex }"
-							:style="{ backgroundColor: s.hex }"
-							:title="s.shade + ' — ' + s.hex"
-							@click="pick(s.hex)"
-						/>
+					<div class="mb-3">
+						<div class="row-label">Gray</div>
+						<div class="swatch-grid">
+							<button
+								v-for="s in grayShades"
+								:key="'g-' + s.shade"
+								type="button"
+								class="swatch"
+								:class="{ 'swatch-active': isActive(s.hex) }"
+								:style="{ backgroundColor: s.hex }"
+								:title="s.shade + ' — ' + s.hex"
+								@click="pick(s.hex)"
+							/>
+						</div>
 					</div>
-				</div>
+
+					<div class="popover-footer">
+						<button type="button" class="footer-btn" @click="useDefault">
+							Use Default
+						</button>
+						<button type="button" class="footer-btn" @click="openCustom">
+							Other..
+						</button>
+					</div>
+				</template>
+
+				<template v-else>
+					<div class="custom-title">Custom colour</div>
+					<div class="custom-preview" :style="{ backgroundColor: customHex }" />
+					<label class="custom-field-label">
+						<span>Pick</span>
+						<input
+							type="color"
+							class="custom-native"
+							:value="customHex"
+							@input="onNativeInput"
+						/>
+					</label>
+					<label class="custom-field-label">
+						<span>Hex</span>
+						<input
+							type="text"
+							class="custom-hex"
+							v-model="customHex"
+							maxlength="7"
+							placeholder="#000000"
+							@change="normalizeCustomHex"
+						/>
+					</label>
+					<div class="popover-footer">
+						<button type="button" class="footer-btn" @click="view = 'grid'">
+							Back
+						</button>
+						<button type="button" class="footer-btn" @click="applyCustom">
+							Apply
+						</button>
+					</div>
+				</template>
 			</div>
 		</Teleport>
 	</div>
@@ -82,6 +124,7 @@ import { generateShades } from "@/utils/color-shades"
 const props = defineProps<{
 	label: string
 	modelValue: string
+	defaultValue: string
 	primaryColor: string
 	secondaryColor: string
 	primaryGamma?: number
@@ -95,10 +138,61 @@ const emit = defineEmits<{
 }>()
 
 const open = ref(false)
+const view = ref<"grid" | "custom">("grid")
+const customHex = ref("#000000")
+
+function norm(hex: string) {
+	return (hex || "").toUpperCase()
+}
+
+function isActive(hex: string) {
+	return norm(props.modelValue) === norm(hex)
+}
+
+function openPicker() {
+	customHex.value = norm(props.modelValue || props.defaultValue || "#000000")
+	view.value = "grid"
+	open.value = true
+}
+
+function closePicker() {
+	open.value = false
+	view.value = "grid"
+}
 
 function pick(hex: string) {
 	emit("update:modelValue", hex)
-	open.value = false
+	closePicker()
+}
+
+function useDefault() {
+	emit("update:modelValue", props.defaultValue)
+	closePicker()
+}
+
+function openCustom() {
+	customHex.value = norm(props.modelValue || props.defaultValue || "#000000")
+	view.value = "custom"
+}
+
+function onNativeInput(e: Event) {
+	customHex.value = norm((e.target as HTMLInputElement).value)
+}
+
+function normalizeCustomHex() {
+	const raw = customHex.value.trim()
+	if (/^#[0-9A-Fa-f]{6}$/.test(raw)) {
+		customHex.value = norm(raw)
+		return
+	}
+	customHex.value = norm(props.modelValue || props.defaultValue || "#000000")
+}
+
+function applyCustom() {
+	normalizeCustomHex()
+	if (!/^#[0-9A-F]{6}$/.test(customHex.value)) return
+	emit("update:modelValue", customHex.value)
+	closePicker()
 }
 
 const primaryShades = computed(() =>
@@ -130,6 +224,31 @@ const grayShades = [
 </script>
 
 <style scoped>
+.swatch-popover {
+	background: white;
+	border: 1px solid #e5e7eb;
+	border-radius: 0.5rem;
+	box-shadow: 0 4px 24px rgba(0, 0, 0, 0.12);
+	padding: 0.75rem;
+	width: 18rem;
+	max-width: calc(100vw - 2rem);
+}
+
+.row-label {
+	font-size: 0.625rem;
+	font-weight: 600;
+	text-transform: uppercase;
+	letter-spacing: 0.04em;
+	color: #9ca3af;
+	margin-bottom: 0.25rem;
+}
+
+.swatch-grid {
+	display: grid;
+	grid-template-columns: repeat(11, minmax(0, 1fr));
+	gap: 5px;
+}
+
 .swatch {
 	aspect-ratio: 1;
 	width: 100%;
@@ -139,16 +258,85 @@ const grayShades = [
 	padding: 0;
 	transition: transform 80ms ease, border-color 80ms ease;
 }
+
 .swatch:hover {
 	transform: scale(1.25);
 	z-index: 1;
 	border-color: rgba(255, 255, 255, 0.7);
 	box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.15);
 }
+
 .swatch-active {
 	border-color: white;
 	box-shadow: 0 0 0 2px #111;
 	transform: scale(1.2);
 	z-index: 2;
+}
+
+.popover-footer {
+	display: flex;
+	justify-content: flex-end;
+	align-items: center;
+	gap: 1rem;
+	padding-top: 0.625rem;
+	border-top: 1px solid #f3f4f6;
+}
+
+.footer-btn {
+	border: none;
+	background: transparent;
+	padding: 0;
+	font-size: 0.8125rem;
+	font-weight: 700;
+	color: #111827;
+	cursor: pointer;
+}
+
+.footer-btn:hover {
+	color: #3b82f6;
+}
+
+.custom-title {
+	font-size: 0.8125rem;
+	font-weight: 600;
+	color: #111827;
+	margin-bottom: 0.625rem;
+}
+
+.custom-preview {
+	height: 3rem;
+	border-radius: 0.375rem;
+	border: 1px solid #e5e7eb;
+	margin-bottom: 0.75rem;
+}
+
+.custom-field-label {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 0.5rem;
+	margin-bottom: 0.625rem;
+	font-size: 0.75rem;
+	font-weight: 500;
+	color: #374151;
+}
+
+.custom-native {
+	width: 3rem;
+	height: 2rem;
+	padding: 0;
+	border: 1px solid #e5e7eb;
+	border-radius: 0.25rem;
+	cursor: pointer;
+	background: transparent;
+}
+
+.custom-hex {
+	flex: 1;
+	font-family: ui-monospace, monospace;
+	font-size: 0.8125rem;
+	border: 1px solid #e5e7eb;
+	border-radius: 0.25rem;
+	padding: 0.375rem 0.5rem;
 }
 </style>
