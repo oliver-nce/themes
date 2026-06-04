@@ -1,0 +1,52 @@
+# 04 — Shade Scale
+
+Every brand/state role generates an 11-stop OKLCH shade scale, matching the Tailwind convention.
+
+## The 11 stops
+
+| Stop | OKLCH L target | Typical use |
+|---|---|---|
+| 50 | 0.97 | Subtlest tint — page-section backgrounds |
+| 100 | 0.93 | Soft tint — badges, hover surfaces |
+| 200 | 0.87 | Light tint — alerts, light banners |
+| 300 | 0.78 | Pastel — secondary buttons, disabled states |
+| 400 | 0.68 | Mid-light — borders on dark surfaces |
+| 500 | 0.57 | Mid — used for inverted/dark mode primaries |
+| **600** | **0.48** | **Base — the user's chosen color is pinned here** |
+| 700 | 0.39 | Slightly darker — hover/active states |
+| 800 | 0.31 | Dark — strong emphasis text |
+| 900 | 0.23 | Very dark — headings on tinted backgrounds |
+| 950 | 0.16 | Darkest — body text on tinted backgrounds |
+
+The user's picked color always lands at **stop 600**. All other stops are computed from it in OKLCH space, then mapped back to sRGB with gamut clipping.
+
+## Curated classes
+
+Only **7 stops** are exposed as classes to keep the class list manageable:
+
+- **100, 200, 300, 500, 600, 700, 900**
+
+These have classes like `theme-bg-primary-300`, `theme-text-primary-700`, plus matching fg variants.
+
+## Var-only stops
+
+**50, 400, 800, 950** are emitted as CSS variables but have NO class. Use inline style with `var()`:
+
+```html
+<div :style="{ background: 'var(--nce-color-primary-50)' }">Subtle tint</div>
+```
+
+## Why this scale?
+
+- **OKLCH lightness** is perceptually uniform — stop 300 looks half as light as stop 700 to the eye, unlike HSL.
+- **Pinned 600** means the user's picked color shows up exactly — no automatic shifting.
+- **Curated subset** keeps the class bundle small (~150 classes vs ~300+).
+
+## Gamma and saturation tuning
+
+Each role accepts optional `gamma` and `saturation` params (stored on NCE Theme as `{role}_color_gamma`, `{role}_color_saturation`):
+
+- `gamma` (-100 → +100): lightens mids (positive) or darkens mids (negative). 0 = baseline.
+- `saturation` (0 → 200): scales chroma. 100 = max in-gamut at stop 600.
+
+These let designers tune the family without changing the base hex.

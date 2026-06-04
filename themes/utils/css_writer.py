@@ -139,7 +139,7 @@ def _emit_role_bg_classes(g, lines):
             continue
         role = var.replace("color-", "")
         lines.append(
-            f".bg-{role} {{ background-color: var(--nce-{var}); color: var(--nce-{var}-fg); }}"
+            f".theme-bg-{role} {{ background-color: var(--nce-{var}); color: var(--nce-{var}-fg); }}"
         )
     lines.append("")
 
@@ -151,10 +151,10 @@ def _emit_role_text_border_classes(g, lines):
         if field not in FG_ROLES or not g(field):
             continue
         role = var.replace("color-", "")
-        lines.append(f".text-{role} {{ color: var(--nce-{var}); }}")
-        lines.append(f".border-{role} {{ border-color: var(--nce-{var}); }}")
-        lines.append(f".text-{role}-fg {{ color: var(--nce-{var}-fg); }}")
-        lines.append(f".text-{role}-fg-tonal {{ color: var(--nce-{var}-fg-tonal); }}")
+        lines.append(f".theme-text-{role} {{ color: var(--nce-{var}); }}")
+        lines.append(f".theme-border-{role} {{ border-color: var(--nce-{var}); }}")
+        lines.append(f".theme-text-{role}-fg {{ color: var(--nce-{var}-fg); }}")
+        lines.append(f".theme-text-{role}-fg-tonal {{ color: var(--nce-{var}-fg-tonal); }}")
     lines.append("")
 
 
@@ -167,14 +167,14 @@ def _emit_role_shade_classes(g, lines):
         role = var.replace("color-", "")
         for shade in CURATED_SHADES:
             lines.append(
-                f".bg-{role}-{shade} {{ "
+                f".theme-bg-{role}-{shade} {{ "
                 f"background-color: var(--nce-{var}-{shade}); "
                 f"color: var(--nce-{var}-{shade}-fg); }}"
             )
-            lines.append(f".text-{role}-{shade} {{ color: var(--nce-{var}-{shade}); }}")
-            lines.append(f".text-{role}-{shade}-fg {{ color: var(--nce-{var}-{shade}-fg); }}")
-            lines.append(f".text-{role}-{shade}-fg-tonal {{ color: var(--nce-{var}-{shade}-fg-tonal); }}")
-            lines.append(f".border-{role}-{shade} {{ border-color: var(--nce-{var}-{shade}); }}")
+            lines.append(f".theme-text-{role}-{shade} {{ color: var(--nce-{var}-{shade}); }}")
+            lines.append(f".theme-text-{role}-{shade}-fg {{ color: var(--nce-{var}-{shade}-fg); }}")
+            lines.append(f".theme-text-{role}-{shade}-fg-tonal {{ color: var(--nce-{var}-{shade}-fg-tonal); }}")
+            lines.append(f".theme-border-{role}-{shade} {{ border-color: var(--nce-{var}-{shade}); }}")
     lines.append("")
 
 
@@ -182,46 +182,46 @@ def _emit_neutral_classes(g, lines):
     """Neutral surfaces, semantic chrome aliases, text/border roles."""
     lines.append("/* ── Neutral surfaces, semantic chrome aliases, text/border roles ── */")
     if g("background_color"):
-        lines.append(".bg-bg-page { background-color: var(--nce-color-bg); }")
+        lines.append(".theme-bg-bg-page { background-color: var(--nce-color-bg); }")
     if g("surface_color"):
-        lines.append(".bg-surface { background-color: var(--nce-color-surface); }")
-        lines.append(".bg-card { background-color: var(--nce-color-surface); }")
+        lines.append(".theme-bg-surface { background-color: var(--nce-color-surface); }")
+        lines.append(".theme-bg-card { background-color: var(--nce-color-surface); }")
     if g("row_alt_color"):
-        lines.append(".bg-row-alt { background-color: var(--nce-color-row-alt); }")
+        lines.append(".theme-bg-row-alt { background-color: var(--nce-color-row-alt); }")
     if g("primary_color"):
         lines.append(
-            ".bg-header { background-color: var(--nce-color-primary); "
+            ".theme-bg-header { background-color: var(--nce-color-primary); "
             "color: var(--nce-color-primary-fg); }"
         )
-        lines.append(".text-text-header { color: var(--nce-color-primary-fg); }")
+        lines.append(".theme-text-text-header { color: var(--nce-color-primary-fg); }")
     if g("heading_color"):
-        lines.append(".text-heading { color: var(--nce-color-heading); }")
+        lines.append(".theme-text-heading { color: var(--nce-color-heading); }")
     if g("muted_color"):
-        lines.append(".text-muted { color: var(--nce-color-muted); }")
+        lines.append(".theme-text-muted { color: var(--nce-color-muted); }")
     if g("link_color"):
-        lines.append(".text-link { color: var(--nce-color-link); }")
+        lines.append(".theme-text-link { color: var(--nce-color-link); }")
     if g("border_color"):
         lines.append(
-            ".border { border-width: 1px; border-style: solid; "
+            ".theme-border { border-width: 1px; border-style: solid; "
             "border-color: var(--nce-color-border); }"
         )
-        lines.append(".border-input-border { border-color: var(--nce-color-border); }")
+        lines.append(".theme-border-input-border { border-color: var(--nce-color-border); }")
     if g("focus_color"):
-        lines.append(".border-input-focus { border-color: var(--nce-color-focus); }")
+        lines.append(".theme-border-input-focus { border-color: var(--nce-color-focus); }")
     lines.append("")
 
 
 def _emit_shape_classes(lines):
     """Border-radius, box-shadow, and transition-duration classes."""
     lines.append("/* ── Shape + motion classes ── */")
-    lines.append(".rounded { border-radius: var(--nce-border-radius); }")
-    lines.append(".rounded-sm { border-radius: calc(var(--nce-border-radius) * 0.5); }")
-    lines.append(".rounded-md { border-radius: var(--nce-border-radius); }")
-    lines.append(".rounded-lg { border-radius: calc(var(--nce-border-radius) * 1.5); }")
-    lines.append(".rounded-xl { border-radius: calc(var(--nce-border-radius) * 2); }")
-    lines.append(".shadow { box-shadow: var(--nce-shadow); }")
-    lines.append(".shadow-theme { box-shadow: var(--nce-shadow); }")
-    lines.append(".duration-theme { transition-duration: var(--nce-transition-speed); }")
+    lines.append(".theme-rounded { border-radius: var(--nce-border-radius); }")
+    lines.append(".theme-rounded-sm { border-radius: calc(var(--nce-border-radius) * 0.5); }")
+    lines.append(".theme-rounded-md { border-radius: var(--nce-border-radius); }")
+    lines.append(".theme-rounded-lg { border-radius: calc(var(--nce-border-radius) * 1.5); }")
+    lines.append(".theme-rounded-xl { border-radius: calc(var(--nce-border-radius) * 2); }")
+    lines.append(".theme-shadow { box-shadow: var(--nce-shadow); }")
+    lines.append(".theme-shadow-theme { box-shadow: var(--nce-shadow); }")
+    lines.append(".theme-duration-theme { transition-duration: var(--nce-transition-speed); }")
     lines.append("")
 
 
@@ -229,9 +229,9 @@ def _emit_typography_classes(g, lines):
     """Font family + font size classes."""
     lines.append("/* ── Typography classes (font family + sizes) ── */")
     if g("font_family"):
-        lines.append(".font-sans { font-family: var(--nce-font-family); }")
+        lines.append(".theme-font-sans { font-family: var(--nce-font-family); }")
     if g("heading_font_family"):
-        lines.append(".font-heading { font-family: var(--nce-font-heading); }")
+        lines.append(".theme-font-heading { font-family: var(--nce-font-heading); }")
     size_multipliers = [
         ("xs", "0.75"), ("sm", "0.875"),
         ("base", None),
@@ -240,10 +240,10 @@ def _emit_typography_classes(g, lines):
     ]
     for name, mul in size_multipliers:
         if mul is None:
-            lines.append(f".text-{name} {{ font-size: var(--nce-font-size); }}")
+            lines.append(f".theme-text-{name} {{ font-size: var(--nce-font-size); }}")
         else:
             lines.append(
-                f".text-{name} {{ font-size: calc(var(--nce-font-size) * {mul}); }}"
+                f".theme-text-{name} {{ font-size: calc(var(--nce-font-size) * {mul}); }}"
             )
     lines.append("")
 
@@ -261,16 +261,16 @@ def _emit_spacing_classes(lines):
             v = "var(--nce-spacing-base)"
         else:
             v = f"calc(var(--nce-spacing-base) * {mul})"
-        lines.append(f".p-{name} {{ padding: {v}; }}")
-        lines.append(f".m-{name} {{ margin: {v}; }}")
-        lines.append(f".gap-{name} {{ gap: {v}; }}")
+        lines.append(f".theme-p-{name} {{ padding: {v}; }}")
+        lines.append(f".theme-m-{name} {{ margin: {v}; }}")
+        lines.append(f".theme-gap-{name} {{ gap: {v}; }}")
     lines.append("")
 
 
 def _emit_bg_themed(lines):
     """Dynamic-shade escape hatch."""
     lines.append("/* ── Dynamic-shade escape hatch ── */")
-    lines.append(".bg-themed { background-color: var(--bg, var(--nce-color-primary));")
+    lines.append(".theme-bg-themed { background-color: var(--bg, var(--nce-color-primary));")
     lines.append(
         "  color: oklch(from var(--bg, var(--nce-color-primary)) calc((l - 0.62) * -infinity) 0 0); }"
     )

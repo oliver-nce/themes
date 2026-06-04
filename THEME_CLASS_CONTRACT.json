@@ -1,159 +1,162 @@
 {
   "$schema_purpose": "Public contract of theme-aware classes and CSS variables this app ships. Names are stable; values change when the user re-themes. Use this file when authoring Vue components in this repo or any downstream Frappe app.",
+  "$naming_convention": "All site-wide emitted classes are namespaced with a 'theme-' prefix (e.g. theme-bg-primary, theme-text-muted, theme-rounded). The prefix prevents collisions with Frappe Desk / Bootstrap / vanilla Tailwind utility names (bg-primary, text-muted, border, …) whose cascade would otherwise override the theme on Desk pages. CSS variables are unchanged (--nce-color-*). The prefix applies to the emitted nce_theme.css consumed by downstream Frappe apps on Desk; the editor SPA's own internal Tailwind build is separate.",
   "source_of_truth": {
-    "tailwind_config": "frontend/tailwind.config.js",
     "css_emitter": "themes/utils/css_writer.py",
+    "tailwind_config": "frontend/tailwind.config.js (editor SPA internal build only — not the downstream/Desk class names)",
     "shade_generator": "frontend/src/utils/color-shades.ts"
   },
   "status_legend": {
-    "shipping": "Class exists in tailwind.config.js today — safe to use immediately.",
-    "var-only": "CSS variable is emitted but no Tailwind class maps to it. Use :style=\"{ ... }\" with var() until a class is added.",
+    "shipping": "Class is emitted by css_writer.py into nce_theme.css today — safe to use immediately on Desk after republish.",
+    "var-only": "CSS variable is emitted but no class maps to it. Use :style=\"{ ... }\" with var() until a class is added.",
     "proposed": "Not implemented yet. Do not use in production components — included so authors know the planned API."
   },
   "usage_rules": [
-    "Prefer Tailwind class names over raw CSS var() — class names are the public API.",
+    "Prefer the theme-prefixed class names over raw CSS var() — class names are the public API.",
     "Use var() inline only when the token name is dynamic (e.g. looping over palette roles).",
     "Never hardcode hex literals in components. The editor → publish → var() → class chain is broken the moment you do.",
-    "For foreground/background pairing, prefer the paired class form (e.g. bg-secondary text-secondary-fg) over hand-picking text-white/text-black."
+    "For foreground/background pairing, prefer the paired class form (e.g. theme-bg-secondary theme-text-secondary-fg) over hand-picking text-white/text-black.",
+    "Do not add the theme- prefix to vanilla layout utilities (flex, items-center, border-b, font-bold) — those are not emitted by this theme and keep their normal names."
   ],
   "color_roles": {
     "primary": {
       "purpose": "Main brand color. Default action buttons, primary links, key UI accents.",
-      "background_class": { "name": "bg-primary", "var": "--nce-color-primary", "status": "shipping" },
-      "text_class":       { "name": "text-primary", "var": "--nce-color-primary", "status": "shipping" },
-      "border_class":     { "name": "border-primary", "var": "--nce-color-primary", "status": "shipping" },
-      "foreground_mono":  { "name": "text-primary-fg", "var": "--nce-color-primary-fg", "status": "shipping", "description": "Black or white, whichever has best contrast against bg-primary." },
-      "foreground_tonal": { "name": "text-primary-fg-tonal", "var": "--nce-color-primary-fg-tonal", "status": "shipping", "description": "Same hue as primary, lightness flipped, chroma reduced." },
-      "shade_scale": { "vars": "--nce-color-primary-{50,100,200,300,400,500,600,700,800,900,950}", "status": "shipping (curated: 100, 200, 300, 500, 600, 700, 900)", "note": "Other stops remain var-only — use :style with var() if needed." }
+      "background_class": { "name": "theme-bg-primary", "var": "--nce-color-primary", "status": "shipping" },
+      "text_class":       { "name": "theme-text-primary", "var": "--nce-color-primary", "status": "shipping" },
+      "border_class":     { "name": "theme-border-primary", "var": "--nce-color-primary", "status": "shipping" },
+      "foreground_mono":  { "name": "theme-text-primary-fg", "var": "--nce-color-primary-fg", "status": "shipping", "description": "Black or white, whichever has best contrast against theme-bg-primary." },
+      "foreground_tonal": { "name": "theme-text-primary-fg-tonal", "var": "--nce-color-primary-fg-tonal", "status": "shipping", "description": "Same hue as primary, lightness flipped, chroma reduced." },
+      "shade_scale": { "classes": "theme-bg-primary-{shade}, theme-text-primary-{shade}, theme-text-primary-{shade}-fg, theme-text-primary-{shade}-fg-tonal, theme-border-primary-{shade}", "vars": "--nce-color-primary-{50,100,200,300,400,500,600,700,800,900,950}", "status": "shipping (curated shade classes: 100, 200, 300, 500, 600, 700, 900)", "note": "Non-curated stops remain var-only — use :style with var() if needed." }
     },
     "secondary": {
       "purpose": "Supporting brand color. Secondary buttons, headers, alternate emphasis.",
-      "background_class": { "name": "bg-secondary", "var": "--nce-color-secondary", "status": "shipping" },
-      "text_class":       { "name": "text-secondary", "var": "--nce-color-secondary", "status": "shipping" },
-      "border_class":     { "name": "border-secondary", "var": "--nce-color-secondary", "status": "shipping" },
-      "foreground_mono":  { "name": "text-secondary-fg", "var": "--nce-color-secondary-fg", "status": "shipping" },
-      "foreground_tonal": { "name": "text-secondary-fg-tonal", "var": "--nce-color-secondary-fg-tonal", "status": "shipping" },
-      "shade_scale": { "vars": "--nce-color-secondary-{50…950}", "status": "shipping (curated: 100, 200, 300, 500, 600, 700, 900)", "note": "Other stops remain var-only — use :style with var() if needed." }
+      "background_class": { "name": "theme-bg-secondary", "var": "--nce-color-secondary", "status": "shipping" },
+      "text_class":       { "name": "theme-text-secondary", "var": "--nce-color-secondary", "status": "shipping" },
+      "border_class":     { "name": "theme-border-secondary", "var": "--nce-color-secondary", "status": "shipping" },
+      "foreground_mono":  { "name": "theme-text-secondary-fg", "var": "--nce-color-secondary-fg", "status": "shipping" },
+      "foreground_tonal": { "name": "theme-text-secondary-fg-tonal", "var": "--nce-color-secondary-fg-tonal", "status": "shipping" },
+      "shade_scale": { "classes": "theme-bg-secondary-{shade}, theme-text-secondary-{shade}, …, theme-border-secondary-{shade}", "vars": "--nce-color-secondary-{50…950}", "status": "shipping (curated: 100, 200, 300, 500, 600, 700, 900)", "note": "Non-curated stops remain var-only — use :style with var() if needed." }
     },
     "accent": {
       "purpose": "Highlight color for emphasis, callouts, decorative accents.",
-      "background_class": { "name": "bg-accent", "var": "--nce-color-accent", "status": "shipping" },
-      "text_class":       { "name": "text-accent", "var": "--nce-color-accent", "status": "shipping" },
-      "border_class":     { "name": "border-accent", "var": "--nce-color-accent", "status": "shipping" },
-      "foreground_mono":  { "name": "text-accent-fg", "var": "--nce-color-accent-fg", "status": "shipping" },
-      "foreground_tonal": { "name": "text-accent-fg-tonal", "var": "--nce-color-accent-fg-tonal", "status": "shipping" },
-      "shade_scale": { "vars": "--nce-color-accent-{50…950}", "status": "shipping (curated: 100, 200, 300, 500, 600, 700, 900)", "note": "Other stops remain var-only — use :style with var() if needed." }
+      "background_class": { "name": "theme-bg-accent", "var": "--nce-color-accent", "status": "shipping" },
+      "text_class":       { "name": "theme-text-accent", "var": "--nce-color-accent", "status": "shipping" },
+      "border_class":     { "name": "theme-border-accent", "var": "--nce-color-accent", "status": "shipping" },
+      "foreground_mono":  { "name": "theme-text-accent-fg", "var": "--nce-color-accent-fg", "status": "shipping" },
+      "foreground_tonal": { "name": "theme-text-accent-fg-tonal", "var": "--nce-color-accent-fg-tonal", "status": "shipping" },
+      "shade_scale": { "classes": "theme-bg-accent-{shade}, theme-text-accent-{shade}, …, theme-border-accent-{shade}", "vars": "--nce-color-accent-{50…950}", "status": "shipping (curated: 100, 200, 300, 500, 600, 700, 900)", "note": "Non-curated stops remain var-only — use :style with var() if needed." }
     },
     "success": {
       "purpose": "Positive state — confirmations, healthy metrics, success badges.",
-      "background_class": { "name": "bg-success", "var": "--nce-color-success", "status": "shipping" },
-      "text_class":       { "name": "text-success", "var": "--nce-color-success", "status": "shipping" },
-      "foreground_mono":  { "name": "text-success-fg", "var": "--nce-color-success-fg", "status": "shipping" },
-      "foreground_tonal": { "name": "text-success-fg-tonal", "var": "--nce-color-success-fg-tonal", "status": "shipping" },
-      "shade_scale": { "vars": "--nce-color-success-{50…950}", "status": "shipping (curated: 100, 200, 300, 500, 600, 700, 900)", "note": "Other stops remain var-only — use :style with var() if needed." }
+      "background_class": { "name": "theme-bg-success", "var": "--nce-color-success", "status": "shipping" },
+      "text_class":       { "name": "theme-text-success", "var": "--nce-color-success", "status": "shipping" },
+      "foreground_mono":  { "name": "theme-text-success-fg", "var": "--nce-color-success-fg", "status": "shipping" },
+      "foreground_tonal": { "name": "theme-text-success-fg-tonal", "var": "--nce-color-success-fg-tonal", "status": "shipping" },
+      "shade_scale": { "classes": "theme-bg-success-{shade}, …, theme-border-success-{shade}", "vars": "--nce-color-success-{50…950}", "status": "shipping (curated: 100, 200, 300, 500, 600, 700, 900)", "note": "Non-curated stops remain var-only — use :style with var() if needed." }
     },
     "info": {
       "purpose": "Informational state — neutral notifications, help, tips.",
-      "background_class": { "name": "bg-info", "var": "--nce-color-info", "status": "shipping" },
-      "text_class":       { "name": "text-info", "var": "--nce-color-info", "status": "shipping" },
-      "foreground_mono":  { "name": "text-info-fg", "var": "--nce-color-info-fg", "status": "shipping" },
-      "foreground_tonal": { "name": "text-info-fg-tonal", "var": "--nce-color-info-fg-tonal", "status": "shipping" },
-      "shade_scale": { "vars": "--nce-color-info-{50…950}", "status": "shipping (curated: 100, 200, 300, 500, 600, 700, 900)", "note": "Other stops remain var-only — use :style with var() if needed." }
+      "background_class": { "name": "theme-bg-info", "var": "--nce-color-info", "status": "shipping" },
+      "text_class":       { "name": "theme-text-info", "var": "--nce-color-info", "status": "shipping" },
+      "foreground_mono":  { "name": "theme-text-info-fg", "var": "--nce-color-info-fg", "status": "shipping" },
+      "foreground_tonal": { "name": "theme-text-info-fg-tonal", "var": "--nce-color-info-fg-tonal", "status": "shipping" },
+      "shade_scale": { "classes": "theme-bg-info-{shade}, …, theme-border-info-{shade}", "vars": "--nce-color-info-{50…950}", "status": "shipping (curated: 100, 200, 300, 500, 600, 700, 900)", "note": "Non-curated stops remain var-only — use :style with var() if needed." }
     },
     "warning": {
       "purpose": "Caution state — warnings, pending items, attention needed.",
-      "background_class": { "name": "bg-warning", "var": "--nce-color-warning", "status": "shipping" },
-      "text_class":       { "name": "text-warning", "var": "--nce-color-warning", "status": "shipping" },
-      "foreground_mono":  { "name": "text-warning-fg", "var": "--nce-color-warning-fg", "status": "shipping" },
-      "foreground_tonal": { "name": "text-warning-fg-tonal", "var": "--nce-color-warning-fg-tonal", "status": "shipping" },
-      "shade_scale": { "vars": "--nce-color-warning-{50…950}", "status": "shipping (curated: 100, 200, 300, 500, 600, 700, 900)", "note": "Other stops remain var-only — use :style with var() if needed." }
+      "background_class": { "name": "theme-bg-warning", "var": "--nce-color-warning", "status": "shipping" },
+      "text_class":       { "name": "theme-text-warning", "var": "--nce-color-warning", "status": "shipping" },
+      "foreground_mono":  { "name": "theme-text-warning-fg", "var": "--nce-color-warning-fg", "status": "shipping" },
+      "foreground_tonal": { "name": "theme-text-warning-fg-tonal", "var": "--nce-color-warning-fg-tonal", "status": "shipping" },
+      "shade_scale": { "classes": "theme-bg-warning-{shade}, …, theme-border-warning-{shade}", "vars": "--nce-color-warning-{50…950}", "status": "shipping (curated: 100, 200, 300, 500, 600, 700, 900)", "note": "Non-curated stops remain var-only — use :style with var() if needed." }
     },
     "danger": {
       "purpose": "Error/destructive state — failures, delete buttons, critical alerts.",
-      "background_class": { "name": "bg-danger", "var": "--nce-color-danger", "status": "shipping" },
-      "text_class":       { "name": "text-danger", "var": "--nce-color-danger", "status": "shipping" },
-      "foreground_mono":  { "name": "text-danger-fg", "var": "--nce-color-danger-fg", "status": "shipping" },
-      "foreground_tonal": { "name": "text-danger-fg-tonal", "var": "--nce-color-danger-fg-tonal", "status": "shipping" },
-      "shade_scale": { "vars": "--nce-color-danger-{50…950}", "status": "shipping (curated: 100, 200, 300, 500, 600, 700, 900)", "note": "Other stops remain var-only — use :style with var() if needed." }
+      "background_class": { "name": "theme-bg-danger", "var": "--nce-color-danger", "status": "shipping" },
+      "text_class":       { "name": "theme-text-danger", "var": "--nce-color-danger", "status": "shipping" },
+      "foreground_mono":  { "name": "theme-text-danger-fg", "var": "--nce-color-danger-fg", "status": "shipping" },
+      "foreground_tonal": { "name": "theme-text-danger-fg-tonal", "var": "--nce-color-danger-fg-tonal", "status": "shipping" },
+      "shade_scale": { "classes": "theme-bg-danger-{shade}, …, theme-border-danger-{shade}", "vars": "--nce-color-danger-{50…950}", "status": "shipping (curated: 100, 200, 300, 500, 600, 700, 900)", "note": "Non-curated stops remain var-only — use :style with var() if needed." }
     }
   },
   "neutral_roles": {
-    "page_background": { "class": "bg-bg-page", "var": "--nce-color-bg", "purpose": "Page-level background. Default body color.", "status": "shipping" },
-    "surface":         { "class": "bg-surface", "var": "--nce-color-surface", "purpose": "Card/panel/modal background — one elevation above the page.", "status": "shipping" },
-    "card_alias":      { "class": "bg-card", "var": "--nce-color-surface", "purpose": "Alias of bg-surface for semantic clarity in card components.", "status": "shipping" },
-    "row_alt":         { "class": "bg-row-alt", "var": "--nce-color-row-alt", "purpose": "Alternating table row background (zebra striping).", "status": "shipping" },
-    "header_bg":       { "class": "bg-header", "var": "--bg-header", "purpose": "Top-bar/header strip background.", "status": "shipping" },
-    "header_text":     { "class": "text-text-header", "var": "--text-header", "purpose": "Foreground for header strip.", "status": "shipping" }
+    "page_background": { "class": "theme-bg-bg-page", "var": "--nce-color-bg", "purpose": "Page-level background. Default body color.", "status": "shipping" },
+    "surface":         { "class": "theme-bg-surface", "var": "--nce-color-surface", "purpose": "Card/panel/modal background — one elevation above the page.", "status": "shipping" },
+    "card_alias":      { "class": "theme-bg-card", "var": "--nce-color-surface", "purpose": "Alias of theme-bg-surface for semantic clarity in card components.", "status": "shipping" },
+    "row_alt":         { "class": "theme-bg-row-alt", "var": "--nce-color-row-alt", "purpose": "Alternating table row background (zebra striping).", "status": "shipping" },
+    "header_bg":       { "class": "theme-bg-header", "var": "--nce-color-primary", "purpose": "Top-bar/header strip background (paired with primary foreground).", "status": "shipping" },
+    "header_text":     { "class": "theme-text-text-header", "var": "--nce-color-primary-fg", "purpose": "Foreground for header strip.", "status": "shipping" }
   },
   "escape_hatch": {
     "themed_bg": {
-      "class": "bg-themed",
+      "class": "theme-bg-themed",
       "purpose": "Single class accepting a runtime --bg CSS variable. Foreground is computed live via OKLCH relative color and follows whatever --bg resolves to.",
-      "usage": "<button class=\"bg-themed\" :style=\"{ '--bg': 'var(--nce-color-primary-300)' }\">Dynamic</button>",
+      "usage": "<button class=\"theme-bg-themed\" :style=\"{ '--bg': 'var(--nce-color-primary-300)' }\">Dynamic</button>",
       "status": "shipping",
       "browser_support": "Chromium 119+, Safari 16.4+, Firefox 128+"
     }
   },
   "text_roles": {
-    "default_body":  { "class": "text-DEFAULT (auto via Tailwind)", "var": "--nce-color-text", "purpose": "Body copy. Applies automatically; rarely set explicitly.", "status": "shipping" },
-    "heading":       { "class": "text-heading", "var": "--nce-color-heading", "purpose": "H1–H6 and any prominent text.", "status": "shipping" },
-    "muted":         { "class": "text-muted", "var": "--nce-color-muted", "purpose": "Secondary copy — captions, helper text, timestamps.", "status": "shipping" },
-    "link":          { "class": "text-link", "var": "--nce-color-link", "purpose": "Hyperlinks.", "status": "shipping" }
+    "default_body":  { "class": "(body default — not an emitted class)", "var": "--nce-color-text", "purpose": "Body copy. Applies via the :root var; rarely set explicitly.", "status": "var-only" },
+    "heading":       { "class": "theme-text-heading", "var": "--nce-color-heading", "purpose": "H1–H6 and any prominent text.", "status": "shipping" },
+    "muted":         { "class": "theme-text-muted", "var": "--nce-color-muted", "purpose": "Secondary copy — captions, helper text, timestamps.", "status": "shipping" },
+    "link":          { "class": "theme-text-link", "var": "--nce-color-link", "purpose": "Hyperlinks.", "status": "shipping" }
   },
   "border_and_focus": {
-    "default_border": { "class": "border-DEFAULT (auto via Tailwind)", "var": "--nce-color-border", "purpose": "Card edges, dividers, input borders.", "status": "shipping" },
-    "input_border":   { "class": "border-input-border", "var": "--input-border", "purpose": "Form input idle border.", "status": "shipping" },
-    "input_focus":    { "class": "border-input-focus", "var": "--input-focus-border", "purpose": "Form input focused border.", "status": "shipping" },
-    "focus_ring":     { "class": "ring-focus (manual)", "var": "--nce-color-focus", "purpose": "Keyboard focus ring color.", "status": "shipping" }
+    "default_border": { "class": "theme-border", "var": "--nce-color-border", "purpose": "Card edges, dividers, input borders (1px solid).", "status": "shipping" },
+    "input_border":   { "class": "theme-border-input-border", "var": "--nce-color-border", "purpose": "Form input idle border.", "status": "shipping" },
+    "input_focus":    { "class": "theme-border-input-focus", "var": "--nce-color-focus", "purpose": "Form input focused border.", "status": "shipping" },
+    "focus_ring":     { "class": "(manual — not emitted)", "var": "--nce-color-focus", "purpose": "Keyboard focus ring color.", "status": "var-only" }
   },
   "typography": {
-    "font_body":    { "class": "font-sans", "var": "--nce-font-family", "purpose": "Body font.", "status": "shipping" },
-    "font_heading": { "class": "font-heading", "var": "--nce-font-heading", "purpose": "Heading font.", "status": "shipping" },
+    "font_body":    { "class": "theme-font-sans", "var": "--nce-font-family", "purpose": "Body font.", "status": "shipping" },
+    "font_heading": { "class": "theme-font-heading", "var": "--nce-font-heading", "purpose": "Heading font.", "status": "shipping" },
     "sizes": {
-      "xs":   { "class": "text-xs", "value": "calc(--nce-font-size * 0.75)", "status": "shipping" },
-      "sm":   { "class": "text-sm", "value": "calc(--nce-font-size * 0.875)", "status": "shipping" },
-      "base": { "class": "text-base", "value": "--nce-font-size", "status": "shipping" },
-      "lg":   { "class": "text-lg", "value": "calc(--nce-font-size * 1.125)", "status": "shipping" },
-      "xl":   { "class": "text-xl", "value": "calc(--nce-font-size * 1.25)", "status": "shipping" },
-      "2xl":  { "class": "text-2xl", "value": "calc(--nce-font-size * 1.5)", "status": "shipping" },
-      "3xl":  { "class": "text-3xl", "value": "calc(--nce-font-size * 1.875)", "status": "shipping" },
-      "4xl":  { "class": "text-4xl", "value": "calc(--nce-font-size * 2.25)", "status": "shipping" }
+      "xs":   { "class": "theme-text-xs", "value": "calc(--nce-font-size * 0.75)", "status": "shipping" },
+      "sm":   { "class": "theme-text-sm", "value": "calc(--nce-font-size * 0.875)", "status": "shipping" },
+      "base": { "class": "theme-text-base", "value": "--nce-font-size", "status": "shipping" },
+      "lg":   { "class": "theme-text-lg", "value": "calc(--nce-font-size * 1.125)", "status": "shipping" },
+      "xl":   { "class": "theme-text-xl", "value": "calc(--nce-font-size * 1.25)", "status": "shipping" },
+      "2xl":  { "class": "theme-text-2xl", "value": "calc(--nce-font-size * 1.5)", "status": "shipping" },
+      "3xl":  { "class": "theme-text-3xl", "value": "calc(--nce-font-size * 1.875)", "status": "shipping" },
+      "4xl":  { "class": "theme-text-4xl", "value": "calc(--nce-font-size * 2.25)", "status": "shipping" }
     }
   },
   "shape_and_motion": {
     "radius": {
-      "DEFAULT": { "class": "rounded", "var": "--nce-border-radius", "status": "shipping" },
-      "sm":      { "class": "rounded-sm", "value": "calc(--nce-border-radius * 0.5)", "status": "shipping" },
-      "md":      { "class": "rounded-md", "var": "--nce-border-radius", "status": "shipping" },
-      "lg":      { "class": "rounded-lg", "value": "calc(--nce-border-radius * 1.5)", "status": "shipping" },
-      "xl":      { "class": "rounded-xl", "value": "calc(--nce-border-radius * 2)", "status": "shipping" }
+      "DEFAULT": { "class": "theme-rounded", "var": "--nce-border-radius", "status": "shipping" },
+      "sm":      { "class": "theme-rounded-sm", "value": "calc(--nce-border-radius * 0.5)", "status": "shipping" },
+      "md":      { "class": "theme-rounded-md", "var": "--nce-border-radius", "status": "shipping" },
+      "lg":      { "class": "theme-rounded-lg", "value": "calc(--nce-border-radius * 1.5)", "status": "shipping" },
+      "xl":      { "class": "theme-rounded-xl", "value": "calc(--nce-border-radius * 2)", "status": "shipping" }
     },
     "spacing": {
-      "xs": { "class": "p-xs / m-xs / gap-xs", "value": "calc(--nce-spacing-base * 0.25)", "status": "shipping" },
-      "sm": { "class": "p-sm / m-sm / gap-sm", "value": "calc(--nce-spacing-base * 0.5)", "status": "shipping" },
-      "md": { "class": "p-md / m-md / gap-md", "var": "--nce-spacing-base", "status": "shipping" },
-      "lg": { "class": "p-lg / m-lg / gap-lg", "value": "calc(--nce-spacing-base * 1.5)", "status": "shipping" },
-      "xl": { "class": "p-xl / m-xl / gap-xl", "value": "calc(--nce-spacing-base * 2)", "status": "shipping" }
+      "xs": { "class": "theme-p-xs / theme-m-xs / theme-gap-xs", "value": "calc(--nce-spacing-base * 0.25)", "status": "shipping" },
+      "sm": { "class": "theme-p-sm / theme-m-sm / theme-gap-sm", "value": "calc(--nce-spacing-base * 0.5)", "status": "shipping" },
+      "md": { "class": "theme-p-md / theme-m-md / theme-gap-md", "var": "--nce-spacing-base", "status": "shipping" },
+      "lg": { "class": "theme-p-lg / theme-m-lg / theme-gap-lg", "value": "calc(--nce-spacing-base * 1.5)", "status": "shipping" },
+      "xl": { "class": "theme-p-xl / theme-m-xl / theme-gap-xl", "value": "calc(--nce-spacing-base * 2)", "status": "shipping" }
     },
     "shadow": {
-      "DEFAULT": { "class": "shadow", "var": "--nce-shadow", "status": "shipping" },
-      "theme":   { "class": "shadow-theme", "var": "--nce-shadow", "status": "shipping" }
+      "DEFAULT": { "class": "theme-shadow", "var": "--nce-shadow", "status": "shipping" },
+      "theme":   { "class": "theme-shadow-theme", "var": "--nce-shadow", "status": "shipping" }
     },
     "transition": {
-      "theme": { "class": "duration-theme", "var": "--nce-transition-speed", "status": "shipping" }
+      "theme": { "class": "theme-duration-theme", "var": "--nce-transition-speed", "status": "shipping" }
     }
   },
   "examples_for_authors": {
-    "primary_button": "<button class=\"bg-primary rounded px-md py-sm\">Primary</button>",
-    "header_row_tonal_after_fg_lands": "<th class=\"bg-secondary text-secondary-fg-tonal px-md py-sm font-heading\">FRAPPE DOCTYPE</th>",
-    "row_of_buttons_uniform_text": "<div class=\"flex gap-sm text-white\"><button class=\"bg-primary\">A</button><button class=\"bg-secondary\">B</button><button class=\"bg-accent\">C</button></div>",
-    "shade_used_inline_today_var_only": "<div :style=\"{ background: 'var(--nce-color-primary-100)', color: 'var(--nce-color-primary-900)' }\">Card</div>",
+    "primary_button": "<button class=\"theme-bg-primary theme-rounded theme-p-sm\">Primary</button>",
+    "header_row_tonal": "<th class=\"theme-bg-secondary theme-text-secondary-fg-tonal theme-p-sm theme-font-heading\">FRAPPE DOCTYPE</th>",
+    "row_of_buttons": "<div class=\"flex theme-gap-sm\"><button class=\"theme-bg-primary theme-text-primary-fg\">A</button><button class=\"theme-bg-secondary theme-text-secondary-fg\">B</button><button class=\"theme-bg-accent theme-text-accent-fg\">C</button></div>",
+    "shade_class": "<div class=\"theme-bg-primary-100 theme-text-primary-900\">Card</div>",
     "dynamic_palette_loop": "<div v-for=\"c in palette\" :style=\"{ background: `var(${c.var})` }\">…</div>"
   },
   "things_not_to_do": [
     "Don't write hex literals (#3b82f6) in components.",
     "Don't write color: white as a default on a class that may sit on a light background.",
-    "Don't assume non-curated shade stops (e.g. 400, 800) have Tailwind classes — use var() for those.",
-    "Don't duplicate semantic classes inside <style scoped> when a Tailwind utility exists."
+    "Don't assume non-curated shade stops (e.g. 400, 800) have classes — use var() for those.",
+    "Don't duplicate semantic classes inside <style scoped> when a theme utility exists.",
+    "Don't drop the theme- prefix — bare names (bg-primary, text-muted, border) collide with Desk/Bootstrap and will be overridden on Desk pages."
   ]
 }

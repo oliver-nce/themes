@@ -7,7 +7,7 @@
 
 ## What This System Does
 
-Themes generates a file called `nce_theme.css` that loads on **every page of the Frappe installation** (Desk, web, SPA — everything). It contains only CSS custom properties prefixed `--nce-*`. Downstream apps (NCE Events, etc.) consume these tokens to theme their components.
+Themes generates a file called `nce_theme.css` that loads on **every page of the Frappe installation** (Desk, web, SPA — everything). It contains CSS custom properties prefixed `--nce-*`, plus a set of utility classes prefixed `theme-` (e.g. `theme-bg-primary`, `theme-text-muted`) that map to those tokens. Downstream apps (NCE Events, etc.) consume the tokens and/or the `theme-` classes to theme their components. The `theme-` prefix on the classes is what keeps them from colliding with Frappe Desk / Bootstrap class names.
 
 The separation is intentional:
 - Themes **defines** tokens (`--nce-color-primary`, `--nce-color-muted`, etc.)
@@ -21,7 +21,7 @@ The separation is intentional:
 ### 1. `nce_theme.css` — loads EVERYWHERE
 - Generated at runtime by `ThemeSettings.on_update()`
 - Loaded via `app_include_css` in `themes/hooks.py`
-- Contains **only** `:root { --nce-* }` declarations
+- Contains `:root { --nce-* }` declarations **plus** `theme-`-prefixed utility class rules (e.g. `.theme-bg-primary`)
 - Regenerated when admin saves Theme Settings in Desk
 - Does NOT exist in the git repo — it lives on disk at `themes/public/css/nce_theme.css`
 
@@ -130,7 +130,9 @@ So in Vue templates inside the SPA you can write:
 <span class="text-muted">...</span>
 ```
 
-These utilities **only work inside the SPA** (`/themes/*` pages). Do not expect them to work on Desk pages.
+These **unprefixed** utilities are internal to the SPA's own Tailwind build and **only work inside the SPA** (`/themes/*` pages). Do not use them on Desk pages.
+
+For downstream apps and Desk pages, use the **`theme-`-prefixed** classes emitted into `nce_theme.css` instead (`theme-bg-primary`, `theme-text-muted`, …) — see `theme-classes-reference.md`.
 
 ---
 
