@@ -8,6 +8,41 @@ from themes.utils.theme_color_utils import (
     pick_fg_mono, pick_fg_tonal,
 )
 
+# ── Self-hosted variable fonts ──
+# Each entry: display name -> (folder slug under public/fonts, generic fallback).
+# Files live at public/fonts/<slug>/<subset>-wght-normal.woff2 and are served at
+# /assets/themes/fonts/<slug>/<subset>-wght-normal.woff2. All are variable fonts
+# with a continuous weight axis, so the Body Weight setting applies smoothly.
+FONT_REGISTRY = {
+    "Inter": ("inter", "sans-serif"),
+    "Source Sans 3": ("source-sans-3", "sans-serif"),
+    "Work Sans": ("work-sans", "sans-serif"),
+    "DM Sans": ("dm-sans", "sans-serif"),
+    "Public Sans": ("public-sans", "sans-serif"),
+    "Open Sans": ("open-sans", "sans-serif"),
+    "Roboto": ("roboto", "sans-serif"),
+    "Nunito": ("nunito", "sans-serif"),
+    "Source Serif 4": ("source-serif-4", "serif"),
+    "JetBrains Mono": ("jetbrains-mono", "monospace"),
+}
+
+# Standard Fontsource subset ranges. latin-ext covers accented Latin glyphs
+# (e.g. names like Muñoz / Müller) and is only fetched when such glyphs appear.
+FONT_SUBSETS = {
+    "latin": (
+        "U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,"
+        "U+0304,U+0308,U+0329,U+2000-206F,U+2074,U+20AC,U+2122,U+2191,U+2193,"
+        "U+2212,U+2215,U+FEFF,U+FFFD"
+    ),
+    "latin-ext": (
+        "U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,"
+        "U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,"
+        "U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF"
+    ),
+}
+
+FONT_BASE_URL = "/assets/themes/fonts"
+
 CURATED_SHADES = (100, 200, 300, 500, 600, 700, 900)
 FG_ROLES = (
     "primary_color", "secondary_color", "accent_color",
@@ -60,6 +95,66 @@ TOKEN_FIELDS = MIGRATED_FIELDS + [
 ]
 
 
+def _font_stack(name):
+    """Build a CSS font-family stack for a configured font name.
+
+    Returns the system stack for empty / "System Default", otherwise the named
+    font followed by its registered generic fallback (sans-serif/serif/monospace).
+    """
+    if not name or name == "System Default":
+        return "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif"
+    generic = FONT_REGISTRY.get(name, (None, "sans-serif"))[1]
+    return f"'{name}', {generic}"
+
+
+def _font_face_blocks(name):
+    """Return @font-face rule lines for one registered variable font (both subsets).
+
+    Unregistered names (e.g. "System Default" or a legacy font) yield nothing.
+    """
+    entry = FONT_REGISTRY.get(name)
+    if not entry:
+        return []
+    slug = entry[0]
+    out = []
+    for subset, unicode_range in FONT_SUBSETS.items():
+        out += [
+            "@font-face {",
+            f"\tfont-family: '{name}';",
+            "\tfont-style: normal;",
+            "\tfont-display: swap;",
+            "\tfont-weight: 100 900;",
+            f"\tsrc: url('{FONT_BASE_URL}/{slug}/{subset}-wght-normal.woff2') format('woff2');",
+            f"\tunicode-range: {unicode_range};",
+            "}",
+        ]
+    return out
+
+
+def _emit_font_faces(g, lines):
+    """Emit @font-face rules for the active body + heading fonts (deduplicated)."""
+    names = []
+    for field in ("font_family", "heading_font_family"):
+        n = g(field)
+        if n and n != "System Default" and n in FONT_REGISTRY and n not in names:
+            names.append(n)
+    if not names:
+        return
+    lines.append("/* ── Self-hosted variable fonts (active body + heading) ── */")
+    for n in names:
+        lines += _font_face_blocks(n)
+    lines.append("")
+
+
+def generate_fonts_css() -> str:
+    """Full @font-face stylesheet for every curated font (used by the editor only)."""
+    lines = ["/* Curated variable fonts — generated for the Theme Editor picker. */"]
+    for name in FONT_REGISTRY:
+        lines += _font_face_blocks(name)
+        lines.append("")
+    return "\n".join(lines)
+
+
 def _emit_root_block(g, lines):
     """Emit :root { --nce-* } and optional custom_css."""
     lines.extend([":root {", "", "\t/* ── Theme: canonical variables ── */"])
@@ -89,20 +184,8 @@ def _emit_root_block(g, lines):
             if shade_num in CURATED_SHADES:
                 lines.append(f"\t--nce-{var}-{shade_num}-fg: {pick_fg_mono(shade_hex)};")
                 lines.append(f"\t--nce-{var}-{shade_num}-fg-tonal: {pick_fg_tonal(shade_hex)};")
-    ff = g("font_family")
-    lines.append(
-        f"\t--nce-font-family: "
-        + (f"'{ff}', sans-serif" if ff and ff != "System Default"
-           else "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif")
-        + ";"
-    )
-    hf = g("heading_font_family")
-    lines.append(
-        f"\t--nce-font-heading: "
-        + (f"'{hf}', sans-serif" if hf and hf != "System Default"
-           else "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif")
-        + ";"
-    )
+    lines.append(f"\t--nce-font-family: {_font_stack(g('font_family'))};")
+    lines.append(f"\t--nce-font-heading: {_font_stack(g('heading_font_family'))};")
     lines.append(f"\t--nce-font-size: {g('font_size') or '14px'};")
     lines.append(f"\t--nce-font-weight: {g('font_weight_body') or '400'};")
     lines.append(f"\t--nce-line-height: {LINE_HEIGHT_MAP.get(g('line_height') or 'normal', '1.5')};")
@@ -178,36 +261,68 @@ def _emit_role_shade_classes(g, lines):
     lines.append("")
 
 
+def _emit_prefixed_rule(lines, theme_class: str, legacy_class: str, declarations: str) -> None:
+    """Emit theme- class plus legacy unprefixed alias (Desk consumers may use either)."""
+    lines.append(f".{theme_class}, .{legacy_class} {{ {declarations} }}")
+
+
 def _emit_neutral_classes(g, lines):
     """Neutral surfaces, semantic chrome aliases, text/border roles."""
     lines.append("/* ── Neutral surfaces, semantic chrome aliases, text/border roles ── */")
     if g("background_color"):
-        lines.append(".theme-bg-bg-page { background-color: var(--nce-color-bg); }")
+        _emit_prefixed_rule(
+            lines, "theme-bg-bg-page", "bg-bg-page", "background-color: var(--nce-color-bg);"
+        )
     if g("surface_color"):
-        lines.append(".theme-bg-surface { background-color: var(--nce-color-surface); }")
-        lines.append(".theme-bg-card { background-color: var(--nce-color-surface); }")
+        _emit_prefixed_rule(
+            lines, "theme-bg-surface", "bg-surface", "background-color: var(--nce-color-surface);"
+        )
+        _emit_prefixed_rule(
+            lines, "theme-bg-card", "bg-card", "background-color: var(--nce-color-surface);"
+        )
     if g("row_alt_color"):
-        lines.append(".theme-bg-row-alt { background-color: var(--nce-color-row-alt); }")
+        _emit_prefixed_rule(
+            lines,
+            "theme-bg-row-alt",
+            "bg-row-alt",
+            "background-color: var(--nce-color-row-alt);",
+        )
     if g("primary_color"):
-        lines.append(
-            ".theme-bg-header { background-color: var(--nce-color-primary); "
-            "color: var(--nce-color-primary-fg); }"
+        _emit_prefixed_rule(
+            lines,
+            "theme-bg-header",
+            "bg-header",
+            "background-color: var(--nce-color-primary); color: var(--nce-color-primary-fg);",
         )
-        lines.append(".theme-text-text-header { color: var(--nce-color-primary-fg); }")
+        _emit_prefixed_rule(
+            lines, "theme-text-text-header", "text-text-header", "color: var(--nce-color-primary-fg);"
+        )
     if g("heading_color"):
-        lines.append(".theme-text-heading { color: var(--nce-color-heading); }")
+        _emit_prefixed_rule(lines, "theme-text-heading", "text-heading", "color: var(--nce-color-heading);")
     if g("muted_color"):
-        lines.append(".theme-text-muted { color: var(--nce-color-muted); }")
+        _emit_prefixed_rule(lines, "theme-text-muted", "text-muted", "color: var(--nce-color-muted);")
     if g("link_color"):
-        lines.append(".theme-text-link { color: var(--nce-color-link); }")
+        _emit_prefixed_rule(lines, "theme-text-link", "text-link", "color: var(--nce-color-link);")
     if g("border_color"):
-        lines.append(
-            ".theme-border { border-width: 1px; border-style: solid; "
-            "border-color: var(--nce-color-border); }"
+        _emit_prefixed_rule(
+            lines,
+            "theme-border",
+            "border",
+            "border-width: 1px; border-style: solid; border-color: var(--nce-color-border);",
         )
-        lines.append(".theme-border-input-border { border-color: var(--nce-color-border); }")
+        _emit_prefixed_rule(
+            lines,
+            "theme-border-input-border",
+            "border-input-border",
+            "border-color: var(--nce-color-border);",
+        )
     if g("focus_color"):
-        lines.append(".theme-border-input-focus { border-color: var(--nce-color-focus); }")
+        _emit_prefixed_rule(
+            lines,
+            "theme-border-input-focus",
+            "border-input-focus",
+            "border-color: var(--nce-color-focus);",
+        )
     lines.append("")
 
 
@@ -280,6 +395,7 @@ def generate_css(payload: dict) -> str:
     """Build the full nce_theme.css content from a token payload dict."""
     g = payload.get
     lines = []
+    _emit_font_faces(g, lines)
     _emit_root_block(g, lines)
     _emit_role_bg_classes(g, lines)
     _emit_role_text_border_classes(g, lines)
@@ -302,13 +418,26 @@ def _write_css_file(css: str) -> str:
     return path
 
 
+def _write_fonts_css() -> str:
+    """Write the all-curated-fonts stylesheet consumed only by the editor page."""
+    app_path = frappe.get_app_path("themes")
+    css_dir = os.path.join(app_path, "public", "css")
+    os.makedirs(css_dir, exist_ok=True)
+    path = os.path.join(css_dir, "fonts.css")
+    with open(path, "w") as f:
+        f.write(generate_fonts_css())
+    return path
+
+
 def publish_theme(theme_name: str) -> dict:
     """Read an NCE Theme, regenerate nce_theme.css, update Site Theme Config."""
     theme = frappe.get_doc("NCE Theme", theme_name)
     payload = json.loads(theme.theme_json or "{}")
     css = generate_css(payload)
     _write_css_file(css)
+    _write_fonts_css()
     css_hash = hashlib.sha1(css.encode("utf-8")).hexdigest()[:8]
     frappe.db.set_single_value("Site Theme Config", "css_hash", css_hash)
+    frappe.cache.delete_value("assets_json")
     frappe.clear_cache()
     return {"status": "ok", "theme": theme_name, "css_hash": css_hash, "bytes": len(css)}

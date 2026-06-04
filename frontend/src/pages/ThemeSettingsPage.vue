@@ -206,12 +206,12 @@
 			<div v-show="activeTab === 'typography'" class="editor-tab">
 				<EditorSection title="Fonts">
 					<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-						<SelectField
+						<FontSelectField
 							label="Body Font"
 							:options="fontOptions"
 							v-model="form.font_family"
 						/>
-						<SelectField
+						<FontSelectField
 							label="Heading Font"
 							:options="fontOptions"
 							v-model="form.heading_font_family"
@@ -462,6 +462,7 @@ import { STATUS_COLOR_DEFAULTS, STATUS_COLOR_KEYS } from "@/composables/useTheme
 import EditorSection from "@/components/EditorSection.vue"
 import BrandColorPicker from "@/components/BrandColorPicker.vue"
 import SelectField from "@/components/SelectField.vue"
+import FontSelectField from "@/components/FontSelectField.vue"
 import SwatchPicker from "@/components/SwatchPicker.vue"
 
 // ─── Preview window ───────────────────────────────────────────────
@@ -541,12 +542,10 @@ function computeCSSVariables(): Record<string, string> {
 		if (form[field as FormKey]) vars[cssVar] = form[field as FormKey]
 	}
 	const ff = form.font_family
-	if (ff && ff !== "System Default") vars["--nce-font-family"] = `'${ff}', sans-serif`
-	else if (ff === "System Default") vars["--nce-font-family"] = "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif"
+	if (ff) vars["--nce-font-family"] = fontCSS(ff)
 
 	const hf = form.heading_font_family
-	if (hf && hf !== "System Default") vars["--nce-font-heading"] = `'${hf}', sans-serif`
-	else if (hf === "System Default") vars["--nce-font-heading"] = "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif"
+	if (hf) vars["--nce-font-heading"] = fontCSS(hf)
 
 	if (form.font_size) vars["--nce-font-size"] = form.font_size
 	if (form.font_weight_body) vars["--nce-font-weight"] = form.font_weight_body
@@ -739,14 +738,19 @@ const surfaceColors = [
 
 // ─── Select options ───────────────────────────────────────────────
 
+// Curated self-hosted variable fonts (all respond to the Body Weight slider).
+// Must stay in sync with FONT_REGISTRY in themes/utils/css_writer.py.
 const fontOptions = [
 	"Inter",
 	"Source Sans 3",
+	"Work Sans",
+	"DM Sans",
+	"Public Sans",
 	"Open Sans",
 	"Roboto",
-	"Lato",
-	"Poppins",
 	"Nunito",
+	"Source Serif 4",
+	"JetBrains Mono",
 	"System Default",
 ]
 const sizeOptions = ["12px", "13px", "14px", "15px", "16px", "18px"]
@@ -778,11 +782,24 @@ const lineHeightMap: Record<string, string> = {
 
 // ─── Computed helpers ─────────────────────────────────────────────
 
+const FONT_GENERIC: Record<string, string> = {
+	Inter: "sans-serif",
+	"Source Sans 3": "sans-serif",
+	"Work Sans": "sans-serif",
+	"DM Sans": "sans-serif",
+	"Public Sans": "sans-serif",
+	"Open Sans": "sans-serif",
+	Roboto: "sans-serif",
+	Nunito: "sans-serif",
+	"Source Serif 4": "serif",
+	"JetBrains Mono": "monospace",
+}
+
 function fontCSS(name: string): string {
 	if (!name || name === "System Default") {
 		return "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif"
 	}
-	return `'${name}', sans-serif`
+	return `'${name}', ${FONT_GENERIC[name] || "sans-serif"}`
 }
 
 const lineHeightCSS = computed(
