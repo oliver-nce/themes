@@ -132,6 +132,25 @@ def _oklch_to_hex(L, C, h):
 	return f"#{clamp_byte(r_lin):02x}{clamp_byte(g_lin):02x}{clamp_byte(b_lin):02x}"
 
 
+def pick_fg_mono(hex_color: str) -> str:
+	"""Return '#0A0A0A' if hex_color is light enough for dark text, else '#FFFFFF'.
+	Uses OKLCH lightness with threshold 0.62."""
+	if not hex_color or len(hex_color) < 7:
+		return "#FFFFFF"
+	L, _, _ = _hex_to_oklch(hex_color)
+	return "#0A0A0A" if L > 0.62 else "#FFFFFF"
+
+
+def pick_fg_tonal(hex_color: str) -> str:
+	"""Return a same-hue tonal foreground: lightness flipped, chroma reduced to 35%."""
+	if not hex_color or len(hex_color) < 7:
+		return "#FFFFFF"
+	L, C, h = _hex_to_oklch(hex_color)
+	target_L = max(0.05, min(0.95, 1.0 - L))
+	target_C = C * 0.35
+	return _oklch_to_hex(target_L, target_C, h)
+
+
 def _max_chroma_in_gamut(L, h, upper):
 	"""Largest chroma at (L, h) inside sRGB. Matches frontend color-shades.ts."""
 	h_rad = math.radians(h)
