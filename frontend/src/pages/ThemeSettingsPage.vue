@@ -252,11 +252,27 @@
 							:options="lineHeightOptions"
 							v-model="form.line_height"
 						/>
-						<SelectField
-							label="Body Weight"
-							:options="weightOptions"
-							v-model="form.font_weight_body"
-						/>
+						<div>
+							<label class="block text-sm font-medium text-gray-700 mb-1.5">
+								Body Weight
+								<span class="font-normal text-gray-500">({{ bodyWeightDisplay }})</span>
+							</label>
+							<input
+								type="range"
+								class="body-weight-slider w-full"
+								min="100"
+								max="900"
+								step="1"
+								:value="bodyWeightNumber"
+								@input="onBodyWeightInput"
+							/>
+							<div class="flex justify-between text-xs text-gray-400 mt-1 px-0.5">
+								<span>100</span>
+								<span>400</span>
+								<span>700</span>
+								<span>900</span>
+							</div>
+						</div>
 					</div>
 				</EditorSection>
 			</div>
@@ -738,13 +754,21 @@ const surfaceColors = [
 
 // ─── Select options ───────────────────────────────────────────────
 
+// Retired picker options — map to Public Sans when loading saved themes.
+const RETIRED_FONT_ALIASES: Record<string, string> = {
+	"Work Sans": "Public Sans",
+	"DM Sans": "Public Sans",
+}
+
+function normalizeFontChoice(name: string): string {
+	return RETIRED_FONT_ALIASES[name] || name
+}
+
 // Curated self-hosted variable fonts (all respond to the Body Weight slider).
 // Must stay in sync with FONT_REGISTRY in themes/utils/css_writer.py.
 const fontOptions = [
 	"Inter",
 	"Source Sans 3",
-	"Work Sans",
-	"DM Sans",
 	"Public Sans",
 	"Open Sans",
 	"Roboto",
@@ -755,7 +779,29 @@ const fontOptions = [
 ]
 const sizeOptions = ["12px", "13px", "14px", "15px", "16px", "18px"]
 const lineHeightOptions = ["tight", "snug", "normal", "relaxed", "loose"]
-const weightOptions = ["300", "400", "500", "600"]
+const BODY_WEIGHT_MIN = 100
+const BODY_WEIGHT_MAX = 900
+
+function clampBodyWeight(raw: unknown): number {
+	const n = Number.parseInt(String(raw ?? "400"), 10)
+	if (!Number.isFinite(n)) return 400
+	return Math.min(BODY_WEIGHT_MAX, Math.max(BODY_WEIGHT_MIN, n))
+}
+
+const bodyWeightNumber = computed(() => clampBodyWeight(form.font_weight_body))
+
+const bodyWeightDisplay = computed(() => {
+	const n = bodyWeightNumber.value
+	if (n <= 350) return `${n} — Light`
+	if (n <= 450) return `${n} — Regular`
+	if (n <= 550) return `${n} — Medium`
+	if (n <= 650) return `${n} — Semi-bold`
+	return `${n} — Bold`
+})
+
+function onBodyWeightInput(e: Event) {
+	form.font_weight_body = String((e.target as HTMLInputElement).value)
+}
 const radiusOptions = ["none", "sm", "md", "lg", "x-lg"]
 const spacingOptions = ["tight", "normal", "relaxed"]
 const shadowOptions = ["none", "sm", "md", "lg", "xl", "2xl", "3xl"]
@@ -785,8 +831,6 @@ const lineHeightMap: Record<string, string> = {
 const FONT_GENERIC: Record<string, string> = {
 	Inter: "sans-serif",
 	"Source Sans 3": "sans-serif",
-	"Work Sans": "sans-serif",
-	"DM Sans": "sans-serif",
 	"Public Sans": "sans-serif",
 	"Open Sans": "sans-serif",
 	Roboto: "sans-serif",
@@ -883,7 +927,7 @@ function canonicalPayload(source: Record<string, any>): Record<string, any> {
 		} else if (key.endsWith("_color") && typeof val === "string") {
 			payload[key] = val.toUpperCase()
 		} else if (key === "font_weight_body") {
-			payload[key] = String(val ?? DEFAULTS.font_weight_body)
+			payload[key] = String(clampBodyWeight(val ?? DEFAULTS.font_weight_body))
 		} else if (key === "custom_css" || key === "tailwind_overrides") {
 			payload[key] = String(val ?? "")
 		} else {
@@ -923,6 +967,13 @@ function applyPayloadToForm(payload: Record<string, any>) {
 			form[key] = !!val
 		} else if (key === "border_radius" && val === "full") {
 			form[key] = "x-lg"
+		} else if (
+			(key === "font_family" || key === "heading_font_family") &&
+			typeof val === "string"
+		) {
+			form[key] = normalizeFontChoice(val)
+		} else if (key === "font_weight_body") {
+			form[key] = String(clampBodyWeight(val))
 		} else if (val !== undefined && val !== null) {
 			form[key] = val
 		}
@@ -1288,5 +1339,11 @@ watch(form, () => {
 .editor-actions :deep(.theme-btn:disabled) {
 	opacity: 0.45;
 	cursor: not-allowed;
+}
+
+.body-weight-slider {
+	accent-color: var(--nce-color-primary, #3b82f6);
+	height: 0.375rem;
+	cursor: pointer;
 }
 </style>

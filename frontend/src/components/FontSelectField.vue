@@ -48,8 +48,6 @@ const emit = defineEmits<{
 const FONT_GENERIC: Record<string, string> = {
 	Inter: "sans-serif",
 	"Source Sans 3": "sans-serif",
-	"Work Sans": "sans-serif",
-	"DM Sans": "sans-serif",
 	"Public Sans": "sans-serif",
 	"Open Sans": "sans-serif",
 	Roboto: "sans-serif",

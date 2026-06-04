@@ -16,8 +16,6 @@ from themes.utils.theme_color_utils import (
 FONT_REGISTRY = {
     "Inter": ("inter", "sans-serif"),
     "Source Sans 3": ("source-sans-3", "sans-serif"),
-    "Work Sans": ("work-sans", "sans-serif"),
-    "DM Sans": ("dm-sans", "sans-serif"),
     "Public Sans": ("public-sans", "sans-serif"),
     "Open Sans": ("open-sans", "sans-serif"),
     "Roboto": ("roboto", "sans-serif"),
@@ -42,6 +40,12 @@ FONT_SUBSETS = {
 }
 
 FONT_BASE_URL = "/assets/themes/fonts"
+
+# Retired picker options — still resolve when loading older theme JSON.
+RETIRED_FONT_ALIASES = {
+    "Work Sans": "Public Sans",
+    "DM Sans": "Public Sans",
+}
 
 CURATED_SHADES = (100, 200, 300, 500, 600, 700, 900)
 FG_ROLES = (
@@ -95,12 +99,20 @@ TOKEN_FIELDS = MIGRATED_FIELDS + [
 ]
 
 
+def _resolve_font_name(name):
+    """Map retired font names to their replacement for publish/load."""
+    if not name or name == "System Default":
+        return name
+    return RETIRED_FONT_ALIASES.get(name, name)
+
+
 def _font_stack(name):
     """Build a CSS font-family stack for a configured font name.
 
     Returns the system stack for empty / "System Default", otherwise the named
     font followed by its registered generic fallback (sans-serif/serif/monospace).
     """
+    name = _resolve_font_name(name)
     if not name or name == "System Default":
         return "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif"
     generic = FONT_REGISTRY.get(name, (None, "sans-serif"))[1]
@@ -135,7 +147,7 @@ def _emit_font_faces(g, lines):
     """Emit @font-face rules for the active body + heading fonts (deduplicated)."""
     names = []
     for field in ("font_family", "heading_font_family"):
-        n = g(field)
+        n = _resolve_font_name(g(field))
         if n and n != "System Default" and n in FONT_REGISTRY and n not in names:
             names.append(n)
     if not names:
