@@ -16,12 +16,14 @@ This folder explains HOW the theme system works. For the catalog of available cl
 | How do I pick a shade at runtime / dynamic backgrounds? | `06-escape-hatch.md` |
 | When do I use theme classes vs `:style` with `var()`? Examples for Vue. | `07-using-in-vue.md` |
 | How do I add a new role / shade / utility to the system? | `08-extending.md` |
+| Which classes for a button? Primary / outline / ghost / destructive? Decision tree + ready recipes. | `09-buttons.md` |
 
 ## Quick Answers (vague-question → file)
 
 | Vague phrasing | File |
 |---|---|
 | "buttons look wrong" / "text unreadable" / "contrast" | `05-foreground-pairing.md` |
+| "what classes for a button" / "primary vs secondary button" / "outline button" / "ghost button" | `09-buttons.md` |
 | "color picker preview" / "user-selected color at runtime" | `06-escape-hatch.md` |
 | "what class should I use for X" | (use `THEME_CLASS_CONTRACT.json` instead) |
 | "how do themes work in this app" | `01-architecture.md` |
