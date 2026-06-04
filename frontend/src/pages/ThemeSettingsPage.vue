@@ -863,7 +863,7 @@ const editorResource = createResource({
 		editorMeta.is_active = !!data.is_active
 		if (data.theme_name) form.theme_name = data.theme_name
 		applyPayloadToForm(data.payload || {})
-		captureSnapshot(data.payload || {})
+		captureSnapshot()
 		editorLoaded.value = true
 		applyLiveThemeVars()
 	},
