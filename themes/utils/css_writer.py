@@ -5,6 +5,13 @@ import frappe
 from themes.utils.theme_color_utils import (
     BORDER_RADIUS_MAP, SPACING_SCALE_MAP, LINE_HEIGHT_MAP,
     TRANSITION_MAP, _build_shadow, _generate_shades,
+    pick_fg_mono, pick_fg_tonal,
+)
+
+CURATED_SHADES = (100, 200, 300, 500, 600, 700, 900)
+FG_ROLES = (
+    "primary_color", "secondary_color", "accent_color",
+    "success_color", "info_color", "warning_color", "danger_color",
 )
 
 COLOR_FIELDS = {
@@ -61,6 +68,15 @@ def generate_css(payload: dict) -> str:
         v = g(f)
         if v:
             lines.append(f"\t--nce-{var}: {v};")
+    # ── Foreground companions for each role ──
+    for f, var in COLOR_FIELDS.items():
+        if f not in FG_ROLES:
+            continue
+        v = g(f)
+        if not v:
+            continue
+        lines.append(f"\t--nce-{var}-fg: {pick_fg_mono(v)};")
+        lines.append(f"\t--nce-{var}-fg-tonal: {pick_fg_tonal(v)};")
     lines += ["", "\t/* ── Shade scales (50–950) ── */"]
     for f, var in SHADE_SCALE_FIELDS.items():
         v = g(f)
@@ -72,6 +88,9 @@ def generate_css(payload: dict) -> str:
             saturation = 100
         for shade_num, shade_hex in _generate_shades(v, gamma=gamma, saturation=saturation):
             lines.append(f"\t--nce-{var}-{shade_num}: {shade_hex};")
+            if shade_num in CURATED_SHADES:
+                lines.append(f"\t--nce-{var}-{shade_num}-fg: {pick_fg_mono(shade_hex)};")
+                lines.append(f"\t--nce-{var}-{shade_num}-fg-tonal: {pick_fg_tonal(shade_hex)};")
     ff = g("font_family")
     lines.append(
         f"\t--nce-font-family: "
@@ -109,6 +128,23 @@ def generate_css(payload: dict) -> str:
     lines.append("}")
     if g("custom_css"):
         lines += ["", g("custom_css")]
+    lines.append("")
+    lines.append("/* ── Default fg pairing for bare role classes ── */")
+    for f, var in COLOR_FIELDS.items():
+        if f not in FG_ROLES:
+            continue
+        if not g(f):
+            continue
+        role = var.replace("color-", "")
+        lines.append(
+            f".bg-{role} {{ background-color: var(--nce-{var}); color: var(--nce-{var}-fg); }}"
+        )
+    lines.append("")
+    lines.append("/* ── Dynamic-shade escape hatch ── */")
+    lines.append(".bg-themed { background-color: var(--bg, var(--nce-color-primary));")
+    lines.append(
+        "  color: oklch(from var(--bg, var(--nce-color-primary)) calc((l - 0.62) * -infinity) 0 0); }"
+    )
     return "\n".join(lines)
 
 
