@@ -5,6 +5,31 @@ import typography from "@tailwindcss/typography";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
+const ROLES = [
+  "primary",
+  "secondary",
+  "accent",
+  "success",
+  "info",
+  "warning",
+  "danger",
+];
+const SHADES = [100, 200, 300, 500, 600, 700, 900];
+
+function buildColorMap() {
+  const map = {};
+  for (const r of ROLES) {
+    map[`${r}-fg`] = `var(--nce-color-${r}-fg)`;
+    map[`${r}-fg-tonal`] = `var(--nce-color-${r}-fg-tonal)`;
+    for (const s of SHADES) {
+      map[`${r}-${s}`] = `var(--nce-color-${r}-${s})`;
+      map[`${r}-${s}-fg`] = `var(--nce-color-${r}-${s}-fg)`;
+      map[`${r}-${s}-fg-tonal`] = `var(--nce-color-${r}-${s}-fg-tonal)`;
+    }
+  }
+  return map;
+}
+
 export default {
   darkMode: ["selector", '[data-theme="dark"]'],
   content: [
@@ -38,12 +63,14 @@ export default {
         "text-header": "var(--text-header)",
         "input-border": "var(--input-border)",
         "input-focus": "var(--input-focus-border)",
+        ...buildColorMap(),
       },
       textColor: {
         DEFAULT: "var(--nce-color-text)",
         heading: "var(--nce-color-heading)",
         muted: "var(--nce-color-muted)",
         link: "var(--nce-color-link)",
+        ...buildColorMap(),
       },
       backgroundColor: {
         DEFAULT: "var(--nce-color-bg)",
