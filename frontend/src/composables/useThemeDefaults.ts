@@ -21,6 +21,25 @@ export const defaultThemeColors = {
   shadow_color: "#000000"         // Black
 }
 
+/** Stable semantic defaults for accent / success / info / warning / danger. */
+export const STATUS_COLOR_KEYS = [
+  "accent_color",
+  "success_color",
+  "info_color",
+  "warning_color",
+  "danger_color",
+] as const
+
+export type StatusColorKey = (typeof STATUS_COLOR_KEYS)[number]
+
+export const STATUS_COLOR_DEFAULTS: Record<StatusColorKey, string> = {
+  accent_color: defaultThemeColors.accent_color,
+  success_color: defaultThemeColors.success_color,
+  info_color: defaultThemeColors.info_color,
+  warning_color: defaultThemeColors.warning_color,
+  danger_color: defaultThemeColors.danger_color,
+}
+
 // Default theme settings beyond colors
 export const defaultThemeSettings = {
   theme_name: "Default",

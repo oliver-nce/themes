@@ -129,22 +129,44 @@
 				</section>
 
 				<!-- Status colours -->
-				<section>
-					<h2 class="section-title">Status Colours</h2>
-					<div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-						<SwatchPicker
-							v-for="c in statusColors"
-							:key="c.key"
-							:label="c.label"
-							:model-value="form[c.key]"
-							@update:model-value="form[c.key] = $event"
-							:primary-color="form.primary_color"
-							:secondary-color="form.secondary_color"
-							:primary-gamma="form.primary_color_gamma"
-							:primary-saturation="form.primary_color_saturation"
-							:secondary-gamma="form.secondary_color_gamma"
-							:secondary-saturation="form.secondary_color_saturation"
-						/>
+				<section class="status-colors-panel">
+					<div class="status-colors-header">
+						<button
+							type="button"
+							class="status-colors-toggle"
+							:aria-expanded="statusColorsOpen"
+							@click="statusColorsOpen = !statusColorsOpen"
+						>
+							<span class="section-title status-colors-title">Status Colours</span>
+							<span class="status-colors-chevron" :class="{ open: statusColorsOpen }">&#9660;</span>
+						</button>
+						<Button
+							variant="outline"
+							class="theme-btn theme-btn-outline"
+							@click="applyStatusColorDefaults"
+						>
+							Use defaults
+						</Button>
+					</div>
+					<p class="status-colors-hint">
+						Standard success, info, warning, and danger colours. Pick from primary, secondary, or gray swatches to override.
+					</p>
+					<div v-show="statusColorsOpen" class="status-colors-body">
+						<div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+							<SwatchPicker
+								v-for="c in statusColors"
+								:key="c.key"
+								:label="c.label"
+								:model-value="form[c.key]"
+								@update:model-value="form[c.key] = $event"
+								:primary-color="form.primary_color"
+								:secondary-color="form.secondary_color"
+								:primary-gamma="form.primary_color_gamma"
+								:primary-saturation="form.primary_color_saturation"
+								:secondary-gamma="form.secondary_color_gamma"
+								:secondary-saturation="form.secondary_color_saturation"
+							/>
+						</div>
 					</div>
 				</section>
 
@@ -423,6 +445,7 @@
 import { ref, reactive, watch, computed, onUnmounted, nextTick } from "vue"
 import { createResource } from "frappe-ui"
 import { generateShades, isDark, type ColorShade } from "@/utils/color-shades"
+import { STATUS_COLOR_DEFAULTS, STATUS_COLOR_KEYS } from "@/composables/useThemeDefaults"
 import BrandColorPicker from "@/components/BrandColorPicker.vue"
 import SelectField from "@/components/SelectField.vue"
 import SwatchPicker from "@/components/SwatchPicker.vue"
@@ -566,6 +589,7 @@ onUnmounted(() => {
 // ─── State ────────────────────────────────────────────────────────
 
 const activeTab = ref("colors")
+const statusColorsOpen = ref(false)
 
 const tabs = [
 	{ id: "colors", label: "Colours" },
@@ -625,11 +649,7 @@ const DEFAULTS: Record<FormKey, any> = {
 	secondary_color: "#10B981",
 	secondary_color_gamma: 0,
 	secondary_color_saturation: 100,
-	accent_color: "#8B5CF6",
-	success_color: "#10B981",
-	info_color: "#3B82F6",
-	warning_color: "#F59E0B",
-	danger_color: "#EF4444",
+	...STATUS_COLOR_DEFAULTS,
 	text_color: "#1F2937",
 	heading_color: "#111827",
 	muted_color: "#6B7280",
@@ -682,6 +702,12 @@ const statusColors = [
 	{ key: "warning_color", label: "Warning" },
 	{ key: "danger_color", label: "Danger" },
 ]
+
+function applyStatusColorDefaults() {
+	for (const key of STATUS_COLOR_KEYS) {
+		form[key] = STATUS_COLOR_DEFAULTS[key]
+	}
+}
 
 const textColors = [
 	{ key: "text_color", label: "Body Text" },
@@ -1235,5 +1261,58 @@ watch(form, () => {
 .editor-actions :deep(.theme-btn:disabled) {
 	opacity: 0.45;
 	cursor: not-allowed;
+}
+
+.status-colors-panel {
+	border: 1px solid var(--nce-color-border, #e5e7eb);
+	border-radius: var(--nce-border-radius, 0.375rem);
+	background: var(--nce-color-surface, #f9fafb);
+	padding: 0.875rem 1rem 1rem;
+}
+
+.status-colors-header {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 0.75rem;
+	flex-wrap: wrap;
+}
+
+.status-colors-toggle {
+	display: flex;
+	align-items: center;
+	gap: 0.5rem;
+	padding: 0;
+	border: none;
+	background: transparent;
+	cursor: pointer;
+	color: inherit;
+}
+
+.status-colors-title {
+	margin-bottom: 0;
+}
+
+.status-colors-chevron {
+	font-size: 0.625rem;
+	color: var(--nce-color-muted, #6b7280);
+	transition: transform 0.15s ease;
+}
+
+.status-colors-chevron.open {
+	transform: rotate(180deg);
+}
+
+.status-colors-hint {
+	margin: 0.375rem 0 0;
+	font-size: calc(var(--nce-font-size, 14px) * 0.8125);
+	color: var(--nce-color-muted, #6b7280);
+	line-height: 1.4;
+}
+
+.status-colors-body {
+	margin-top: 1rem;
+	padding-top: 1rem;
+	border-top: 1px solid var(--nce-color-border, #e5e7eb);
 }
 </style>
