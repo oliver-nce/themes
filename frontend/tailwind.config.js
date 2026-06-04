@@ -30,8 +30,24 @@ function buildColorMap() {
   return map;
 }
 
+function buildFgSafelist() {
+  const classes = [];
+  for (const r of ROLES) {
+    classes.push(`bg-${r}`, `text-${r}-fg`, `text-${r}-fg-tonal`);
+    for (const s of SHADES) {
+      classes.push(
+        `bg-${r}-${s}`,
+        `text-${r}-${s}-fg`,
+        `text-${r}-${s}-fg-tonal`,
+      );
+    }
+  }
+  return classes;
+}
+
 export default {
   darkMode: ["selector", '[data-theme="dark"]'],
+  safelist: buildFgSafelist(),
   content: [
     "./index.html",
     "./src/**/*.{vue,js,ts,jsx,tsx}",

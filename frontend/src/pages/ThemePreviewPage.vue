@@ -47,6 +47,39 @@
 				</div>
 			</section>
 
+			<section>
+				<h2 class="section-label">Foreground Pairing — Mono & Tonal</h2>
+				<div class="preview-surface rounded-xl p-6 space-y-4">
+					<div v-for="role in fgRoles" :key="role" class="space-y-1">
+						<div class="text-xs preview-muted uppercase tracking-wider">{{ role }}</div>
+						<div class="flex flex-wrap gap-2">
+							<span
+								v-for="stop in fgStops"
+								:key="`${role}-${stop}`"
+								:class="[
+									stop === 'base' ? `bg-${role}` : `bg-${role}-${stop}`,
+									stop === 'base' ? `text-${role}-fg` : `text-${role}-${stop}-fg`,
+								]"
+								class="px-3 py-1.5 rounded text-xs font-medium"
+							>
+								{{ stop === 'base' ? '600' : stop }} mono
+							</span>
+							<span
+								v-for="stop in fgStops"
+								:key="`${role}-${stop}-tonal`"
+								:class="[
+									stop === 'base' ? `bg-${role}` : `bg-${role}-${stop}`,
+									stop === 'base' ? `text-${role}-fg-tonal` : `text-${role}-${stop}-fg-tonal`,
+								]"
+								class="px-3 py-1.5 rounded text-xs font-medium"
+							>
+								{{ stop === 'base' ? '600' : stop }} tonal
+							</span>
+						</div>
+					</div>
+				</div>
+			</section>
+
 			<!-- ═══════ BUTTONS ═══════ -->
 			<section>
 				<h2 class="section-label">Buttons</h2>
@@ -356,6 +389,9 @@ import { computed, onMounted, onUnmounted } from "vue"
 
 // ─── Static data ──────────────────────────────────────────────────
 
+const fgRoles = ["primary", "secondary", "accent", "success", "info", "warning", "danger"]
+const fgStops = ["base", 100, 300, 500, 700, 900]
+
 const paletteColors = [
 	{ label: "Primary", var: "--nce-color-primary" },
 	{ label: "Secondary", var: "--nce-color-secondary" },
@@ -493,7 +529,6 @@ onUnmounted(() => window.removeEventListener("message", handleMessage))
 	transition: all var(--nce-transition-speed, 200ms) ease;
 	border: 1px solid transparent;
 	cursor: pointer;
-	color: white;
 }
 .btn:hover { opacity: 0.9; }
 
@@ -501,7 +536,7 @@ onUnmounted(() => window.removeEventListener("message", handleMessage))
 .btn-secondary { background-color: var(--nce-color-secondary, #10b981); }
 .btn-accent { background-color: var(--nce-color-accent, #8b5cf6); }
 .btn-success { background-color: var(--nce-color-success, #10b981); }
-.btn-warning { background-color: var(--nce-color-warning, #f59e0b); color: #1f2937; }
+.btn-warning { background-color: var(--nce-color-warning, #f59e0b); color: var(--nce-color-warning-fg, #1f2937); }
 .btn-danger { background-color: var(--nce-color-danger, #ef4444); }
 .btn-info { background-color: var(--nce-color-info, #3b82f6); }
 
