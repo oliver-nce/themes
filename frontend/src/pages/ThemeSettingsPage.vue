@@ -962,13 +962,14 @@ async function confirmSaveAndContinue() {
 }
 
 async function confirmDiscardAndContinue() {
-	if (confirmDialog.action === "switch") {
-		closeConfirmDialog()
-		await loadTheme(confirmDialog.pendingTheme)
+	const action = confirmDialog.action
+	const pendingTheme = confirmDialog.pendingTheme
+	closeConfirmDialog()
+	if (action === "switch") {
+		await loadTheme(pendingTheme)
 		return
 	}
 	revertChanges()
-	closeConfirmDialog()
 	await applyToSiteConfirmed()
 }
 
