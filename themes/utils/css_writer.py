@@ -60,15 +60,13 @@ TOKEN_FIELDS = MIGRATED_FIELDS + [
 ]
 
 
-def generate_css(payload: dict) -> str:
-    """Build the full :root { --nce-* } CSS block from a token payload dict."""
-    g = payload.get
-    lines = [":root {", "", "\t/* ── Theme: canonical variables ── */"]
+def _emit_root_block(g, lines):
+    """Emit :root { --nce-* } and optional custom_css."""
+    lines.extend([":root {", "", "\t/* ── Theme: canonical variables ── */"])
     for f, var in COLOR_FIELDS.items():
         v = g(f)
         if v:
             lines.append(f"\t--nce-{var}: {v};")
-    # ── Foreground companions for each role ──
     for f, var in COLOR_FIELDS.items():
         if f not in FG_ROLES:
             continue
@@ -129,6 +127,10 @@ def generate_css(payload: dict) -> str:
     if g("custom_css"):
         lines += ["", g("custom_css")]
     lines.append("")
+
+
+def _emit_role_bg_classes(g, lines):
+    """Default fg pairing for bare .bg-{role} classes."""
     lines.append("/* ── Default fg pairing for bare role classes ── */")
     for f, var in COLOR_FIELDS.items():
         if f not in FG_ROLES:
@@ -140,11 +142,153 @@ def generate_css(payload: dict) -> str:
             f".bg-{role} {{ background-color: var(--nce-{var}); color: var(--nce-{var}-fg); }}"
         )
     lines.append("")
+
+
+def _emit_role_text_border_classes(g, lines):
+    """Per-role text-color, border-color, and explicit fg variants."""
+    lines.append("/* ── Per-role text/border + explicit fg classes ── */")
+    for field, var in COLOR_FIELDS.items():
+        if field not in FG_ROLES or not g(field):
+            continue
+        role = var.replace("color-", "")
+        lines.append(f".text-{role} {{ color: var(--nce-{var}); }}")
+        lines.append(f".border-{role} {{ border-color: var(--nce-{var}); }}")
+        lines.append(f".text-{role}-fg {{ color: var(--nce-{var}-fg); }}")
+        lines.append(f".text-{role}-fg-tonal {{ color: var(--nce-{var}-fg-tonal); }}")
+    lines.append("")
+
+
+def _emit_role_shade_classes(g, lines):
+    """Per-role per-curated-shade utility classes."""
+    lines.append("/* ── Per-role per-curated-shade utility classes ── */")
+    for field, var in SHADE_SCALE_FIELDS.items():
+        if not g(field):
+            continue
+        role = var.replace("color-", "")
+        for shade in CURATED_SHADES:
+            lines.append(
+                f".bg-{role}-{shade} {{ "
+                f"background-color: var(--nce-{var}-{shade}); "
+                f"color: var(--nce-{var}-{shade}-fg); }}"
+            )
+            lines.append(f".text-{role}-{shade} {{ color: var(--nce-{var}-{shade}); }}")
+            lines.append(f".text-{role}-{shade}-fg {{ color: var(--nce-{var}-{shade}-fg); }}")
+            lines.append(f".text-{role}-{shade}-fg-tonal {{ color: var(--nce-{var}-{shade}-fg-tonal); }}")
+            lines.append(f".border-{role}-{shade} {{ border-color: var(--nce-{var}-{shade}); }}")
+    lines.append("")
+
+
+def _emit_neutral_classes(g, lines):
+    """Neutral surfaces, semantic chrome aliases, text/border roles."""
+    lines.append("/* ── Neutral surfaces, semantic chrome aliases, text/border roles ── */")
+    if g("background_color"):
+        lines.append(".bg-bg-page { background-color: var(--nce-color-bg); }")
+    if g("surface_color"):
+        lines.append(".bg-surface { background-color: var(--nce-color-surface); }")
+        lines.append(".bg-card { background-color: var(--nce-color-surface); }")
+    if g("row_alt_color"):
+        lines.append(".bg-row-alt { background-color: var(--nce-color-row-alt); }")
+    if g("primary_color"):
+        lines.append(
+            ".bg-header { background-color: var(--nce-color-primary); "
+            "color: var(--nce-color-primary-fg); }"
+        )
+        lines.append(".text-text-header { color: var(--nce-color-primary-fg); }")
+    if g("heading_color"):
+        lines.append(".text-heading { color: var(--nce-color-heading); }")
+    if g("muted_color"):
+        lines.append(".text-muted { color: var(--nce-color-muted); }")
+    if g("link_color"):
+        lines.append(".text-link { color: var(--nce-color-link); }")
+    if g("border_color"):
+        lines.append(
+            ".border { border-width: 1px; border-style: solid; "
+            "border-color: var(--nce-color-border); }"
+        )
+        lines.append(".border-input-border { border-color: var(--nce-color-border); }")
+    if g("focus_color"):
+        lines.append(".border-input-focus { border-color: var(--nce-color-focus); }")
+    lines.append("")
+
+
+def _emit_shape_classes(lines):
+    """Border-radius, box-shadow, and transition-duration classes."""
+    lines.append("/* ── Shape + motion classes ── */")
+    lines.append(".rounded { border-radius: var(--nce-border-radius); }")
+    lines.append(".rounded-sm { border-radius: calc(var(--nce-border-radius) * 0.5); }")
+    lines.append(".rounded-md { border-radius: var(--nce-border-radius); }")
+    lines.append(".rounded-lg { border-radius: calc(var(--nce-border-radius) * 1.5); }")
+    lines.append(".rounded-xl { border-radius: calc(var(--nce-border-radius) * 2); }")
+    lines.append(".shadow { box-shadow: var(--nce-shadow); }")
+    lines.append(".shadow-theme { box-shadow: var(--nce-shadow); }")
+    lines.append(".duration-theme { transition-duration: var(--nce-transition-speed); }")
+    lines.append("")
+
+
+def _emit_typography_classes(g, lines):
+    """Font family + font size classes."""
+    lines.append("/* ── Typography classes (font family + sizes) ── */")
+    if g("font_family"):
+        lines.append(".font-sans { font-family: var(--nce-font-family); }")
+    if g("heading_font_family"):
+        lines.append(".font-heading { font-family: var(--nce-font-heading); }")
+    size_multipliers = [
+        ("xs", "0.75"), ("sm", "0.875"),
+        ("base", None),
+        ("lg", "1.125"), ("xl", "1.25"),
+        ("2xl", "1.5"), ("3xl", "1.875"), ("4xl", "2.25"),
+    ]
+    for name, mul in size_multipliers:
+        if mul is None:
+            lines.append(f".text-{name} {{ font-size: var(--nce-font-size); }}")
+        else:
+            lines.append(
+                f".text-{name} {{ font-size: calc(var(--nce-font-size) * {mul}); }}"
+            )
+    lines.append("")
+
+
+def _emit_spacing_classes(lines):
+    """Uniform padding/margin/gap classes at xs/sm/md/lg/xl sizes."""
+    lines.append("/* ── Spacing classes (uniform p/m/gap) ── */")
+    spacing_multipliers = [
+        ("xs", "0.25"), ("sm", "0.5"),
+        ("md", None),
+        ("lg", "1.5"), ("xl", "2"),
+    ]
+    for name, mul in spacing_multipliers:
+        if mul is None:
+            v = "var(--nce-spacing-base)"
+        else:
+            v = f"calc(var(--nce-spacing-base) * {mul})"
+        lines.append(f".p-{name} {{ padding: {v}; }}")
+        lines.append(f".m-{name} {{ margin: {v}; }}")
+        lines.append(f".gap-{name} {{ gap: {v}; }}")
+    lines.append("")
+
+
+def _emit_bg_themed(lines):
+    """Dynamic-shade escape hatch."""
     lines.append("/* ── Dynamic-shade escape hatch ── */")
     lines.append(".bg-themed { background-color: var(--bg, var(--nce-color-primary));")
     lines.append(
         "  color: oklch(from var(--bg, var(--nce-color-primary)) calc((l - 0.62) * -infinity) 0 0); }"
     )
+
+
+def generate_css(payload: dict) -> str:
+    """Build the full nce_theme.css content from a token payload dict."""
+    g = payload.get
+    lines = []
+    _emit_root_block(g, lines)
+    _emit_role_bg_classes(g, lines)
+    _emit_role_text_border_classes(g, lines)
+    _emit_role_shade_classes(g, lines)
+    _emit_neutral_classes(g, lines)
+    _emit_shape_classes(lines)
+    _emit_typography_classes(g, lines)
+    _emit_spacing_classes(lines)
+    _emit_bg_themed(lines)
     return "\n".join(lines)
 
 
