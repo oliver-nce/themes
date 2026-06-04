@@ -267,3 +267,17 @@ export function isDark(hex: string): boolean {
   const { L } = hexToOklch(hex);
   return L < 0.55;
 }
+
+export function pickFgMono(hex: string): string {
+  if (!hex || hex.length < 7) return "#FFFFFF";
+  const { L } = hexToOklch(hex);
+  return L > 0.62 ? "#0A0A0A" : "#FFFFFF";
+}
+
+export function pickFgTonal(hex: string): string {
+  if (!hex || hex.length < 7) return "#FFFFFF";
+  const { L, C, h } = hexToOklch(hex);
+  const targetL = Math.max(0.05, Math.min(0.95, 1 - L));
+  const targetC = C * 0.35;
+  return oklchToHex(targetL, targetC, h);
+}
