@@ -32,12 +32,21 @@ Need a color/spacing/typography value in a Vue component?
 
 ### Buttons
 
-```html
-<!-- correct: auto-paired foreground -->
-<button class="theme-bg-primary theme-rounded theme-p-sm">Primary</button>
+Use **filled shade** buttons — not frappe-ui `variant="outline"` with page-background fill.
+See `button_hierarchy` in `THEME_CLASS_CONTRACT.json`.
 
-<!-- correct: explicit tonal -->
-<button class="theme-bg-secondary theme-text-secondary-fg-tonal theme-rounded theme-p-sm">Tonal</button>
+```html
+<!-- main CTA — auto-paired mono fg -->
+<button class="theme-bg-primary theme-rounded theme-p-sm">Submit</button>
+
+<!-- quiet secondary (Cancel, Revert) on theme-bg-surface panels -->
+<button class="theme-bg-primary-100 theme-border theme-rounded theme-p-sm">Cancel</button>
+
+<!-- stronger secondary (tabs, Go) when needed -->
+<button class="theme-bg-primary-500 theme-border-primary theme-rounded theme-p-sm">Go</button>
+
+<!-- wrong: page bg on a panel control -->
+<button class="…" style="background: var(--nce-color-bg)">…</button>
 
 <!-- wrong: hardcoded color -->
 <button class="theme-bg-primary text-white">…</button>

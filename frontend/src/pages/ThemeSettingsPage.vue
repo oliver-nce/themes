@@ -29,20 +29,24 @@
 						</option>
 					</select>
 					<div class="editor-actions flex flex-wrap gap-2 justify-end">
-						<Button variant="outline" class="theme-btn theme-btn-outline" @click="openPreview">
+						<Button
+							variant="solid"
+							class="theme-btn theme-btn-quiet bg-primary-100 text-primary-100-fg border border-border hover:bg-row-alt"
+							@click="openPreview"
+						>
 							Open Preview ↗
 						</Button>
 						<Button
-							variant="outline"
-							class="theme-btn theme-btn-outline"
+							variant="solid"
+							class="theme-btn theme-btn-quiet bg-primary-100 text-primary-100-fg border border-border hover:bg-row-alt"
 							:disabled="!isDirty || loadingTheme"
 							@click="revertChanges"
 						>
 							Revert
 						</Button>
 						<Button
-							variant="outline"
-							class="theme-btn theme-btn-outline"
+							variant="solid"
+							class="theme-btn theme-btn-quiet bg-primary-100 text-primary-100-fg border border-border hover:bg-row-alt"
 							:loading="saving"
 							:disabled="!isDirty || loadingTheme"
 							@click="handleSave"
@@ -50,8 +54,8 @@
 							Save Changes
 						</Button>
 						<Button
-							variant="outline"
-							class="theme-btn theme-btn-outline"
+							variant="solid"
+							class="theme-btn theme-btn-quiet bg-primary-100 text-primary-100-fg border border-border hover:bg-row-alt"
 							:disabled="loadingTheme"
 							@click="openSaveAsDialog"
 						>
@@ -59,7 +63,7 @@
 						</Button>
 						<Button
 							variant="solid"
-							class="theme-btn theme-btn-primary"
+							class="theme-btn theme-btn-primary bg-primary text-primary-fg border border-primary"
 							:loading="applying"
 							:disabled="loadingTheme || editingTheme === siteActiveTheme"
 							@click="requestApplyToSite"
@@ -134,8 +138,8 @@
 				>
 					<template #actions>
 						<Button
-							variant="outline"
-							class="theme-btn theme-btn-outline"
+							variant="solid"
+							class="theme-btn theme-btn-quiet bg-primary-100 text-primary-100-fg border border-border hover:bg-row-alt"
 							@click="applyStatusColorDefaults"
 						>
 							Use defaults
@@ -385,9 +389,26 @@
 					<h3 class="text-base font-semibold text-gray-900">{{ confirmDialog.title }}</h3>
 					<p class="text-sm text-gray-600 mt-2">{{ confirmDialog.message }}</p>
 					<div class="flex flex-wrap gap-2 justify-end mt-5">
-						<Button variant="outline" @click="closeConfirmDialog">Cancel</Button>
-						<Button variant="outline" @click="confirmDiscardAndContinue">Discard changes</Button>
-						<Button variant="solid" :loading="confirmDialog.busy" @click="confirmSaveAndContinue">
+						<Button
+							variant="solid"
+							class="bg-primary-100 text-primary-100-fg border border-border hover:bg-row-alt"
+							@click="closeConfirmDialog"
+						>
+							Cancel
+						</Button>
+						<Button
+							variant="solid"
+							class="bg-primary-100 text-primary-100-fg border border-border hover:bg-row-alt"
+							@click="confirmDiscardAndContinue"
+						>
+							Discard changes
+						</Button>
+						<Button
+							variant="solid"
+							class="bg-primary text-primary-fg border border-primary"
+							:loading="confirmDialog.busy"
+							@click="confirmSaveAndContinue"
+						>
 							Save &amp; continue
 						</Button>
 					</div>
@@ -411,8 +432,19 @@
 					/>
 					<p v-if="saveAsDialog.error" class="text-sm text-red-600 mt-2">{{ saveAsDialog.error }}</p>
 					<div class="flex gap-2 justify-end mt-4">
-						<Button variant="outline" @click="closeSaveAsDialog">Cancel</Button>
-						<Button variant="solid" :loading="saveAsDialog.busy" @click="submitSaveAs">
+						<Button
+							variant="solid"
+							class="bg-primary-100 text-primary-100-fg border border-border hover:bg-row-alt"
+							@click="closeSaveAsDialog"
+						>
+							Cancel
+						</Button>
+						<Button
+							variant="solid"
+							class="bg-primary text-primary-fg border border-primary"
+							:loading="saveAsDialog.busy"
+							@click="submitSaveAs"
+						>
 							Create theme
 						</Button>
 					</div>
@@ -1182,7 +1214,7 @@ watch(form, () => {
 	width: 100%;
 	appearance: none;
 	cursor: pointer;
-	background-color: var(--nce-color-bg, #ffffff);
+	background-color: var(--nce-color-surface, #ffffff);
 	background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%236b7280' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
 	background-repeat: no-repeat;
 	background-position: right 0.75rem center;
@@ -1230,24 +1262,6 @@ watch(form, () => {
 	padding-inline: 0.875rem !important;
 	padding-block: 0.5rem !important;
 	box-shadow: none !important;
-}
-
-.editor-actions :deep(.theme-btn-outline) {
-	border: 1px solid var(--nce-color-border, #d1d5db) !important;
-	background-color: var(--nce-color-bg, #ffffff) !important;
-	color: var(--nce-color-text, #374151) !important;
-}
-
-.editor-actions :deep(.theme-btn-outline:hover:not(:disabled)) {
-	background-color: var(--nce-color-row-alt, #f3f4f6) !important;
-	border-color: var(--nce-color-primary, #3b82f6) !important;
-	color: var(--nce-color-heading, #111827) !important;
-}
-
-.editor-actions :deep(.theme-btn-primary) {
-	background-color: var(--nce-color-primary, #111827) !important;
-	border: 1px solid var(--nce-color-primary, #111827) !important;
-	color: #ffffff !important;
 }
 
 .editor-actions :deep(.theme-btn-primary:hover:not(:disabled)) {

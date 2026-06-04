@@ -131,10 +131,11 @@ Example:
 1. Prefer the `theme-` class names over raw `var()`. Class names are the public API.
 2. Use `:style="{ … var(--nce-…) }"` only when the token name is dynamic.
 3. Never hardcode hex literals in components.
-4. For bg+text pairing, prefer `theme-bg-{role} theme-text-{role}-fg` over hand-picking `text-white`/`text-black`.
-5. For a row of buttons that must share text color regardless of background, put `text-white` (or `text-black`) on the parent and let it cascade. (`text-white`/`text-black` are vanilla fixed colors, not theme classes.)
-6. Non-curated shades (50, 400, 800, 950) have no class — use `:style` with `var()`.
-7. Don't drop the `theme-` prefix and don't add it to vanilla layout utilities (`flex`, `border-b`, `font-bold`).
+4. For bg+text pairing, prefer `theme-bg-{role}` (auto `-fg`) or `theme-bg-{role}-100` for quiet buttons — see `button_hierarchy` in `THEME_CLASS_CONTRACT.json`.
+5. Buttons on panels: main CTA `theme-bg-primary`; Cancel/Revert `theme-bg-primary-100 theme-border` — never `variant=outline` with page bg fill (see `button_hierarchy` in JSON).
+6. For a row of buttons that must share text color regardless of background, put `text-white` (or `text-black`) on the parent and let it cascade. (`text-white`/`text-black` are vanilla fixed colors, not theme classes.)
+7. Non-curated shades (50, 400, 800, 950) have no class — use `:style` with `var()`.
+8. Don't drop the `theme-` prefix and don't add it to vanilla layout utilities (`flex`, `border-b`, `font-bold`).
 
 ---
 
@@ -166,6 +167,9 @@ Spacing: theme-{p,m,gap}-{xs,sm,md,lg,xl}.
 Border: theme-border, theme-border-input-border, theme-border-input-focus.
 Motion: theme-duration-theme.
 Dynamic shade: theme-bg-themed + :style="{ '--bg': 'var(--nce-color-{role}-{N})' }".
+
+Buttons: Submit/Apply theme-bg-primary; Cancel/Revert theme-bg-primary-100 theme-border;
+no frappe outline + --nce-color-bg on panel controls (see button_hierarchy in JSON).
 
 Rules: never write hex literals; never hardcode color: white as a class default;
 prefer paired classes over hand-picked text-white/text-black; keep the theme- prefix;

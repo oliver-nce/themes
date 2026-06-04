@@ -16,7 +16,8 @@
     "Use var() inline only when the token name is dynamic (e.g. looping over palette roles).",
     "Never hardcode hex literals in components. The editor → publish → var() → class chain is broken the moment you do.",
     "For foreground/background pairing, prefer the paired class form (e.g. theme-bg-secondary theme-text-secondary-fg) over hand-picking text-white/text-black.",
-    "Do not add the theme- prefix to vanilla layout utilities (flex, items-center, border-b, font-bold) — those are not emitted by this theme and keep their normal names."
+    "Do not add the theme- prefix to vanilla layout utilities (flex, items-center, border-b, font-bold) — those are not emitted by this theme and keep their normal names.",
+    "Buttons on panels: read button_hierarchy — theme-bg-primary for Submit/Apply; theme-bg-primary-100 theme-border for Cancel/Revert; never frappe outline with --nce-color-bg fill."
   ],
   "color_roles": {
     "primary": {
@@ -145,10 +146,27 @@
       "theme": { "class": "theme-duration-theme", "var": "--nce-transition-speed", "status": "shipping" }
     }
   },
+  "button_hierarchy": {
+    "purpose": "Filled shade buttons with auto mono fg — do not use frappe-ui variant=outline or page-background fill on controls that sit on panels.",
+    "main_cta": {
+      "classes": "theme-bg-primary theme-border-primary theme-rounded theme-p-sm",
+      "notes": "Submit, Apply, Perform Find. theme-bg-primary sets paired -fg automatically."
+    },
+    "quiet_secondary": {
+      "classes": "theme-bg-primary-100 theme-border theme-rounded theme-p-sm",
+      "notes": "Cancel, Revert, Save, secondary toolbar actions on theme-bg-surface panels. Uses shade 100 + mono fg from emit pairing — not --nce-color-bg (page)."
+    },
+    "emphasis_secondary": {
+      "classes": "theme-bg-primary-500 theme-border-primary theme-rounded theme-p-sm",
+      "notes": "Second filled action when it must read stronger than 100 but weaker than base primary (e.g. active tab, Go)."
+    },
+    "panels": "Modals/cards use theme-bg-surface or theme-bg-card (--nce-color-surface). Page only on theme-bg-bg-page / body chrome."
+  },
   "examples_for_authors": {
-    "primary_button": "<button class=\"theme-bg-primary theme-rounded theme-p-sm\">Primary</button>",
+    "primary_button": "<button class=\"theme-bg-primary theme-rounded theme-p-sm\">Submit</button>",
+    "quiet_button": "<button class=\"theme-bg-primary-100 theme-border theme-rounded theme-p-sm\">Cancel</button>",
     "header_row_tonal": "<th class=\"theme-bg-secondary theme-text-secondary-fg-tonal theme-p-sm theme-font-heading\">FRAPPE DOCTYPE</th>",
-    "row_of_buttons": "<div class=\"flex theme-gap-sm\"><button class=\"theme-bg-primary theme-text-primary-fg\">A</button><button class=\"theme-bg-secondary theme-text-secondary-fg\">B</button><button class=\"theme-bg-accent theme-text-accent-fg\">C</button></div>",
+    "row_of_buttons": "<div class=\"flex theme-gap-sm\"><button class=\"theme-bg-primary\">Submit</button><button class=\"theme-bg-primary-100 theme-border\">Cancel</button></div>",
     "shade_class": "<div class=\"theme-bg-primary-100 theme-text-primary-900\">Card</div>",
     "dynamic_palette_loop": "<div v-for=\"c in palette\" :style=\"{ background: `var(${c.var})` }\">…</div>"
   },
@@ -156,7 +174,10 @@
     "Don't write hex literals (#3b82f6) in components.",
     "Don't write color: white as a default on a class that may sit on a light background.",
     "Don't assume non-curated shade stops (e.g. 400, 800) have classes — use var() for those.",
-    "Don't duplicate semantic classes inside <style scoped> when a theme utility exists.",
-    "Don't drop the theme- prefix — bare names (bg-primary, text-muted, border) collide with Desk/Bootstrap and will be overridden on Desk pages."
+    "Don't duplicate semantic colors inside <style scoped> when a theme- utility exists — layout-only scoped CSS is fine.",
+    "Don't drop the theme- prefix on Desk/downstream pages — bare names collide with Bootstrap.",
+    "Don't use frappe-ui Button variant=outline (or scoped CSS) with background var(--nce-color-bg) for buttons on panels — page bg is not control fill.",
+    "Don't map --bg-card or card/modal fills to --nce-color-bg; use --nce-color-surface (theme-bg-surface / theme-bg-card).",
+    "Don't use theme-bg-primary-500 for Cancel/Revert next to theme-bg-primary Submit — use theme-bg-primary-100 for quiet actions (see button_hierarchy)."
   ]
 }

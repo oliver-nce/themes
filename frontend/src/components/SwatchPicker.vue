@@ -71,12 +71,22 @@
 					</div>
 
 					<div class="popover-footer">
-						<button type="button" class="footer-btn" @click="useDefault">
+						<Button
+							variant="solid"
+							class="popover-btn bg-primary-100 text-primary-100-fg border border-border hover:bg-row-alt"
+							:disabled="isDefault"
+							@click="useDefault"
+						>
 							Use Default
-						</button>
-						<button type="button" class="footer-btn" @click="openCustom">
-							Other..
-						</button>
+						</Button>
+						<Button
+							variant="solid"
+							class="popover-btn bg-primary-100 text-primary-100-fg border border-border hover:bg-row-alt"
+							@click="openCustom"
+						>
+							Other
+							<span class="popover-btn-chevron">&#9660;</span>
+						</Button>
 					</div>
 				</template>
 
@@ -104,12 +114,20 @@
 						/>
 					</label>
 					<div class="popover-footer">
-						<button type="button" class="footer-btn" @click="view = 'grid'">
+						<Button
+							variant="solid"
+							class="popover-btn bg-primary-100 text-primary-100-fg border border-border hover:bg-row-alt"
+							@click="view = 'grid'"
+						>
 							Back
-						</button>
-						<button type="button" class="footer-btn" @click="applyCustom">
+						</Button>
+						<Button
+							variant="solid"
+							class="popover-btn bg-primary text-primary-fg border border-primary"
+							@click="applyCustom"
+						>
 							Apply
-						</button>
+						</Button>
 					</div>
 				</template>
 			</div>
@@ -148,6 +166,10 @@ function norm(hex: string) {
 function isActive(hex: string) {
 	return norm(props.modelValue) === norm(hex)
 }
+
+const isDefault = computed(
+	() => norm(props.modelValue) === norm(props.defaultValue),
+)
 
 function openPicker() {
 	customHex.value = norm(props.modelValue || props.defaultValue || "#000000")
@@ -277,23 +299,38 @@ const grayShades = [
 	display: flex;
 	justify-content: flex-end;
 	align-items: center;
-	gap: 1rem;
+	flex-wrap: wrap;
+	gap: 0.5rem;
 	padding-top: 0.625rem;
-	border-top: 1px solid #f3f4f6;
+	border-top: 1px solid var(--nce-color-border, #e5e7eb);
 }
 
-.footer-btn {
-	border: none;
-	background: transparent;
-	padding: 0;
-	font-size: 0.8125rem;
-	font-weight: 700;
-	color: #111827;
-	cursor: pointer;
+.popover-footer :deep(.popover-btn) {
+	font-family: var(--nce-font-family, inherit) !important;
+	font-size: calc(var(--nce-font-size, 14px) * 0.8125) !important;
+	font-weight: 500 !important;
+	border-radius: var(--nce-border-radius, 0.375rem) !important;
+	padding-inline: 0.75rem !important;
+	padding-block: 0.4375rem !important;
+	box-shadow: none !important;
+	min-height: unset !important;
+	height: auto !important;
+	line-height: 1.25 !important;
 }
 
-.footer-btn:hover {
-	color: #3b82f6;
+.popover-footer :deep(.popover-btn:disabled) {
+	opacity: 0.45;
+	cursor: not-allowed;
+}
+
+.popover-footer :deep(.border-primary:hover:not(:disabled)) {
+	filter: brightness(1.08);
+}
+
+.popover-btn-chevron {
+	margin-left: 0.25rem;
+	font-size: 0.5625rem;
+	opacity: 0.65;
 }
 
 .custom-title {

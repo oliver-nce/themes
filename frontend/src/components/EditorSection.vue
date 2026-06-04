@@ -132,18 +132,6 @@ watch(
 	box-shadow: none !important;
 }
 
-.editor-section-actions :deep(.theme-btn-outline) {
-	background: var(--nce-color-bg, #ffffff) !important;
-	border: 1px solid var(--nce-color-border, #d1d5db) !important;
-	color: var(--nce-color-text, #374151) !important;
-}
-
-.editor-section-actions :deep(.theme-btn-outline:hover:not(:disabled)) {
-	border-color: var(--nce-color-primary, #3b82f6) !important;
-	color: var(--nce-color-primary, #3b82f6) !important;
-	background: var(--nce-color-surface, #f9fafb) !important;
-}
-
 .editor-section-actions :deep(.theme-btn:disabled) {
 	opacity: 0.45;
 	cursor: not-allowed;
