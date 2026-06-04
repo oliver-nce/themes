@@ -262,7 +262,7 @@
 				<EditorSection title="Corners">
 					<div class="flex flex-wrap gap-3">
 						<div
-							v-for="r in ['none','sm','md','lg','full']"
+							v-for="r in radiusOptions"
 							:key="r"
 							class="w-16 h-16 border-2 cursor-pointer transition-all"
 							:class="form.border_radius === r ? 'border-blue-500 bg-blue-50' : 'border-gray-200 bg-gray-50 hover:border-gray-300'"
@@ -472,7 +472,7 @@ const COLOR_VAR_MAP: Record<string, string> = {
 }
 
 const BORDER_RADIUS_CSS: Record<string, string> = {
-	none: "0", sm: "0.125rem", md: "0.375rem", lg: "0.5rem", full: "9999px",
+	none: "0", sm: "0.125rem", md: "0.375rem", lg: "0.5rem", "x-lg": "0.75rem", full: "0.75rem",
 }
 
 const SHADOW_DEFS: Record<string, Array<[number,number,number,number,number]>> = {
@@ -720,7 +720,7 @@ const fontOptions = [
 const sizeOptions = ["12px", "13px", "14px", "15px", "16px", "18px"]
 const lineHeightOptions = ["tight", "snug", "normal", "relaxed", "loose"]
 const weightOptions = ["300", "400", "500", "600"]
-const radiusOptions = ["none", "sm", "md", "lg", "full"]
+const radiusOptions = ["none", "sm", "md", "lg", "x-lg"]
 const spacingOptions = ["tight", "normal", "relaxed"]
 const shadowOptions = ["none", "sm", "md", "lg", "xl", "2xl", "3xl"]
 const sidebarOptions = ["200px", "220px", "240px", "260px", "280px"]
@@ -732,7 +732,8 @@ const radiusMap: Record<string, string> = {
 	sm: "0.125rem",
 	md: "0.375rem",
 	lg: "0.5rem",
-	full: "9999px",
+	"x-lg": "0.75rem",
+	full: "0.75rem",
 }
 
 const lineHeightMap: Record<string, string> = {
@@ -871,6 +872,8 @@ function applyPayloadToForm(payload: Record<string, any>) {
 		const val = payload[key]
 		if (key === "dark_mode") {
 			form[key] = !!val
+		} else if (key === "border_radius" && val === "full") {
+			form[key] = "x-lg"
 		} else if (val !== undefined && val !== null) {
 			form[key] = val
 		}

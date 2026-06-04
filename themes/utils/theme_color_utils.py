@@ -6,7 +6,8 @@ BORDER_RADIUS_MAP = {
 	"sm": "0.125rem",
 	"md": "0.375rem",
 	"lg": "0.5rem",
-	"full": "9999px",
+	"x-lg": "0.75rem",
+	"full": "0.75rem",  # legacy — was pill/circle; now maps to x-lg
 }
 
 SPACING_SCALE_MAP = {

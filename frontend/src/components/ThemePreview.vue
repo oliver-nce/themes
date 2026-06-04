@@ -49,7 +49,8 @@ const RADIUS_MAP: Record<string, string> = {
 	sm: "0.125rem",
 	md: "0.375rem",
 	lg: "0.5rem",
-	full: "9999px",
+	"x-lg": "0.75rem",
+	full: "0.75rem",
 }
 
 const SPACING_MAP: Record<string, string> = {
