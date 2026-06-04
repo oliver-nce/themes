@@ -22,7 +22,7 @@ add_to_apps_screen = [
 		"name": "themes",
 		"logo": "/assets/themes/images/logo.jpg",
 		"title": "Themes",
-		"route": "/app/themes",
+		"route": "/app/theme-editor",
 	}
 ]
 
