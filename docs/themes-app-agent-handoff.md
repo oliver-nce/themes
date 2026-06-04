@@ -74,7 +74,8 @@ Vue Theme Editor (/themes/theme-settings)
 cd /home/frappe/frappe-bench/apps/themes && git pull
 cd ~/frappe-bench
 bench --site manager.ncesoccer.com migrate
-# migrate runs sync_themes_workspace — drops stale Theme Version workspace links
+# Or if migrate already ran but workspace is still broken:
+bench --site manager.ncesoccer.com execute themes.workspace_fix.run
 cd apps/themes/frontend && yarn install && yarn build
 cd ~/frappe-bench
 bench build --app themes

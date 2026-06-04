@@ -4,6 +4,7 @@ import frappe
 
 from themes.utils.css_writer import publish_theme
 from themes.utils.default_theme import DEFAULT_THEME_PAYLOAD
+from themes.utils.workspace_sync import sync_themes_workspace
 
 
 def _ensure_default_theme():
@@ -37,3 +38,4 @@ def after_install():
         cfg.save()
 
     publish_theme(cfg.active_theme or default_name)
+    sync_themes_workspace()
