@@ -1,7 +1,7 @@
 <template>
 	<div class="max-w-6xl mx-auto px-6 py-4">
 		<!-- Header -->
-		<div class="editor-header">
+		<div class="editor-header editor-panel">
 			<div class="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
 				<div>
 					<h1 class="editor-title">Theme Editor</h1>
@@ -108,10 +108,8 @@
 			</nav>
 
 			<!-- ==================== COLORS TAB ==================== -->
-			<div v-show="activeTab === 'colors'" class="space-y-8">
-				<!-- Brand colours -->
-				<section>
-					<h2 class="section-title">Brand Colours</h2>
+			<div v-show="activeTab === 'colors'" class="editor-tab">
+				<EditorSection title="Brand Colours">
 					<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
 						<BrandColorPicker
 							v-for="c in brandColors"
@@ -126,20 +124,15 @@
 							show-shades
 						/>
 					</div>
-				</section>
+				</EditorSection>
 
-				<!-- Status colours -->
-				<section class="status-colors-panel">
-					<div class="status-colors-header">
-						<button
-							type="button"
-							class="status-colors-toggle"
-							:aria-expanded="statusColorsOpen"
-							@click="statusColorsOpen = !statusColorsOpen"
-						>
-							<span class="section-title status-colors-title">Status Colours</span>
-							<span class="status-colors-chevron" :class="{ open: statusColorsOpen }">&#9660;</span>
-						</button>
+				<EditorSection
+					title="Status Colours"
+					hint="Standard success, info, warning, and danger colours. Pick from primary, secondary, or gray swatches to override."
+					collapsible
+					:default-open="true"
+				>
+					<template #actions>
 						<Button
 							variant="outline"
 							class="theme-btn theme-btn-outline"
@@ -147,32 +140,25 @@
 						>
 							Use defaults
 						</Button>
+					</template>
+					<div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+						<SwatchPicker
+							v-for="c in statusColors"
+							:key="c.key"
+							:label="c.label"
+							:model-value="form[c.key]"
+							@update:model-value="form[c.key] = $event"
+							:primary-color="form.primary_color"
+							:secondary-color="form.secondary_color"
+							:primary-gamma="form.primary_color_gamma"
+							:primary-saturation="form.primary_color_saturation"
+							:secondary-gamma="form.secondary_color_gamma"
+							:secondary-saturation="form.secondary_color_saturation"
+						/>
 					</div>
-					<p class="status-colors-hint">
-						Standard success, info, warning, and danger colours. Pick from primary, secondary, or gray swatches to override.
-					</p>
-					<div v-show="statusColorsOpen" class="status-colors-body">
-						<div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-							<SwatchPicker
-								v-for="c in statusColors"
-								:key="c.key"
-								:label="c.label"
-								:model-value="form[c.key]"
-								@update:model-value="form[c.key] = $event"
-								:primary-color="form.primary_color"
-								:secondary-color="form.secondary_color"
-								:primary-gamma="form.primary_color_gamma"
-								:primary-saturation="form.primary_color_saturation"
-								:secondary-gamma="form.secondary_color_gamma"
-								:secondary-saturation="form.secondary_color_saturation"
-							/>
-						</div>
-					</div>
-				</section>
+				</EditorSection>
 
-				<!-- Text colours -->
-				<section>
-					<h2 class="section-title">Text Colours</h2>
+				<EditorSection title="Text Colours">
 					<div class="grid grid-cols-1 md:grid-cols-3 gap-6">
 						<SwatchPicker
 							v-for="c in textColors"
@@ -188,11 +174,9 @@
 							:secondary-saturation="form.secondary_color_saturation"
 						/>
 					</div>
-				</section>
+				</EditorSection>
 
-				<!-- Surface colours -->
-				<section>
-					<h2 class="section-title">Surfaces</h2>
+				<EditorSection title="Surfaces">
 					<div class="grid grid-cols-1 md:grid-cols-3 gap-6">
 						<SwatchPicker
 							v-for="c in surfaceColors"
@@ -208,13 +192,12 @@
 							:secondary-saturation="form.secondary_color_saturation"
 						/>
 					</div>
-				</section>
+				</EditorSection>
 			</div>
 
 			<!-- ==================== TYPOGRAPHY TAB ==================== -->
-			<div v-show="activeTab === 'typography'" class="space-y-8">
-				<section>
-					<h2 class="section-title">Fonts</h2>
+			<div v-show="activeTab === 'typography'" class="editor-tab">
+				<EditorSection title="Fonts">
 					<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
 						<SelectField
 							label="Body Font"
@@ -228,7 +211,6 @@
 						/>
 					</div>
 
-					<!-- Live font preview -->
 					<div class="mt-4 rounded-lg border border-gray-200 p-5 bg-white">
 						<p
 							class="text-2xl font-semibold mb-1"
@@ -249,10 +231,9 @@
 							daft zebras jump! The five boxing wizards jump quickly.
 						</p>
 					</div>
-				</section>
+				</EditorSection>
 
-				<section>
-					<h2 class="section-title">Size &amp; Weight</h2>
+				<EditorSection title="Size &amp; Weight">
 					<div class="grid grid-cols-1 md:grid-cols-3 gap-6">
 						<SelectField
 							label="Base Font Size"
@@ -270,14 +251,13 @@
 							v-model="form.font_weight_body"
 						/>
 					</div>
-				</section>
+				</EditorSection>
 			</div>
 
 			<!-- ==================== LAYOUT TAB ==================== -->
-			<div v-show="activeTab === 'layout'" class="space-y-8">
-				<section>
-					<h2 class="section-title">Corners</h2>
-					<div class="flex gap-3 mb-6">
+			<div v-show="activeTab === 'layout'" class="editor-tab">
+				<EditorSection title="Corners">
+					<div class="flex flex-wrap gap-3">
 						<div
 							v-for="r in ['none','sm','md','lg','full']"
 							:key="r"
@@ -289,8 +269,9 @@
 							<span class="flex items-center justify-center h-full text-xs text-gray-500 font-medium">{{ r }}</span>
 						</div>
 					</div>
+				</EditorSection>
 
-					<h2 class="section-title">Spacing &amp; Shadows</h2>
+				<EditorSection title="Spacing &amp; Shadows">
 					<div class="grid grid-cols-1 md:grid-cols-3 gap-6">
 						<SelectField
 							label="Spacing Scale"
@@ -314,10 +295,9 @@
 							:secondary-saturation="form.secondary_color_saturation"
 						/>
 					</div>
-				</section>
+				</EditorSection>
 
-				<section>
-					<h2 class="section-title">Dimensions</h2>
+				<EditorSection title="Dimensions">
 					<div class="grid grid-cols-1 md:grid-cols-3 gap-6">
 						<SelectField
 							label="Sidebar Width"
@@ -335,9 +315,9 @@
 							v-model="form.transition_speed"
 						/>
 					</div>
-				</section>
+				</EditorSection>
 
-				<section>
+				<EditorSection title="Dark Mode">
 					<div class="flex items-center gap-3">
 						<input
 							type="checkbox"
@@ -349,36 +329,33 @@
 							Enable Dark Mode
 						</label>
 					</div>
-				</section>
+				</EditorSection>
 			</div>
 
 			<!-- ==================== ADVANCED TAB ==================== -->
-			<div v-show="activeTab === 'advanced'" class="space-y-8">
-				<section>
-					<h2 class="section-title">Custom CSS</h2>
+			<div v-show="activeTab === 'advanced'" class="editor-tab">
+				<EditorSection title="Custom CSS">
 					<textarea
 						v-model="form.custom_css"
-						class="w-full font-mono text-sm border border-gray-200 rounded-lg p-3 bg-gray-50 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+						class="w-full font-mono text-sm border border-gray-200 rounded-lg p-3 bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
 						rows="8"
 						placeholder="/* Your custom CSS rules */"
 					/>
-				</section>
+				</EditorSection>
 
-				<section>
-					<h2 class="section-title">Extra CSS Variables (JSON)</h2>
+				<EditorSection
+					title="Extra CSS Variables (JSON)"
+					hint="Each key becomes --nce-{key} in the stylesheet."
+				>
 					<textarea
 						v-model="form.tailwind_overrides"
-						class="w-full font-mono text-sm border border-gray-200 rounded-lg p-3 bg-gray-50 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+						class="w-full font-mono text-sm border border-gray-200 rounded-lg p-3 bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
 						rows="5"
 						placeholder='{ "my-var": "value" }'
 					/>
-					<p class="text-xs text-gray-400 mt-1">
-						Each key becomes <code>--nce-{key}</code> in the stylesheet
-					</p>
-				</section>
+				</EditorSection>
 
-				<section>
-					<h2 class="section-title">Published CSS</h2>
+				<EditorSection title="Published CSS">
 					<p v-if="editorMeta.is_active && editorMeta.css_hash" class="text-sm text-gray-600">
 						Live theme published to <code>nce_theme.css</code>
 						(hash: {{ editorMeta.css_hash }})
@@ -389,7 +366,7 @@
 					<p v-else class="text-sm text-gray-500">
 						Saving updates this theme only. Use <strong>Apply to site</strong> to go live.
 					</p>
-				</section>
+				</EditorSection>
 			</div>
 		</template>
 
@@ -446,6 +423,7 @@ import { ref, reactive, watch, computed, onUnmounted, nextTick } from "vue"
 import { createResource } from "frappe-ui"
 import { generateShades, isDark, type ColorShade } from "@/utils/color-shades"
 import { STATUS_COLOR_DEFAULTS, STATUS_COLOR_KEYS } from "@/composables/useThemeDefaults"
+import EditorSection from "@/components/EditorSection.vue"
 import BrandColorPicker from "@/components/BrandColorPicker.vue"
 import SelectField from "@/components/SelectField.vue"
 import SwatchPicker from "@/components/SwatchPicker.vue"
@@ -589,7 +567,6 @@ onUnmounted(() => {
 // ─── State ────────────────────────────────────────────────────────
 
 const activeTab = ref("colors")
-const statusColorsOpen = ref(false)
 
 const tabs = [
 	{ id: "colors", label: "Colours" },
@@ -1139,18 +1116,30 @@ watch(form, () => {
 
 <style scoped>
 .section-title {
-	@apply text-sm font-semibold uppercase tracking-wide mb-3;
+	@apply text-sm font-semibold uppercase tracking-wide;
 	color: var(--nce-color-muted, #6b7280);
 	font-family: var(--nce-font-heading, inherit);
 }
 
-.editor-header {
-	margin-bottom: 1.25rem;
+.editor-panel {
 	padding: 1rem 1.25rem;
 	border-radius: var(--nce-border-radius, 0.375rem);
 	border: 1px solid var(--nce-color-border, #e5e7eb);
 	background: var(--nce-color-surface, #f9fafb);
 	box-shadow: var(--nce-shadow, 0 1px 2px rgba(0, 0, 0, 0.06));
+	width: 100%;
+	box-sizing: border-box;
+}
+
+.editor-tab {
+	display: flex;
+	flex-direction: column;
+	gap: 1rem;
+	width: 100%;
+}
+
+.editor-header {
+	margin-bottom: 1.25rem;
 }
 
 .editor-title {
@@ -1261,58 +1250,5 @@ watch(form, () => {
 .editor-actions :deep(.theme-btn:disabled) {
 	opacity: 0.45;
 	cursor: not-allowed;
-}
-
-.status-colors-panel {
-	border: 1px solid var(--nce-color-border, #e5e7eb);
-	border-radius: var(--nce-border-radius, 0.375rem);
-	background: var(--nce-color-surface, #f9fafb);
-	padding: 0.875rem 1rem 1rem;
-}
-
-.status-colors-header {
-	display: flex;
-	align-items: center;
-	justify-content: space-between;
-	gap: 0.75rem;
-	flex-wrap: wrap;
-}
-
-.status-colors-toggle {
-	display: flex;
-	align-items: center;
-	gap: 0.5rem;
-	padding: 0;
-	border: none;
-	background: transparent;
-	cursor: pointer;
-	color: inherit;
-}
-
-.status-colors-title {
-	margin-bottom: 0;
-}
-
-.status-colors-chevron {
-	font-size: 0.625rem;
-	color: var(--nce-color-muted, #6b7280);
-	transition: transform 0.15s ease;
-}
-
-.status-colors-chevron.open {
-	transform: rotate(180deg);
-}
-
-.status-colors-hint {
-	margin: 0.375rem 0 0;
-	font-size: calc(var(--nce-font-size, 14px) * 0.8125);
-	color: var(--nce-color-muted, #6b7280);
-	line-height: 1.4;
-}
-
-.status-colors-body {
-	margin-top: 1rem;
-	padding-top: 1rem;
-	border-top: 1px solid var(--nce-color-border, #e5e7eb);
 }
 </style>
