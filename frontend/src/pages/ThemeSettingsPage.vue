@@ -420,7 +420,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, watch, computed, onUnmounted } from "vue"
+import { ref, reactive, watch, computed, onUnmounted, nextTick } from "vue"
 import { createResource } from "frappe-ui"
 import { generateShades, isDark, type ColorShade } from "@/utils/color-shades"
 import BrandColorPicker from "@/components/BrandColorPicker.vue"
@@ -761,6 +761,7 @@ const selectedTheme = ref("")
 const editingTheme = ref("")
 const siteActiveTheme = ref("")
 const savedSnapshot = ref<Record<string, any>>({})
+const dirtyBaselineReady = ref(false)
 
 const editorMeta = reactive({
 	theme: "",
@@ -808,13 +809,50 @@ function buildPayloadFromForm(): Record<string, any> {
 	return payload
 }
 
+function canonicalPayload(source: Record<string, any>): Record<string, any> {
+	const payload: Record<string, any> = {}
+	for (const key of PAYLOAD_FIELDS) {
+		let val = source[key]
+		if (val === undefined || val === null) {
+			val = DEFAULTS[key as FormKey]
+		}
+		if (key === "dark_mode") {
+			payload[key] = val === true || val === 1 || val === "1" ? 1 : 0
+		} else if (key.endsWith("_gamma")) {
+			payload[key] = Number(val) || 0
+		} else if (key.endsWith("_saturation")) {
+			const n = Number(val)
+			payload[key] = Number.isFinite(n) ? n : 100
+		} else if (key.endsWith("_color") && typeof val === "string") {
+			payload[key] = val.toUpperCase()
+		} else if (key === "font_weight_body") {
+			payload[key] = String(val ?? DEFAULTS.font_weight_body)
+		} else if (key === "custom_css" || key === "tailwind_overrides") {
+			payload[key] = String(val ?? "")
+		} else {
+			payload[key] = val
+		}
+	}
+	return payload
+}
+
 function captureSnapshot(payload?: Record<string, any>) {
-	savedSnapshot.value = JSON.parse(JSON.stringify(payload || buildPayloadFromForm()))
+	savedSnapshot.value = canonicalPayload(payload || buildPayloadFromForm())
+}
+
+async function establishDirtyBaseline() {
+	dirtyBaselineReady.value = false
+	captureSnapshot()
+	await nextTick()
+	captureSnapshot()
+	dirtyBaselineReady.value = true
 }
 
 const isDirty = computed(() => {
-	if (!editorLoaded.value) return false
-	return JSON.stringify(buildPayloadFromForm()) !== JSON.stringify(savedSnapshot.value)
+	if (!editorLoaded.value || !dirtyBaselineReady.value || loadingTheme.value) return false
+	const current = canonicalPayload(buildPayloadFromForm())
+	const saved = canonicalPayload(savedSnapshot.value)
+	return JSON.stringify(current) !== JSON.stringify(saved)
 })
 
 function applyPayloadToForm(payload: Record<string, any>) {
@@ -845,11 +883,12 @@ const themesList = createResource({
 const editorResource = createResource({
 	url: "themes.api.get_theme_editor",
 	auto: false,
-	onSuccess(data: any) {
+	async onSuccess(data: any) {
 		loadingTheme.value = false
 		editorError.value = ""
 		switchError.value = ""
 		editorLoaded.value = false
+		dirtyBaselineReady.value = false
 		if (!data) {
 			editorError.value = "Theme not found."
 			return
@@ -863,8 +902,8 @@ const editorResource = createResource({
 		editorMeta.is_active = !!data.is_active
 		if (data.theme_name) form.theme_name = data.theme_name
 		applyPayloadToForm(data.payload || {})
-		captureSnapshot()
 		editorLoaded.value = true
+		await establishDirtyBaseline()
 		applyLiveThemeVars()
 	},
 	onError(err: any) {
@@ -878,6 +917,7 @@ const editorResource = createResource({
 async function loadTheme(theme: string) {
 	if (!theme) return
 	loadingTheme.value = true
+	dirtyBaselineReady.value = false
 	editorError.value = ""
 	try {
 		await editorResource.submit({ theme })

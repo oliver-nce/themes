@@ -185,7 +185,16 @@ watch(open, (val) => {
 })
 
 function emitAll(params: OklchColorParams) {
-	emit("update:modelValue", color600FromParams(params))
+	const nextHex = color600FromParams(params)
+	const currentHex = (props.modelValue || "").toUpperCase()
+	if (
+		nextHex === currentHex &&
+		params.gamma === gamma.value &&
+		params.saturation === saturation.value
+	) {
+		return
+	}
+	emit("update:modelValue", nextHex)
 	emit("update:gamma", params.gamma)
 	emit("update:saturation", params.saturation)
 }
