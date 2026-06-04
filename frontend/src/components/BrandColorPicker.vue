@@ -76,17 +76,18 @@
 						min="0"
 						max="360"
 						:value="Math.round(dialogHue)"
-						@input="dialogHue = +($event.target as HTMLInputElement).value"
+						@input="onHueInput($event)"
 					/>
 				</div>
 
 				<div class="hex-row">
 					<input
 						type="text"
-						:value="previewHex"
+						v-model="dialogHex"
 						maxlength="7"
 						class="hex-input"
-						readonly
+						placeholder="#RRGGBB"
+						@input="onDialogHexInput"
 					/>
 					<button class="hex-btn" title="Copy hex" @click="copyHex(previewHex)">
 						<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
@@ -115,6 +116,7 @@ import {
 	generateShadesFromParams,
 	hexToOklch,
 	paramsFromHex,
+	parseHexInput,
 	type OklchColorParams,
 } from "@/utils/color-shades"
 
@@ -139,6 +141,8 @@ const emit = defineEmits<{
 const open = ref(false)
 const showCopied = ref(false)
 const dialogHue = ref(250)
+const dialogHex = ref("#3B82F6")
+const pinned600Hex = ref<string | null>(null)
 const hasEyeDropper = typeof window !== "undefined" && "EyeDropper" in window
 
 const gamma = computed(() => props.gamma ?? 0)
@@ -156,20 +160,23 @@ const currentHex = computed(() => props.modelValue || color600FromParams(current
 
 const currentShades = computed(() => {
 	if (!props.showShades) return []
-	return generateShadesFromParams(currentParams())
+	return generateShadesFromParams(currentParams(), {
+		base600Hex: props.modelValue || undefined,
+	})
 })
 
 const canReset = computed(
 	() => gamma.value !== 0 || saturation.value !== 100,
 )
 
-const previewHex = computed(() =>
-	color600FromParams({
+const previewHex = computed(() => {
+	if (pinned600Hex.value) return pinned600Hex.value
+	return color600FromParams({
 		hue: dialogHue.value,
 		gamma: 0,
 		saturation: 100,
-	}),
-)
+	})
+})
 
 const satGradient = computed(() => {
 	const p = currentParams()
@@ -180,9 +187,30 @@ const satGradient = computed(() => {
 
 watch(open, (val) => {
 	if (val) {
+		const hex = (props.modelValue || "#3B82F6").toUpperCase()
 		dialogHue.value = currentParams().hue
+		dialogHex.value = hex
+		pinned600Hex.value = hex
 	}
 })
+
+function onHueInput(e: Event) {
+	pinned600Hex.value = null
+	dialogHue.value = +((e.target as HTMLInputElement).value)
+	dialogHex.value = color600FromParams({
+		hue: dialogHue.value,
+		gamma: 0,
+		saturation: 100,
+	})
+}
+
+function onDialogHexInput() {
+	const parsed = parseHexInput(dialogHex.value)
+	if (!parsed) return
+	pinned600Hex.value = parsed
+	dialogHue.value = hexToOklch(parsed).h
+	dialogHex.value = parsed
+}
 
 function emitAll(params: OklchColorParams) {
 	const nextHex = color600FromParams(params)
@@ -223,16 +251,27 @@ async function useEyeDropper() {
 	try {
 		const dropper = new (window as any).EyeDropper()
 		const result = await dropper.open()
-		dialogHue.value = hexToOklch(result.sRGBHex.toUpperCase()).h
+		const parsed = parseHexInput(result.sRGBHex)
+		if (!parsed) return
+		pinned600Hex.value = parsed
+		dialogHue.value = hexToOklch(parsed).h
+		dialogHex.value = parsed
 	} catch { /* cancelled */ }
 }
 
 function applyHue() {
-	emitAll({
-		hue: dialogHue.value,
-		gamma: 0,
-		saturation: 100,
-	})
+	const parsed = parseHexInput(dialogHex.value)
+	const hex =
+		pinned600Hex.value ??
+		parsed ??
+		color600FromParams({
+			hue: dialogHue.value,
+			gamma: 0,
+			saturation: 100,
+		})
+	emit("update:modelValue", hex)
+	emit("update:gamma", 0)
+	emit("update:saturation", 100)
 	open.value = false
 }
 </script>
@@ -370,7 +409,7 @@ function applyHue() {
 	border-radius: 4px;
 	font-family: monospace;
 	font-size: 12px;
-	background: #fafafa;
+	background: #fff;
 }
 .hex-btn {
 	width: 28px;

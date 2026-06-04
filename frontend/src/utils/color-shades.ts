@@ -169,6 +169,19 @@ export function defaultOklchParams(hue = 250): OklchColorParams {
   return { hue, gamma: 0, saturation: 100 };
 }
 
+/** Parse pasted hex with or without leading #. Returns #RRGGBB or null. */
+export function parseHexInput(raw: string): string | null {
+  const cleaned = raw.trim().replace(/^#/, "");
+  if (!/^[0-9A-Fa-f]{6}$/.test(cleaned)) return null;
+  return `#${cleaned.toUpperCase()}`;
+}
+
+function withPinned600(shades: ColorShade[], base600Hex?: string): ColorShade[] {
+  if (!base600Hex || !/^#[0-9A-Fa-f]{6}$/.test(base600Hex)) return shades;
+  const hex = base600Hex.toUpperCase();
+  return shades.map((s) => (s.shade === 600 ? { shade: 600, hex } : s));
+}
+
 /** Build params from a saved 600 hex (legacy themes may omit gamma/sat). */
 export function paramsFromHex(
   hex: string,
@@ -186,11 +199,14 @@ export function paramsFromHex(
   return { hue: h, gamma, saturation: sat };
 }
 
-export function generateShadesFromParams(params: OklchColorParams): ColorShade[] {
+export function generateShadesFromParams(
+  params: OklchColorParams,
+  options?: { base600Hex?: string },
+): ColorShade[] {
   const { hue, gamma, saturation } = params;
   const baseC = baseChromaAt600(hue) * (saturation / 100);
 
-  return SHADE_TARGETS.map(({ shade, l: baseL }) => {
+  const shades = SHADE_TARGETS.map(({ shade, l: baseL }) => {
     const targetL = lightnessWithGamma(shade, baseL, gamma);
     const maxC = maxChromaInGamut(targetL, hue, baseC * 1.5);
     let useC = Math.min(baseC, maxC);
@@ -202,6 +218,7 @@ export function generateShadesFromParams(params: OklchColorParams): ColorShade[]
       hex: oklchToHex(targetL, useC, hue),
     };
   });
+  return withPinned600(shades, options?.base600Hex);
 }
 
 export function color600FromParams(params: OklchColorParams): string {
@@ -226,12 +243,12 @@ export function generateShades(
 
   if (gamma !== 0 || saturation !== 100) {
     const params = paramsFromHex(baseHex, gamma, saturation);
-    return generateShadesFromParams(params);
+    return generateShadesFromParams(params, { base600Hex: baseHex });
   }
 
   const { C: baseC, h } = hexToOklch(baseHex);
 
-  return SHADE_TARGETS.map(({ shade, l: targetL }) => {
+  const shades = SHADE_TARGETS.map(({ shade, l: targetL }) => {
     const maxC = maxChromaInGamut(targetL, h, baseC * 1.5);
     let useC = Math.min(baseC, maxC);
     useC = extremeChromaScale(targetL, useC);
@@ -242,6 +259,7 @@ export function generateShades(
       hex: oklchToHex(targetL, useC, h),
     };
   });
+  return withPinned600(shades, baseHex);
 }
 
 export function isDark(hex: string): boolean {

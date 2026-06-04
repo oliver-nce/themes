@@ -230,6 +230,9 @@ def _generate_shades(base_hex, gamma=0, saturation=100):
 		use_c = _extreme_chroma_scale(target_l, use_c)
 		use_c = min(use_c, max_c)
 		result.append((shade, _oklch_to_hex(target_l, use_c, h)))
+	if base_hex and len(base_hex) >= 7:
+		pinned = base_hex.upper()
+		result = [(s, pinned if s == 600 else hx) for s, hx in result]
 	return result
 
 
