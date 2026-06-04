@@ -1,46 +1,37 @@
 <template>
-	<div class="relative swatch-picker" ref="wrapper">
-		<label class="swatch-picker-label">{{ label }}</label>
+	<div class="relative" ref="wrapper">
+		<label class="block text-sm font-medium text-gray-700 mb-1">{{ label }}</label>
 
-		<div class="swatch-picker-control">
-			<div class="swatch-current">
-				<span
-					class="swatch-preview"
-					:style="{ backgroundColor: modelValue || '#ffffff' }"
-				/>
-				<span class="swatch-hex">{{ modelValue || "—" }}</span>
-			</div>
-			<div class="swatch-picker-actions">
-				<button
-					type="button"
-					class="picker-btn"
-					:disabled="isDefault"
-					@click="useDefault"
-				>
-					Use default
-				</button>
-				<button type="button" class="picker-btn" @click="open = true">
-					Other
-				</button>
-			</div>
-		</div>
+		<!-- Compact trigger -->
+		<button
+			type="button"
+			class="flex items-center gap-2 px-2 py-1.5 rounded-md border border-gray-200 hover:border-gray-300 bg-white transition-colors w-full"
+			@click="open = !open"
+		>
+			<span
+				class="w-6 h-6 rounded shrink-0 border border-gray-100"
+				:style="{ backgroundColor: modelValue || '#ffffff' }"
+			/>
+			<span class="text-xs font-mono text-gray-600 truncate">{{ modelValue || '—' }}</span>
+			<span class="ml-auto text-gray-400 text-[10px]">&#9660;</span>
+		</button>
 
+		<!-- Popover (centered in viewport) -->
 		<Teleport to="body">
 			<div v-if="open" class="fixed inset-0 z-40" @click="open = false" />
 			<div
 				v-if="open"
-				class="swatch-popover fixed z-50 top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2"
+				class="fixed z-50 top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white border border-gray-200 rounded-lg shadow-xl p-3 w-72"
 			>
-				<div class="swatch-popover-title">Pick a colour</div>
+				<!-- Primary row -->
 				<div class="mb-2">
-					<div class="swatch-row-label">Primary</div>
-					<div class="swatch-grid">
+					<div class="text-[10px] font-medium text-gray-400 uppercase tracking-wide mb-1">Primary</div>
+					<div class="grid grid-cols-11 gap-[5px]">
 						<button
 							v-for="s in primaryShades"
 							:key="'p-' + s.shade"
-							type="button"
 							class="swatch"
-							:class="{ 'swatch-active': isActive(s.hex) }"
+							:class="{ 'swatch-active': modelValue === s.hex }"
 							:style="{ backgroundColor: s.hex }"
 							:title="s.shade + ' — ' + s.hex"
 							@click="pick(s.hex)"
@@ -48,15 +39,15 @@
 					</div>
 				</div>
 
+				<!-- Secondary row -->
 				<div class="mb-2">
-					<div class="swatch-row-label">Secondary</div>
-					<div class="swatch-grid">
+					<div class="text-[10px] font-medium text-gray-400 uppercase tracking-wide mb-1">Secondary</div>
+					<div class="grid grid-cols-11 gap-[5px]">
 						<button
 							v-for="s in secondaryShades"
 							:key="'s-' + s.shade"
-							type="button"
 							class="swatch"
-							:class="{ 'swatch-active': isActive(s.hex) }"
+							:class="{ 'swatch-active': modelValue === s.hex }"
 							:style="{ backgroundColor: s.hex }"
 							:title="s.shade + ' — ' + s.hex"
 							@click="pick(s.hex)"
@@ -64,15 +55,15 @@
 					</div>
 				</div>
 
+				<!-- Gray row -->
 				<div>
-					<div class="swatch-row-label">Gray</div>
-					<div class="swatch-grid">
+					<div class="text-[10px] font-medium text-gray-400 uppercase tracking-wide mb-1">Gray</div>
+					<div class="grid grid-cols-11 gap-[5px]">
 						<button
 							v-for="s in grayShades"
 							:key="'g-' + s.shade"
-							type="button"
 							class="swatch"
-							:class="{ 'swatch-active': isActive(s.hex) }"
+							:class="{ 'swatch-active': modelValue === s.hex }"
 							:style="{ backgroundColor: s.hex }"
 							:title="s.shade + ' — ' + s.hex"
 							@click="pick(s.hex)"
@@ -91,7 +82,6 @@ import { generateShades } from "@/utils/color-shades"
 const props = defineProps<{
 	label: string
 	modelValue: string
-	defaultValue: string
 	primaryColor: string
 	secondaryColor: string
 	primaryGamma?: number
@@ -105,22 +95,6 @@ const emit = defineEmits<{
 }>()
 
 const open = ref(false)
-
-function norm(hex: string) {
-	return (hex || "").toUpperCase()
-}
-
-const isDefault = computed(
-	() => norm(props.modelValue) === norm(props.defaultValue),
-)
-
-function isActive(hex: string) {
-	return norm(props.modelValue) === norm(hex)
-}
-
-function useDefault() {
-	emit("update:modelValue", props.defaultValue)
-}
 
 function pick(hex: string) {
 	emit("update:modelValue", hex)
@@ -156,114 +130,6 @@ const grayShades = [
 </script>
 
 <style scoped>
-.swatch-picker-label {
-	display: block;
-	font-size: 0.875rem;
-	font-weight: 500;
-	color: var(--nce-color-text, #374151);
-	margin-bottom: 0.375rem;
-}
-
-.swatch-picker-control {
-	display: flex;
-	flex-direction: column;
-	gap: 0.5rem;
-	padding: 0.5rem 0.625rem;
-	border: 1px solid var(--nce-color-border, #e5e7eb);
-	border-radius: var(--nce-border-radius, 0.375rem);
-	background: var(--nce-color-bg, #ffffff);
-}
-
-.swatch-current {
-	display: flex;
-	align-items: center;
-	gap: 0.5rem;
-	min-width: 0;
-}
-
-.swatch-preview {
-	width: 1.5rem;
-	height: 1.5rem;
-	border-radius: 0.25rem;
-	border: 1px solid var(--nce-color-border, #e5e7eb);
-	flex-shrink: 0;
-}
-
-.swatch-hex {
-	font-size: 0.75rem;
-	font-family: ui-monospace, monospace;
-	color: var(--nce-color-muted, #6b7280);
-	overflow: hidden;
-	text-overflow: ellipsis;
-	white-space: nowrap;
-}
-
-.swatch-picker-actions {
-	display: flex;
-	flex-wrap: wrap;
-	gap: 0.375rem;
-}
-
-.picker-btn {
-	font-family: var(--nce-font-family, inherit);
-	font-size: calc(var(--nce-font-size, 14px) * 0.8125);
-	font-weight: 500;
-	border-radius: var(--nce-border-radius, 0.375rem);
-	padding: 0.375rem 0.625rem;
-	background: var(--nce-color-bg, #ffffff);
-	border: 1px solid var(--nce-color-border, #d1d5db);
-	color: var(--nce-color-text, #374151);
-	cursor: pointer;
-	transition:
-		background-color var(--nce-transition-speed, 200ms),
-		border-color var(--nce-transition-speed, 200ms),
-		color var(--nce-transition-speed, 200ms);
-	white-space: nowrap;
-}
-
-.picker-btn:hover:not(:disabled) {
-	border-color: var(--nce-color-primary, #3b82f6);
-	color: var(--nce-color-primary, #3b82f6);
-	background: var(--nce-color-surface, #f9fafb);
-}
-
-.picker-btn:disabled {
-	opacity: 0.45;
-	cursor: default;
-}
-
-.swatch-popover {
-	background: var(--nce-color-bg, #ffffff);
-	border: 1px solid var(--nce-color-border, #e5e7eb);
-	border-radius: calc(var(--nce-border-radius, 0.375rem) + 2px);
-	box-shadow: var(--nce-shadow, 0 4px 16px rgba(0, 0, 0, 0.12));
-	padding: 0.875rem;
-	width: 18rem;
-	max-width: calc(100vw - 2rem);
-}
-
-.swatch-popover-title {
-	font-size: 0.8125rem;
-	font-weight: 600;
-	color: var(--nce-color-heading, #111827);
-	margin-bottom: 0.625rem;
-}
-
-.swatch-row-label {
-	font-size: 0.625rem;
-	font-weight: 600;
-	text-transform: uppercase;
-	letter-spacing: 0.04em;
-	color: var(--nce-color-muted, #9ca3af);
-	margin-bottom: 0.25rem;
-}
-
-.swatch-grid {
-	display: grid;
-	grid-template-columns: repeat(11, minmax(0, 1fr));
-	gap: 5px;
-}
-
 .swatch {
 	aspect-ratio: 1;
 	width: 100%;
@@ -273,14 +139,12 @@ const grayShades = [
 	padding: 0;
 	transition: transform 80ms ease, border-color 80ms ease;
 }
-
 .swatch:hover {
 	transform: scale(1.25);
 	z-index: 1;
 	border-color: rgba(255, 255, 255, 0.7);
 	box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.15);
 }
-
 .swatch-active {
 	border-color: white;
 	box-shadow: 0 0 0 2px #111;
