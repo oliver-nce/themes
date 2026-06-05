@@ -12,15 +12,6 @@ app_logo_url = "/assets/themes/images/logo.jpg"
 # any Frappe Desk elements — downstream apps opt-in by referencing the tokens.
 app_include_css = ["/assets/themes/css/nce_theme.css"]
 
-# Cache-bust nce_theme.css on Desk using Site Theme Config css_hash (see desk_assets.py).
-try:
-	import frappe
-	from themes.utils.desk_assets import install_get_hooks_patch
-
-	install_get_hooks_patch()
-except Exception:
-	pass
-
 # SPA route rules — Frappe serves the Vue app for /themes/* paths
 website_route_rules = [
 	{"from_route": "/themes/<path:app_path>", "to_route": "themes"},
