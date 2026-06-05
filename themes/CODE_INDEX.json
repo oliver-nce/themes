@@ -6,7 +6,7 @@
             "purpose": "Frappe custom app for site-wide CSS theming",
             "entry_points": {
                 "hooks.py": "Frappe app metadata, CSS loading, SPA routing, Apps screen entry, after_install",
-                "api.py": "Whitelisted API: get_theme_editor(), save_theme(), create_theme(), set_active_theme(), list_themes()",
+                "api.py": "Whitelisted API: get_theme_editor(), save_theme(), create_theme(), set_active_theme(), save_as_default(), list_themes()",
                 "install.py": "after_install hook: Site Theme Config + NCE Theme Default on fresh install",
                 "init_theme.py": "One-time init script: ensure NCE Theme Default exists and publish CSS. Run via bench execute.",
                 "patches/v1_0/migrate_theme_settings_to_nce_theme.py": "Post-migrate patch: legacy Theme Settings → NCE Theme Default",
@@ -14,8 +14,8 @@
                 "patches/v1_0/remove_legacy_theme_doctypes.py": "Drop Theme Version and Theme Settings from database"
             },
             "utils": {
-                "utils/theme_color_utils.py": "Color math helpers: OKLCH shade generation, shadow building, token maps (BORDER_RADIUS_MAP, etc.)",
-                "utils/css_writer.py": "CSS generation and publish: generate_css(), publish_theme(), TOKEN_FIELDS",
+                "utils/theme_color_utils.py": "Color math helpers: OKLCH shade generation, _effective_role_hex (gamma-aware 600 stop), shadow building, token maps (BORDER_RADIUS_MAP, etc.)",
+                "utils/css_writer.py": "CSS generation and publish: generate_css(), generate_site_css(), _emit_var_block(), _emit_font_faces_multi(), publish_theme(), TOKEN_FIELDS",
                 "utils/default_theme.py": "Default token payload for new NCE Theme installs"
             },
             "doctypes": {
@@ -61,7 +61,7 @@
         }
     },
     "architecture_notes": [
-        "Theme uses CSS custom properties (--nce-*) injected as :root vars — downstream apps consume via var()",
+        "Theme uses CSS custom properties (--nce-*) injected as :root vars (default) plus [data-nce-theme=\"slug\"] scoped blocks per Active theme — downstream apps consume via var() or data-nce-theme scoping",
         "Theme CSS is loaded site-wide via app_include_css in hooks.py",
         "Vue SPA is served at /themes/* routes via www/themes.html"
     ]

@@ -230,7 +230,10 @@ def _extreme_chroma_scale(target_l, use_c):
 	return use_c
 
 
-def _generate_shades(base_hex, gamma=0, saturation=100):
+GAMMA_SAT_ROLE_FIELDS = frozenset({"primary_color", "secondary_color"})
+
+
+def _generate_shades(base_hex, gamma=0, saturation=100, pin_600_to_base=True):
 	"""Generate 11-stop shade scale (50–950) from a base hex colour."""
 	if not base_hex or len(base_hex) < 7:
 		return []
@@ -250,10 +253,22 @@ def _generate_shades(base_hex, gamma=0, saturation=100):
 		use_c = _extreme_chroma_scale(target_l, use_c)
 		use_c = min(use_c, max_c)
 		result.append((shade, _oklch_to_hex(target_l, use_c, h)))
-	if base_hex and len(base_hex) >= 7:
+	if pin_600_to_base and base_hex and len(base_hex) >= 7:
 		pinned = base_hex.upper()
 		result = [(s, pinned if s == 600 else hx) for s, hx in result]
 	return result
+
+
+def _effective_role_hex(base_hex, gamma=0, saturation=100):
+	"""600-stop hex after gamma/sat — matches frontend color600FromParams (unpinned)."""
+	if not base_hex or len(base_hex) < 7:
+		return base_hex
+	gamma = float(gamma or 0)
+	saturation = float(saturation if saturation is not None else 100)
+	if gamma == 0 and saturation == 100:
+		return base_hex.upper()
+	shades = dict(_generate_shades(base_hex, gamma, saturation, pin_600_to_base=False))
+	return shades.get(600, base_hex).upper()
 
 
 def _build_shadow(level, color_hex):

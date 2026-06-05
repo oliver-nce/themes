@@ -6,6 +6,14 @@
     "tailwind_config": "frontend/tailwind.config.js (editor SPA internal build only — not the downstream/Desk class names)",
     "shade_generator": "frontend/src/utils/color-shades.ts"
   },
+  "palette_scoping": {
+    "summary": "Utility classes are theme-agnostic — they paint with whatever --nce-* variables are in scope.",
+    "default": ":root holds the Site Theme Config.active_theme palette (the site default).",
+    "scoped_palettes": "Each NCE Theme with status=Active also gets [data-nce-theme=\"<slug>\"] { --nce-* … } in nce_theme.css.",
+    "consumer_usage": "Set data-nce-theme=\"<slug>\" on an ancestor element to scope a subtree to that palette. Unknown or empty slug inherits :root.",
+    "custom_css": "custom_css is global and emitted only on :root — not inside scoped palette blocks.",
+    "class_layer": "The theme-* utility class layer is emitted once; no class changes are needed for per-element theming."
+  },
   "status_legend": {
     "shipping": "Class is emitted by css_writer.py into nce_theme.css today — safe to use immediately on Desk after republish.",
     "var-only": "CSS variable is emitted but no class maps to it. Use :style=\"{ ... }\" with var() until a class is added.",

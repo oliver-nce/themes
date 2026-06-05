@@ -5,6 +5,14 @@ from frappe import _
 from themes.utils.css_writer import TOKEN_FIELDS, publish_theme
 
 
+def _default_theme_payload() -> dict:
+    """Load the current Site Theme Config default palette for seeding new themes."""
+    active = frappe.db.get_single_value("Site Theme Config", "active_theme")
+    if active and frappe.db.exists("NCE Theme", active):
+        return json.loads(frappe.db.get_value("NCE Theme", active, "theme_json") or "{}")
+    return {}
+
+
 def _parse_payload(payload):
     if isinstance(payload, str):
         payload = json.loads(payload)
@@ -51,7 +59,7 @@ def get_active_theme_editor():
 
 @frappe.whitelist()
 def save_theme(theme: str, payload):
-    """Save theme_json on a specific NCE Theme; publish CSS only if it is site-active."""
+    """Save theme_json on a specific NCE Theme; republish when Active or site-default."""
     frappe.only_for("System Manager")
     if not frappe.db.exists("NCE Theme", theme):
         frappe.throw(_("NCE Theme {0} does not exist").format(theme))
@@ -60,9 +68,9 @@ def save_theme(theme: str, payload):
     doc.theme_json = json.dumps(clean, default=str)
     doc.flags.ignore_permissions = True
     doc.save()
-    result = {"status": "ok", "theme": theme, "is_active": False}
-    if frappe.db.get_single_value("Site Theme Config", "active_theme") == theme:
-        result["is_active"] = True
+    active = frappe.db.get_single_value("Site Theme Config", "active_theme")
+    result = {"status": "ok", "theme": theme, "is_active": active == theme}
+    if doc.status == "Active" or active == theme:
         result.update(publish_theme(theme))
     return result
 
@@ -87,9 +95,10 @@ def create_theme(theme_name: str, payload):
     if frappe.db.exists("NCE Theme", {"theme_name": theme_name}):
         frappe.throw(_("A theme named {0} already exists").format(theme_name))
     clean = _parse_payload(payload)
+    merged = {**_default_theme_payload(), **clean}
     doc = frappe.new_doc("NCE Theme")
     doc.theme_name = theme_name
-    doc.theme_json = json.dumps(clean, default=str)
+    doc.theme_json = json.dumps(merged, default=str)
     doc.status = "Active"
     doc.flags.ignore_permissions = True
     doc.insert()
@@ -111,6 +120,12 @@ def set_active_theme(theme: str):
     cfg.save()
     result = publish_theme(theme)
     return {"status": "ok", "theme": theme, **result}
+
+
+@frappe.whitelist()
+def save_as_default(theme: str):
+    """Set Site Theme Config.active_theme and republish (Save as default)."""
+    return set_active_theme(theme)
 
 
 @frappe.whitelist()

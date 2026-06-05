@@ -4,7 +4,8 @@ import hashlib
 import frappe
 from themes.utils.theme_color_utils import (
     BORDER_RADIUS_MAP, SPACING_SCALE_MAP, LINE_HEIGHT_MAP,
-    TRANSITION_MAP, _build_shadow, _generate_shades,
+    TRANSITION_MAP, _build_shadow, _generate_shades, _effective_role_hex,
+    GAMMA_SAT_ROLE_FIELDS,
     pick_fg_mono, pick_fg_tonal,
 )
 
@@ -143,13 +144,32 @@ def _font_face_blocks(name):
     return out
 
 
+def _collect_font_names(payloads):
+    """Return de-duplicated registered font names across payload dicts."""
+    names = []
+    for payload in payloads:
+        g = payload.get
+        for field in ("font_family", "heading_font_family"):
+            n = _resolve_font_name(g(field))
+            if n and n != "System Default" and n in FONT_REGISTRY and n not in names:
+                names.append(n)
+    return names
+
+
 def _emit_font_faces(g, lines):
     """Emit @font-face rules for the active body + heading fonts (deduplicated)."""
-    names = []
-    for field in ("font_family", "heading_font_family"):
-        n = _resolve_font_name(g(field))
-        if n and n != "System Default" and n in FONT_REGISTRY and n not in names:
-            names.append(n)
+    names = _collect_font_names([{"get": g}])
+    if not names:
+        return
+    lines.append("/* ── Self-hosted variable fonts (active body + heading) ── */")
+    for n in names:
+        lines += _font_face_blocks(n)
+    lines.append("")
+
+
+def _emit_font_faces_multi(payloads, lines):
+    """Emit @font-face rules for fonts used across multiple theme payloads."""
+    names = _collect_font_names(payloads)
     if not names:
         return
     lines.append("/* ── Self-hosted variable fonts (active body + heading) ── */")
@@ -167,31 +187,55 @@ def generate_fonts_css() -> str:
     return "\n".join(lines)
 
 
-def _emit_root_block(g, lines):
-    """Emit :root { --nce-* } and optional custom_css."""
-    lines.extend([":root {", "", "\t/* ── Theme: canonical variables ── */"])
+def _role_gamma_sat(g, field):
+    if field not in GAMMA_SAT_ROLE_FIELDS:
+        return 0.0, 100.0
+    gamma = float(g(f"{field}_gamma") or 0)
+    saturation = g(f"{field}_saturation")
+    if saturation is None:
+        saturation = 100
+    return gamma, float(saturation)
+
+
+def _emit_var_block(g, lines, selector=":root", include_custom_css=True):
+    """Emit a `selector { --nce-* }` variable block and optional custom_css.
+
+    `selector` defaults to ":root" (the published default palette). Scoped
+    palettes pass e.g. '[data-nce-theme="ocean"]'. `custom_css` is global and
+    only appended when `include_custom_css` is True (it cannot be safely scoped).
+    """
+    lines.extend([f"{selector} {{", "", "\t/* ── Theme: canonical variables ── */"])
     for f, var in COLOR_FIELDS.items():
         v = g(f)
-        if v:
-            lines.append(f"\t--nce-{var}: {v};")
+        if not v:
+            continue
+        if f in GAMMA_SAT_ROLE_FIELDS:
+            gamma, saturation = _role_gamma_sat(g, f)
+            v = _effective_role_hex(v, gamma, saturation)
+        lines.append(f"\t--nce-{var}: {v};")
     for f, var in COLOR_FIELDS.items():
         if f not in FG_ROLES:
             continue
         v = g(f)
         if not v:
             continue
-        lines.append(f"\t--nce-{var}-fg: {pick_fg_mono(v)};")
-        lines.append(f"\t--nce-{var}-fg-tonal: {pick_fg_tonal(v)};")
+        if f in GAMMA_SAT_ROLE_FIELDS:
+            gamma, saturation = _role_gamma_sat(g, f)
+            fg_hex = _effective_role_hex(v, gamma, saturation)
+        else:
+            fg_hex = v
+        lines.append(f"\t--nce-{var}-fg: {pick_fg_mono(fg_hex)};")
+        lines.append(f"\t--nce-{var}-fg-tonal: {pick_fg_tonal(fg_hex)};")
     lines += ["", "\t/* ── Shade scales (50–950) ── */"]
     for f, var in SHADE_SCALE_FIELDS.items():
         v = g(f)
         if not v:
             continue
-        gamma = g(f"{f}_gamma") or 0
-        saturation = g(f"{f}_saturation")
-        if saturation is None:
-            saturation = 100
-        for shade_num, shade_hex in _generate_shades(v, gamma=gamma, saturation=saturation):
+        gamma, saturation = _role_gamma_sat(g, f)
+        pin_600 = f not in GAMMA_SAT_ROLE_FIELDS or (gamma == 0 and saturation == 100)
+        for shade_num, shade_hex in _generate_shades(
+            v, gamma=gamma, saturation=saturation, pin_600_to_base=pin_600,
+        ):
             lines.append(f"\t--nce-{var}-{shade_num}: {shade_hex};")
             if shade_num in CURATED_SHADES:
                 lines.append(f"\t--nce-{var}-{shade_num}-fg: {pick_fg_mono(shade_hex)};")
@@ -219,7 +263,7 @@ def _emit_root_block(g, lines):
         except (json.JSONDecodeError, TypeError):
             pass
     lines.append("}")
-    if g("custom_css"):
+    if include_custom_css and g("custom_css"):
         lines += ["", g("custom_css")]
     lines.append("")
 
@@ -408,7 +452,7 @@ def generate_css(payload: dict) -> str:
     g = payload.get
     lines = []
     _emit_font_faces(g, lines)
-    _emit_root_block(g, lines)
+    _emit_var_block(g, lines)
     _emit_role_bg_classes(g, lines)
     _emit_role_text_border_classes(g, lines)
     _emit_role_shade_classes(g, lines)
@@ -417,6 +461,31 @@ def generate_css(payload: dict) -> str:
     _emit_typography_classes(g, lines)
     _emit_spacing_classes(lines)
     _emit_bg_themed(lines)
+    return "\n".join(lines)
+
+
+def generate_site_css(default_payload: dict, active_themes: list[tuple[str, dict]]) -> str:
+    """default_payload → :root + class layer; active_themes = [(slug, payload), …] → scoped var blocks."""
+    g = default_payload.get
+    lines = []
+    _emit_font_faces_multi([default_payload] + [p for _, p in active_themes], lines)
+    _emit_var_block(g, lines, ":root", include_custom_css=True)
+    # Classes are gated by fields present in the default payload — the default defines all standard roles.
+    _emit_role_bg_classes(g, lines)
+    _emit_role_text_border_classes(g, lines)
+    _emit_role_shade_classes(g, lines)
+    _emit_neutral_classes(g, lines)
+    _emit_shape_classes(lines)
+    _emit_typography_classes(g, lines)
+    _emit_spacing_classes(lines)
+    _emit_bg_themed(lines)
+    for slug, payload in active_themes:
+        _emit_var_block(
+            payload.get,
+            lines,
+            f'[data-nce-theme="{slug}"]',
+            include_custom_css=False,
+        )
     return "\n".join(lines)
 
 
@@ -458,10 +527,30 @@ def _write_css_hash_file(css_hash: str) -> str:
 
 
 def publish_theme(theme_name: str) -> dict:
-    """Read an NCE Theme, regenerate nce_theme.css, update Site Theme Config."""
-    theme = frappe.get_doc("NCE Theme", theme_name)
-    payload = json.loads(theme.theme_json or "{}")
-    css = generate_css(payload)
+    """Rebuild nce_theme.css from current DB state (default :root + all Active scoped palettes)."""
+    default_name = frappe.db.get_single_value("Site Theme Config", "active_theme")
+    if default_name and frappe.db.exists("NCE Theme", default_name):
+        default_payload = json.loads(
+            frappe.db.get_value("NCE Theme", default_name, "theme_json") or "{}"
+        )
+    else:
+        default_name = theme_name
+        default_payload = json.loads(
+            frappe.db.get_value("NCE Theme", theme_name, "theme_json") or "{}"
+        )
+
+    active_themes = []
+    for row in frappe.get_all(
+        "NCE Theme",
+        filters={"status": "Active"},
+        fields=["slug", "theme_json"],
+    ):
+        slug = (row.slug or "").strip()
+        if not slug:
+            continue
+        active_themes.append((slug, json.loads(row.theme_json or "{}")))
+
+    css = generate_site_css(default_payload, active_themes)
     _write_css_file(css)
     _write_fonts_css()
     css_hash = hashlib.sha1(css.encode("utf-8")).hexdigest()[:8]
@@ -469,4 +558,4 @@ def publish_theme(theme_name: str) -> dict:
     frappe.db.set_single_value("Site Theme Config", "css_hash", css_hash)
     frappe.cache.delete_value("assets_json")
     frappe.clear_cache()
-    return {"status": "ok", "theme": theme_name, "css_hash": css_hash, "bytes": len(css)}
+    return {"status": "ok", "theme": default_name, "css_hash": css_hash, "bytes": len(css)}
