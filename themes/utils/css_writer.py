@@ -441,6 +441,22 @@ def _write_fonts_css() -> str:
     return path
 
 
+def _write_css_hash_file(css_hash: str) -> str:
+    """Write the published css_hash to a sidecar file read by hooks.py for cache-busting.
+
+    Using a plain file (not the DB) keeps hooks.py import-time and DB-free, so a
+    missing/unreadable hash can never break boot — hooks.py just falls back to the
+    bare CSS path.
+    """
+    app_path = frappe.get_app_path("themes")
+    css_dir = os.path.join(app_path, "public", "css")
+    os.makedirs(css_dir, exist_ok=True)
+    path = os.path.join(css_dir, "nce_theme.css.hash")
+    with open(path, "w") as f:
+        f.write(css_hash)
+    return path
+
+
 def publish_theme(theme_name: str) -> dict:
     """Read an NCE Theme, regenerate nce_theme.css, update Site Theme Config."""
     theme = frappe.get_doc("NCE Theme", theme_name)
@@ -449,6 +465,7 @@ def publish_theme(theme_name: str) -> dict:
     _write_css_file(css)
     _write_fonts_css()
     css_hash = hashlib.sha1(css.encode("utf-8")).hexdigest()[:8]
+    _write_css_hash_file(css_hash)
     frappe.db.set_single_value("Site Theme Config", "css_hash", css_hash)
     frappe.cache.delete_value("assets_json")
     frappe.clear_cache()
