@@ -228,6 +228,17 @@ export function color600FromParams(params: OklchColorParams): string {
   );
 }
 
+/** 600-stop hex after gamma/sat — matches Python _effective_role_hex / publish emit. */
+export function effectiveRoleHex(
+  hex: string,
+  gamma = 0,
+  saturation = 100,
+): string {
+  if (!hex || !/^#[0-9A-Fa-f]{6}$/.test(hex)) return hex;
+  if (gamma === 0 && saturation === 100) return hex.toUpperCase();
+  return color600FromParams(paramsFromHex(hex, gamma, saturation));
+}
+
 /**
  * Generate an 11-stop shade scale (50–950) from a single base color.
  * Without gamma/sat options, derives chroma from the base hex (legacy behaviour).
@@ -243,7 +254,7 @@ export function generateShades(
 
   if (gamma !== 0 || saturation !== 100) {
     const params = paramsFromHex(baseHex, gamma, saturation);
-    return generateShadesFromParams(params, { base600Hex: baseHex });
+    return generateShadesFromParams(params);
   }
 
   const { C: baseC, h } = hexToOklch(baseHex);

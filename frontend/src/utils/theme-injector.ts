@@ -1,4 +1,9 @@
-import { pickFgMono, pickFgTonal, generateShades } from "./color-shades"
+import {
+	pickFgMono,
+	pickFgTonal,
+	generateShades,
+	effectiveRoleHex,
+} from "./color-shades"
 
 const FG_ROLES = [
 	"primary_color",
@@ -9,6 +14,7 @@ const FG_ROLES = [
 	"warning_color",
 	"danger_color",
 ] as const
+const GAMMA_SAT_ROLES = new Set(["primary_color", "secondary_color"])
 const CURATED_SHADES = [100, 200, 300, 500, 600, 700, 900] as const
 const ROLE_VAR: Record<string, string> = {
 	primary_color: "color-primary",
@@ -35,11 +41,23 @@ const SPACING_MAP: Record<string, string> = {
 	relaxed: "1.5rem",
 }
 
+function roleAdjustments(role: string, settings: Record<string, unknown>) {
+	if (!GAMMA_SAT_ROLES.has(role)) return undefined
+	return {
+		gamma: Number(settings[`${role}_gamma`] ?? 0),
+		saturation: Number(settings[`${role}_saturation`] ?? 100),
+	}
+}
+
 export function generateCSSVars(settings: Record<string, any>): string {
 	const lines: string[] = [":root {"]
 
 	if (settings.primary_color) {
-		lines.push(`\t--nce-color-primary: ${settings.primary_color};`)
+		const adj = roleAdjustments("primary_color", settings)
+		const hex = adj
+			? effectiveRoleHex(settings.primary_color, adj.gamma, adj.saturation)
+			: settings.primary_color
+		lines.push(`\t--nce-color-primary: ${hex};`)
 	}
 	if (settings.font_family) {
 		lines.push(`\t--nce-font-family: '${settings.font_family}', sans-serif;`)
@@ -59,15 +77,26 @@ export function injectCSSVars(settings: Record<string, any>) {
 	const root = document.documentElement
 
 	if (settings.primary_color) {
-		root.style.setProperty("--nce-color-primary", settings.primary_color)
+		const adj = roleAdjustments("primary_color", settings)
+		const hex = adj
+			? effectiveRoleHex(settings.primary_color, adj.gamma, adj.saturation)
+			: settings.primary_color
+		root.style.setProperty("--nce-color-primary", hex)
 	}
 	for (const role of FG_ROLES) {
 		const hex = settings[role]
 		if (!hex) continue
 		const v = ROLE_VAR[role]
-		root.style.setProperty(`--nce-${v}-fg`, pickFgMono(hex))
-		root.style.setProperty(`--nce-${v}-fg-tonal`, pickFgTonal(hex))
-		const shades = generateShades(hex)
+		const adj = roleAdjustments(role, settings)
+		const roleHex = adj
+			? effectiveRoleHex(hex, adj.gamma, adj.saturation)
+			: hex
+		if (GAMMA_SAT_ROLES.has(role)) {
+			root.style.setProperty(`--nce-${v}`, roleHex)
+		}
+		root.style.setProperty(`--nce-${v}-fg`, pickFgMono(roleHex))
+		root.style.setProperty(`--nce-${v}-fg-tonal`, pickFgTonal(roleHex))
+		const shades = generateShades(hex, adj)
 		for (const s of shades) {
 			if (!CURATED_SHADES.includes(s.shade as (typeof CURATED_SHADES)[number]))
 				continue
