@@ -14,6 +14,38 @@
 							· Site base: <strong>{{ siteBaseThemeName }}</strong>
 						</span>
 					</p>
+					<div
+						v-if="editorLoaded"
+						class="editor-status-row mt-2 flex flex-wrap items-center gap-x-4 gap-y-1"
+					>
+						<span class="editor-status-label">For panels:</span>
+						<label class="editor-status-option">
+							<input
+								type="radio"
+								name="theme-availability"
+								value="Active"
+								:checked="savedThemeStatus === 'Active'"
+								:disabled="!canChangeStatus"
+								@change="setThemeStatus('Active')"
+							/>
+							Active
+						</label>
+						<label class="editor-status-option">
+							<input
+								type="radio"
+								name="theme-availability"
+								value="Inactive"
+								:checked="savedThemeStatus === 'Inactive'"
+								:disabled="!canChangeStatus"
+								@change="setThemeStatus('Inactive')"
+							/>
+							Inactive
+						</label>
+						<span v-if="statusSaving" class="editor-status-hint">Saving…</span>
+						<span v-else-if="isDirty" class="editor-status-hint editor-status-hint-warn">
+							Save or revert changes before changing availability
+						</span>
+					</div>
 				</div>
 				<div class="editor-toolbar flex flex-col sm:flex-row sm:flex-wrap items-stretch sm:items-center gap-3 lg:justify-end lg:max-w-[70%]">
 					<select
@@ -900,8 +932,12 @@ const lineHeightCSS = computed(
 
 // ─── Data fetching ────────────────────────────────────────────────
 
+type ThemeAvailabilityStatus = "Active" | "Inactive"
+
 const saving = ref(false)
+const statusSaving = ref(false)
 const loadingTheme = ref(false)
+const savedThemeStatus = ref<ThemeAvailabilityStatus>("Active")
 const editorLoaded = ref(false)
 const editorError = ref("")
 const switchError = ref("")
@@ -1019,6 +1055,19 @@ const isDirty = computed(() => {
 	return JSON.stringify(current) !== JSON.stringify(saved)
 })
 
+function normalizeThemeStatus(status: string | undefined | null): ThemeAvailabilityStatus {
+	return status === "Active" ? "Active" : "Inactive"
+}
+
+const canChangeStatus = computed(
+	() =>
+		editorLoaded.value &&
+		!loadingTheme.value &&
+		!saving.value &&
+		!statusSaving.value &&
+		!isDirty.value,
+)
+
 function applyPayloadToForm(payload: Record<string, any>) {
 	for (const key of ALL_FIELDS) {
 		form[key] = DEFAULTS[key]
@@ -1082,6 +1131,7 @@ const editorResource = createResource({
 		editorMeta.theme_name = data.theme_name || data.theme || ""
 		editorMeta.css_hash = data.css_hash || ""
 		editorMeta.is_base_theme = !!(data.is_base_theme ?? data.is_active)
+		savedThemeStatus.value = normalizeThemeStatus(data.status)
 		if (data.theme_name) form.theme_name = data.theme_name
 		applyPayloadToForm(data.payload || {})
 		editorLoaded.value = true
@@ -1113,7 +1163,9 @@ const saveResource = createResource({
 	onSuccess(data: any) {
 		if (data?.css_hash) editorMeta.css_hash = data.css_hash
 		editorMeta.is_base_theme = !!(data?.is_base_theme ?? data?.is_active)
+		if (data?.theme_status) savedThemeStatus.value = normalizeThemeStatus(data.theme_status)
 		captureSnapshot()
+		themesList.reload()
 	},
 })
 
@@ -1217,6 +1269,23 @@ async function handleSave() {
 		throw err
 	} finally {
 		saving.value = false
+	}
+}
+
+async function setThemeStatus(next: ThemeAvailabilityStatus) {
+	if (!canChangeStatus.value || next === savedThemeStatus.value) return
+	statusSaving.value = true
+	switchError.value = ""
+	try {
+		await saveResource.submit({
+			theme: editingTheme.value,
+			payload: savedSnapshot.value,
+			status: next,
+		})
+	} catch (err: any) {
+		switchError.value = err?.message || "Could not update theme availability."
+	} finally {
+		statusSaving.value = false
 	}
 }
 
@@ -1354,6 +1423,35 @@ watch(form, () => {
 .editor-subtitle strong {
 	color: var(--nce-color-heading, #111827);
 	font-weight: 600;
+}
+
+.editor-status-label {
+	font-size: calc(var(--nce-font-size, 14px) * 0.875);
+	color: var(--nce-color-muted, #6b7280);
+	font-family: var(--nce-font-family, inherit);
+}
+
+.editor-status-option {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.35rem;
+	font-size: calc(var(--nce-font-size, 14px) * 0.875);
+	color: var(--nce-color-text, #374151);
+	font-family: var(--nce-font-family, inherit);
+	cursor: pointer;
+}
+
+.editor-status-option input:disabled {
+	cursor: not-allowed;
+}
+
+.editor-status-hint {
+	font-size: calc(var(--nce-font-size, 14px) * 0.75);
+	color: var(--nce-color-muted, #6b7280);
+}
+
+.editor-status-hint-warn {
+	color: var(--nce-color-warning, #d97706);
 }
 
 .editor-warn {
