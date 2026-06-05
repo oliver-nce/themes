@@ -4,6 +4,7 @@ import frappe
 
 from themes.utils.css_writer import publish_theme
 from themes.utils.default_theme import load_bundled_base_theme_payload
+from themes.utils.site_theme_config_helpers import get_site_base_theme_name, set_site_base_theme_name
 from themes.utils.workspace_sync import sync_themes_workspace
 
 
@@ -32,10 +33,10 @@ def after_install():
 
     default_name = _ensure_default_theme()
     cfg = frappe.get_single("Site Theme Config")
-    if not cfg.base_theme or not frappe.db.exists("NCE Theme", cfg.base_theme):
-        cfg.base_theme = default_name
-        cfg.flags.ignore_permissions = True
-        cfg.save()
+    base = get_site_base_theme_name()
+    if not base or not frappe.db.exists("NCE Theme", base):
+        set_site_base_theme_name(default_name)
+        base = default_name
 
-    publish_theme(cfg.base_theme or default_name)
+    publish_theme(base)
     sync_themes_workspace()

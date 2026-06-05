@@ -528,7 +528,9 @@ def _write_css_hash_file(css_hash: str) -> str:
 
 def publish_theme(theme_name: str) -> dict:
     """Rebuild nce_theme.css from current DB state (default :root + all Active scoped palettes)."""
-    default_name = frappe.db.get_single_value("Site Theme Config", "base_theme")
+    from themes.utils.site_theme_config_helpers import get_site_base_theme_name
+
+    default_name = get_site_base_theme_name()
     if default_name and frappe.db.exists("NCE Theme", default_name):
         default_payload = json.loads(
             frappe.db.get_value("NCE Theme", default_name, "theme_json") or "{}"

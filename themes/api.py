@@ -5,11 +5,15 @@ from frappe import _
 from frappe.utils.password import check_password
 from themes.utils.bundle_base_theme import bundle_base_theme_to_app
 from themes.utils.css_writer import TOKEN_FIELDS, publish_theme
+from themes.utils.site_theme_config_helpers import (
+    get_site_base_theme_name,
+    set_site_base_theme_name,
+)
 
 
 def _base_theme_payload() -> dict:
     """Load the current Site Theme Config base palette for seeding new themes."""
-    base = frappe.db.get_single_value("Site Theme Config", "base_theme")
+    base = get_site_base_theme_name()
     if base and frappe.db.exists("NCE Theme", base):
         return json.loads(frappe.db.get_value("NCE Theme", base, "theme_json") or "{}")
     return {}
@@ -27,7 +31,7 @@ def _theme_editor_response(theme_name: str) -> dict:
     if not frappe.db.exists("NCE Theme", theme_name):
         frappe.throw(_("NCE Theme {0} does not exist").format(theme_name))
     theme = frappe.get_doc("NCE Theme", theme_name)
-    base = frappe.db.get_single_value("Site Theme Config", "base_theme")
+    base = get_site_base_theme_name()
     is_base = base == theme.name
     css_hash = None
     if is_base:
@@ -62,10 +66,10 @@ def get_theme_editor(theme: str):
 def get_base_theme_editor():
     """Return the site base theme for the editor."""
     frappe.only_for("System Manager")
-    cfg = frappe.get_single("Site Theme Config")
-    if not cfg.base_theme:
+    base = get_site_base_theme_name()
+    if not base:
         frappe.throw(_("No base theme set. Configure Site Theme Config first."))
-    return _theme_editor_response(cfg.base_theme)
+    return _theme_editor_response(base)
 
 
 @frappe.whitelist()
@@ -94,7 +98,7 @@ def save_theme(theme: str, payload, status: str | None = None):
         doc.status = status
     doc.flags.ignore_permissions = True
     doc.save()  # NCETheme.on_update republishes when status/base/Active warrants it
-    base = frappe.db.get_single_value("Site Theme Config", "base_theme")
+    base = get_site_base_theme_name()
     result = {
         "status": "ok",
         "theme": theme,
@@ -111,10 +115,10 @@ def save_theme(theme: str, payload, status: str | None = None):
 def save_active_theme(payload):
     """Legacy: save the site base theme."""
     frappe.only_for("System Manager")
-    cfg = frappe.get_single("Site Theme Config")
-    if not cfg.base_theme:
+    base = get_site_base_theme_name()
+    if not base:
         frappe.throw(_("No base theme set"))
-    return save_theme(cfg.base_theme, payload)
+    return save_theme(base, payload)
 
 
 @frappe.whitelist()
@@ -144,10 +148,7 @@ def create_theme(theme_name: str, payload):
 def _set_base_theme(theme: str) -> dict:
     if not frappe.db.exists("NCE Theme", theme):
         frappe.throw(_("NCE Theme {0} does not exist").format(theme))
-    cfg = frappe.get_single("Site Theme Config")
-    cfg.base_theme = theme
-    cfg.flags.ignore_permissions = True
-    cfg.save()
+    set_site_base_theme_name(theme)
     return publish_theme(theme)
 
 
@@ -194,17 +195,17 @@ def save_as_default(theme: str):
 def regenerate_theme_css():
     """Re-publish from current DB state (manual repair)."""
     frappe.only_for("System Manager")
-    cfg = frappe.get_single("Site Theme Config")
-    if not cfg.base_theme:
+    base = get_site_base_theme_name()
+    if not base:
         frappe.throw(_("No base theme set"))
-    return publish_theme(cfg.base_theme)
+    return publish_theme(base)
 
 
 @frappe.whitelist()
 def list_themes():
     """Return all NCE Themes with site-base flag."""
     frappe.only_for("System Manager")
-    base = frappe.db.get_single_value("Site Theme Config", "base_theme")
+    base = get_site_base_theme_name()
     rows = frappe.get_all(
         "NCE Theme",
         fields=["name", "theme_name", "is_default", "status"],

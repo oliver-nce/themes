@@ -38,10 +38,12 @@ def _check_default_theme():
 
 
 def _check_base_theme():
-    cfg = frappe.get_single("Site Theme Config")
-    if cfg.base_theme != "Default":
+    from themes.utils.site_theme_config_helpers import get_site_base_theme_name
+
+    base = get_site_base_theme_name()
+    if base != "Default":
         raise Exception(
-            f"Expected base_theme='Default', got {cfg.base_theme!r}"
+            f"Expected base_theme='Default', got {base!r}"
         )
     print("PASS: base_theme is Default")
 

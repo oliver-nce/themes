@@ -3,13 +3,14 @@ import json
 import frappe
 from frappe import _
 from frappe.model.document import Document
+from themes.utils.site_theme_config_helpers import get_site_base_theme_name
 
 
 class NCETheme(Document):
     def before_insert(self):
         if not self.theme_json:
             default_json = None
-            base = frappe.db.get_single_value("Site Theme Config", "base_theme")
+            base = get_site_base_theme_name()
             if base and frappe.db.exists("NCE Theme", base):
                 default_json = frappe.db.get_value("NCE Theme", base, "theme_json")
             self.theme_json = default_json or "{}"
@@ -31,7 +32,7 @@ class NCETheme(Document):
     def on_update(self):
         if getattr(frappe.flags, "in_install", False) or getattr(frappe.flags, "in_migrate", False):
             return
-        base = frappe.db.get_single_value("Site Theme Config", "base_theme")
+        base = get_site_base_theme_name()
         if self.has_value_changed("status") or self.status == "Active" or base == self.name:
             from themes.utils.css_writer import publish_theme
             publish_theme(self.name)
@@ -39,7 +40,7 @@ class NCETheme(Document):
     def on_trash(self):
         if getattr(frappe.flags, "in_install", False) or getattr(frappe.flags, "in_migrate", False):
             return
-        base = frappe.db.get_single_value("Site Theme Config", "base_theme")
+        base = get_site_base_theme_name()
         if self.status == "Active" or base == self.name:
             from themes.utils.css_writer import publish_theme
             publish_theme(base or self.name)

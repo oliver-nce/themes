@@ -7,6 +7,7 @@ import frappe
 
 from themes.utils.css_writer import publish_theme
 from themes.utils.default_theme import load_bundled_base_theme_payload
+from themes.utils.site_theme_config_helpers import get_site_base_theme_name, set_site_base_theme_name
 
 
 def initialize_theme():
@@ -27,11 +28,10 @@ def initialize_theme():
         theme = frappe.get_doc("NCE Theme", "Default")
 
     cfg = frappe.get_single("Site Theme Config")
-    base = cfg.base_theme if cfg.base_theme else theme.name
-    if not cfg.base_theme:
-        cfg.base_theme = theme.name
-        cfg.flags.ignore_permissions = True
-        cfg.save()
+    base = get_site_base_theme_name() or theme.name
+    if not get_site_base_theme_name():
+        set_site_base_theme_name(theme.name)
+        base = theme.name
 
     result = publish_theme(base)
     print(f"✓ Theme CSS published ({result['bytes']} bytes, hash {result['css_hash']})")
