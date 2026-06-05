@@ -219,3 +219,46 @@ def list_themes():
         row["is_base_theme"] = row.name == base
         row["is_active"] = row.name == base  # legacy alias
     return rows
+
+
+def _assert_theme_manageable(theme: str):
+    """Raise if theme cannot be renamed or deleted."""
+    base = get_site_base_theme_name()
+    if base == theme:
+        frappe.throw(
+            _(
+                "The site base theme cannot be renamed or deleted. "
+                "Choose another base theme in System first."
+            )
+        )
+    doc = frappe.get_doc("NCE Theme", theme)
+    if doc.status == "Active":
+        frappe.throw(_("Set the theme to Inactive before renaming or deleting it."))
+    return doc
+
+
+@frappe.whitelist()
+def rename_theme(theme: str, theme_name: str):
+    """Rename an Inactive, non-base NCE Theme."""
+    frappe.only_for("System Manager")
+    theme_name = (theme_name or "").strip()
+    if not theme_name:
+        frappe.throw(_("Theme name is required"))
+    doc = _assert_theme_manageable(theme)
+    if theme_name == doc.theme_name:
+        return {"status": "ok", "theme": theme, "theme_name": theme_name}
+    if frappe.db.exists("NCE Theme", {"theme_name": theme_name}):
+        frappe.throw(_("A theme named {0} already exists").format(theme_name))
+    from frappe.model.rename_doc import rename_doc
+
+    rename_doc("NCE Theme", theme, theme_name, force=True)
+    return {"status": "ok", "theme": theme_name, "theme_name": theme_name}
+
+
+@frappe.whitelist()
+def delete_theme(theme: str):
+    """Delete an Inactive, non-base NCE Theme."""
+    frappe.only_for("System Manager")
+    _assert_theme_manageable(theme)
+    frappe.delete_doc("NCE Theme", theme, ignore_permissions=True)
+    return {"status": "ok", "deleted": theme}

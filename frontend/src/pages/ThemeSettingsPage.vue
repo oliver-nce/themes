@@ -101,6 +101,22 @@
 						>
 							Save as new theme
 						</Button>
+						<Button
+							variant="solid"
+							class="theme-btn theme-btn-quiet bg-primary-100 text-primary-100-fg border border-border hover:bg-row-alt"
+							:disabled="!canRenameOrDelete"
+							@click="openRenameDialog"
+						>
+							Rename
+						</Button>
+						<Button
+							variant="solid"
+							class="theme-btn theme-btn-quiet bg-primary-100 text-primary-100-fg border border-border hover:bg-row-alt"
+							:disabled="!canRenameOrDelete"
+							@click="openDeleteDialog"
+						>
+							Delete
+						</Button>
 					</div>
 				</div>
 			</div>
@@ -525,6 +541,73 @@
 							@click="submitSaveAs"
 						>
 							Create theme
+						</Button>
+					</div>
+				</div>
+			</div>
+
+			<div
+				v-if="renameDialog.open"
+				class="fixed inset-0 z-50 flex items-center justify-center bg-black/30 p-4"
+				@click.self="closeRenameDialog"
+			>
+				<div class="bg-white rounded-lg shadow-xl p-5 max-w-md w-full">
+					<h3 class="text-base font-semibold text-gray-900">Rename theme</h3>
+					<p class="text-sm text-gray-600 mt-2">Only inactive themes that are not the site base can be renamed.</p>
+					<input
+						v-model="renameDialog.name"
+						type="text"
+						class="mt-3 w-full border border-gray-300 rounded-md px-3 py-2 text-sm"
+						placeholder="Theme name"
+						@keyup.enter="submitRename"
+					/>
+					<p v-if="renameDialog.error" class="text-sm text-red-600 mt-2">{{ renameDialog.error }}</p>
+					<div class="flex gap-2 justify-end mt-4">
+						<Button
+							variant="solid"
+							class="bg-primary-100 text-primary-100-fg border border-border hover:bg-row-alt"
+							@click="closeRenameDialog"
+						>
+							Cancel
+						</Button>
+						<Button
+							variant="solid"
+							class="bg-primary text-primary-fg border border-primary"
+							:loading="renameDialog.busy"
+							@click="submitRename"
+						>
+							Rename
+						</Button>
+					</div>
+				</div>
+			</div>
+
+			<div
+				v-if="deleteDialog.open"
+				class="fixed inset-0 z-50 flex items-center justify-center bg-black/30 p-4"
+				@click.self="closeDeleteDialog"
+			>
+				<div class="bg-white rounded-lg shadow-xl p-5 max-w-md w-full">
+					<h3 class="text-base font-semibold text-gray-900">Delete theme</h3>
+					<p class="text-sm text-gray-600 mt-2">
+						Delete <strong>{{ editorMeta.theme_name }}</strong>? This cannot be undone.
+					</p>
+					<p v-if="deleteDialog.error" class="text-sm text-red-600 mt-2">{{ deleteDialog.error }}</p>
+					<div class="flex gap-2 justify-end mt-4">
+						<Button
+							variant="solid"
+							class="bg-primary-100 text-primary-100-fg border border-border hover:bg-row-alt"
+							@click="closeDeleteDialog"
+						>
+							Cancel
+						</Button>
+						<Button
+							variant="solid"
+							class="bg-primary text-primary-fg border border-primary"
+							:loading="deleteDialog.busy"
+							@click="submitDelete"
+						>
+							Delete
 						</Button>
 					</div>
 				</div>
@@ -970,6 +1053,19 @@ const saveAsDialog = reactive({
 	busy: false,
 })
 
+const renameDialog = reactive({
+	open: false,
+	name: "",
+	error: "",
+	busy: false,
+})
+
+const deleteDialog = reactive({
+	open: false,
+	error: "",
+	busy: false,
+})
+
 const systemTab = reactive({
 	password: "",
 	error: "",
@@ -1066,6 +1162,13 @@ const canChangeStatus = computed(
 		!saving.value &&
 		!statusSaving.value &&
 		!isDirty.value,
+)
+
+const canRenameOrDelete = computed(
+	() =>
+		canChangeStatus.value &&
+		savedThemeStatus.value === "Inactive" &&
+		!editorMeta.is_base_theme,
 )
 
 function applyPayloadToForm(payload: Record<string, any>) {
@@ -1167,6 +1270,16 @@ const saveResource = createResource({
 		captureSnapshot()
 		themesList.reload()
 	},
+})
+
+const renameThemeResource = createResource({
+	url: "themes.api.rename_theme",
+	auto: false,
+})
+
+const deleteThemeResource = createResource({
+	url: "themes.api.delete_theme",
+	auto: false,
 })
 
 const createThemeResource = createResource({
@@ -1315,6 +1428,75 @@ async function submitSaveAs() {
 		await createThemeResource.submit({ theme_name: name, payload })
 	} catch {
 		// onError sets saveAsDialog.error
+	}
+}
+
+function openRenameDialog() {
+	if (!canRenameOrDelete.value) return
+	renameDialog.name = editorMeta.theme_name || ""
+	renameDialog.error = ""
+	renameDialog.open = true
+}
+
+function closeRenameDialog() {
+	if (renameDialog.busy) return
+	renameDialog.open = false
+	renameDialog.name = ""
+	renameDialog.error = ""
+}
+
+async function submitRename() {
+	const name = renameDialog.name.trim()
+	if (!name) {
+		renameDialog.error = "Enter a theme name."
+		return
+	}
+	renameDialog.busy = true
+	renameDialog.error = ""
+	try {
+		const data = await renameThemeResource.submit({
+			theme: editingTheme.value,
+			theme_name: name,
+		})
+		closeRenameDialog()
+		await themesList.reload()
+		await loadTheme(data?.theme || name)
+	} catch (err: any) {
+		renameDialog.error = err?.message || "Could not rename theme."
+	} finally {
+		renameDialog.busy = false
+	}
+}
+
+function openDeleteDialog() {
+	if (!canRenameOrDelete.value) return
+	deleteDialog.error = ""
+	deleteDialog.open = true
+}
+
+function closeDeleteDialog() {
+	if (deleteDialog.busy) return
+	deleteDialog.open = false
+	deleteDialog.error = ""
+}
+
+async function submitDelete() {
+	deleteDialog.busy = true
+	deleteDialog.error = ""
+	const deleted = editingTheme.value
+	try {
+		await deleteThemeResource.submit({ theme: deleted })
+		closeDeleteDialog()
+		editingTheme.value = ""
+		await themesList.reload()
+		const base =
+			themesList.data?.find((t: any) => t.is_base_theme || t.is_active)?.name ||
+			themesList.data?.[0]?.name
+		if (base) await loadTheme(base)
+	} catch (err: any) {
+		deleteDialog.error = err?.message || "Could not delete theme."
+	} finally {
+		deleteDialog.busy = false
 	}
 }
 
