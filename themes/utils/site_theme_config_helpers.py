@@ -1,9 +1,13 @@
 """Read/write Site Theme Config.base_theme across rename from active_theme."""
 
+from __future__ import annotations
+
+from typing import Optional
+
 import frappe
 
 
-def get_site_base_theme_name() -> str | None:
+def get_site_base_theme_name() -> Optional[str]:
     """Return the site base theme link, tolerating pre-migrate active_theme storage."""
     rows = frappe.db.sql(
         """

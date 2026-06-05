@@ -1,9 +1,11 @@
+from __future__ import annotations
+
 import json
+from typing import Optional
 
 import frappe
 from frappe import _
 from frappe.utils.password import check_password
-from themes.utils.bundle_base_theme import bundle_base_theme_to_app
 from themes.utils.css_writer import TOKEN_FIELDS, publish_theme
 from themes.utils.site_theme_config_helpers import (
     get_site_base_theme_name,
@@ -86,7 +88,7 @@ def get_base_theme_payload():
 
 
 @frappe.whitelist()
-def save_theme(theme: str, payload, status: str | None = None):
+def save_theme(theme: str, payload, status: Optional[str] = None):
     """Save theme_json on a specific NCE Theme; republish when Active or site base."""
     frappe.only_for("System Manager")
     if not frappe.db.exists("NCE Theme", theme):
@@ -167,6 +169,8 @@ def save_as_base_theme(theme: str, password: str):
     _require_password(password)
     if not frappe.db.exists("NCE Theme", theme):
         frappe.throw(_("NCE Theme {0} does not exist").format(theme))
+    from themes.utils.bundle_base_theme import bundle_base_theme_to_app
+
     payload = json.loads(frappe.db.get_value("NCE Theme", theme, "theme_json") or "{}")
     publish_result = _set_base_theme(theme)
     bundle_result = bundle_base_theme_to_app(payload)
