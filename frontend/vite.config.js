@@ -30,9 +30,11 @@ export default defineConfig({
 		sourcemap: true,
 		rollupOptions: {
 			output: {
+				// Entry is cache-busted via ?v= in themes.html; chunks need content hashes
+				// or browsers keep serving stale lazy-loaded bundles after deploy.
 				entryFileNames: "assets/themes.js",
-				chunkFileNames: "assets/themes-[name].js",
-				assetFileNames: "assets/themes.[ext]",
+				chunkFileNames: "assets/themes-[name]-[hash].js",
+				assetFileNames: "assets/themes[extname]",
 			},
 		},
 	},
