@@ -3,9 +3,9 @@
  "creation": "2026-06-03 00:00:00.000000",
  "doctype": "DocType",
  "engine": "InnoDB",
- "field_order": ["active_theme", "css_hash"],
+ "field_order": ["base_theme", "css_hash"],
  "fields": [
-  {"fieldname": "active_theme", "fieldtype": "Link", "label": "Active Theme", "options": "NCE Theme", "reqd": 1},
+  {"fieldname": "base_theme", "fieldtype": "Link", "label": "Base Theme", "options": "NCE Theme", "reqd": 1},
   {"fieldname": "css_hash", "fieldtype": "Data", "label": "CSS Hash", "read_only": 1}
  ],
  "index_web_pages_for_search": 0,

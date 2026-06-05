@@ -8,7 +8,7 @@
   },
   "palette_scoping": {
     "summary": "Utility classes are theme-agnostic — they paint with whatever --nce-* variables are in scope.",
-    "default": ":root holds the Site Theme Config.active_theme palette (the site default).",
+    "default": ":root holds the Site Theme Config.base_theme palette (the site fallback).",
     "scoped_palettes": "Each NCE Theme with status=Active also gets [data-nce-theme=\"<slug>\"] { --nce-* … } in nce_theme.css.",
     "consumer_usage": "Set data-nce-theme=\"<slug>\" on an ancestor element to scope a subtree to that palette. Unknown or empty slug inherits :root.",
     "custom_css": "custom_css is global and emitted only on :root — not inside scoped palette blocks.",

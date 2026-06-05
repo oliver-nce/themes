@@ -6,7 +6,7 @@ import os
 import frappe
 
 from themes.utils.css_writer import publish_theme
-from themes.utils.default_theme import DEFAULT_THEME_PAYLOAD
+from themes.utils.default_theme import load_bundled_base_theme_payload
 
 
 def initialize_theme():
@@ -18,7 +18,7 @@ def initialize_theme():
         theme.is_default = 1
         theme.status = "Active"
         theme.description = "Default site theme."
-        theme.theme_json = json.dumps(DEFAULT_THEME_PAYLOAD, default=str)
+        theme.theme_json = json.dumps(load_bundled_base_theme_payload(), default=str)
         theme.flags.ignore_permissions = True
         theme.insert()
         print("✓ NCE Theme Default created")
@@ -27,13 +27,13 @@ def initialize_theme():
         theme = frappe.get_doc("NCE Theme", "Default")
 
     cfg = frappe.get_single("Site Theme Config")
-    active = cfg.active_theme if cfg.active_theme else theme.name
-    if not cfg.active_theme:
-        cfg.active_theme = theme.name
+    base = cfg.base_theme if cfg.base_theme else theme.name
+    if not cfg.base_theme:
+        cfg.base_theme = theme.name
         cfg.flags.ignore_permissions = True
         cfg.save()
 
-    result = publish_theme(active)
+    result = publish_theme(base)
     print(f"✓ Theme CSS published ({result['bytes']} bytes, hash {result['css_hash']})")
 
     app_path = frappe.get_app_path("themes")

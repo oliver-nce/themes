@@ -37,8 +37,11 @@ def execute():
     if frappe.db.has_column("Site Theme Config", "active_version") and cfg.active_version:
         frappe.db.set_single_value("Site Theme Config", "active_version", None)
 
-    if cfg.active_theme:
-        publish_theme(cfg.active_theme)
+    active = frappe.db.get_single_value("Site Theme Config", "base_theme") or frappe.db.get_single_value(
+        "Site Theme Config", "active_theme"
+    )
+    if active:
+        publish_theme(active)
 
     frappe.db.commit()
     print("Collapsed Theme Version payloads onto NCE Theme.theme_json")

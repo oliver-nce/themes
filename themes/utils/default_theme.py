@@ -1,6 +1,9 @@
 """Default token payload for new NCE Theme installs."""
 
-DEFAULT_THEME_PAYLOAD = {
+import json
+import os
+
+_FALLBACK_PAYLOAD = {
     "primary_color": "#3B82F6",
     "secondary_color": "#10B981",
     "accent_color": "#8B5CF6",
@@ -30,3 +33,16 @@ DEFAULT_THEME_PAYLOAD = {
     "sidebar_width": "240px",
     "container_max_width": "1200px",
 }
+
+
+def load_bundled_base_theme_payload() -> dict:
+    """Load bundled base theme from data/base_theme.json, else embedded fallback."""
+    path = os.path.join(os.path.dirname(__file__), "..", "data", "base_theme.json")
+    try:
+        with open(path) as f:
+            return json.load(f)
+    except (FileNotFoundError, json.JSONDecodeError, OSError):
+        return dict(_FALLBACK_PAYLOAD)
+
+
+DEFAULT_THEME_PAYLOAD = load_bundled_base_theme_payload()

@@ -11,7 +11,7 @@ import frappe
 def run():
     _check_site_theme_config_exists()
     _check_default_theme()
-    _check_active_theme()
+    _check_base_theme()
     _check_css_file()
     _check_css_hash()
     print("All fresh-install checks passed.")
@@ -37,13 +37,13 @@ def _check_default_theme():
     print("PASS: NCE Theme Default exists with theme_json")
 
 
-def _check_active_theme():
+def _check_base_theme():
     cfg = frappe.get_single("Site Theme Config")
-    if cfg.active_theme != "Default":
+    if cfg.base_theme != "Default":
         raise Exception(
-            f"Expected active_theme='Default', got {cfg.active_theme!r}"
+            f"Expected base_theme='Default', got {cfg.base_theme!r}"
         )
-    print("PASS: active_theme is Default")
+    print("PASS: base_theme is Default")
 
 
 def _check_css_file():

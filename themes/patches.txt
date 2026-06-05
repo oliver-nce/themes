@@ -5,3 +5,4 @@ themes.patches.v1_0.migrate_theme_settings_to_nce_theme
 themes.patches.v1_0.collapse_theme_versions_to_nce_theme
 themes.patches.v1_0.remove_legacy_theme_doctypes
 themes.patches.v1_0.sync_themes_workspace
+themes.patches.v1_0.rename_base_theme_and_status

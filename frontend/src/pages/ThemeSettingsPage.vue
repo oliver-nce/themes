@@ -7,11 +7,11 @@
 					<h1 class="editor-title">Theme Editor</h1>
 					<p class="editor-subtitle mt-0.5">
 						Editing <strong>{{ editorMeta.theme_name || "—" }}</strong>
-						<span v-if="editingTheme && siteActiveTheme && editingTheme !== siteActiveTheme" class="editor-warn">
-							· not live on site
+						<span v-if="editingTheme && siteBaseTheme && editingTheme !== siteBaseTheme" class="editor-warn">
+							· not the site base theme
 						</span>
-						<span v-if="siteActiveThemeName" class="editor-muted">
-							· Site active: <strong>{{ siteActiveThemeName }}</strong>
+						<span v-if="siteBaseThemeName" class="editor-muted">
+							· Site base: <strong>{{ siteBaseThemeName }}</strong>
 						</span>
 					</p>
 				</div>
@@ -56,19 +56,18 @@
 						<Button
 							variant="solid"
 							class="theme-btn theme-btn-quiet bg-primary-100 text-primary-100-fg border border-border hover:bg-row-alt"
+							:disabled="loadingTheme || !siteBaseTheme || editingTheme === siteBaseTheme"
+							@click="requestRestoreToBase"
+						>
+							Restore to Base Theme
+						</Button>
+						<Button
+							variant="solid"
+							class="theme-btn theme-btn-quiet bg-primary-100 text-primary-100-fg border border-border hover:bg-row-alt"
 							:disabled="loadingTheme"
 							@click="openSaveAsDialog"
 						>
 							Save as new theme
-						</Button>
-						<Button
-							variant="solid"
-							class="theme-btn theme-btn-primary bg-primary text-primary-fg border border-primary"
-							:loading="applying"
-							:disabled="loadingTheme || editingTheme === siteActiveTheme"
-							@click="requestApplyToSite"
-						>
-							Apply to site
 						</Button>
 					</div>
 				</div>
@@ -380,16 +379,48 @@
 				</EditorSection>
 
 				<EditorSection title="Published CSS">
-					<p v-if="editorMeta.is_active && editorMeta.css_hash" class="text-sm text-gray-600">
-						Live theme published to <code>nce_theme.css</code>
+					<p v-if="editorMeta.is_base_theme && editorMeta.css_hash" class="text-sm text-gray-600">
+						Site base theme published to <code>nce_theme.css</code>
 						(hash: {{ editorMeta.css_hash }})
 					</p>
-					<p v-else-if="editorMeta.is_active" class="text-sm text-gray-400">
+					<p v-else-if="editorMeta.is_base_theme" class="text-sm text-gray-400">
 						Save to publish CSS to the site
 					</p>
 					<p v-else class="text-sm text-gray-500">
-						Saving updates this theme only. Use <strong>Apply to site</strong> to go live.
+						Saving updates this theme only. Active themes are included in the shared CSS file.
 					</p>
+				</EditorSection>
+			</div>
+
+			<!-- ==================== SYSTEM TAB ==================== -->
+			<div v-show="activeTab === 'system'" class="editor-tab">
+				<EditorSection
+					title="Save as base theme"
+					hint="Rare release action: sets the site base theme, rebuilds CSS, and writes bundled files into the app for new installs. Commit and push after running."
+				>
+					<p class="text-sm text-gray-600 mb-3">
+						Editing <strong>{{ editorMeta.theme_name || "—" }}</strong>.
+						Requires your account password.
+					</p>
+					<input
+						v-model="systemTab.password"
+						type="password"
+						autocomplete="current-password"
+						class="w-full max-w-sm border border-gray-300 rounded-md px-3 py-2 text-sm mb-2"
+						placeholder="Your password"
+						@keyup.enter="submitSaveAsBaseTheme"
+					/>
+					<p v-if="systemTab.error" class="text-sm text-red-600 mb-2">{{ systemTab.error }}</p>
+					<p v-if="systemTab.success" class="text-sm text-green-700 mb-2">{{ systemTab.success }}</p>
+					<Button
+						variant="solid"
+						class="bg-primary text-primary-fg border border-primary"
+						:loading="systemTab.busy"
+						:disabled="!systemTab.password || loadingTheme"
+						@click="submitSaveAsBaseTheme"
+					>
+						Save as base theme
+					</Button>
 				</EditorSection>
 			</div>
 		</template>
@@ -473,7 +504,7 @@
 <script setup lang="ts">
 import { ref, reactive, watch, computed, onUnmounted, nextTick } from "vue"
 import { createResource } from "frappe-ui"
-import { generateShades, isDark, type ColorShade } from "@/utils/color-shades"
+import { generateShades, effectiveRoleHex, pickFgMono, pickFgTonal, isDark, type ColorShade } from "@/utils/color-shades"
 import { STATUS_COLOR_DEFAULTS, STATUS_COLOR_KEYS } from "@/composables/useThemeDefaults"
 import EditorSection from "@/components/EditorSection.vue"
 import BrandColorPicker from "@/components/BrandColorPicker.vue"
@@ -552,10 +583,20 @@ function buildShadow(level: string, color: string): string {
 const TRANSITION_CSS: Record<string, string> = { fast: "150ms", normal: "200ms", slow: "300ms" }
 const LINE_HEIGHT_CSS: Record<string, string> = { tight: "1.25", snug: "1.375", normal: "1.5", relaxed: "1.625", loose: "2" }
 
+const GAMMA_SAT_COLOR_FIELDS = new Set(["primary_color", "secondary_color"])
+
 function computeCSSVariables(): Record<string, string> {
 	const vars: Record<string, string> = {}
 	for (const [field, cssVar] of Object.entries(COLOR_VAR_MAP)) {
-		if (form[field as FormKey]) vars[cssVar] = form[field as FormKey]
+		const hex = form[field as FormKey]
+		if (!hex) continue
+		if (GAMMA_SAT_COLOR_FIELDS.has(field)) {
+			const gamma = form[`${field}_gamma` as FormKey] ?? 0
+			const saturation = form[`${field}_saturation` as FormKey] ?? 100
+			vars[cssVar] = effectiveRoleHex(hex, Number(gamma), Number(saturation))
+		} else {
+			vars[cssVar] = hex
+		}
 	}
 	const ff = form.font_family
 	if (ff) vars["--nce-font-family"] = fontCSS(ff)
@@ -593,14 +634,20 @@ function computeCSSVariables(): Record<string, string> {
 		if (!hex) continue
 		const gammaKey = `${field}_gamma` as FormKey
 		const satKey = `${field}_saturation` as FormKey
-		const hasAdjust = field === "primary_color" || field === "secondary_color"
-		const shades = generateShades(hex, hasAdjust ? {
-			gamma: form[gammaKey] ?? 0,
-			saturation: form[satKey] ?? 100,
-		} : undefined)
+		const hasAdjust = GAMMA_SAT_COLOR_FIELDS.has(field)
+		const gamma = hasAdjust ? Number(form[gammaKey] ?? 0) : 0
+		const saturation = hasAdjust ? Number(form[satKey] ?? 100) : 100
+		const roleHex = hasAdjust ? effectiveRoleHex(hex, gamma, saturation) : hex
+		vars[`--nce-${varPrefix}-fg`] = pickFgMono(roleHex)
+		vars[`--nce-${varPrefix}-fg-tonal`] = pickFgTonal(roleHex)
+		const shades = generateShades(hex, hasAdjust ? { gamma, saturation } : undefined)
 		for (const s of shades) {
 			vars[`--nce-${varPrefix}-${s.shade}`] = s.hex
 			vars[`--${varPrefix}-${s.shade}`] = s.hex
+			if ([100, 200, 300, 500, 600, 700, 900].includes(s.shade)) {
+				vars[`--nce-${varPrefix}-${s.shade}-fg`] = pickFgMono(s.hex)
+				vars[`--nce-${varPrefix}-${s.shade}-fg-tonal`] = pickFgTonal(s.hex)
+			}
 		}
 	}
 	return vars
@@ -624,6 +671,7 @@ const tabs = [
 	{ id: "typography", label: "Typography" },
 	{ id: "layout", label: "Layout" },
 	{ id: "advanced", label: "Advanced" },
+	{ id: "system", label: "System" },
 ]
 
 const ALL_FIELDS = [
@@ -853,14 +901,13 @@ const lineHeightCSS = computed(
 // ─── Data fetching ────────────────────────────────────────────────
 
 const saving = ref(false)
-const applying = ref(false)
 const loadingTheme = ref(false)
 const editorLoaded = ref(false)
 const editorError = ref("")
 const switchError = ref("")
 const selectedTheme = ref("")
 const editingTheme = ref("")
-const siteActiveTheme = ref("")
+const siteBaseTheme = ref("")
 const savedSnapshot = ref<Record<string, any>>({})
 const dirtyBaselineReady = ref(false)
 
@@ -868,14 +915,14 @@ const editorMeta = reactive({
 	theme: "",
 	theme_name: "",
 	css_hash: "",
-	is_active: false,
+	is_base_theme: false,
 })
 
 const confirmDialog = reactive({
 	open: false,
 	title: "",
 	message: "",
-	action: "" as "" | "switch" | "apply",
+	action: "" as "" | "switch" | "restore",
 	pendingTheme: "",
 	busy: false,
 })
@@ -887,13 +934,21 @@ const saveAsDialog = reactive({
 	busy: false,
 })
 
-const siteActiveThemeName = computed(() => {
-	const row = themesList.data?.find((t: any) => t.name === siteActiveTheme.value)
-	return row?.theme_name || siteActiveTheme.value || ""
+const systemTab = reactive({
+	password: "",
+	error: "",
+	success: "",
+	busy: false,
 })
 
-function themeOptionLabel(t: { theme_name: string; is_active?: boolean }) {
-	return t.is_active ? `${t.theme_name} · live on site` : t.theme_name
+const siteBaseThemeName = computed(() => {
+	const row = themesList.data?.find((t: any) => t.name === siteBaseTheme.value)
+	return row?.theme_name || siteBaseTheme.value || ""
+})
+
+function themeOptionLabel(t: { theme_name: string; is_base_theme?: boolean; is_active?: boolean }) {
+	const isBase = t.is_base_theme ?? t.is_active
+	return isBase ? `${t.theme_name} · site base` : t.theme_name
 }
 
 const themeSelectWidth = computed(() => {
@@ -906,6 +961,14 @@ function buildPayloadFromForm(): Record<string, any> {
 	const payload: Record<string, any> = {}
 	for (const key of PAYLOAD_FIELDS) {
 		payload[key] = key === "dark_mode" ? (form[key] ? 1 : 0) : form[key]
+	}
+	for (const field of GAMMA_SAT_COLOR_FIELDS) {
+		const hex = payload[field]
+		const gamma = Number(payload[`${field}_gamma`] ?? 0)
+		const saturation = Number(payload[`${field}_saturation`] ?? 100)
+		if (typeof hex === "string" && (gamma !== 0 || saturation !== 100)) {
+			payload[field] = effectiveRoleHex(hex, gamma, saturation)
+		}
 	}
 	return payload
 }
@@ -978,6 +1041,15 @@ function applyPayloadToForm(payload: Record<string, any>) {
 			form[key] = val
 		}
 	}
+	for (const field of GAMMA_SAT_COLOR_FIELDS) {
+		const hex = form[field as FormKey]
+		if (typeof hex !== "string") continue
+		const gamma = Number(form[`${field}_gamma` as FormKey] ?? 0)
+		const saturation = Number(form[`${field}_saturation` as FormKey] ?? 100)
+		if (gamma !== 0 || saturation !== 100) {
+			form[field as FormKey] = effectiveRoleHex(hex, gamma, saturation)
+		}
+	}
 }
 
 const themesList = createResource({
@@ -985,8 +1057,8 @@ const themesList = createResource({
 	auto: true,
 	onSuccess(data: any[]) {
 		if (!data?.length || editingTheme.value) return
-		const active = data.find((t) => t.is_active)?.name || data[0].name
-		if (active) loadTheme(active)
+		const base = data.find((t) => t.is_base_theme || t.is_active)?.name || data[0].name
+		if (base) loadTheme(base)
 	},
 })
 
@@ -1005,11 +1077,11 @@ const editorResource = createResource({
 		}
 		editingTheme.value = data.theme || ""
 		selectedTheme.value = data.theme || ""
-		siteActiveTheme.value = data.site_active_theme || siteActiveTheme.value
+		siteBaseTheme.value = data.site_base_theme || data.site_active_theme || siteBaseTheme.value
 		editorMeta.theme = data.theme || ""
 		editorMeta.theme_name = data.theme_name || data.theme || ""
 		editorMeta.css_hash = data.css_hash || ""
-		editorMeta.is_active = !!data.is_active
+		editorMeta.is_base_theme = !!(data.is_base_theme ?? data.is_active)
 		if (data.theme_name) form.theme_name = data.theme_name
 		applyPayloadToForm(data.payload || {})
 		editorLoaded.value = true
@@ -1040,7 +1112,7 @@ const saveResource = createResource({
 	url: "themes.api.save_theme",
 	onSuccess(data: any) {
 		if (data?.css_hash) editorMeta.css_hash = data.css_hash
-		editorMeta.is_active = !!data?.is_active
+		editorMeta.is_base_theme = !!(data?.is_base_theme ?? data?.is_active)
 		captureSnapshot()
 	},
 })
@@ -1059,21 +1131,17 @@ const createThemeResource = createResource({
 	},
 })
 
-const applyThemeResource = createResource({
-	url: "themes.api.set_active_theme",
-	onSuccess(data: any) {
-		switchError.value = ""
-		siteActiveTheme.value = data?.theme || editingTheme.value
-		editorMeta.is_active = true
-		if (data?.css_hash) editorMeta.css_hash = data.css_hash
-		themesList.reload()
-	},
-	onError(err: any) {
-		switchError.value = err?.message || "Could not apply theme to site."
-	},
+const baseThemePayloadResource = createResource({
+	url: "themes.api.get_base_theme_payload",
+	auto: false,
 })
 
-function openConfirmDialog(action: "switch" | "apply", pendingTheme = "") {
+const saveAsBaseThemeResource = createResource({
+	url: "themes.api.save_as_base_theme",
+	auto: false,
+})
+
+function openConfirmDialog(action: "switch" | "restore", pendingTheme = "") {
 	confirmDialog.action = action
 	confirmDialog.pendingTheme = pendingTheme
 	confirmDialog.title = "Unsaved changes"
@@ -1082,7 +1150,7 @@ function openConfirmDialog(action: "switch" | "apply", pendingTheme = "") {
 			themesList.data?.find((t: any) => t.name === pendingTheme)?.theme_name || pendingTheme
 		confirmDialog.message = `Save your changes before switching to "${name}"?`
 	} else {
-		confirmDialog.message = "Save your changes before applying this theme to the site?"
+		confirmDialog.message = "Save your changes before restoring from the base theme?"
 	}
 	confirmDialog.open = true
 }
@@ -1100,8 +1168,8 @@ async function confirmSaveAndContinue() {
 		await handleSave()
 		if (confirmDialog.action === "switch") {
 			await loadTheme(confirmDialog.pendingTheme)
-		} else if (confirmDialog.action === "apply") {
-			await applyToSiteConfirmed()
+		} else if (confirmDialog.action === "restore") {
+			await restoreToBaseConfirmed()
 		}
 		closeConfirmDialog()
 	} catch {
@@ -1120,7 +1188,7 @@ async function confirmDiscardAndContinue() {
 		return
 	}
 	revertChanges()
-	await applyToSiteConfirmed()
+	await restoreToBaseConfirmed()
 }
 
 function onThemeChange() {
@@ -1181,25 +1249,46 @@ async function submitSaveAs() {
 	}
 }
 
-function requestApplyToSite() {
-	if (editingTheme.value === siteActiveTheme.value) return
+function requestRestoreToBase() {
+	if (!siteBaseTheme.value || editingTheme.value === siteBaseTheme.value) return
 	if (isDirty.value) {
-		openConfirmDialog("apply")
+		openConfirmDialog("restore")
 		return
 	}
-	applyToSiteConfirmed()
+	restoreToBaseConfirmed()
 }
 
-async function applyToSiteConfirmed() {
-	applying.value = true
+async function restoreToBaseConfirmed() {
 	switchError.value = ""
 	try {
-		await applyThemeResource.submit({ theme: editingTheme.value })
-		await editorResource.submit({ theme: editingTheme.value })
-	} catch {
-		// onError sets switchError
+		const data = await baseThemePayloadResource.submit({})
+		applyPayloadToForm(data?.payload || {})
+		applyLiveThemeVars()
+	} catch (err: any) {
+		switchError.value = err?.message || "Could not load base theme."
+	}
+}
+
+async function submitSaveAsBaseTheme() {
+	systemTab.busy = true
+	systemTab.error = ""
+	systemTab.success = ""
+	try {
+		const data = await saveAsBaseThemeResource.submit({
+			theme: editingTheme.value,
+			password: systemTab.password,
+		})
+		systemTab.password = ""
+		systemTab.success =
+			"Base theme saved and bundled into the app. Commit and push the themes app to ship it on new installs."
+		siteBaseTheme.value = data?.theme || editingTheme.value
+		editorMeta.is_base_theme = true
+		if (data?.css_hash) editorMeta.css_hash = data.css_hash
+		themesList.reload()
+	} catch (err: any) {
+		systemTab.error = err?.message || "Could not save as base theme."
 	} finally {
-		applying.value = false
+		systemTab.busy = false
 	}
 }
 

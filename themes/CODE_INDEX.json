@@ -6,7 +6,7 @@
             "purpose": "Frappe custom app for site-wide CSS theming",
             "entry_points": {
                 "hooks.py": "Frappe app metadata, CSS loading, SPA routing, Apps screen entry, after_install",
-                "api.py": "Whitelisted API: get_theme_editor(), save_theme(), create_theme(), set_active_theme(), save_as_default(), list_themes()",
+                "api.py": "Whitelisted API: get_theme_editor(), get_base_theme_payload(), save_theme(), save_as_base_theme(), create_theme(), list_themes()",
                 "install.py": "after_install hook: Site Theme Config + NCE Theme Default on fresh install",
                 "init_theme.py": "One-time init script: ensure NCE Theme Default exists and publish CSS. Run via bench execute.",
                 "patches/v1_0/migrate_theme_settings_to_nce_theme.py": "Post-migrate patch: legacy Theme Settings → NCE Theme Default",
@@ -15,12 +15,14 @@
             },
             "utils": {
                 "utils/theme_color_utils.py": "Color math helpers: OKLCH shade generation, _effective_role_hex (gamma-aware 600 stop), shadow building, token maps (BORDER_RADIUS_MAP, etc.)",
-                "utils/css_writer.py": "CSS generation and publish: generate_css(), generate_site_css(), _emit_var_block(), _emit_font_faces_multi(), publish_theme(), TOKEN_FIELDS",
+                "utils/css_writer.py": "CSS generation and publish: generate_css(), generate_site_css(), publish_theme(), TOKEN_FIELDS",
+                "utils/bundle_base_theme.py": "bundle_base_theme_to_app() — write base_theme.json + default_theme.py for new installs",
+                "data/base_theme.json": "Bundled base theme payload (updated by save_as_base_theme)",
                 "utils/default_theme.py": "Default token payload for new NCE Theme installs"
             },
             "doctypes": {
                 "themes/doctype/nce_theme/": "Theme registry + definition: theme_name, slug, is_default, status, theme_json.",
-                "themes/doctype/site_theme_config/": "Single: active_theme, css_hash; on_update publishes CSS."
+                "themes/doctype/site_theme_config/": "Single: base_theme, css_hash; on_update publishes CSS."
             },
             "static_files": {
                 "public/css/": "Generated theme CSS (nce_theme.css)",
