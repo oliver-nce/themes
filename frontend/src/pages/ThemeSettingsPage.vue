@@ -1438,11 +1438,12 @@ function openRenameDialog() {
 	renameDialog.open = true
 }
 
-function closeRenameDialog() {
-	if (renameDialog.busy) return
+function closeRenameDialog(force = false) {
+	if (!force && renameDialog.busy) return
 	renameDialog.open = false
 	renameDialog.name = ""
 	renameDialog.error = ""
+	renameDialog.busy = false
 }
 
 async function submitRename() {
@@ -1458,12 +1459,11 @@ async function submitRename() {
 			theme: editingTheme.value,
 			theme_name: name,
 		})
-		closeRenameDialog()
+		closeRenameDialog(true)
 		await themesList.reload()
 		await loadTheme(data?.theme || name)
 	} catch (err: any) {
 		renameDialog.error = err?.message || "Could not rename theme."
-	} finally {
 		renameDialog.busy = false
 	}
 }
@@ -1474,10 +1474,11 @@ function openDeleteDialog() {
 	deleteDialog.open = true
 }
 
-function closeDeleteDialog() {
-	if (deleteDialog.busy) return
+function closeDeleteDialog(force = false) {
+	if (!force && deleteDialog.busy) return
 	deleteDialog.open = false
 	deleteDialog.error = ""
+	deleteDialog.busy = false
 }
 
 async function submitDelete() {
@@ -1486,7 +1487,7 @@ async function submitDelete() {
 	const deleted = editingTheme.value
 	try {
 		await deleteThemeResource.submit({ theme: deleted })
-		closeDeleteDialog()
+		closeDeleteDialog(true)
 		editingTheme.value = ""
 		await themesList.reload()
 		const base =
@@ -1495,7 +1496,6 @@ async function submitDelete() {
 		if (base) await loadTheme(base)
 	} catch (err: any) {
 		deleteDialog.error = err?.message || "Could not delete theme."
-	} finally {
 		deleteDialog.busy = false
 	}
 }
