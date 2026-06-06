@@ -16,8 +16,9 @@ class NCETheme(Document):
             self.theme_json = default_json or "{}"
 
     def before_save(self):
-        if not self.slug:
-            self.slug = re.sub(r"[^a-z0-9]+", "-", (self.theme_name or "").lower()).strip("-")
+        new_slug = re.sub(r"[^a-z0-9]+", "-", (self.theme_name or "").lower()).strip("-")
+        if not self.slug or self.has_value_changed("theme_name"):
+            self.slug = new_slug
 
     def validate(self):
         if self.is_default:

@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import json
-import re
 from typing import Optional
 
 import frappe
@@ -222,10 +221,6 @@ def list_themes():
     return rows
 
 
-def _theme_name_to_slug(theme_name: str) -> str:
-    return re.sub(r"[^a-z0-9]+", "-", (theme_name or "").lower()).strip("-")
-
-
 def _assert_theme_manageable(theme: str):
     """Raise if theme cannot be renamed or deleted."""
     base = get_site_base_theme_name()
@@ -242,46 +237,22 @@ def _assert_theme_manageable(theme: str):
     return doc
 
 
-def _rename_nce_theme_record(old: str, new: str) -> None:
-    """Rename without frappe.rename_doc.
-
-    Frappe's rename_doc runs update_user_settings with an empty IN () when the
-    only Link fields are on Singles (e.g. Site Theme Config.base_theme).
-    """
-    slug = _theme_name_to_slug(new)
-    frappe.db.sql(
-        """
-        UPDATE `tabNCE Theme`
-        SET name = %(new)s, theme_name = %(new)s, slug = %(slug)s, modified = NOW()
-        WHERE name = %(old)s
-        """,
-        {"new": new, "old": old, "slug": slug},
-    )
-    frappe.db.sql(
-        """
-        UPDATE `tabVersion`
-        SET docname = %(new)s
-        WHERE ref_doctype = 'NCE Theme' AND docname = %(old)s
-        """,
-        {"new": new, "old": old},
-    )
-    frappe.clear_cache(doctype="NCE Theme")
-
-
 @frappe.whitelist()
 def rename_theme(theme: str, theme_name: str):
-    """Rename an Inactive, non-base NCE Theme."""
+    """Rename display name on an Inactive, non-base NCE Theme (doc.name unchanged)."""
     frappe.only_for("System Manager")
     theme_name = (theme_name or "").strip()
     if not theme_name:
         frappe.throw(_("Theme name is required"))
     doc = _assert_theme_manageable(theme)
     if theme_name == doc.theme_name:
-        return {"status": "ok", "theme": theme, "theme_name": theme_name}
-    if frappe.db.exists("NCE Theme", theme_name):
+        return {"status": "ok", "theme": doc.name, "theme_name": doc.theme_name}
+    if frappe.db.exists("NCE Theme", {"theme_name": theme_name, "name": ["!=", doc.name]}):
         frappe.throw(_("A theme named {0} already exists").format(theme_name))
-    _rename_nce_theme_record(theme, theme_name)
-    return {"status": "ok", "theme": theme_name, "theme_name": theme_name}
+    doc.theme_name = theme_name
+    doc.flags.ignore_permissions = True
+    doc.save()
+    return {"status": "ok", "theme": doc.name, "theme_name": doc.theme_name}
 
 
 @frappe.whitelist()

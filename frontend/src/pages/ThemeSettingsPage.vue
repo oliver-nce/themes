@@ -1458,9 +1458,11 @@ async function submitRename() {
 			theme: editingTheme.value,
 			theme_name: name,
 		})
-		closeRenameDialog()
+		renameDialog.open = false
+		renameDialog.name = ""
+		renameDialog.error = ""
 		await themesList.reload()
-		await loadTheme(data?.theme || name)
+		await loadTheme(data?.theme || editingTheme.value)
 	} catch (err: any) {
 		renameDialog.error = err?.message || "Could not rename theme."
 	} finally {
@@ -1486,7 +1488,8 @@ async function submitDelete() {
 	const deleted = editingTheme.value
 	try {
 		await deleteThemeResource.submit({ theme: deleted })
-		closeDeleteDialog()
+		deleteDialog.open = false
+		deleteDialog.error = ""
 		editingTheme.value = ""
 		await themesList.reload()
 		const base =
