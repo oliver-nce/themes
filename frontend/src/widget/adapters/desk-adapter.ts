@@ -1,26 +1,93 @@
 import { open, close, type ThemeSwatchPickerCoreOpts } from "../theme-swatch-picker-core"
 
+type FrappeDb = {
+	exists: (doctype: string, name: string) => boolean
+	get_value: (
+		doctype: string,
+		name: string,
+		fieldname: string | string[],
+	) => Promise<{ message?: Record<string, unknown> } | Record<string, unknown>>
+}
+
+function getFrappeDb(): FrappeDb | null {
+	if (typeof window === "undefined") return null
+	const frappe = (window as { frappe?: { db?: FrappeDb } }).frappe
+	return frappe?.db ?? null
+}
+
+/**
+ * Resolve an NCE Theme Link value (doc name / theme_name) to its slug.
+ * Mirrors nce_events panel_data._resolve_theme_slug — Active themes with a slug only.
+ */
+export async function resolveNceThemeSlug(themeLink: string): Promise<string> {
+	const theme = (themeLink || "").trim()
+	if (!theme) return ""
+
+	const db = getFrappeDb()
+	if (!db) {
+		console.warn(
+			"[themeSwatchPicker] frappe.db unavailable — cannot resolve theme slug",
+		)
+		return ""
+	}
+
+	try {
+		if (!db.exists("NCE Theme", theme)) {
+			console.warn(`[themeSwatchPicker] NCE Theme "${theme}" not found`)
+			return ""
+		}
+		const raw = await db.get_value("NCE Theme", theme, ["slug", "status"])
+		const row =
+			(raw as { message?: { slug?: string; status?: string } }).message ??
+			(raw as { slug?: string; status?: string })
+		const slug = (row?.slug || "").trim()
+		const status = row?.status
+		if (status === "Active" && slug) return slug
+		console.warn(
+			`[themeSwatchPicker] theme "${theme}" is not Active or has no slug`,
+		)
+		return ""
+	} catch (err) {
+		console.error("[themeSwatchPicker] slug lookup failed:", err)
+		return ""
+	}
+}
+
 export type DeskThemeSwatchPickerOpts = {
 	frm: {
 		doc: Record<string, unknown>
 		set_value: (field: string, value: unknown) => void
 		fields_dict?: Record<
 			string,
-			{ $input?: { on: (ev: string, fn: () => void) => void; off: (ev: string, fn: () => void) => void } }
+			{
+				$input?: {
+					on: (ev: string, fn: () => void) => void
+					off: (ev: string, fn: () => void) => void
+				}
+			}
 		>
 	}
+	/** Form field holding Link → NCE Theme (doc name); resolved to slug for data-nce-theme. */
 	themeField: string
 	valueField: string
 	onClose?: () => void
 }
 
-export function openDeskThemeSwatchPicker(
+export async function openDeskThemeSwatchPicker(
 	opts: DeskThemeSwatchPickerOpts,
-): boolean {
+): Promise<boolean> {
 	const { frm, themeField, valueField } = opts
 
+	let cachedSlug = await resolveNceThemeSlug(String(frm.doc[themeField] ?? ""))
+	if (!cachedSlug) {
+		console.warn(
+			"[themeSwatchPicker] no Active theme slug for field — open cancelled.",
+		)
+		return false
+	}
+
 	const coreOpts: ThemeSwatchPickerCoreOpts = {
-		getThemeSlug: () => String(frm.doc[themeField] ?? ""),
+		getThemeSlug: () => cachedSlug,
 		getValue: () => String(frm.doc[valueField] ?? ""),
 		setValue: (className: string) => {
 			try {
@@ -33,7 +100,14 @@ export function openDeskThemeSwatchPicker(
 		onClose: opts.onClose,
 		watchThemeSlug: (cb) => {
 			const field = frm.fields_dict?.[themeField]
-			const listener = () => cb(String(frm.doc[themeField] ?? ""))
+			const listener = () => {
+				void resolveNceThemeSlug(String(frm.doc[themeField] ?? "")).then(
+					(slug) => {
+						cachedSlug = slug
+						cb(slug)
+					},
+				)
+			}
 			field?.$input?.on("change", listener)
 			return () => field?.$input?.off("change", listener)
 		},

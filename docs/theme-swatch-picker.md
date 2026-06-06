@@ -56,7 +56,7 @@ Single modal. Two vertical radio columns on the left, live swatch strip on the r
 
 | Prop | Required | Description |
 |---|---|---|
-| `themeField` | yes | Name of the form field on the host that holds the theme slug (e.g. `"theme"`). Widget watches it reactively; when the slug changes, the swatches re-paint and the footer label updates. |
+| `themeField` | yes | Name of the form field on the host that holds the **NCE Theme link** (doc name, e.g. Page Panel `theme`). Desk adapter resolves this to the theme **slug** for `data-nce-theme`. Standalone/Vue hosts must pass a slug literal if not using the Desk adapter. |
 | `valueField` | yes | Name of the form field that receives the chosen class string (e.g. `"header_color"`). |
 
 That is the entire public API. No default-value prop, no static slug prop, no kind/role restrictions — the spec is intentionally minimal.
@@ -168,7 +168,7 @@ frappe.ui.themeSwatchPicker.open({
 });
 ```
 
-The `frappe.ui.themeSwatchPicker` object is exposed by the UMD bundle. The init function reads the current values from `frm.doc`, opens the modal, and on swatch click calls `frm.set_value(valueField, "<chosen-class>")` so Frappe's standard dirty-tracking and save flow handle the rest.
+The `frappe.ui.themeSwatchPicker` object is exposed by the UMD bundle. The init function reads the current values from `frm.doc`, **resolves `themeField` (Link → NCE Theme doc name) to the theme's `slug` via `frappe.db.get_value`**, opens the modal, and on swatch click calls `frm.set_value(valueField, "<chosen-class>")` so Frappe's standard dirty-tracking and save flow handle the rest.
 
 ### 8.3 Standalone HTML page
 
