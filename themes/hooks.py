@@ -39,7 +39,9 @@ def _nce_theme_css_url() -> str:
     return base_url
 
 
-app_include_css = [_nce_theme_css_url()]
+app_include_css = [_nce_theme_css_url(), "/assets/themes/dist/theme-swatch-picker.css"]
+
+app_include_js = ["/assets/themes/dist/theme-swatch-picker.umd.js"]
 
 # SPA route rules — Frappe serves the Vue app for /themes/* paths
 website_route_rules = [
