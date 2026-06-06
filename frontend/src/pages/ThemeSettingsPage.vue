@@ -617,7 +617,8 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, watch, computed, onUnmounted, nextTick } from "vue"
+import { ref, reactive, watch, computed, onUnmounted, onMounted, nextTick } from "vue"
+import { useRoute } from "vue-router"
 import { createResource } from "frappe-ui"
 import { generateShades, effectiveRoleHex, pickFgMono, pickFgTonal, isDark, type ColorShade } from "@/utils/color-shades"
 import { STATUS_COLOR_DEFAULTS, STATUS_COLOR_KEYS } from "@/composables/useThemeDefaults"
@@ -628,6 +629,20 @@ import FontSelectField from "@/components/FontSelectField.vue"
 import SwatchPicker from "@/components/SwatchPicker.vue"
 
 // ─── Preview window ───────────────────────────────────────────────
+
+const route = useRoute()
+
+function themeFromQuery(): string {
+	return String(route.query.theme || "").trim()
+}
+
+function tryLoadThemeFromQuery(themes: any[]): boolean {
+	const q = themeFromQuery()
+	if (!q || !themes?.length) return false
+	if (!themes.some((t) => t.name === q)) return false
+	loadTheme(q)
+	return true
+}
 
 let previewWin: Window | null = null
 
@@ -1209,6 +1224,7 @@ const themesList = createResource({
 	auto: true,
 	onSuccess(data: any[]) {
 		if (!data?.length || editingTheme.value) return
+		if (tryLoadThemeFromQuery(data)) return
 		const base = data.find((t) => t.is_base_theme || t.is_active)?.name || data[0].name
 		if (base) loadTheme(base)
 	},
@@ -1562,6 +1578,12 @@ watch(form, () => {
 	if (pushTimer) clearTimeout(pushTimer)
 	pushTimer = setTimeout(pushToPreview, 80)
 }, { deep: true })
+
+onMounted(() => {
+	if (themesList.data?.length) {
+		tryLoadThemeFromQuery(themesList.data)
+	}
+})
 </script>
 
 <style scoped>
