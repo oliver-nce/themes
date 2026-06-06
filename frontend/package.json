@@ -6,6 +6,8 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
+    "build:widget": "vite build --config vite.widget.config.js && cp src/widget/theme-swatch-picker.css ../themes/public/dist/theme-swatch-picker.css",
+    "build:all": "npm run build && npm run build:widget",
     "preview": "vite preview"
   },
   "dependencies": {
