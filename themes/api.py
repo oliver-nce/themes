@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import re
 from typing import Optional
 
 import frappe
@@ -239,7 +240,12 @@ def _assert_theme_manageable(theme: str):
 
 @frappe.whitelist()
 def rename_theme(theme: str, theme_name: str):
-    """Rename display name on an Inactive, non-base NCE Theme (doc.name unchanged)."""
+    """Rename an Inactive, non-base NCE Theme.
+
+    NCE Theme uses autoname=field:theme_name so name==theme_name at creation.
+    We only update the display label (theme_name + slug); name stays as the
+    stable primary key so existing references are unaffected.
+    """
     frappe.only_for("System Manager")
     theme_name = (theme_name or "").strip()
     if not theme_name:
@@ -247,12 +253,21 @@ def rename_theme(theme: str, theme_name: str):
     doc = _assert_theme_manageable(theme)
     if theme_name == doc.theme_name:
         return {"status": "ok", "theme": doc.name, "theme_name": doc.theme_name}
-    if frappe.db.exists("NCE Theme", {"theme_name": theme_name, "name": ["!=", doc.name]}):
+    if frappe.db.exists("NCE Theme", {"theme_name": theme_name}):
         frappe.throw(_("A theme named {0} already exists").format(theme_name))
-    doc.theme_name = theme_name
-    doc.flags.ignore_permissions = True
-    doc.save()
-    return {"status": "ok", "theme": doc.name, "theme_name": doc.theme_name}
+    slug = re.sub(r"[^a-z0-9]+", "-", theme_name.lower()).strip("-")
+    frappe.db.sql(
+        """
+        UPDATE `tabNCE Theme`
+        SET theme_name = %(theme_name)s, slug = %(slug)s, modified = NOW(),
+            modified_by = %(user)s
+        WHERE name = %(name)s
+        """,
+        {"theme_name": theme_name, "slug": slug, "name": doc.name,
+         "user": frappe.session.user},
+    )
+    frappe.clear_cache(doctype="NCE Theme")
+    return {"status": "ok", "theme": doc.name, "theme_name": theme_name}
 
 
 @frappe.whitelist()
