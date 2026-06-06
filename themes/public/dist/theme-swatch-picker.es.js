@@ -1,20 +1,32 @@
-var B = (e, n, c) => new Promise((i, o) => {
-  var s = (p) => {
+var se = Object.defineProperty, ie = Object.defineProperties;
+var le = Object.getOwnPropertyDescriptors;
+var G = Object.getOwnPropertySymbols;
+var de = Object.prototype.hasOwnProperty, me = Object.prototype.propertyIsEnumerable;
+var Y = (e, t, c) => t in e ? se(e, t, { enumerable: !0, configurable: !0, writable: !0, value: c }) : e[t] = c, W = (e, t) => {
+  for (var c in t || (t = {}))
+    de.call(t, c) && Y(e, c, t[c]);
+  if (G)
+    for (var c of G(t))
+      me.call(t, c) && Y(e, c, t[c]);
+  return e;
+}, q = (e, t) => ie(e, le(t));
+var K = (e, t, c) => new Promise((i, o) => {
+  var a = (d) => {
     try {
-      l(c.next(p));
-    } catch (m) {
-      o(m);
+      h(c.next(d));
+    } catch (l) {
+      o(l);
     }
-  }, d = (p) => {
+  }, m = (d) => {
     try {
-      l(c.throw(p));
-    } catch (m) {
-      o(m);
+      h(c.throw(d));
+    } catch (l) {
+      o(l);
     }
-  }, l = (p) => p.done ? i(p.value) : Promise.resolve(p.value).then(s, d);
-  l((c = c.apply(e, n)).next());
+  }, h = (d) => d.done ? i(d.value) : Promise.resolve(d.value).then(a, m);
+  h((c = c.apply(e, t)).next());
 });
-const Y = ["bg", "text", "border"], W = [
+const X = ["bg", "text", "border"], Z = [
   "primary",
   "secondary",
   "accent",
@@ -22,49 +34,49 @@ const Y = ["bg", "text", "border"], W = [
   "info",
   "warning",
   "danger"
-], q = [100, 200, 300, 500, 600, 700, 900], ce = ["primary", "secondary"], re = "bg", oe = "primary", ae = "mono", se = new Set(W), ie = new Set(Y), le = new Set(q);
-function de(e) {
-  return ie.has(e);
+], ee = [100, 200, 300, 500, 600, 700, 900], he = ["primary", "secondary"], pe = "bg", ue = "primary", fe = "mono", ge = new Set(Z), we = new Set(X), _e = new Set(ee);
+function ke(e) {
+  return we.has(e);
 }
-function me(e) {
-  return se.has(e);
+function be(e) {
+  return ge.has(e);
 }
-function pe(e) {
-  return le.has(e);
+function ye(e) {
+  return _e.has(e);
 }
-const he = /^theme-(bg|text|border)-(primary|secondary|accent|success|info|warning|danger)-(100|200|300|500|600|700|900)$/;
-function J(e) {
-  const n = (e || "").trim();
-  if (!n) return null;
-  const c = he.exec(n);
+const ve = /^theme-(bg|text|border)-(primary|secondary|accent|success|info|warning|danger)-(100|200|300|500|600|700|900)$/;
+function te(e) {
+  const t = (e || "").trim();
+  if (!t) return null;
+  const c = ve.exec(t);
   if (!c) return null;
-  const i = c[1], o = c[2], s = Number(c[3]);
-  return !de(i) || !me(o) || !pe(s) ? null : { kind: i, role: o, shade: s };
+  const i = c[1], o = c[2], a = Number(c[3]);
+  return !ke(i) || !be(o) || !ye(a) ? null : { kind: i, role: o, shade: a };
 }
-function w(e, n, c) {
-  return `theme-${e}-${n}-${c}`;
+function w(e, t, c) {
+  return `theme-${e}-${t}-${c}`;
 }
-function ue() {
+function Ee() {
   return {
-    kind: re,
-    role: oe,
+    kind: pe,
+    role: ue,
     shade: 500
   };
 }
-function fe(e) {
-  var n;
-  return (n = J(e)) != null ? n : ue();
+function Te(e) {
+  var t;
+  return (t = te(e)) != null ? t : Ee();
 }
-function ge(e) {
-  return q;
+function xe(e) {
+  return ee;
 }
-function we(e) {
-  return (e || "").trim().toLowerCase() === "tonal" ? "tonal" : ae;
+function Se(e) {
+  return (e || "").trim().toLowerCase() === "tonal" ? "tonal" : fe;
 }
-function ke(e, n, c) {
-  return `theme-text-${e}-${n}${c === "tonal" ? "-fg-tonal" : "-fg"}`;
+function Ce(e, t, c) {
+  return `theme-text-${e}-${t}${c === "tonal" ? "-fg-tonal" : "-fg"}`;
 }
-const _e = {
+const Fe = {
   no_theme_selected: {
     title: "Theme required",
     body: "Select a <strong>Theme</strong> on this form before picking a color. The picker needs a theme so it can show the colors your panel will actually use."
@@ -74,27 +86,27 @@ const _e = {
     body: "The selected theme can't be used for color picking. Choose an <strong>Active</strong> theme from the Theme field, then try again."
   }
 };
-function be(e) {
+function Le(e) {
   return (e || "").trim() ? "theme_not_available" : "no_theme_selected";
 }
-function Q(e) {
-  const { title: n, body: c } = _e[e];
+function ne(e) {
+  const { title: t, body: c } = Fe[e];
   if (typeof window == "undefined") return;
   const i = window.frappe;
   if (i != null && i.msgprint) {
-    i.msgprint({ title: n, message: c, indicator: "orange" });
+    i.msgprint({ title: t, message: c, indicator: "orange" });
     return;
   }
   const o = document.createElement("div");
-  o.setAttribute("role", "alert"), o.style.cssText = "position:fixed;z-index:10002;top:50%;left:50%;transform:translate(-50%,-50%);max-width:22rem;padding:1rem 1.25rem;background:#fff;border:1px solid #e5e7eb;border-radius:0.5rem;box-shadow:0 16px 48px rgba(0,0,0,.18);font:14px/1.45 system-ui,sans-serif;", o.innerHTML = `<p style="margin:0 0 .5rem;font-weight:600;">${n}</p><p style="margin:0;color:#374151;">${c}</p>`;
-  const s = document.createElement("div");
-  s.style.cssText = "position:fixed;inset:0;z-index:10001;background:rgba(15,23,42,.45);";
-  const d = () => {
-    s.remove(), o.remove();
+  o.setAttribute("role", "alert"), o.style.cssText = "position:fixed;z-index:10002;top:50%;left:50%;transform:translate(-50%,-50%);max-width:22rem;padding:1rem 1.25rem;background:#fff;border:1px solid #e5e7eb;border-radius:0.5rem;box-shadow:0 16px 48px rgba(0,0,0,.18);font:14px/1.45 system-ui,sans-serif;", o.innerHTML = `<p style="margin:0 0 .5rem;font-weight:600;">${t}</p><p style="margin:0;color:#374151;">${c}</p>`;
+  const a = document.createElement("div");
+  a.style.cssText = "position:fixed;inset:0;z-index:10001;background:rgba(15,23,42,.45);";
+  const m = () => {
+    a.remove(), o.remove();
   };
-  s.addEventListener("click", d), o.addEventListener("click", d), document.body.append(s, o);
+  a.addEventListener("click", m), o.addEventListener("click", m), document.body.append(a, o);
 }
-const ye = `.nce-theme-swatch-picker {
+const Ne = `.nce-theme-swatch-picker {
 	--tsp-modal-bg: var(--nce-color-surface, #fff);
 	--tsp-modal-border: var(--nce-color-border, #e5e7eb);
 	--tsp-muted: var(--nce-color-muted, #6b7280);
@@ -162,10 +174,23 @@ const ye = `.nce-theme-swatch-picker {
 	gap: 0.75rem;
 }
 
+.nce-theme-swatch-picker__layout--chrome-pick {
+	grid-template-columns: 9.5rem 1fr;
+}
+
 .nce-theme-swatch-picker__fg-type {
-	margin-top: 0.75rem;
-	padding-top: 0.75rem;
-	border-top: 1px solid var(--tsp-modal-border);
+	margin-top: 0.625rem;
+	padding-top: 0;
+	border-top: 0;
+	flex-direction: row;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 0.5rem 0.75rem;
+}
+
+.nce-theme-swatch-picker__fg-type .nce-theme-swatch-picker__column-title {
+	margin: 0;
+	flex: 0 0 auto;
 }
 
 .nce-theme-swatch-picker__radio {
@@ -260,12 +285,12 @@ const ye = `.nce-theme-swatch-picker {
 	}
 }
 `;
-let v = null, E = null, K = null, j = !1;
-const ve = {
+let v = null, E = null, U = null, J = !1;
+const Ae = {
   bg: "Bg",
   text: "Text",
   border: "Border"
-}, Ee = {
+}, Pe = {
   primary: "Primary",
   secondary: "Secondary",
   accent: "Accent",
@@ -273,304 +298,301 @@ const ve = {
   info: "Info",
   warning: "Warning",
   danger: "Danger"
-}, Te = {
+}, ze = {
   mono: "Mono",
   tonal: "Tonal"
 };
-function xe() {
-  if (j || typeof document == "undefined") return;
+function De() {
+  if (J || typeof document == "undefined") return;
   const e = document.createElement("style");
-  e.setAttribute("data-nce-theme-swatch-picker", ""), e.textContent = ye, document.head.appendChild(e), j = !0;
+  e.setAttribute("data-nce-theme-swatch-picker", ""), e.textContent = Ne, document.head.appendChild(e), J = !0;
 }
-function Se() {
+function Me() {
   if (typeof document == "undefined") return;
   const e = document.createElement("div");
   e.className = "theme-bg-primary-500", e.style.display = "none", document.body.appendChild(e);
-  const n = getComputedStyle(e).backgroundColor;
-  e.remove(), (!n || n === "rgba(0, 0, 0, 0)" || n === "transparent") && console.warn(
+  const t = getComputedStyle(e).backgroundColor;
+  e.remove(), (!t || t === "rgba(0, 0, 0, 0)" || t === "transparent") && console.warn(
     "[themeSwatchPicker] nce_theme.css may not be loaded — swatches may not paint."
   );
 }
-function Ce(e) {
+function Re(e) {
   return (e || "").trim();
 }
-function Fe(e, n) {
-  return n ? !0 : ce.includes(e);
+function $e(e, t) {
+  return t ? !0 : he.includes(e);
 }
-function Le(e, n, c, i, o) {
-  const s = !!(e.getFgType && e.setFgType), d = document.createElement("div");
-  d.className = "nce-theme-swatch-picker__backdrop", d.addEventListener("click", () => k());
+function Ie(e, t, c, i, o) {
+  const a = !!(e.getFgType && e.setFgType), m = a, h = document.createElement("div");
+  h.className = "nce-theme-swatch-picker__backdrop", h.addEventListener("click", () => _());
+  const d = document.createElement("div");
+  d.className = "nce-theme-swatch-picker nce-theme-swatch-picker__modal", d.setAttribute("role", "dialog"), d.setAttribute("aria-modal", "true"), d.setAttribute("aria-label", "Theme swatch picker"), d.addEventListener("click", (n) => n.stopPropagation());
   const l = document.createElement("div");
-  l.className = "nce-theme-swatch-picker nce-theme-swatch-picker__modal", l.setAttribute("role", "dialog"), l.setAttribute("aria-modal", "true"), l.setAttribute("aria-label", "Theme swatch picker"), l.addEventListener("click", (t) => t.stopPropagation());
-  const p = document.createElement("div");
-  n && p.setAttribute("data-nce-theme", n);
-  const m = document.createElement("div");
-  m.className = "nce-theme-swatch-picker__layout";
-  const u = document.createElement("fieldset");
-  u.className = "nce-theme-swatch-picker__radios";
-  const L = document.createElement("p");
-  L.className = "nce-theme-swatch-picker__column-title", L.textContent = "Kind", u.appendChild(L);
+  t && l.setAttribute("data-nce-theme", t);
+  const f = document.createElement("div");
+  f.className = m ? "nce-theme-swatch-picker__layout nce-theme-swatch-picker__layout--chrome-pick" : "nce-theme-swatch-picker__layout";
+  const b = document.createElement("fieldset");
+  b.className = "nce-theme-swatch-picker__radios";
+  const A = document.createElement("p");
+  A.className = "nce-theme-swatch-picker__column-title", A.textContent = "Kind", b.appendChild(A);
   const T = document.createElement("fieldset");
   T.className = "nce-theme-swatch-picker__radios";
-  const N = document.createElement("p");
-  N.className = "nce-theme-swatch-picker__column-title", N.textContent = "Role", T.appendChild(N);
-  const A = document.createElement("div"), P = document.createElement("p");
-  P.className = "nce-theme-swatch-picker__column-title", P.textContent = "Swatches", A.appendChild(P);
-  const x = document.createElement("div");
-  x.className = "nce-theme-swatch-picker__swatch-strip", A.appendChild(x);
-  const z = /* @__PURE__ */ new Map();
-  for (const t of Y) {
-    const a = document.createElement("label");
-    a.className = "nce-theme-swatch-picker__radio";
-    const r = document.createElement("input");
-    r.type = "radio", r.name = "nce-tsp-kind", r.value = t, r.checked = c.kind === t, a.appendChild(r), a.append(" ", ve[t]), u.appendChild(a), z.set(t, r);
-  }
+  const P = document.createElement("p");
+  P.className = "nce-theme-swatch-picker__column-title", P.textContent = "Role", T.appendChild(P);
+  const x = document.createElement("div"), z = document.createElement("p");
+  z.className = "nce-theme-swatch-picker__column-title", z.textContent = "Swatches", x.appendChild(z);
+  const S = document.createElement("div");
+  S.className = "nce-theme-swatch-picker__swatch-strip", x.appendChild(S);
   const D = /* @__PURE__ */ new Map();
-  for (const t of W) {
-    const a = document.createElement("label");
-    a.className = "nce-theme-swatch-picker__radio";
+  for (const n of X) {
+    const s = document.createElement("label");
+    s.className = "nce-theme-swatch-picker__radio";
     const r = document.createElement("input");
-    r.type = "radio", r.name = "nce-tsp-role", r.value = t, r.checked = c.role === t, a.appendChild(r), a.append(" ", Ee[t]), T.appendChild(a), D.set(t, r);
+    r.type = "radio", r.name = "nce-tsp-kind", r.value = n, r.checked = c.kind === n, s.appendChild(r), s.append(" ", Ae[n]), b.appendChild(s), D.set(n, r);
   }
-  m.append(u, T, A);
-  const b = document.createElement("fieldset");
-  b.className = "nce-theme-swatch-picker__radios nce-theme-swatch-picker__radios--horizontal nce-theme-swatch-picker__fg-type";
-  const M = document.createElement("p");
-  M.className = "nce-theme-swatch-picker__column-title", M.textContent = "Foreground Type", b.appendChild(M);
-  const R = /* @__PURE__ */ new Map();
-  let $ = o;
-  const te = () => {
-    const t = y(), a = s && t.kind === "bg";
-    b.hidden = !a;
-  };
-  for (const t of ["mono", "tonal"]) {
-    const a = document.createElement("label");
-    a.className = "nce-theme-swatch-picker__radio";
+  const M = /* @__PURE__ */ new Map();
+  for (const n of Z) {
+    const s = document.createElement("label");
+    s.className = "nce-theme-swatch-picker__radio";
     const r = document.createElement("input");
-    r.type = "radio", r.name = "nce-tsp-fg-type", r.value = t, r.checked = $ === t, a.appendChild(r), a.append(" ", Te[t]), b.appendChild(a), R.set(t, r);
+    r.type = "radio", r.name = "nce-tsp-role", r.value = n, r.checked = c.role === n, s.appendChild(r), s.append(" ", Pe[n]), T.appendChild(s), M.set(n, r);
   }
-  const I = () => {
-    var a;
-    const t = ((a = [...R.entries()].find(([, r]) => r.checked)) == null ? void 0 : a[0]) || $;
-    return $ = t, t;
+  f.append(b, T, x), m && (b.hidden = !0, c = q(W({}, c), { kind: "bg" }));
+  const y = document.createElement("fieldset");
+  y.className = "nce-theme-swatch-picker__radios nce-theme-swatch-picker__radios--horizontal nce-theme-swatch-picker__fg-type", a || (y.hidden = !0);
+  const R = document.createElement("p");
+  R.className = "nce-theme-swatch-picker__column-title", R.textContent = "Foreground Type", y.appendChild(R);
+  const $ = /* @__PURE__ */ new Map();
+  let I = o;
+  for (const n of ["mono", "tonal"]) {
+    const s = document.createElement("label");
+    s.className = "nce-theme-swatch-picker__radio";
+    const r = document.createElement("input");
+    r.type = "radio", r.name = "nce-tsp-fg-type", r.value = n, r.checked = I === n, s.appendChild(r), s.append(" ", ze[n]), y.appendChild(s), $.set(n, r);
+  }
+  a && x.appendChild(y);
+  const O = () => {
+    var s;
+    const n = ((s = [...$.entries()].find(([, r]) => r.checked)) == null ? void 0 : s[0]) || I;
+    return I = n, n;
   }, V = document.createElement("div");
   V.className = "nce-theme-swatch-picker__status";
-  const O = document.createElement("span");
-  O.className = "nce-theme-swatch-picker__selected-label", O.textContent = "Selected:";
-  const H = document.createElement("code");
-  H.className = "nce-theme-swatch-picker__selected-value", V.append(O, H);
-  const S = document.createElement("div");
-  S.className = "nce-theme-swatch-picker__footer";
-  const U = (t) => {
-    if (!t) {
-      S.textContent = "Theme: (site default — no theme selected)";
+  const H = document.createElement("span");
+  H.className = "nce-theme-swatch-picker__selected-label", H.textContent = "Selected:";
+  const B = document.createElement("code");
+  B.className = "nce-theme-swatch-picker__selected-value", V.append(H, B);
+  const C = document.createElement("div");
+  C.className = "nce-theme-swatch-picker__footer";
+  const j = (n) => {
+    if (!n) {
+      C.textContent = "Theme: (site default — no theme selected)";
       return;
     }
-    S.textContent = `Theme: ${t}`;
+    C.textContent = `Theme: ${n}`;
   };
-  U(n), p.append(m, b, V, S), l.appendChild(p), d.appendChild(l);
-  let _ = null;
-  const y = () => {
-    var f, h;
-    const t = ((f = [...z.entries()].find(([, g]) => g.checked)) == null ? void 0 : f[0]) || c.kind, a = ((h = [...D.entries()].find(([, g]) => g.checked)) == null ? void 0 : h[0]) || c.role, r = _ != null ? _ : c.shade;
-    return { kind: t, role: a, shade: r };
-  }, C = (t) => {
-    const a = y(), r = t != null ? t : w(a.kind, a.role, a.shade);
-    H.textContent = r;
-  }, F = () => {
-    const t = y(), a = I(), r = s && t.kind === "bg";
-    _ = null, x.replaceChildren();
-    for (const f of ge(t.role)) {
-      const h = document.createElement("button");
-      if (h.type = "button", h.className = `nce-theme-swatch-picker__swatch theme-bg-${t.role}-${f}`, h.title = w(t.kind, t.role, f), t.shade === f && h.classList.add("nce-theme-swatch-picker__swatch--preview"), Fe(t.role, r)) {
+  j(t), l.append(f, V, C), d.appendChild(l), h.appendChild(d);
+  let k = null;
+  const F = () => {
+    var u, p;
+    const n = m ? "bg" : ((u = [...D.entries()].find(([, g]) => g.checked)) == null ? void 0 : u[0]) || c.kind, s = ((p = [...M.entries()].find(([, g]) => g.checked)) == null ? void 0 : p[0]) || c.role, r = k != null ? k : c.shade;
+    return { kind: n, role: s, shade: r };
+  }, L = (n) => {
+    const s = F(), r = n != null ? n : w(s.kind, s.role, s.shade);
+    B.textContent = r;
+  }, N = () => {
+    const n = F(), s = O(), r = a;
+    k = null, S.replaceChildren();
+    for (const u of xe(n.role)) {
+      const p = document.createElement("button");
+      if (p.type = "button", p.className = `nce-theme-swatch-picker__swatch theme-bg-${n.role}-${u}`, p.title = w(n.kind, n.role, u), n.shade === u && p.classList.add("nce-theme-swatch-picker__swatch--preview"), $e(n.role, r)) {
         const g = document.createElement("span");
-        g.className = "nce-theme-swatch-picker__swatch-label " + ke(t.role, f, a), g.textContent = "Text", h.appendChild(g);
+        g.className = "nce-theme-swatch-picker__swatch-label " + Ce(n.role, u, s), g.textContent = "Text", p.appendChild(g);
       }
-      h.addEventListener("mouseenter", () => {
-        _ = f, C(w(t.kind, t.role, f));
-      }), h.addEventListener("mouseleave", () => {
-        _ = null, C(i || w(t.kind, t.role, t.shade));
-      }), h.addEventListener("click", () => {
-        const g = w(t.kind, t.role, f);
+      p.addEventListener("mouseenter", () => {
+        k = u, L(w(n.kind, n.role, u));
+      }), p.addEventListener("mouseleave", () => {
+        k = null, L(i || w(n.kind, n.role, n.shade));
+      }), p.addEventListener("click", () => {
+        const g = w(n.kind, n.role, u);
         try {
-          e.setFgType && t.kind === "bg" && e.setFgType(I()), e.setValue(g);
-        } catch (ne) {
-          console.error("[themeSwatchPicker] setValue failed:", ne);
+          e.setFgType && e.setFgType(O()), e.setValue(g);
+        } catch (ae) {
+          console.error("[themeSwatchPicker] setValue failed:", ae);
           return;
         }
-        k();
-      }), x.appendChild(h);
+        _();
+      }), S.appendChild(p);
     }
-    C(
-      i || w(t.kind, t.role, t.shade)
-    ), te();
+    L(
+      i || w(n.kind, n.role, n.shade)
+    );
   };
-  for (const t of z.values())
-    t.addEventListener("change", () => {
-      c = y(), F();
+  for (const n of D.values())
+    n.addEventListener("change", () => {
+      c = F(), N();
     });
-  for (const t of D.values())
-    t.addEventListener("change", () => {
-      c = y(), F();
+  for (const n of M.values())
+    n.addEventListener("change", () => {
+      c = F(), N();
     });
-  for (const t of R.values())
-    t.addEventListener("change", () => {
-      I(), F();
+  for (const n of $.values())
+    n.addEventListener("change", () => {
+      O(), N();
     });
-  return F(), {
-    root: d,
-    updateSelected: C,
-    refreshThemeScope: (t) => {
-      t ? p.setAttribute("data-nce-theme", t) : p.removeAttribute("data-nce-theme"), U(t);
+  return N(), {
+    root: h,
+    updateSelected: L,
+    refreshThemeScope: (n) => {
+      n ? l.setAttribute("data-nce-theme", n) : l.removeAttribute("data-nce-theme"), j(n);
     }
   };
 }
-function k() {
+function _() {
   E && (document.removeEventListener("keydown", E), E = null), v && (v.remove(), v = null);
-  const e = K;
-  K = null, e == null || e();
+  const e = U;
+  U = null, e == null || e();
 }
-function X() {
+function ce() {
   return v !== null;
 }
-function Z(e) {
-  var d;
-  X() && k(), xe(), Se();
-  const n = Ce(e.getThemeSlug());
-  if (!n)
-    return console.warn("[themeSwatchPicker] theme slug is empty — open cancelled."), Q("no_theme_selected"), !1;
-  const c = (e.getValue() || "").trim(), i = fe(c), o = e.getFgType ? we(e.getFgType()) : "mono", { root: s } = Le(
+function re(e) {
+  var m;
+  ce() && _(), De(), Me();
+  const t = Re(e.getThemeSlug());
+  if (!t)
+    return console.warn("[themeSwatchPicker] theme slug is empty — open cancelled."), ne("no_theme_selected"), !1;
+  const c = (e.getValue() || "").trim(), i = Te(c), o = e.getFgType ? Se(e.getFgType()) : "mono", { root: a } = Ie(
     e,
-    n,
+    t,
     i,
     c,
     o
   );
-  return document.body.appendChild(s), v = s, K = (d = e.onClose) != null ? d : null, E = (l) => {
-    l.key === "Escape" && (l.preventDefault(), k());
+  return document.body.appendChild(a), v = a, U = (m = e.onClose) != null ? m : null, E = (h) => {
+    h.key === "Escape" && (h.preventDefault(), _());
   }, document.addEventListener("keydown", E), !0;
 }
-function Ne() {
-  var n;
+function Oe() {
+  var t;
   if (typeof window == "undefined") return null;
   const e = window.frappe;
-  return (n = e == null ? void 0 : e.db) != null ? n : null;
+  return (t = e == null ? void 0 : e.db) != null ? t : null;
 }
-function Ae(e) {
-  return B(this, null, function* () {
+function Ve(e) {
+  return K(this, null, function* () {
     var i;
-    const n = (e || "").trim();
-    if (!n) return "";
-    const c = Ne();
+    const t = (e || "").trim();
+    if (!t) return "";
+    const c = Oe();
     if (!c)
       return console.warn(
         "[themeSwatchPicker] frappe.db unavailable — cannot resolve theme slug"
       ), "";
     try {
-      if (!c.exists("NCE Theme", n))
-        return console.warn(`[themeSwatchPicker] NCE Theme "${n}" not found`), "";
-      const o = yield c.get_value("NCE Theme", n, ["slug", "status"]), s = (i = o.message) != null ? i : o, d = ((s == null ? void 0 : s.slug) || "").trim();
-      return (s == null ? void 0 : s.status) === "Active" && d ? d : (console.warn(
-        `[themeSwatchPicker] theme "${n}" is not Active or has no slug`
+      if (!c.exists("NCE Theme", t))
+        return console.warn(`[themeSwatchPicker] NCE Theme "${t}" not found`), "";
+      const o = yield c.get_value("NCE Theme", t, ["slug", "status"]), a = (i = o.message) != null ? i : o, m = ((a == null ? void 0 : a.slug) || "").trim();
+      return (a == null ? void 0 : a.status) === "Active" && m ? m : (console.warn(
+        `[themeSwatchPicker] theme "${t}" is not Active or has no slug`
       ), "");
     } catch (o) {
       return console.error("[themeSwatchPicker] slug lookup failed:", o), "";
     }
   });
 }
-function Pe(e, n) {
-  if (n) return n;
+function He(e, t) {
+  if (t) return t;
   if (e.endsWith("_bg_class"))
     return e.replace(/_bg_class$/, "_fg_type");
 }
-function ze(e) {
-  return B(this, null, function* () {
-    var p;
-    const { frm: n, themeField: c, valueField: i } = e, o = Pe(i, e.fgTypeField), s = String((p = n.doc[c]) != null ? p : "");
-    let d = yield Ae(s);
-    if (!d)
+function Be(e) {
+  return K(this, null, function* () {
+    var d;
+    const { frm: t, themeField: c, valueField: i } = e, o = He(i, e.fgTypeField), a = String((d = t.doc[c]) != null ? d : "");
+    let m = yield Ve(a);
+    if (!m)
       return console.warn(
         "[themeSwatchPicker] no Active theme slug for field — open cancelled."
-      ), Q(be(s)), !1;
-    const l = {
-      getThemeSlug: () => d,
+      ), ne(Le(a)), !1;
+    const h = {
+      getThemeSlug: () => m,
       getValue: () => {
-        var m;
-        return String((m = n.doc[i]) != null ? m : "");
+        var l;
+        return String((l = t.doc[i]) != null ? l : "");
       },
-      setValue: (m) => {
+      setValue: (l) => {
         try {
-          n.set_value(i, m);
-        } catch (u) {
-          throw console.error("[themeSwatchPicker] frm.set_value failed:", u), u;
+          t.set_value(i, l);
+        } catch (f) {
+          throw console.error("[themeSwatchPicker] frm.set_value failed:", f), f;
         }
       },
       onClose: e.onClose
     };
-    return o && (l.getFgType = () => {
-      var m;
-      return String((m = n.doc[o]) != null ? m : "mono");
-    }, l.setFgType = (m) => {
+    return o && (h.getFgType = () => {
+      var l;
+      return String((l = t.doc[o]) != null ? l : "mono");
+    }, h.setFgType = (l) => {
       try {
-        n.set_value(o, m);
-      } catch (u) {
-        throw console.error("[themeSwatchPicker] frm.set_value fg type failed:", u), u;
+        t.set_value(o, l);
+      } catch (f) {
+        throw console.error("[themeSwatchPicker] frm.set_value fg type failed:", f), f;
       }
-    }), Z(l);
+    }), re(h);
   });
 }
-function De(e) {
+function Ke(e) {
   e.ui.themeSwatchPicker = {
-    open: ze,
-    close: k
+    open: Be,
+    close: _
   };
 }
-function G(e) {
-  var n, c;
-  return e instanceof HTMLInputElement || e instanceof HTMLSelectElement ? e.value : (c = (n = e.textContent) == null ? void 0 : n.trim()) != null ? c : "";
+function Q(e) {
+  var t, c;
+  return e instanceof HTMLInputElement || e instanceof HTMLSelectElement ? e.value : (c = (t = e.textContent) == null ? void 0 : t.trim()) != null ? c : "";
 }
-function Me(e, n) {
+function Ue(e, t) {
   if (e instanceof HTMLInputElement || e instanceof HTMLTextAreaElement) {
-    e.value = n, e.dispatchEvent(new Event("input", { bubbles: !0 })), e.dispatchEvent(new Event("change", { bubbles: !0 }));
+    e.value = t, e.dispatchEvent(new Event("input", { bubbles: !0 })), e.dispatchEvent(new Event("change", { bubbles: !0 }));
     return;
   }
-  e.textContent = n;
+  e.textContent = t;
 }
-function ee(e) {
-  const { themeFieldEl: n, valueFieldEl: c } = e, i = {
-    getThemeSlug: () => G(n),
-    getValue: () => G(c),
-    setValue: (o) => Me(c, o),
+function oe(e) {
+  const { themeFieldEl: t, valueFieldEl: c } = e, i = {
+    getThemeSlug: () => Q(t),
+    getValue: () => Q(c),
+    setValue: (o) => Ue(c, o),
     onClose: e.onClose
   };
-  return Z(i);
+  return re(i);
 }
-function Re(e) {
+function je(e) {
   e.themeSwatchPicker = {
-    open: ee,
-    close: k
+    open: oe,
+    close: _
   };
 }
-const Ie = {
-  open: ee,
-  close: k,
-  isOpen: X,
-  parseThemeClass: J,
+const Ye = {
+  open: oe,
+  close: _,
+  isOpen: ce,
+  parseThemeClass: te,
   composeThemeClass: w
 };
 if (typeof window != "undefined") {
-  Re(window);
+  je(window);
   const e = window.frappe;
-  e != null && e.ui && De(e);
+  e != null && e.ui && Ke(e);
 }
 export {
-  k as close,
+  _ as close,
   w as composeThemeClass,
-  Ie as default,
-  X as isOpen,
-  Z as open,
-  ze as openDeskThemeSwatchPicker,
-  ee as openStandaloneThemeSwatchPicker,
-  J as parseThemeClass
+  Ye as default,
+  ce as isOpen,
+  re as open,
+  Be as openDeskThemeSwatchPicker,
+  oe as openStandaloneThemeSwatchPicker,
+  te as parseThemeClass
 };
 //# sourceMappingURL=theme-swatch-picker.es.js.map

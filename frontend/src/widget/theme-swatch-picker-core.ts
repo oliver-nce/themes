@@ -102,6 +102,7 @@ function buildModal(
 	refreshThemeScope: (slug: string) => void
 } {
 	const persistFgType = !!(opts.getFgType && opts.setFgType)
+	const chromePickMode = persistFgType
 	const backdrop = document.createElement("div")
 	backdrop.className = "nce-theme-swatch-picker__backdrop"
 	backdrop.addEventListener("click", () => close())
@@ -119,7 +120,9 @@ function buildModal(
 	}
 
 	const layout = document.createElement("div")
-	layout.className = "nce-theme-swatch-picker__layout"
+	layout.className = chromePickMode
+		? "nce-theme-swatch-picker__layout nce-theme-swatch-picker__layout--chrome-pick"
+		: "nce-theme-swatch-picker__layout"
 
 	const kindField = document.createElement("fieldset")
 	kindField.className = "nce-theme-swatch-picker__radios"
@@ -176,10 +179,17 @@ function buildModal(
 	}
 
 	layout.append(kindField, roleField, swatchHost)
+	if (chromePickMode) {
+		kindField.hidden = true
+		state = { ...state, kind: "bg" }
+	}
 
 	const fgTypeField = document.createElement("fieldset")
 	fgTypeField.className =
 		"nce-theme-swatch-picker__radios nce-theme-swatch-picker__radios--horizontal nce-theme-swatch-picker__fg-type"
+	if (!persistFgType) {
+		fgTypeField.hidden = true
+	}
 	const fgTypeTitle = document.createElement("p")
 	fgTypeTitle.className = "nce-theme-swatch-picker__column-title"
 	fgTypeTitle.textContent = "Foreground Type"
@@ -187,12 +197,6 @@ function buildModal(
 
 	const fgTypeInputs = new Map<ThemeFgType, HTMLInputElement>()
 	let fgType: ThemeFgType = initialFgType
-
-	const updateFgTypeVisibility = () => {
-		const current = readState()
-		const visible = persistFgType && current.kind === "bg"
-		fgTypeField.hidden = !visible
-	}
 
 	for (const type of ["mono", "tonal"] as const) {
 		const label = document.createElement("label")
@@ -206,6 +210,10 @@ function buildModal(
 		label.append(" ", FG_TYPE_LABELS[type])
 		fgTypeField.appendChild(label)
 		fgTypeInputs.set(type, input)
+	}
+
+	if (persistFgType) {
+		swatchHost.appendChild(fgTypeField)
 	}
 
 	const readFgType = (): ThemeFgType => {
@@ -238,16 +246,17 @@ function buildModal(
 	}
 	updateFooter(initialSlug)
 
-	scoped.append(layout, fgTypeField, status, footer)
+	scoped.append(layout, status, footer)
 	modal.appendChild(scoped)
 	backdrop.appendChild(modal)
 
 	let previewShade: ThemeShade | null = null
 
 	const readState = (): PickerState => {
-		const kind =
-			([...kindInputs.entries()].find(([, el]) => el.checked)?.[0] as ThemeKind) ||
-			state.kind
+		const kind = chromePickMode
+			? "bg"
+			: (([...kindInputs.entries()].find(([, el]) => el.checked)?.[0] as ThemeKind) ||
+					state.kind)
 		const role =
 			([...roleInputs.entries()].find(([, el]) => el.checked)?.[0] as ThemeRole) ||
 			state.role
@@ -266,7 +275,7 @@ function buildModal(
 	const renderSwatches = () => {
 		const current = readState()
 		const currentFgType = readFgType()
-		const showAllOverlayRoles = persistFgType && current.kind === "bg"
+		const showAllOverlayRoles = persistFgType
 		previewShade = null
 		swatchStrip.replaceChildren()
 		for (const shade of shadesForRole(current.role)) {
@@ -296,7 +305,7 @@ function buildModal(
 			btn.addEventListener("click", () => {
 				const picked = composeThemeClass(current.kind, current.role, shade)
 				try {
-					if (opts.setFgType && current.kind === "bg") {
+					if (opts.setFgType) {
 						opts.setFgType(readFgType())
 					}
 					opts.setValue(picked)
@@ -312,7 +321,6 @@ function buildModal(
 			committedValue ||
 				composeThemeClass(current.kind, current.role, current.shade),
 		)
-		updateFgTypeVisibility()
 	}
 
 	for (const input of kindInputs.values()) {

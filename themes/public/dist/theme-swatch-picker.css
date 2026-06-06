@@ -66,10 +66,23 @@
 	gap: 0.75rem;
 }
 
+.nce-theme-swatch-picker__layout--chrome-pick {
+	grid-template-columns: 9.5rem 1fr;
+}
+
 .nce-theme-swatch-picker__fg-type {
-	margin-top: 0.75rem;
-	padding-top: 0.75rem;
-	border-top: 1px solid var(--tsp-modal-border);
+	margin-top: 0.625rem;
+	padding-top: 0;
+	border-top: 0;
+	flex-direction: row;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 0.5rem 0.75rem;
+}
+
+.nce-theme-swatch-picker__fg-type .nce-theme-swatch-picker__column-title {
+	margin: 0;
+	flex: 0 0 auto;
 }
 
 .nce-theme-swatch-picker__radio {
