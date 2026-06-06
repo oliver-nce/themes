@@ -3,12 +3,15 @@ import {
 	KINDS,
 	OVERLAY_ROLES,
 	ROLES,
+	type ThemeFgType,
 	type ThemeKind,
 	type ThemeRole,
 	type ThemeShade,
 } from "./constants"
 import {
+	composeOverlayFgClass,
 	composeThemeClass,
+	parseFgType,
 	resolveInitialState,
 	shadesForRole,
 	type ParsedThemeClass,
@@ -20,6 +23,8 @@ export type ThemeSwatchPickerCoreOpts = {
 	getThemeSlug: () => string
 	getValue: () => string
 	setValue: (className: string) => void
+	getFgType?: () => string
+	setFgType?: (fgType: ThemeFgType) => void
 	onClose?: () => void
 }
 
@@ -44,6 +49,11 @@ const ROLE_LABELS: Record<ThemeRole, string> = {
 	info: "Info",
 	warning: "Warning",
 	danger: "Danger",
+}
+
+const FG_TYPE_LABELS: Record<ThemeFgType, string> = {
+	mono: "Mono",
+	tonal: "Tonal",
 }
 
 function injectStyles() {
@@ -76,8 +86,8 @@ function normalizeSlug(raw: string): string {
 	return (raw || "").trim()
 }
 
-function overlayForRole(role: ThemeRole): boolean {
-	return OVERLAY_ROLES.includes(role)
+function overlayForRole(role: ThemeRole, showAllRoles: boolean): boolean {
+	return showAllRoles ? true : OVERLAY_ROLES.includes(role)
 }
 
 function buildModal(
@@ -85,11 +95,13 @@ function buildModal(
 	initialSlug: string,
 	state: PickerState,
 	committedValue: string,
+	initialFgType: ThemeFgType,
 ): {
 	root: HTMLElement
 	updateSelected: (preview: string) => void
 	refreshThemeScope: (slug: string) => void
 } {
+	const persistFgType = !!(opts.getFgType && opts.setFgType)
 	const backdrop = document.createElement("div")
 	backdrop.className = "nce-theme-swatch-picker__backdrop"
 	backdrop.addEventListener("click", () => close())
@@ -165,6 +177,46 @@ function buildModal(
 
 	layout.append(kindField, roleField, swatchHost)
 
+	const fgTypeField = document.createElement("fieldset")
+	fgTypeField.className =
+		"nce-theme-swatch-picker__radios nce-theme-swatch-picker__radios--horizontal nce-theme-swatch-picker__fg-type"
+	const fgTypeTitle = document.createElement("p")
+	fgTypeTitle.className = "nce-theme-swatch-picker__column-title"
+	fgTypeTitle.textContent = "Foreground Type"
+	fgTypeField.appendChild(fgTypeTitle)
+
+	const fgTypeInputs = new Map<ThemeFgType, HTMLInputElement>()
+	let fgType: ThemeFgType = initialFgType
+
+	const updateFgTypeVisibility = () => {
+		const current = readState()
+		const visible = persistFgType && current.kind === "bg"
+		fgTypeField.hidden = !visible
+	}
+
+	for (const type of ["mono", "tonal"] as const) {
+		const label = document.createElement("label")
+		label.className = "nce-theme-swatch-picker__radio"
+		const input = document.createElement("input")
+		input.type = "radio"
+		input.name = "nce-tsp-fg-type"
+		input.value = type
+		input.checked = fgType === type
+		label.appendChild(input)
+		label.append(" ", FG_TYPE_LABELS[type])
+		fgTypeField.appendChild(label)
+		fgTypeInputs.set(type, input)
+	}
+
+	const readFgType = (): ThemeFgType => {
+		const selected =
+			([...fgTypeInputs.entries()].find(([, el]) => el.checked)?.[0] as
+				| ThemeFgType
+				| undefined) || fgType
+		fgType = selected
+		return selected
+	}
+
 	const status = document.createElement("div")
 	status.className = "nce-theme-swatch-picker__status"
 	const selectedLabel = document.createElement("span")
@@ -186,7 +238,7 @@ function buildModal(
 	}
 	updateFooter(initialSlug)
 
-	scoped.append(layout, status, footer)
+	scoped.append(layout, fgTypeField, status, footer)
 	modal.appendChild(scoped)
 	backdrop.appendChild(modal)
 
@@ -213,6 +265,8 @@ function buildModal(
 
 	const renderSwatches = () => {
 		const current = readState()
+		const currentFgType = readFgType()
+		const showAllOverlayRoles = persistFgType && current.kind === "bg"
 		previewShade = null
 		swatchStrip.replaceChildren()
 		for (const shade of shadesForRole(current.role)) {
@@ -223,11 +277,11 @@ function buildModal(
 			if (current.shade === shade) {
 				btn.classList.add("nce-theme-swatch-picker__swatch--preview")
 			}
-			if (overlayForRole(current.role)) {
+			if (overlayForRole(current.role, showAllOverlayRoles)) {
 				const span = document.createElement("span")
 				span.className =
-					"nce-theme-swatch-picker__swatch-label theme-text-" +
-					`${current.role}-${shade}-fg`
+					"nce-theme-swatch-picker__swatch-label " +
+					composeOverlayFgClass(current.role, shade, currentFgType)
 				span.textContent = "Text"
 				btn.appendChild(span)
 			}
@@ -242,6 +296,9 @@ function buildModal(
 			btn.addEventListener("click", () => {
 				const picked = composeThemeClass(current.kind, current.role, shade)
 				try {
+					if (opts.setFgType && current.kind === "bg") {
+						opts.setFgType(readFgType())
+					}
 					opts.setValue(picked)
 				} catch (err) {
 					console.error("[themeSwatchPicker] setValue failed:", err)
@@ -255,6 +312,7 @@ function buildModal(
 			committedValue ||
 				composeThemeClass(current.kind, current.role, current.shade),
 		)
+		updateFgTypeVisibility()
 	}
 
 	for (const input of kindInputs.values()) {
@@ -266,6 +324,12 @@ function buildModal(
 	for (const input of roleInputs.values()) {
 		input.addEventListener("change", () => {
 			state = readState()
+			renderSwatches()
+		})
+	}
+	for (const input of fgTypeInputs.values()) {
+		input.addEventListener("change", () => {
+			readFgType()
 			renderSwatches()
 		})
 	}
@@ -319,12 +383,14 @@ export function open(opts: ThemeSwatchPickerCoreOpts): boolean {
 
 	const committedValue = (opts.getValue() || "").trim()
 	const state = resolveInitialState(committedValue)
+	const initialFgType = opts.getFgType ? parseFgType(opts.getFgType()) : "mono"
 
 	const { root, refreshThemeScope } = buildModal(
 		opts,
 		slug,
 		state,
 		committedValue,
+		initialFgType,
 	)
 
 	document.body.appendChild(root)

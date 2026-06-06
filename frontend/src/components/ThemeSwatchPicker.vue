@@ -7,10 +7,12 @@
  */
 import { inject, watch } from "vue"
 import { close, isOpen, open } from "@/widget/theme-swatch-picker-core"
+import type { ThemeFgType } from "@/widget/constants"
 
 const props = defineProps<{
 	themeField: string
 	valueField: string
+	fgTypeField?: string
 	open: boolean
 	getField?: (name: string) => unknown
 	setField?: (name: string, value: unknown) => void
@@ -49,13 +51,30 @@ function writeField(name: string, value: string): void {
 	}
 }
 
+function resolveFgTypeField(): string | undefined {
+	if (props.fgTypeField) return props.fgTypeField
+	if (props.valueField.endsWith("_bg_class")) {
+		return props.valueField.replace(/_bg_class$/, "_fg_type")
+	}
+	return undefined
+}
+
 function openPicker() {
-	const opened = open({
+	const fgTypeField = resolveFgTypeField()
+	const coreOpts: Parameters<typeof open>[0] = {
 		getThemeSlug: () => readField(props.themeField),
 		getValue: () => readField(props.valueField),
 		setValue: (className) => writeField(props.valueField, className),
 		onClose: () => emit("update:open", false),
-	})
+	}
+
+	if (fgTypeField) {
+		coreOpts.getFgType = () => readField(fgTypeField) || "mono"
+		coreOpts.setFgType = (fgType: ThemeFgType) =>
+			writeField(fgTypeField, fgType)
+	}
+
+	const opened = open(coreOpts)
 	if (!opened) emit("update:open", false)
 }
 

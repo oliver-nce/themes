@@ -27,6 +27,10 @@ export const OVERLAY_ROLES: readonly ThemeRole[] = ["primary", "secondary"]
 export const DEFAULT_KIND: ThemeKind = "bg"
 export const DEFAULT_ROLE: ThemeRole = "primary"
 
+export const FG_TYPES = ["mono", "tonal"] as const
+export type ThemeFgType = (typeof FG_TYPES)[number]
+export const DEFAULT_FG_TYPE: ThemeFgType = "mono"
+
 const ROLE_SET = new Set<string>(ROLES)
 const KIND_SET = new Set<string>(KINDS)
 const SHADE_SET = new Set<number>(CURATED_SHADES)

@@ -59,6 +59,19 @@
 	border: 0;
 }
 
+.nce-theme-swatch-picker__radios--horizontal {
+	flex-direction: row;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 0.75rem;
+}
+
+.nce-theme-swatch-picker__fg-type {
+	margin-top: 0.75rem;
+	padding-top: 0.75rem;
+	border-top: 1px solid var(--tsp-modal-border);
+}
+
 .nce-theme-swatch-picker__radio {
 	display: flex;
 	align-items: center;

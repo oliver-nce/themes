@@ -3,6 +3,7 @@ import {
 	themePickerBlockReason,
 } from "../blocked-dialog"
 import { open, close, type ThemeSwatchPickerCoreOpts } from "../theme-swatch-picker-core"
+import type { ThemeFgType } from "../constants"
 
 type FrappeDb = {
 	exists: (doctype: string, name: string) => boolean
@@ -65,13 +66,27 @@ export type DeskThemeSwatchPickerOpts = {
 	/** Form field holding Link → NCE Theme (doc name); resolved to slug for data-nce-theme. */
 	themeField: string
 	valueField: string
+	/** Optional; defaults to valueField with `_bg_class` → `_fg_type`. */
+	fgTypeField?: string
 	onClose?: () => void
+}
+
+function resolveFgTypeField(
+	valueField: string,
+	explicit?: string,
+): string | undefined {
+	if (explicit) return explicit
+	if (valueField.endsWith("_bg_class")) {
+		return valueField.replace(/_bg_class$/, "_fg_type")
+	}
+	return undefined
 }
 
 export async function openDeskThemeSwatchPicker(
 	opts: DeskThemeSwatchPickerOpts,
 ): Promise<boolean> {
 	const { frm, themeField, valueField } = opts
+	const fgTypeField = resolveFgTypeField(valueField, opts.fgTypeField)
 
 	const themeLink = String(frm.doc[themeField] ?? "")
 	let cachedSlug = await resolveNceThemeSlug(themeLink)
@@ -95,6 +110,18 @@ export async function openDeskThemeSwatchPicker(
 			}
 		},
 		onClose: opts.onClose,
+	}
+
+	if (fgTypeField) {
+		coreOpts.getFgType = () => String(frm.doc[fgTypeField] ?? "mono")
+		coreOpts.setFgType = (fgType: ThemeFgType) => {
+			try {
+				frm.set_value(fgTypeField, fgType)
+			} catch (err) {
+				console.error("[themeSwatchPicker] frm.set_value fg type failed:", err)
+				throw err
+			}
+		}
 	}
 
 	return open(coreOpts)

@@ -1,10 +1,12 @@
 import {
 	CURATED_SHADES,
+	DEFAULT_FG_TYPE,
 	DEFAULT_KIND,
 	DEFAULT_ROLE,
 	isThemeKind,
 	isThemeRole,
 	isThemeShade,
+	type ThemeFgType,
 	type ThemeKind,
 	type ThemeRole,
 	type ThemeShade,
@@ -65,4 +67,18 @@ export function resolveInitialState(value: string): ParsedThemeClass {
 
 export function shadesForRole(_role: ThemeRole): readonly ThemeShade[] {
 	return CURATED_SHADES
+}
+
+export function parseFgType(value: string): ThemeFgType {
+	return (value || "").trim().toLowerCase() === "tonal" ? "tonal" : DEFAULT_FG_TYPE
+}
+
+/** Overlay label on swatch tiles — theme-text-{role}-{shade}-fg[|-tonal]. */
+export function composeOverlayFgClass(
+	role: ThemeRole,
+	shade: ThemeShade,
+	fgType: ThemeFgType,
+): string {
+	const suffix = fgType === "tonal" ? "-fg-tonal" : "-fg"
+	return `theme-text-${role}-${shade}${suffix}`
 }
