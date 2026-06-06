@@ -54,17 +54,18 @@
             "components": {
                 "src/components/BrandColorPicker.vue": "Brand color picker with swatch presets",
                 "src/components/SwatchPicker.vue": "Hex color swatch picker for theme editor",
-                "src/components/ThemeSwatchPicker.vue": "Headless Vue wrapper — picks theme-{kind}-{role}-{shade} class strings",
+                "src/components/ThemeSwatchPicker.vue": "Headless Vue wrapper — picks theme-{kind}-{role}-{shade} class strings. Agent: Vue hosts MUST pass :set-field/:get-field to reactive formData (not inject alone) or save will not persist — see docs/theme-swatch-picker.md §8.1",
                 "src/components/ThemePreview.vue": "Mini theme preview component"
             },
             "widget": {
                 "src/widget/constants.ts": "Roles, kinds, curated shades — mirrors css_writer.py",
                 "src/widget/class-utils.ts": "parseThemeClass / composeThemeClass",
                 "src/widget/theme-swatch-picker-core.ts": "Framework-agnostic modal DOM core (open/close)",
-                "src/widget/theme-swatch-picker.css": "Widget modal layout styles",
+                "src/widget/theme-swatch-picker.css": "Widget modal layout styles (backdrop z-index 10000 blocks host form)",
+                "src/widget/blocked-dialog.ts": "User-facing msgprint when Theme missing or Inactive (no modal open)",
                 "src/widget/index.ts": "UMD/ES entry — window.themeSwatchPicker + frappe.ui.themeSwatchPicker",
-                "src/widget/adapters/desk-adapter.ts": "Frappe Desk frm integration",
-                "src/widget/adapters/standalone-adapter.ts": "Plain DOM field integration",
+                "src/widget/adapters/desk-adapter.ts": "Frappe Desk frm integration — resolveNceThemeSlug (Link → slug), frm.set_value on pick",
+                "src/widget/adapters/standalone-adapter.ts": "Plain DOM field integration (themeFieldEl value must be slug)",
                 "vite.widget.config.js": "Vite library build → themes/public/dist/ (gitignored; run npm run build:widget)"
             },
             "utilities": {
@@ -74,9 +75,21 @@
             }
         }
     },
+    "consumers": {
+        "nce_events": {
+            "desk": "Page Panel form — Colours tab (page_panel.js) calls frappe.ui.themeSwatchPicker.open({ frm, themeField: 'theme', valueField }) for eight chrome slots: frame_bg_class, header_bg_class, footer_bg_class, col_header_bg_class, filter_bar_bg_class, row_bg_class, row_alt_bg_class, dialog_header_bg_class",
+            "runtime": "panel_page_v2 — panelChromeClasses.js resolves slots → theme-bg-* on PanelFloat, PanelTable, PanelTableFilterBar, PanelFormDialog (viewer dialog scoped to opening panel)",
+            "handoff": "docs/handoff-theme-swatch-picker.md (Themes) + NCE Events Docs/handoff-theme-swatch-picker.md",
+            "spec": "docs/theme-swatch-picker.md"
+        }
+    },
     "architecture_notes": [
         "Theme uses CSS custom properties (--nce-*) injected as :root vars (default) plus [data-nce-theme=\"slug\"] scoped blocks per Active theme — downstream apps consume via var() or data-nce-theme scoping",
         "Theme CSS is loaded site-wide via app_include_css in hooks.py",
-        "Vue SPA is served at /themes/* routes via www/themes.html"
+        "Vue SPA is served at /themes/* routes via www/themes.html",
+        "ThemeSwatchPicker Desk: themeField = NCE Theme Link doc name → resolveNceThemeSlug before data-nce-theme; empty/invalid theme → blocked-dialog, no modal",
+        "ThemeSwatchPicker while open: slug cached at open time; backdrop blocks host form (no watchThemeSlug)",
+        "theme-bg-* classes auto-pair foreground (color: var(--nce-*-fg)) — consumers should not hardcode theme-text-primary-fg on children inside a dynamic bg surface",
+        "ThemeSwatchPicker Vue embed: pass :set-field/:get-field to host formData — Desk uses frm.set_value via desk-adapter.ts; Vue wrapper does not. See docs/theme-swatch-picker.md §8.1. Page Panel chrome is Desk-only today."
     ]
 }
