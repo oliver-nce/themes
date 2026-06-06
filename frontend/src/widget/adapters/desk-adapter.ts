@@ -109,7 +109,6 @@ export async function openDeskThemeSwatchPicker(
 				throw err
 			}
 		},
-		onClose: opts.onClose,
 	}
 
 	if (fgTypeField) {
@@ -124,7 +123,16 @@ export async function openDeskThemeSwatchPicker(
 		}
 	}
 
-	return open(coreOpts)
+	return new Promise((resolve) => {
+		coreOpts.onClose = (result) => {
+			opts.onClose?.()
+			resolve(result.saved)
+		}
+		const opened = open(coreOpts)
+		if (!opened) {
+			resolve(false)
+		}
+	})
 }
 
 export function mountDeskThemeSwatchPicker(frappe: {

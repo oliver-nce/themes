@@ -25,14 +25,18 @@ export type ThemeSwatchPickerCoreOpts = {
 	setValue: (className: string) => void
 	getFgType?: () => string
 	setFgType?: (fgType: ThemeFgType) => void
-	onClose?: () => void
+	onClose?: (result: ThemeSwatchPickerCloseResult) => void
+}
+
+export type ThemeSwatchPickerCloseResult = {
+	saved: boolean
 }
 
 type PickerState = ParsedThemeClass
 
 let rootEl: HTMLElement | null = null
 let escHandler: ((e: KeyboardEvent) => void) | null = null
-let closeCallback: (() => void) | null = null
+let closeCallback: ((result: ThemeSwatchPickerCloseResult) => void) | null = null
 let cssInjected = false
 
 const KIND_LABELS: Record<ThemeKind, string> = {
@@ -105,7 +109,7 @@ function buildModal(
 	const chromePickMode = persistFgType
 	const backdrop = document.createElement("div")
 	backdrop.className = "nce-theme-swatch-picker__backdrop"
-	backdrop.addEventListener("click", () => close())
+	backdrop.addEventListener("click", () => close({ saved: false }))
 
 	const modal = document.createElement("div")
 	modal.className = "nce-theme-swatch-picker nce-theme-swatch-picker__modal"
@@ -227,12 +231,15 @@ function buildModal(
 
 	const status = document.createElement("div")
 	status.className = "nce-theme-swatch-picker__status"
+
+	const statusMain = document.createElement("div")
+	statusMain.className = "nce-theme-swatch-picker__status-main"
 	const selectedLabel = document.createElement("span")
 	selectedLabel.className = "nce-theme-swatch-picker__selected-label"
 	selectedLabel.textContent = "Selected:"
 	const selectedValue = document.createElement("code")
 	selectedValue.className = "nce-theme-swatch-picker__selected-value"
-	status.append(selectedLabel, selectedValue)
+	statusMain.append(selectedLabel, selectedValue)
 
 	const actions = document.createElement("div")
 	actions.className = "nce-theme-swatch-picker__actions"
@@ -241,28 +248,14 @@ function buildModal(
 	cancelBtn.type = "button"
 	cancelBtn.className = "nce-theme-swatch-picker__btn"
 	cancelBtn.textContent = "Cancel"
-	cancelBtn.addEventListener("click", () => close())
 
 	const saveBtn = document.createElement("button")
 	saveBtn.type = "button"
 	saveBtn.className = "nce-theme-swatch-picker__btn nce-theme-swatch-picker__btn--primary"
 	saveBtn.textContent = "Save"
-	saveBtn.addEventListener("click", () => {
-		const current = readState()
-		const picked = composeThemeClass(current.kind, current.role, current.shade)
-		try {
-			if (opts.setFgType) {
-				opts.setFgType(readFgType())
-			}
-			opts.setValue(picked)
-		} catch (err) {
-			console.error("[themeSwatchPicker] setValue failed:", err)
-			return
-		}
-		close()
-	})
 
 	actions.append(cancelBtn, saveBtn)
+	status.append(statusMain, actions)
 
 	const footer = document.createElement("div")
 	footer.className = "nce-theme-swatch-picker__footer"
@@ -276,7 +269,7 @@ function buildModal(
 	}
 	updateFooter(initialSlug)
 
-	scoped.append(layout, status, actions, footer)
+	scoped.append(layout, status, footer)
 	modal.appendChild(scoped)
 	backdrop.appendChild(modal)
 
@@ -307,6 +300,28 @@ function buildModal(
 		previewShade = null
 		renderSwatches()
 	}
+
+	const commitSelection = (): boolean => {
+		const current = readState()
+		const picked = composeThemeClass(current.kind, current.role, current.shade)
+		try {
+			if (opts.setFgType) {
+				opts.setFgType(readFgType())
+			}
+			opts.setValue(picked)
+		} catch (err) {
+			console.error("[themeSwatchPicker] setValue failed:", err)
+			return false
+		}
+		return true
+	}
+
+	cancelBtn.addEventListener("click", () => close({ saved: false }))
+	saveBtn.addEventListener("click", () => {
+		if (commitSelection()) {
+			close({ saved: true })
+		}
+	})
 
 	const renderSwatches = () => {
 		const current = readState()
@@ -381,7 +396,7 @@ function buildModal(
 	}
 }
 
-export function close(): void {
+export function close(result: ThemeSwatchPickerCloseResult = { saved: false }): void {
 	if (escHandler) {
 		document.removeEventListener("keydown", escHandler)
 		escHandler = null
@@ -392,7 +407,7 @@ export function close(): void {
 	}
 	const cb = closeCallback
 	closeCallback = null
-	cb?.()
+	cb?.(result)
 }
 
 export function isOpen(): boolean {
@@ -400,7 +415,7 @@ export function isOpen(): boolean {
 }
 
 export function open(opts: ThemeSwatchPickerCoreOpts): boolean {
-	if (isOpen()) close()
+	if (isOpen()) close({ saved: false })
 
 	injectStyles()
 	warnCssMaybeMissing()
@@ -431,7 +446,7 @@ export function open(opts: ThemeSwatchPickerCoreOpts): boolean {
 	escHandler = (e: KeyboardEvent) => {
 		if (e.key === "Escape") {
 			e.preventDefault()
-			close()
+			close({ saved: false })
 		}
 	}
 	document.addEventListener("keydown", escHandler)

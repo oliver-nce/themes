@@ -84,7 +84,7 @@ watch(
 		if (shouldOpen) {
 			if (!isOpen()) openPicker()
 		} else if (isOpen()) {
-			close()
+			close({ saved: false })
 		}
 	},
 )

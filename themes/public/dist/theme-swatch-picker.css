@@ -134,17 +134,27 @@
 }
 
 .nce-theme-swatch-picker__status {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: space-between;
+	gap: 0.75rem;
 	margin-top: 0.875rem;
 	padding-top: 0.75rem;
 	border-top: 1px solid var(--tsp-modal-border);
 	font-size: 0.8125rem;
 }
 
+.nce-theme-swatch-picker__status-main {
+	min-width: 0;
+	flex: 1 1 12rem;
+}
+
 .nce-theme-swatch-picker__actions {
 	display: flex;
 	justify-content: flex-end;
 	gap: 0.5rem;
-	margin-top: 0.75rem;
+	flex: 0 0 auto;
 }
 
 .nce-theme-swatch-picker__btn {
