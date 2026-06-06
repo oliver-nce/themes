@@ -324,34 +324,9 @@ import { useRoute } from "vue-router"
 import { createResource } from "frappe-ui"
 import EditorSection from "@/components/EditorSection.vue"
 import SwatchPicker from "@/components/SwatchPicker.vue"
+import { applyDeskThemeVars, deskPayloadToCssVars } from "@/composables/useDeskTheme"
 
 type ThemeAvailabilityStatus = "Active" | "Inactive"
-
-const DESK_VAR_MAP: Record<string, string> = {
-	primary_color: "--primary-color",
-	brand_color: "--brand-color",
-	bg_color: "--bg-color",
-	fg_color: "--fg-color",
-	text_color: "--text-color",
-	text_muted: "--text-muted",
-	text_light: "--text-light",
-	border_color: "--border-color",
-	dark_border_color: "--dark-border-color",
-	control_bg: "--control-bg",
-	control_bg_on_gray: "--control-bg-on-gray",
-	btn_default_bg: "--btn-default-bg",
-	awesomplete_hover_bg: "--awesomplete-hover-bg",
-	btn_height: "--btn-height",
-	border_radius: "--border-radius",
-	border_radius_lg: "--border-radius-lg",
-	border_radius_full: "--border-radius-full",
-	g_bar_color: "--g-bar-color",
-	g_bar_border: "--g-bar-border",
-	g_progress_color: "--g-progress-color",
-	g_header_background: "--g-header-background",
-	g_row_color: "--g-row-color",
-	g_today_highlight: "--g-today-highlight",
-}
 
 const ALL_FIELDS = [
 	"theme_name",
@@ -521,13 +496,7 @@ const themeSelectWidth = computed(() => {
 })
 
 function computeCSSVariables(): Record<string, string> {
-	const vars: Record<string, string> = {}
-	for (const key of PAYLOAD_FIELDS) {
-		const cssVar = DESK_VAR_MAP[key]
-		const value = form[key]
-		if (cssVar && value) vars[cssVar] = value
-	}
-	return vars
+	return deskPayloadToCssVars(buildPayloadFromForm())
 }
 
 function pushToPreview() {
@@ -919,10 +888,7 @@ async function submitSaveAsBaseTheme() {
 
 function applyLiveThemeVars() {
 	if (!editorLoaded.value) return
-	const root = document.documentElement
-	for (const [key, value] of Object.entries(computeCSSVariables())) {
-		if (value) root.style.setProperty(key, value)
-	}
+	applyDeskThemeVars(computeCSSVariables())
 }
 
 let pushTimer: ReturnType<typeof setTimeout> | null = null
