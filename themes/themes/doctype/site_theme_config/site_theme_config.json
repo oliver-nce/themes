@@ -6,7 +6,7 @@
  "field_order": ["base_theme", "base_desk_theme", "css_hash"],
  "fields": [
   {"fieldname": "base_theme", "fieldtype": "Link", "label": "Base Theme", "options": "NCE Theme", "reqd": 1},
-  {"fieldname": "base_desk_theme", "fieldtype": "Link", "label": "Base Desk Theme", "options": "NCE Desk Theme"},
+  {"fieldname": "base_desk_theme", "fieldtype": "Link", "label": "Base Desk Theme", "options": "NCE Desk Theme", "reqd": 1},
   {"fieldname": "css_hash", "fieldtype": "Data", "label": "CSS Hash", "read_only": 1}
  ],
  "index_web_pages_for_search": 0,

@@ -125,8 +125,25 @@
 			{{ switchError }}
 		</div>
 
-		<div v-if="editorResource.loading" class="py-12 text-center text-gray-400 text-sm">
+		<div v-if="themesList.loading || loadingTheme" class="py-12 text-center text-gray-400 text-sm">
 			Loading desk theme editor…
+		</div>
+
+		<div v-else-if="listLoadError" class="py-12 text-center text-red-600 text-sm max-w-lg mx-auto">
+			{{ listLoadError }}
+		</div>
+
+		<div v-else-if="!themesList.data?.length" class="py-12 text-center text-gray-600 text-sm max-w-lg mx-auto space-y-3">
+			<p class="font-medium text-gray-800">No desk themes found on this site.</p>
+			<p>
+				The database needs a Default <code class="text-xs bg-gray-100 px-1 py-0.5 rounded">NCE Desk Theme</code>
+				record before the editor can load colour and shape settings.
+			</p>
+			<p class="text-xs text-gray-500">
+				On the server, after <code class="bg-gray-100 px-1 py-0.5 rounded">bench migrate</code>, run:
+				<br />
+				<code class="block mt-2 bg-gray-100 px-2 py-1 rounded text-left">bench --site &lt;site&gt; execute themes.init_desk_theme.execute</code>
+			</p>
 		</div>
 
 		<div v-else-if="editorError" class="py-12 text-center text-red-600 text-sm">
@@ -448,6 +465,7 @@ const saving = ref(false)
 const statusSaving = ref(false)
 const editorLoaded = ref(false)
 const editorError = ref("")
+const listLoadError = ref("")
 const switchError = ref("")
 const dirtyBaselineReady = ref(false)
 const savedSnapshot = ref<Record<string, any>>({})
@@ -580,13 +598,18 @@ const themesList = createResource({
 	url: "themes.api.list_desk_themes",
 	auto: true,
 	onSuccess(data: any[]) {
+		listLoadError.value = ""
 		if (!data?.length || editingTheme.value) return
 		if (tryLoadThemeFromQuery(data)) return
 		const pick =
-			data.find((t) => t.is_active)?.name ||
 			data.find((t) => t.is_base_theme)?.name ||
+			data.find((t) => t.is_active)?.name ||
 			data[0].name
 		if (pick) loadTheme(pick)
+	},
+	onError(err: any) {
+		listLoadError.value =
+			err?.message || "Could not load desk themes. Check System Manager permissions and that migrate has run."
 	},
 })
 
