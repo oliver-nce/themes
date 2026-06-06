@@ -32,8 +32,12 @@ __pycache__/
 var/
 *.log
 
-# Frappe build output
-themes/public/dist/
+# Frappe build output (SPA etc.) — ThemeSwatchPicker widget dist is committed for Desk
+themes/public/dist/*
+!themes/public/dist/
+!themes/public/dist/theme-swatch-picker.umd.js
+!themes/public/dist/theme-swatch-picker.css
+!themes/public/dist/theme-swatch-picker.es.js
 *.map
 
 # Cursor AI rules (symlinked from shared config)

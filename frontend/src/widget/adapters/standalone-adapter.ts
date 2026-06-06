@@ -28,22 +28,11 @@ export function openStandaloneThemeSwatchPicker(
 ): boolean {
 	const { themeFieldEl, valueFieldEl } = opts
 
-	const onThemeChange = (cb: (slug: string) => void) => {
-		const listener = () => cb(fieldValue(themeFieldEl))
-		themeFieldEl.addEventListener("input", listener)
-		themeFieldEl.addEventListener("change", listener)
-		return () => {
-			themeFieldEl.removeEventListener("input", listener)
-			themeFieldEl.removeEventListener("change", listener)
-		}
-	}
-
 	const coreOpts: ThemeSwatchPickerCoreOpts = {
 		getThemeSlug: () => fieldValue(themeFieldEl),
 		getValue: () => fieldValue(valueFieldEl),
 		setValue: (className: string) => setFieldValue(valueFieldEl, className),
 		onClose: opts.onClose,
-		watchThemeSlug: onThemeChange,
 	}
 
 	return open(coreOpts)

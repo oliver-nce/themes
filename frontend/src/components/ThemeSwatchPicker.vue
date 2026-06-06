@@ -1,4 +1,10 @@
 <script setup lang="ts">
+/**
+ * Agent note — Vue save path: pass :set-field and :get-field bound to the host's
+ * reactive form state (e.g. formData in NCE Events usePanelFormDialog). Without
+ * setField, writes may miss the save payload and dirty tracking. Desk uses
+ * frappe.ui.themeSwatchPicker.open({ frm }) instead — that path uses frm.set_value.
+ */
 import { inject, watch } from "vue"
 import { close, isOpen, open } from "@/widget/theme-swatch-picker-core"
 
@@ -49,13 +55,6 @@ function openPicker() {
 		getValue: () => readField(props.valueField),
 		setValue: (className) => writeField(props.valueField, className),
 		onClose: () => emit("update:open", false),
-		watchThemeSlug: (cb) => {
-			const stop = watch(
-				() => readField(props.themeField),
-				(slug) => cb(slug),
-			)
-			return () => stop()
-		},
 	})
 	if (!opened) emit("update:open", false)
 }

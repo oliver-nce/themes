@@ -13,6 +13,7 @@ import {
 	shadesForRole,
 	type ParsedThemeClass,
 } from "./class-utils"
+import { showThemePickerBlockedDialog } from "./blocked-dialog"
 import pickerCss from "./theme-swatch-picker.css?raw"
 
 export type ThemeSwatchPickerCoreOpts = {
@@ -20,14 +21,12 @@ export type ThemeSwatchPickerCoreOpts = {
 	getValue: () => string
 	setValue: (className: string) => void
 	onClose?: () => void
-	watchThemeSlug?: (cb: (slug: string) => void) => () => void
 }
 
 type PickerState = ParsedThemeClass
 
 let rootEl: HTMLElement | null = null
 let escHandler: ((e: KeyboardEvent) => void) | null = null
-let themeUnsubscribe: (() => void) | null = null
 let closeCallback: (() => void) | null = null
 let cssInjected = false
 
@@ -288,10 +287,6 @@ function buildModal(
 }
 
 export function close(): void {
-	if (themeUnsubscribe) {
-		themeUnsubscribe()
-		themeUnsubscribe = null
-	}
 	if (escHandler) {
 		document.removeEventListener("keydown", escHandler)
 		escHandler = null
@@ -318,6 +313,7 @@ export function open(opts: ThemeSwatchPickerCoreOpts): boolean {
 	const slug = normalizeSlug(opts.getThemeSlug())
 	if (!slug) {
 		console.warn("[themeSwatchPicker] theme slug is empty — open cancelled.")
+		showThemePickerBlockedDialog("no_theme_selected")
 		return false
 	}
 
@@ -342,12 +338,6 @@ export function open(opts: ThemeSwatchPickerCoreOpts): boolean {
 		}
 	}
 	document.addEventListener("keydown", escHandler)
-
-	if (opts.watchThemeSlug) {
-		themeUnsubscribe = opts.watchThemeSlug((next) => {
-			refreshThemeScope(normalizeSlug(next))
-		})
-	}
 
 	return true
 }
