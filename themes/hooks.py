@@ -71,6 +71,7 @@ app_include_js = ["/assets/themes/dist/theme-swatch-picker.umd.js"]
 # SPA route rules — Frappe serves the Vue app for /themes/* paths
 website_route_rules = [
 	{"from_route": "/themes/<path:app_path>", "to_route": "themes"},
+	{"from_route": "/desk-themes/<path:app_path>", "to_route": "themes"},
 ]
 
 add_to_apps_screen = [
@@ -79,7 +80,13 @@ add_to_apps_screen = [
 		"logo": "/assets/themes/images/logo.jpg",
 		"title": "Themes",
 		"route": "/app/theme-editor",
-	}
+	},
+	{
+		"name": "desk-themes",
+		"logo": "/assets/themes/images/logo.jpg",
+		"title": "Desk Themes",
+		"route": "/app/desk-theme-editor",
+	},
 ]
 
 after_install = "themes.install.after_install"
