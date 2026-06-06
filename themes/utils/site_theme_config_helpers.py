@@ -54,3 +54,24 @@ def base_theme_field_on_meta() -> str:
     if meta.has_field("active_theme"):
         return "active_theme"
     frappe.throw("Site Theme Config has no base_theme or active_theme field")
+
+
+def get_site_base_desk_theme_name() -> Optional[str]:
+    """Return the site base desk theme link from Site Theme Config."""
+    if not frappe.db.exists("DocType", "Site Theme Config"):
+        return None
+    meta = frappe.get_meta("Site Theme Config")
+    if not meta.has_field("base_desk_theme"):
+        return None
+    return frappe.db.get_single_value("Site Theme Config", "base_desk_theme")
+
+
+def set_site_base_desk_theme_name(theme_name: str) -> None:
+    """Persist base desk theme on the Single."""
+    meta = frappe.get_meta("Site Theme Config")
+    if not meta.has_field("base_desk_theme"):
+        frappe.throw("Site Theme Config has no base_desk_theme field")
+    cfg = frappe.get_single("Site Theme Config")
+    cfg.flags.ignore_permissions = True
+    cfg.set("base_desk_theme", theme_name)
+    cfg.save()

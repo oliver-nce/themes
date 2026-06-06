@@ -1,0 +1,31 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "field:theme_name",
+ "creation": "2026-06-06 00:00:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": ["theme_name", "slug", "is_default", "status", "description", "theme_json"],
+ "fields": [
+  {"fieldname": "theme_name", "fieldtype": "Data", "label": "Theme Name", "reqd": 1, "unique": 1},
+  {"fieldname": "slug", "fieldtype": "Data", "label": "Slug", "read_only": 1, "unique": 1},
+  {"fieldname": "is_default", "fieldtype": "Check", "label": "Is Default", "default": "0"},
+  {"fieldname": "status", "fieldtype": "Select", "label": "Status", "options": "Inactive\nActive", "default": "Inactive"},
+  {"fieldname": "description", "fieldtype": "Small Text", "label": "Description"},
+  {"fieldname": "theme_json", "fieldtype": "Long Text", "label": "Theme JSON", "description": "Desk chrome CSS variable payload (JSON) — edited via Desk Theme Editor SPA"}
+ ],
+ "index_web_pages_for_search": 0,
+ "links": [],
+ "modified": "2026-06-06 00:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Themes",
+ "name": "NCE Desk Theme",
+ "owner": "Administrator",
+ "permissions": [
+  {"create": 1, "delete": 1, "email": 1, "export": 1, "print": 1, "read": 1, "role": "System Manager", "share": 1, "write": 1}
+ ],
+ "sort_field": "creation",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 1
+}

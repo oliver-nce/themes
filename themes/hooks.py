@@ -39,7 +39,32 @@ def _nce_theme_css_url() -> str:
     return base_url
 
 
-app_include_css = [_nce_theme_css_url(), "/assets/themes/dist/theme-swatch-picker.css"]
+def _nce_desk_theme_css_url() -> str:
+    """Return the desk theme CSS URL with a ?v=<hash> cache-buster when available."""
+    base_url = "/assets/themes/css/nce_desk_theme.css"
+    try:
+        import os
+
+        hash_path = os.path.join(
+            os.path.dirname(os.path.abspath(__file__)),
+            "public",
+            "css",
+            "nce_desk_theme.css.hash",
+        )
+        with open(hash_path) as f:
+            css_hash = f.read().strip()
+        if css_hash:
+            return f"{base_url}?v={css_hash}"
+    except Exception:
+        pass
+    return base_url
+
+
+app_include_css = [
+    _nce_theme_css_url(),
+    _nce_desk_theme_css_url(),
+    "/assets/themes/dist/theme-swatch-picker.css",
+]
 
 app_include_js = ["/assets/themes/dist/theme-swatch-picker.umd.js"]
 
