@@ -140,6 +140,39 @@
 	font-size: 0.8125rem;
 }
 
+.nce-theme-swatch-picker__actions {
+	display: flex;
+	justify-content: flex-end;
+	gap: 0.5rem;
+	margin-top: 0.75rem;
+}
+
+.nce-theme-swatch-picker__btn {
+	font: inherit;
+	font-size: 0.8125rem;
+	line-height: 1.25;
+	padding: 0.375rem 0.875rem;
+	border-radius: var(--nce-border-radius, 0.375rem);
+	cursor: pointer;
+	border: 1px solid var(--tsp-modal-border);
+	background: var(--tsp-modal-bg);
+	color: var(--nce-color-text, #1f2937);
+}
+
+.nce-theme-swatch-picker__btn:hover {
+	background: color-mix(in srgb, var(--tsp-muted) 8%, var(--tsp-modal-bg));
+}
+
+.nce-theme-swatch-picker__btn--primary {
+	background: var(--tsp-heading);
+	border-color: var(--tsp-heading);
+	color: #fff;
+}
+
+.nce-theme-swatch-picker__btn--primary:hover {
+	opacity: 0.92;
+}
+
 .nce-theme-swatch-picker__selected-label {
 	color: var(--tsp-muted);
 	margin-right: 0.25rem;

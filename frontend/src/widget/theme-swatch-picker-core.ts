@@ -234,6 +234,36 @@ function buildModal(
 	selectedValue.className = "nce-theme-swatch-picker__selected-value"
 	status.append(selectedLabel, selectedValue)
 
+	const actions = document.createElement("div")
+	actions.className = "nce-theme-swatch-picker__actions"
+
+	const cancelBtn = document.createElement("button")
+	cancelBtn.type = "button"
+	cancelBtn.className = "nce-theme-swatch-picker__btn"
+	cancelBtn.textContent = "Cancel"
+	cancelBtn.addEventListener("click", () => close())
+
+	const saveBtn = document.createElement("button")
+	saveBtn.type = "button"
+	saveBtn.className = "nce-theme-swatch-picker__btn nce-theme-swatch-picker__btn--primary"
+	saveBtn.textContent = "Save"
+	saveBtn.addEventListener("click", () => {
+		const current = readState()
+		const picked = composeThemeClass(current.kind, current.role, current.shade)
+		try {
+			if (opts.setFgType) {
+				opts.setFgType(readFgType())
+			}
+			opts.setValue(picked)
+		} catch (err) {
+			console.error("[themeSwatchPicker] setValue failed:", err)
+			return
+		}
+		close()
+	})
+
+	actions.append(cancelBtn, saveBtn)
+
 	const footer = document.createElement("div")
 	footer.className = "nce-theme-swatch-picker__footer"
 
@@ -246,7 +276,7 @@ function buildModal(
 	}
 	updateFooter(initialSlug)
 
-	scoped.append(layout, status, footer)
+	scoped.append(layout, status, actions, footer)
 	modal.appendChild(scoped)
 	backdrop.appendChild(modal)
 
@@ -270,6 +300,12 @@ function buildModal(
 			preview ??
 			composeThemeClass(current.kind, current.role, current.shade)
 		selectedValue.textContent = text
+	}
+
+	const selectShade = (shade: ThemeShade) => {
+		state = { ...readState(), shade }
+		previewShade = null
+		renderSwatches()
 	}
 
 	const renderSwatches = () => {
@@ -300,27 +336,14 @@ function buildModal(
 			})
 			btn.addEventListener("mouseleave", () => {
 				previewShade = null
-				updateSelected(committedValue || composeThemeClass(current.kind, current.role, current.shade))
+				updateSelected()
 			})
 			btn.addEventListener("click", () => {
-				const picked = composeThemeClass(current.kind, current.role, shade)
-				try {
-					if (opts.setFgType) {
-						opts.setFgType(readFgType())
-					}
-					opts.setValue(picked)
-				} catch (err) {
-					console.error("[themeSwatchPicker] setValue failed:", err)
-					return
-				}
-				close()
+				selectShade(shade)
 			})
 			swatchStrip.appendChild(btn)
 		}
-		updateSelected(
-			committedValue ||
-				composeThemeClass(current.kind, current.role, current.shade),
-		)
+		updateSelected()
 	}
 
 	for (const input of kindInputs.values()) {
