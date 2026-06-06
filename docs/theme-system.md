@@ -19,17 +19,36 @@ The separation is intentional:
 ## The Two Files You Care About
 
 ### 1. `nce_theme.css` — loads EVERYWHERE
-- Generated at runtime by `ThemeSettings.on_update()`
-- Loaded via `app_include_css` in `themes/hooks.py`
-- Contains `:root { --nce-* }` declarations **plus** `theme-`-prefixed utility class rules (e.g. `.theme-bg-primary`)
-- Regenerated when admin saves Theme Settings in Desk
+- Generated at runtime by `css_writer.publish_theme()`
+- Loaded via `app_include_css` in `themes/hooks.py` (with `?v=<hash>` cache-buster)
+- Contains:
+  - `:root { --nce-* }` — base theme tokens (site-wide fallback)
+  - `[data-nce-theme="slug"] { --nce-* }` — one block per Active theme (panel-scoped overrides)
+  - `.theme-bg-primary`, `.theme-text-muted`, … — utility class layer (derived from base, emitted once)
+- Regenerated whenever a theme is saved/published via the editor
 - Does NOT exist in the git repo — it lives on disk at `themes/public/css/nce_theme.css`
 
 ### 2. `themes.css` — loads on `/themes/*` SPA pages ONLY
 - Built by Vite + Tailwind (`npm run build` in `frontend/`)
-- Loaded via `themes/www/nce.html` only
+- Loaded via `themes/www/themes.html` only
 - Contains full Tailwind output including Preflight global resets
 - **Never loaded on Frappe Desk pages**
+
+### Multi-theme scoped palettes
+
+Wrap any Vue panel in `data-nce-theme="<slug>"` to switch it to a different palette:
+
+```html
+<!-- Uses base theme (:root) — default -->
+<div class="theme-bg-surface">…</div>
+
+<!-- Uses "ocean" palette if that theme is Active -->
+<div data-nce-theme="ocean" class="theme-bg-surface">…</div>
+```
+
+The `slug` comes from the NCE Theme record's `slug` field (auto-derived from `theme_name`).
+A theme must have `status = Active` to be included in `nce_theme.css`. Inactive themes are
+stored in the DB but produce no CSS output until set Active again.
 
 ---
 
@@ -198,7 +217,7 @@ Tailwind Preflight in `themes.css` emits global resets like `*, :before, :after 
 | Mistake | Symptom | Fix |
 |---|---|---|
 | `:root {` in `theme_defaults.css` | All Desk muted text turns the NCE muted colour | Change selector to `.your-component-root` |
-| Stale `nce_theme.css` on server | Theme changes don't appear, or old colours persist | Re-save Theme Settings in Desk to regenerate |
+| Stale `nce_theme.css` on server | Theme changes don't appear, or old colours persist | Save any theme in the editor to republish, or run `bench --site <s> execute themes.utils.css_writer.publish_theme` |
 | Browser cache | Correct file on server, wrong colour in browser | Hard refresh: `Cmd/Ctrl + Shift + R` |
 | Adding `--text-muted` etc. to `_generate_css()` | Desk text/borders all change colour | Remove — only `--nce-*` vars belong in that function |
 | `themes.css` on Desk page | Global border/font resets affect Desk elements | Only load via `nce.html`, never `app_include_css` |
@@ -261,9 +280,13 @@ When deploying theme-related changes:
 | File | App | Purpose |
 |---|---|---|
 | `themes/hooks.py` | Themes | `app_include_css` — loads `nce_theme.css` site-wide |
-| `themes/www/nce.html` | Themes | Loads `themes.css` for SPA only |
-| `themes/themes/doctype/nce_theme_settings/nce_theme_settings.py` | Themes | CSS generator, OKLCH shade math |
-| `themes/api.py` | Themes | `regenerate_theme_css()` API endpoint |
-| `frontend/tailwind.config.js` | Themes | Maps Tailwind utilities to `--nce-*` tokens |
+| `themes/www/themes.html` | Themes | SPA entry point (loads `themes.css` for SPA only) |
+| `themes/www/themes.py` | Themes | Login gate — redirects Guest to `/login` before SPA loads |
+| `themes/utils/css_writer.py` | Themes | `publish_theme()`, `generate_site_css()` — CSS generator |
+| `themes/utils/site_theme_config_helpers.py` | Themes | Read/write `base_theme` on Site Theme Config |
+| `themes/themes/doctype/nce_theme/` | Themes | NCE Theme DocType (theme_name, slug, status, theme_json) |
+| `themes/themes/doctype/site_theme_config/` | Themes | Site Theme Config Single (base_theme, css_hash) |
+| `themes/api.py` | Themes | Whitelisted APIs: `list_themes`, `save_theme`, `rename_theme`, `delete_theme`, `save_as_base_theme`, etc. |
+| `frontend/tailwind.config.js` | Themes | Maps Tailwind utilities to `--nce-*` tokens (SPA internal only) |
 | `nce_events/public/css/theme_defaults.css` | NCE Events | Maps `--nce-*` to panel-internal vars (scoped to `.ppv2-root, .ppv2-float`) |
 | `nce_events/hooks.py` | NCE Events | `app_include_css` loads `theme_defaults.css` and `schema_explorer.css` |
