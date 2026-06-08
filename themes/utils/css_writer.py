@@ -255,9 +255,7 @@ def _emit_var_block(g, lines, selector=":root", include_custom_css=True):
             continue
         if f in GAMMA_WARMTH_ROLE_FIELDS:
             gamma, warmth = _role_gamma_warmth(g, f)
-            shade_gen = _generate_neutral_shades(
-                v, gamma=gamma, warmth=warmth, pin_600_to_base=True,
-            )
+            shade_gen = _generate_neutral_shades(v, warmth=warmth)
         else:
             gamma, saturation = _role_gamma_sat(g, f)
             pin_600 = f not in GAMMA_SAT_ROLE_FIELDS or (gamma == 0 and saturation == 100)

@@ -182,10 +182,8 @@
 						<NeutralColorPicker
 							label="Neutral"
 							:model-value="form.neutral_color"
-							:gamma="form.neutral_color_gamma"
 							:warmth="form.neutral_color_warmth"
 							@update:model-value="form.neutral_color = $event"
-							@update:gamma="form.neutral_color_gamma = $event"
 							@update:warmth="form.neutral_color_warmth = $event"
 						/>
 					</div>
@@ -634,7 +632,7 @@
 import { ref, reactive, watch, computed, onUnmounted, onMounted, nextTick } from "vue"
 import { useRoute } from "vue-router"
 import { createResource } from "frappe-ui"
-import { generateShades, generateNeutralShades, effectiveRoleHex, effectiveNeutralHex, pickFgMono, pickFgTonal, isDark, type ColorShade } from "@/utils/color-shades"
+import { generateShades, generateNeutralShades, effectiveRoleHex, effectiveNeutralHex, neutralizeHex, pickFgMono, pickFgTonal, isDark, type ColorShade } from "@/utils/color-shades"
 import { STATUS_COLOR_DEFAULTS, STATUS_COLOR_KEYS } from "@/composables/useThemeDefaults"
 import EditorSection from "@/components/EditorSection.vue"
 import BrandColorPicker from "@/components/BrandColorPicker.vue"
@@ -742,9 +740,8 @@ function computeCSSVariables(): Record<string, string> {
 			const saturation = form[`${field}_saturation` as FormKey] ?? 100
 			vars[cssVar] = effectiveRoleHex(hex, Number(gamma), Number(saturation))
 		} else if (GAMMA_WARMTH_COLOR_FIELDS.has(field)) {
-			const gamma = form[`${field}_gamma` as FormKey] ?? 0
 			const warmth = form[`${field}_warmth` as FormKey] ?? 0
-			vars[cssVar] = effectiveNeutralHex(hex, Number(gamma), Number(warmth))
+			vars[cssVar] = effectiveNeutralHex(hex, 0, Number(warmth))
 		} else {
 			vars[cssVar] = hex
 		}
@@ -803,17 +800,12 @@ function computeCSSVariables(): Record<string, string> {
 	}
 	const neutralHex = form.neutral_color
 	if (neutralHex) {
-		const nGamma = Number(form.neutral_color_gamma ?? 0)
 		const nWarmth = Number(form.neutral_color_warmth ?? 0)
-		const neutralRoleHex = effectiveNeutralHex(neutralHex, nGamma, nWarmth)
+		const neutralRoleHex = effectiveNeutralHex(neutralHex, 0, nWarmth)
 		vars["--nce-color-neutral"] = neutralRoleHex
 		vars["--nce-color-neutral-fg"] = pickFgMono(neutralRoleHex)
 		vars["--nce-color-neutral-fg-tonal"] = pickFgTonal(neutralRoleHex)
-		const neutralShades = generateNeutralShades(neutralHex, {
-			gamma: nGamma,
-			warmth: nWarmth,
-			base600Hex: neutralHex,
-		})
+		const neutralShades = generateNeutralShades(neutralHex, { warmth: nWarmth })
 		for (const s of neutralShades) {
 			vars[`--nce-color-neutral-${s.shade}`] = s.hex
 			vars[`--color-neutral-${s.shade}`] = s.hex
@@ -899,7 +891,7 @@ const DEFAULTS: Record<FormKey, any> = {
 	secondary_color: "#10B981",
 	secondary_color_gamma: 0,
 	secondary_color_saturation: 100,
-	neutral_color: "#9CA3AF",
+	neutral_color: "#989898",
 	neutral_color_gamma: 0,
 	neutral_color_warmth: 0,
 	...STATUS_COLOR_DEFAULTS,
@@ -1166,10 +1158,11 @@ function buildPayloadFromForm(): Record<string, any> {
 	}
 	for (const field of GAMMA_WARMTH_COLOR_FIELDS) {
 		const hex = payload[field]
-		const gamma = Number(payload[`${field}_gamma`] ?? 0)
 		const warmth = Number(payload[`${field}_warmth`] ?? 0)
-		if (typeof hex === "string" && (gamma !== 0 || warmth !== 0)) {
-			payload[field] = effectiveNeutralHex(hex, gamma, warmth)
+		if (typeof hex === "string") {
+			payload[field] = warmth !== 0
+				? effectiveNeutralHex(hex, 0, warmth)
+				: neutralizeHex(hex)
 		}
 	}
 	return payload
@@ -1278,11 +1271,10 @@ function applyPayloadToForm(payload: Record<string, any>) {
 	for (const field of GAMMA_WARMTH_COLOR_FIELDS) {
 		const hex = form[field as FormKey]
 		if (typeof hex !== "string") continue
-		const gamma = Number(form[`${field}_gamma` as FormKey] ?? 0)
 		const warmth = Number(form[`${field}_warmth` as FormKey] ?? 0)
-		if (gamma !== 0 || warmth !== 0) {
-			form[field as FormKey] = effectiveNeutralHex(hex, gamma, warmth)
-		}
+		form[field as FormKey] = warmth !== 0
+			? effectiveNeutralHex(hex, 0, warmth)
+			: neutralizeHex(hex)
 	}
 }
 

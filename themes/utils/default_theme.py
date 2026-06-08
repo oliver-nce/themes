@@ -11,7 +11,7 @@ _FALLBACK_PAYLOAD = {
     "info_color": "#3B82F6",
     "warning_color": "#F59E0B",
     "danger_color": "#EF4444",
-    "neutral_color": "#9CA3AF",
+    "neutral_color": "#989898",
     "neutral_color_gamma": 0,
     "neutral_color_warmth": 0,
     "text_color": "#1F2937",

@@ -45,4 +45,4 @@ These let designers tune the family without changing the base hex.
 
 ## Neutral scale (separate path)
 
-The **neutral** role uses its own Bezier-smoothed lightness targets (`_NEUTRAL_SHADE_TARGETS`), not the brand `_SHADE_TARGETS` table. **Warmth** (−100 cool → +100 warm) replaces saturation as the chroma control; at warmth 0 the scale is pure grey. See `plans/greyscale-coding.md` for rationale and locked parameters.
+The **neutral** role uses fixed OKLCH lightness targets (50 = just visible off-white, 950 = black, smooth steps between). At warmth 0 every stop is achromatic (C=0). **Warmth** (−100 cool → +100 warm) tints all stops including 600. See `plans/greyscale-coding.md` for history; targets were retuned for light-end separation.

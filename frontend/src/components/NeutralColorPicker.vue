@@ -25,11 +25,6 @@
 
 		<div class="adjust-sliders mt-2">
 			<div class="adjust-row">
-				<label>Lightness</label>
-				<input type="range" min="-100" max="100" :value="gamma" @input="onGammaInput($event)" />
-				<span class="adjust-value">{{ gamma }}</span>
-			</div>
-			<div class="adjust-row">
 				<label>Warmth</label>
 				<input
 					type="range"
@@ -75,43 +70,41 @@
 
 <script setup lang="ts">
 import { ref, computed, watch } from "vue"
-import { generateNeutralShades, parseHexInput } from "@/utils/color-shades"
+import { generateNeutralShades, neutralizeHex, parseHexInput } from "@/utils/color-shades"
 
 const props = withDefaults(defineProps<{
 	label: string
 	modelValue: string
-	gamma?: number
 	warmth?: number
 }>(), {
-	gamma: 0,
 	warmth: 0,
 })
 
 const emit = defineEmits<{
 	"update:modelValue": [value: string]
-	"update:gamma": [value: number]
 	"update:warmth": [value: number]
 }>()
 
 const open = ref(false)
 const showCopied = ref(false)
-const dialogHex = ref("#9CA3AF")
+const dialogHex = ref("#989898")
 const hasEyeDropper = typeof window !== "undefined" && "EyeDropper" in window
 
-const gamma = computed(() => props.gamma ?? 0)
 const warmth = computed(() => props.warmth ?? 0)
 
-const currentHex = computed(() => props.modelValue || "#9CA3AF")
+const currentHex = computed(() => {
+	const base = props.modelValue || "#989898"
+	return warmth.value === 0 ? neutralizeHex(base) : (
+		generateNeutralShades(base, { warmth: warmth.value }).find((s) => s.shade === 600)?.hex ??
+		neutralizeHex(base)
+	)
+})
 
 const currentShades = computed(() =>
-	generateNeutralShades(currentHex.value, {
-		gamma: gamma.value,
-		warmth: warmth.value,
-		base600Hex: currentHex.value,
-	}),
+	generateNeutralShades(props.modelValue || "#989898", { warmth: warmth.value }),
 )
 
-const canReset = computed(() => gamma.value !== 0 || warmth.value !== 0)
+const canReset = computed(() => warmth.value !== 0)
 
 const warmthLabel = computed(() => {
 	if (warmth.value === 0) return "neutral"
@@ -120,36 +113,27 @@ const warmthLabel = computed(() => {
 })
 
 watch(open, (val) => {
-	if (val) dialogHex.value = (props.modelValue || "#9CA3AF").toUpperCase()
+	if (val) dialogHex.value = neutralizeHex(props.modelValue || "#989898")
 })
 
-function emitAdjustments(nextGamma: number, nextWarmth: number) {
-	emit("update:gamma", nextGamma)
-	emit("update:warmth", nextWarmth)
-}
-
-function onGammaInput(e: Event) {
-	emitAdjustments(+((e.target as HTMLInputElement).value), warmth.value)
-}
-
 function onWarmthInput(e: Event) {
-	emitAdjustments(gamma.value, +((e.target as HTMLInputElement).value))
+	emit("update:warmth", +((e.target as HTMLInputElement).value))
 }
 
 function resetAdjustments() {
-	emitAdjustments(0, 0)
+	emit("update:warmth", 0)
 }
 
 function onDialogHexInput() {
 	const parsed = parseHexInput(dialogHex.value)
-	if (parsed) dialogHex.value = parsed
+	if (parsed) dialogHex.value = neutralizeHex(parsed)
 }
 
 function applyHex() {
 	const parsed = parseHexInput(dialogHex.value)
 	if (!parsed) return
-	emit("update:modelValue", parsed)
-	emitAdjustments(0, 0)
+	emit("update:modelValue", neutralizeHex(parsed))
+	emit("update:warmth", 0)
 	open.value = false
 }
 
@@ -164,7 +148,7 @@ async function useEyeDropper() {
 		const dropper = new (window as any).EyeDropper()
 		const result = await dropper.open()
 		const parsed = parseHexInput(result.sRGBHex)
-		if (parsed) dialogHex.value = parsed
+		if (parsed) dialogHex.value = neutralizeHex(parsed)
 	} catch { /* cancelled */ }
 }
 </script>
@@ -232,15 +216,12 @@ async function useEyeDropper() {
 	background: linear-gradient(to right, #93c5fd, #d1d5db 50%, #fcd34d);
 }
 .adjust-value {
-	width: 56px;
+	width: 72px;
 	font-size: 9px;
 	color: #666;
 	text-align: right;
 	font-variant-numeric: tabular-nums;
 	flex-shrink: 0;
-}
-.warmth-label {
-	width: 72px;
 }
 
 .reset-btn {

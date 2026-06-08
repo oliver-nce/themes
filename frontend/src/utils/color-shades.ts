@@ -296,11 +296,17 @@ export function pickFgTonal(hex: string): string {
 // ── Neutral (greyscale) shade generation ────────────────────────────────────
 
 export const NEUTRAL_SHADE_TARGETS: Array<{ shade: number; l: number }> = [
-  { shade: 50, l: 0.985 }, { shade: 100, l: 0.973 }, { shade: 200, l: 0.945 },
-  { shade: 300, l: 0.902 }, { shade: 400, l: 0.843 }, { shade: 500, l: 0.769 },
-  { shade: 600, l: 0.680 }, { shade: 700, l: 0.576 }, { shade: 800, l: 0.456 },
-  { shade: 900, l: 0.321 }, { shade: 950, l: 0.170 },
+  { shade: 50, l: 0.958 }, { shade: 100, l: 0.885 }, { shade: 200, l: 0.820 },
+  { shade: 300, l: 0.755 }, { shade: 400, l: 0.705 }, { shade: 500, l: 0.690 },
+  { shade: 600, l: 0.680 }, { shade: 700, l: 0.565 }, { shade: 800, l: 0.440 },
+  { shade: 900, l: 0.280 }, { shade: 950, l: 0.050 },
 ];
+
+export function neutralizeHex(hex: string): string {
+  if (!hex || !/^#[0-9A-Fa-f]{6}$/.test(hex)) return hex;
+  const { L } = hexToOklch(hex);
+  return oklchToHex(L, 0, 0);
+}
 
 export const NEUTRAL_MAX_CHROMA = 0.025;
 export const NEUTRAL_WARM_HUE = 60;
@@ -320,16 +326,14 @@ function neutralHueAndChroma(warmth: number): { hue: number; baseC: number } {
 
 export function generateNeutralShades(
   baseHex: string,
-  options?: { gamma?: number; warmth?: number; base600Hex?: string },
+  options?: { warmth?: number },
 ): ColorShade[] {
   if (!baseHex || !/^#[0-9A-Fa-f]{6}$/.test(baseHex)) return [];
 
-  const gamma = options?.gamma ?? 0;
   const warmth = options?.warmth ?? 0;
   const { hue, baseC } = neutralHueAndChroma(warmth);
 
-  const shades = NEUTRAL_SHADE_TARGETS.map(({ shade, l: baseL }) => {
-    const targetL = lightnessWithGamma(shade, baseL, gamma);
+  return NEUTRAL_SHADE_TARGETS.map(({ shade, l: targetL }) => {
     let useC = 0;
     if (warmth !== 0) {
       const maxC = maxChromaInGamut(targetL, hue, baseC * 1.5);
@@ -339,12 +343,13 @@ export function generateNeutralShades(
     }
     return { shade, hex: oklchToHex(targetL, useC, hue) };
   });
-  return withPinned600(shades, options?.base600Hex ?? baseHex);
 }
 
-export function effectiveNeutralHex(hex: string, gamma = 0, warmth = 0): string {
+export function effectiveNeutralHex(hex: string, _gamma = 0, warmth = 0): string {
   if (!hex || !/^#[0-9A-Fa-f]{6}$/.test(hex)) return hex;
-  if (gamma === 0 && warmth === 0) return hex.toUpperCase();
-  const shades = generateNeutralShades(hex, { gamma, warmth, base600Hex: undefined });
-  return shades.find((s) => s.shade === 600)?.hex ?? hex.toUpperCase();
+  if (warmth === 0) return neutralizeHex(hex);
+  return (
+    generateNeutralShades(hex, { warmth }).find((s) => s.shade === 600)?.hex ??
+    neutralizeHex(hex)
+  );
 }

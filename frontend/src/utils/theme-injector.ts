@@ -48,10 +48,7 @@ const SPACING_MAP: Record<string, string> = {
 
 function roleAdjustments(role: string, settings: Record<string, unknown>) {
 	if (GAMMA_WARMTH_ROLES.has(role)) {
-		return {
-			gamma: Number(settings[`${role}_gamma`] ?? 0),
-			warmth: Number(settings[`${role}_warmth`] ?? 0),
-		}
+		return { warmth: Number(settings[`${role}_warmth`] ?? 0) }
 	}
 	if (!GAMMA_SAT_ROLES.has(role)) return undefined
 	return {
@@ -101,7 +98,7 @@ export function injectCSSVars(settings: Record<string, any>) {
 		const adj = roleAdjustments(role, settings)
 		let roleHex = hex
 		if (GAMMA_WARMTH_ROLES.has(role) && adj && "warmth" in adj) {
-			roleHex = effectiveNeutralHex(hex, adj.gamma, adj.warmth)
+			roleHex = effectiveNeutralHex(hex, 0, adj.warmth)
 			root.style.setProperty(`--nce-${v}`, roleHex)
 		} else if (GAMMA_SAT_ROLES.has(role) && adj && "saturation" in adj) {
 			roleHex = effectiveRoleHex(hex, adj.gamma, adj.saturation)
@@ -110,11 +107,7 @@ export function injectCSSVars(settings: Record<string, any>) {
 		root.style.setProperty(`--nce-${v}-fg`, pickFgMono(roleHex))
 		root.style.setProperty(`--nce-${v}-fg-tonal`, pickFgTonal(roleHex))
 		const shades = GAMMA_WARMTH_ROLES.has(role)
-			? generateNeutralShades(hex, {
-				gamma: adj?.gamma ?? 0,
-				warmth: (adj as { warmth?: number })?.warmth ?? 0,
-				base600Hex: hex,
-			})
+			? generateNeutralShades(hex, { warmth: (adj as { warmth?: number })?.warmth ?? 0 })
 			: generateShades(hex, adj && "saturation" in adj ? adj : undefined)
 		for (const s of shades) {
 			if (!CURATED_SHADES.includes(s.shade as (typeof CURATED_SHADES)[number]))
