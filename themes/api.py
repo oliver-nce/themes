@@ -60,8 +60,11 @@ def _theme_editor_response(theme_name: str) -> dict:
 
 def _require_password(password: str):
     if not password:
-        frappe.throw(_("Password is required"), frappe.AuthenticationError)
-    check_password(frappe.session.user, password)
+        frappe.throw(_("Password is required"))
+    try:
+        check_password(frappe.session.user, password)
+    except frappe.AuthenticationError:
+        frappe.throw(_("Incorrect password. Please try again."))
 
 
 @frappe.whitelist()
