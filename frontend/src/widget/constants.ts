@@ -48,5 +48,10 @@ export function isThemeShade(value: number): value is ThemeShade {
 	return SHADE_SET.has(value)
 }
 
+/** Human-readable label for a role slug — derived from ROLES so new roles need no manual map. */
+export function roleLabel(role: ThemeRole): string {
+	return role.charAt(0).toUpperCase() + role.slice(1)
+}
+
 /** GRAY_ROW_STUB — uncomment when gray_color is in SHADE_SCALE_FIELDS. */
 // export const GRAY_ROLE: ThemeRole = "gray"

@@ -329,3 +329,17 @@ export function generateNeutralShades(warmth = 0): ColorShade[] {
 export function neutral600Hex(warmth = 0): string {
   return generateNeutralShades(warmth).find((s) => s.shade === 600)?.hex ?? "#989898";
 }
+
+/** Persist warmth as resolved neutral tokens for the publish pipeline. */
+export function resolveNeutralIntoPayload(payload: Record<string, unknown>): Record<string, unknown> {
+  const warmth = Number(payload.neutral_color_warmth ?? 0);
+  const shades = generateNeutralShades(warmth);
+  const shadeMap: Record<string, string> = {};
+  for (const { shade, hex } of shades) {
+    shadeMap[String(shade)] = hex.toUpperCase();
+  }
+  payload.neutral_color_shades = shadeMap;
+  payload.neutral_color = (shades.find((s) => s.shade === 600)?.hex ?? "#989898").toUpperCase();
+  payload.neutral_color_warmth = warmth;
+  return payload;
+}

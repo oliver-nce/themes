@@ -3,6 +3,7 @@ import {
 	KINDS,
 	OVERLAY_ROLES,
 	ROLES,
+	roleLabel,
 	type ThemeFgType,
 	type ThemeKind,
 	type ThemeRole,
@@ -43,16 +44,6 @@ const KIND_LABELS: Record<ThemeKind, string> = {
 	bg: "Bg",
 	text: "Text",
 	border: "Border",
-}
-
-const ROLE_LABELS: Record<ThemeRole, string> = {
-	primary: "Primary",
-	secondary: "Secondary",
-	accent: "Accent",
-	success: "Success",
-	info: "Info",
-	warning: "Warning",
-	danger: "Danger",
 }
 
 const FG_TYPE_LABELS: Record<ThemeFgType, string> = {
@@ -177,7 +168,7 @@ function buildModal(
 		input.value = role
 		input.checked = state.role === role
 		label.appendChild(input)
-		label.append(" ", ROLE_LABELS[role])
+		label.append(" ", roleLabel(role))
 		roleField.appendChild(label)
 		roleInputs.set(role, input)
 	}

@@ -30,7 +30,10 @@ def _parse_payload(payload):
         payload = json.loads(payload)
     if not isinstance(payload, dict):
         frappe.throw(_("Invalid payload"))
-    return {k: payload[k] for k in TOKEN_FIELDS if k in payload and payload[k] is not None}
+    clean = {k: payload[k] for k in TOKEN_FIELDS if k in payload and payload[k] is not None}
+    from themes.utils.theme_color_utils import resolve_neutral_into_payload
+
+    return resolve_neutral_into_payload(clean)
 
 
 def _theme_editor_response(theme_name: str) -> dict:

@@ -320,3 +320,12 @@ TRANSITION_MAP = {
 	"normal": "200ms",
 	"slow": "300ms",
 }
+
+
+def resolve_neutral_into_payload(payload: dict) -> dict:
+	"""Resolve editor warmth input into published neutral tokens."""
+	warmth = float(payload.get("neutral_color_warmth") or 0)
+	shades = dict(generate_neutral_shades(warmth))
+	payload["neutral_color_shades"] = {str(shade): hex_val for shade, hex_val in shades.items()}
+	payload["neutral_color"] = shades.get(600, "#989898")
+	return payload

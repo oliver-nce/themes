@@ -5,7 +5,7 @@ import frappe
 from themes.utils.theme_color_utils import (
     BORDER_RADIUS_MAP, SPACING_SCALE_MAP, LINE_HEIGHT_MAP,
     TRANSITION_MAP, _build_shadow, _generate_shades, generate_neutral_shades,
-    _effective_role_hex, neutral_600_hex,
+    _effective_role_hex,
     GAMMA_SAT_ROLE_FIELDS,
     pick_fg_mono, pick_fg_tonal,
 )
@@ -53,6 +53,7 @@ CURATED_SHADES = (50, 100, 200, 300, 400, 500, 600, 700, 800, 900, 950)
 FG_ROLES = (
     "primary_color", "secondary_color", "accent_color",
     "success_color", "info_color", "warning_color", "danger_color",
+    "neutral_color",
 )
 
 COLOR_FIELDS = {
@@ -63,6 +64,7 @@ COLOR_FIELDS = {
     "info_color": "color-info",
     "warning_color": "color-warning",
     "danger_color": "color-danger",
+    "neutral_color": "color-neutral",
     "text_color": "color-text",
     "heading_color": "color-heading",
     "muted_color": "color-muted",
@@ -82,6 +84,7 @@ SHADE_SCALE_FIELDS = {
     "info_color": "color-info",
     "warning_color": "color-warning",
     "danger_color": "color-danger",
+    "neutral_color": "color-neutral",
 }
 
 MIGRATED_FIELDS = list(COLOR_FIELDS.keys()) + [
@@ -99,6 +102,7 @@ TOKEN_FIELDS = MIGRATED_FIELDS + [
     "secondary_color_gamma",
     "secondary_color_saturation",
     "neutral_color_warmth",
+    "neutral_color_shades",
 ]
 
 
@@ -199,6 +203,64 @@ def _role_gamma_sat(g, field):
     return gamma, float(saturation)
 
 
+def _parse_shades_map(raw):
+    if not raw:
+        return None
+    if isinstance(raw, str):
+        try:
+            raw = json.loads(raw)
+        except json.JSONDecodeError:
+            return None
+    if not isinstance(raw, dict):
+        return None
+    out = []
+    for shade_str, hex_val in raw.items():
+        if not hex_val:
+            continue
+        try:
+            out.append((int(shade_str), hex_val))
+        except (TypeError, ValueError):
+            continue
+    return sorted(out, key=lambda item: item[0]) if out else None
+
+
+def _get_role_shades(g, field):
+    """Return [(shade, hex), …] for any shade-scale role."""
+    pre = _parse_shades_map(g(f"{field}_shades"))
+    if pre:
+        return pre
+    if field == "neutral_color":
+        return list(generate_neutral_shades(float(g("neutral_color_warmth") or 0)))
+    value = g(field)
+    if not value:
+        return []
+    gamma, saturation = _role_gamma_sat(g, field)
+    pin_600 = field not in GAMMA_SAT_ROLE_FIELDS or (gamma == 0 and saturation == 100)
+    return _generate_shades(
+        value, gamma=gamma, saturation=saturation, pin_600_to_base=pin_600,
+    )
+
+
+def _role_base_hex(g, field):
+    """Base hex for a role token (stop 600 for shade-scale roles)."""
+    value = g(field)
+    if value:
+        if field in GAMMA_SAT_ROLE_FIELDS:
+            gamma, saturation = _role_gamma_sat(g, field)
+            return _effective_role_hex(value, gamma, saturation)
+        return value
+    shades = dict(_get_role_shades(g, field))
+    return shades.get(600)
+
+
+def _role_is_configured(g, field):
+    if field == "neutral_color":
+        return True
+    if _parse_shades_map(g(f"{field}_shades")):
+        return True
+    return bool(g(field))
+
+
 def _emit_var_block(g, lines, selector=":root", include_custom_css=True):
     """Emit a `selector { --nce-* }` variable block and optional custom_css.
 
@@ -208,43 +270,31 @@ def _emit_var_block(g, lines, selector=":root", include_custom_css=True):
     """
     lines.extend([f"{selector} {{", "", "\t/* ── Theme: canonical variables ── */"])
     for f, var in COLOR_FIELDS.items():
-        v = g(f)
+        if f in SHADE_SCALE_FIELDS:
+            v = _role_base_hex(g, f)
+        else:
+            v = g(f)
+            if not v:
+                continue
+            if f in GAMMA_SAT_ROLE_FIELDS:
+                gamma, saturation = _role_gamma_sat(g, f)
+                v = _effective_role_hex(v, gamma, saturation)
         if not v:
             continue
-        if f in GAMMA_SAT_ROLE_FIELDS:
-            gamma, saturation = _role_gamma_sat(g, f)
-            v = _effective_role_hex(v, gamma, saturation)
         lines.append(f"\t--nce-{var}: {v};")
-    # Neutral: warmth-only, no base hex
-    warmth = float(g("neutral_color_warmth") or 0)
-    n600 = neutral_600_hex(warmth)
-    lines.append(f"\t--nce-color-neutral: {n600};")
     for f, var in COLOR_FIELDS.items():
         if f not in FG_ROLES:
             continue
-        v = g(f)
-        if not v:
+        fg_hex = _role_base_hex(g, f)
+        if not fg_hex:
             continue
-        if f in GAMMA_SAT_ROLE_FIELDS:
-            gamma, saturation = _role_gamma_sat(g, f)
-            fg_hex = _effective_role_hex(v, gamma, saturation)
-        else:
-            fg_hex = v
         lines.append(f"\t--nce-{var}-fg: {pick_fg_mono(fg_hex)};")
         lines.append(f"\t--nce-{var}-fg-tonal: {pick_fg_tonal(fg_hex)};")
-    lines.append(f"\t--nce-color-neutral-fg: {pick_fg_mono(n600)};")
-    lines.append(f"\t--nce-color-neutral-fg-tonal: {pick_fg_tonal(n600)};")
     lines += ["", "\t/* ── Shade scales (50–950) ── */"]
     for f, var in SHADE_SCALE_FIELDS.items():
-        v = g(f)
-        if not v:
+        if not _role_is_configured(g, f):
             continue
-        gamma, saturation = _role_gamma_sat(g, f)
-        pin_600 = f not in GAMMA_SAT_ROLE_FIELDS or (gamma == 0 and saturation == 100)
-        shade_gen = _generate_shades(
-            v, gamma=gamma, saturation=saturation, pin_600_to_base=pin_600,
-        )
-        for shade_num, shade_hex in shade_gen:
+        for shade_num, shade_hex in _get_role_shades(g, f):
             lines.append(f"\t--nce-{var}-{shade_num}: {shade_hex};")
             if shade_num in CURATED_SHADES:
                 lines.append(f"\t--nce-{var}-{shade_num}-fg: {pick_fg_mono(shade_hex)};")
@@ -271,14 +321,6 @@ def _emit_var_block(g, lines, selector=":root", include_custom_css=True):
                 lines.append(f"\t--nce-{k}: {v};")
         except (json.JSONDecodeError, TypeError):
             pass
-    # Neutral shade vars (warmth-only, no base hex)
-    lines.append("")
-    lines.append("\t/* ── Neutral shade scale (50–950) ── */")
-    for shade_num, shade_hex in generate_neutral_shades(warmth):
-        lines.append(f"\t--nce-color-neutral-{shade_num}: {shade_hex};")
-        if shade_num in CURATED_SHADES:
-            lines.append(f"\t--nce-color-neutral-{shade_num}-fg: {pick_fg_mono(shade_hex)};")
-            lines.append(f"\t--nce-color-neutral-{shade_num}-fg-tonal: {pick_fg_tonal(shade_hex)};")
     lines.append("}")
     if include_custom_css and g("custom_css"):
         lines += ["", g("custom_css")]
@@ -289,17 +331,12 @@ def _emit_role_bg_classes(g, lines):
     """Default fg pairing for bare .bg-{role} classes."""
     lines.append("/* ── Default fg pairing for bare role classes ── */")
     for f, var in COLOR_FIELDS.items():
-        if f not in FG_ROLES:
-            continue
-        if not g(f):
+        if f not in FG_ROLES or not _role_is_configured(g, f):
             continue
         role = var.replace("color-", "")
         lines.append(
             f".theme-bg-{role} {{ background-color: var(--nce-{var}); color: var(--nce-{var}-fg); }}"
         )
-    lines.append(
-        ".theme-bg-neutral { background-color: var(--nce-color-neutral); color: var(--nce-color-neutral-fg); }"
-    )
     lines.append("")
 
 
@@ -307,17 +344,13 @@ def _emit_role_text_border_classes(g, lines):
     """Per-role text-color, border-color, and explicit fg variants."""
     lines.append("/* ── Per-role text/border + explicit fg classes ── */")
     for field, var in COLOR_FIELDS.items():
-        if field not in FG_ROLES or not g(field):
+        if field not in FG_ROLES or not _role_is_configured(g, field):
             continue
         role = var.replace("color-", "")
         lines.append(f".theme-text-{role} {{ color: var(--nce-{var}); }}")
         lines.append(f".theme-border-{role} {{ border-color: var(--nce-{var}); }}")
         lines.append(f".theme-text-{role}-fg {{ color: var(--nce-{var}-fg); }}")
         lines.append(f".theme-text-{role}-fg-tonal {{ color: var(--nce-{var}-fg-tonal); }}")
-    lines.append(".theme-text-neutral { color: var(--nce-color-neutral); }")
-    lines.append(".theme-border-neutral { border-color: var(--nce-color-neutral); }")
-    lines.append(".theme-text-neutral-fg { color: var(--nce-color-neutral-fg); }")
-    lines.append(".theme-text-neutral-fg-tonal { color: var(--nce-color-neutral-fg-tonal); }")
     lines.append("")
 
 
@@ -325,7 +358,7 @@ def _emit_role_shade_classes(g, lines):
     """Per-role per-curated-shade utility classes."""
     lines.append("/* ── Per-role per-curated-shade utility classes ── */")
     for field, var in SHADE_SCALE_FIELDS.items():
-        if not g(field):
+        if not _role_is_configured(g, field):
             continue
         role = var.replace("color-", "")
         for shade in CURATED_SHADES:
@@ -338,17 +371,6 @@ def _emit_role_shade_classes(g, lines):
             lines.append(f".theme-text-{role}-{shade}-fg {{ color: var(--nce-{var}-{shade}-fg); }}")
             lines.append(f".theme-text-{role}-{shade}-fg-tonal {{ color: var(--nce-{var}-{shade}-fg-tonal); }}")
             lines.append(f".theme-border-{role}-{shade} {{ border-color: var(--nce-{var}-{shade}); }}")
-    # Neutral shade classes (always emitted — warmth-only, no base hex gate)
-    for shade in CURATED_SHADES:
-        lines.append(
-            f".theme-bg-neutral-{shade} {{ "
-            f"background-color: var(--nce-color-neutral-{shade}); "
-            f"color: var(--nce-color-neutral-{shade}-fg); }}"
-        )
-        lines.append(f".theme-text-neutral-{shade} {{ color: var(--nce-color-neutral-{shade}); }}")
-        lines.append(f".theme-text-neutral-{shade}-fg {{ color: var(--nce-color-neutral-{shade}-fg); }}")
-        lines.append(f".theme-text-neutral-{shade}-fg-tonal {{ color: var(--nce-color-neutral-{shade}-fg-tonal); }}")
-        lines.append(f".theme-border-neutral-{shade} {{ border-color: var(--nce-color-neutral-{shade}); }}")
     lines.append("")
 
 

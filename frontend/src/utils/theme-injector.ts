@@ -106,13 +106,19 @@ export function injectCSSVars(settings: Record<string, any>) {
 			root.style.setProperty(`--nce-${v}-${s.shade}-fg-tonal`, pickFgTonal(s.hex))
 		}
 	}
-	// Neutral: warmth-only, no base hex
+	const neutralShades = settings.neutral_color_shades as Record<string, string> | undefined
 	const neutralWarmth = Number(settings.neutral_color_warmth ?? 0)
-	const n600 = neutral600Hex(neutralWarmth)
+	const shadeList = neutralShades
+		? Object.entries(neutralShades).map(([shade, hex]) => ({
+				shade: Number(shade),
+				hex: String(hex),
+			}))
+		: generateNeutralShades(neutralWarmth)
+	const n600 = String(settings.neutral_color ?? neutral600Hex(neutralWarmth))
 	root.style.setProperty("--nce-color-neutral", n600)
 	root.style.setProperty("--nce-color-neutral-fg", pickFgMono(n600))
 	root.style.setProperty("--nce-color-neutral-fg-tonal", pickFgTonal(n600))
-	for (const s of generateNeutralShades(neutralWarmth)) {
+	for (const s of shadeList) {
 		root.style.setProperty(`--nce-color-neutral-${s.shade}`, s.hex)
 		root.style.setProperty(`--nce-color-neutral-${s.shade}-fg`, pickFgMono(s.hex))
 		root.style.setProperty(`--nce-color-neutral-${s.shade}-fg-tonal`, pickFgTonal(s.hex))

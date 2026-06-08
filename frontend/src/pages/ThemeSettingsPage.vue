@@ -672,7 +672,7 @@
 import { ref, reactive, watch, computed, onUnmounted, onMounted, nextTick } from "vue"
 import { useRoute } from "vue-router"
 import { createResource } from "frappe-ui"
-import { generateShades, generateNeutralShades, neutral600Hex, effectiveRoleHex, pickFgMono, pickFgTonal, isDark, type ColorShade } from "@/utils/color-shades"
+import { generateShades, generateNeutralShades, neutral600Hex, effectiveRoleHex, pickFgMono, pickFgTonal, resolveNeutralIntoPayload, isDark, type ColorShade } from "@/utils/color-shades"
 import { STATUS_COLOR_DEFAULTS, STATUS_COLOR_KEYS } from "@/composables/useThemeDefaults"
 import EditorSection from "@/components/EditorSection.vue"
 import BrandColorPicker from "@/components/BrandColorPicker.vue"
@@ -909,7 +909,11 @@ const ALL_FIELDS = [
 	"tailwind_overrides",
 ] as const
 
-const PAYLOAD_FIELDS = ALL_FIELDS.filter((k) => k !== "theme_name")
+const PAYLOAD_FIELDS = [
+	...ALL_FIELDS.filter((k) => k !== "theme_name"),
+	"neutral_color",
+	"neutral_color_shades",
+] as const
 
 type FormKey = (typeof ALL_FIELDS)[number]
 
@@ -1180,6 +1184,7 @@ const themeSelectWidth = computed(() => {
 function buildPayloadFromForm(): Record<string, any> {
 	const payload: Record<string, any> = {}
 	for (const key of PAYLOAD_FIELDS) {
+		if (key === "neutral_color" || key === "neutral_color_shades") continue
 		payload[key] = key === "dark_mode" ? (form[key] ? 1 : 0) : form[key]
 	}
 	for (const field of GAMMA_SAT_COLOR_FIELDS) {
@@ -1190,7 +1195,7 @@ function buildPayloadFromForm(): Record<string, any> {
 			payload[field] = effectiveRoleHex(hex, gamma, saturation)
 		}
 	}
-	return payload
+	return resolveNeutralIntoPayload(payload)
 }
 
 function canonicalPayload(source: Record<string, any>): Record<string, any> {
@@ -1210,6 +1215,25 @@ function canonicalPayload(source: Record<string, any>): Record<string, any> {
 		} else if (key.endsWith("_warmth")) {
 			const n = Number(val)
 			payload[key] = Number.isFinite(n) ? n : 0
+		} else if (key === "neutral_color_shades") {
+			const raw =
+				val && typeof val === "object" && !Array.isArray(val)
+					? (val as Record<string, string>)
+					: (resolveNeutralIntoPayload({
+							neutral_color_warmth: source.neutral_color_warmth ?? DEFAULTS.neutral_color_warmth,
+						}).neutral_color_shades as Record<string, string>)
+			const norm: Record<string, string> = {}
+			for (const [shade, hex] of Object.entries(raw)) {
+				norm[String(shade)] = String(hex).toUpperCase()
+			}
+			payload[key] = norm
+		} else if (key === "neutral_color") {
+			payload[key] = String(
+				val ??
+					resolveNeutralIntoPayload({
+						neutral_color_warmth: source.neutral_color_warmth ?? DEFAULTS.neutral_color_warmth,
+					}).neutral_color,
+			).toUpperCase()
 		} else if (key.endsWith("_color") && typeof val === "string") {
 			payload[key] = val.toUpperCase()
 		} else if (key === "font_weight_body") {
