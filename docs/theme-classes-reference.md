@@ -26,9 +26,9 @@ Each `theme-bg-{role}` rule sets both background and the paired `--nce-color-{ro
 
 ---
 
-## Color Roles — Curated Shades (100, 200, 300, 500, 600, 700, 900)
+## Color Roles — Shade Scale (50, 100, 200, 300, 400, 500, 600, 700, 800, 900, 950)
 
-For each role above, these shade classes exist. Substitute `{role}` ∈ {primary, secondary, accent, success, info, warning, danger} and `{N}` ∈ {100, 200, 300, 500, 600, 700, 900}.
+For each role above, these shade classes exist. Substitute `{role}` ∈ {primary, secondary, accent, success, info, warning, danger} and `{N}` ∈ {50, 100, 200, 300, 400, 500, 600, 700, 800, 900, 950}.
 
 | Pattern | Example |
 |---|---|
@@ -134,8 +134,7 @@ Example:
 4. For bg+text pairing, prefer `theme-bg-{role}` (auto `-fg`) or `theme-bg-{role}-100` for quiet buttons — see `button_hierarchy` in `THEME_CLASS_CONTRACT.json`.
 5. Buttons on panels: main CTA `theme-bg-primary`; Cancel/Revert `theme-bg-primary-100 theme-border` — never `variant=outline` with page bg fill (see `button_hierarchy` in JSON).
 6. For a row of buttons that must share text color regardless of background, put `text-white` (or `text-black`) on the parent and let it cascade. (`text-white`/`text-black` are vanilla fixed colors, not theme classes.)
-7. Non-curated shades (50, 400, 800, 950) have no class — use `:style` with `var()`.
-8. Don't drop the `theme-` prefix and don't add it to vanilla layout utilities (`flex`, `border-b`, `font-bold`).
+7. Don't drop the `theme-` prefix and don't add it to vanilla layout utilities (`flex`, `border-b`, `font-bold`).
 
 ---
 

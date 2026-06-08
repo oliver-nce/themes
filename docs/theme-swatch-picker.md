@@ -86,9 +86,9 @@ That is the entire public API. No default-value prop, no static slug prop, no ki
 **On backdrop click / Esc:**
 - Close the modal. No write.
 
-**On `themeField` change while modal is open:**
-- **Desk:** re-resolve Link → slug, then update `data-nce-theme` on the wrapper → swatches and Text overlay foreground colors re-paint automatically (pure CSS).
-- Update the footer `Theme: <slug>` label.
+**While modal is open — theme is fixed:**
+- Swatches stay pinned to the theme resolved at open time. The theme cannot be changed mid-pick.
+- The full-viewport backdrop (`z-index: 10000`) sits over the host form so the Theme field (and everything else behind the modal) is not clickable until the picker closes.
 
 ---
 
@@ -130,13 +130,11 @@ theme-{kind}-{role}-{shade}
 |---|---|---|
 | `kind` | `bg`, `text`, `border` | Kind radio |
 | `role` | `primary`, `secondary`, `accent`, `success`, `info`, `warning`, `danger` | `SHADE_SCALE_FIELDS` in `themes/utils/css_writer.py` |
-| `shade` | `100`, `200`, `300`, `500`, `600`, `700`, `900` | `CURATED_SHADES` in `themes/utils/css_writer.py` |
+| `shade` | `50`, `100`, `200`, `300`, `400`, `500`, `600`, `700`, `800`, `900`, `950` | `CURATED_SHADES` in `themes/utils/css_writer.py` |
 
-Total combinations: **3 × 7 × 7 = 147**.
+Total combinations: **3 × 7 × 11 = 231**.
 
-All 147 are real shipping classes in `nce_theme.css` — verified against the emitter loop at `css_writer.py:307-316` which writes `.theme-bg-{role}-{shade}`, `.theme-text-{role}-{shade}`, and `.theme-border-{role}-{shade}` (the three kinds the picker emits) for every curated shade of every role in `SHADE_SCALE_FIELDS`. The same loop also emits `.theme-text-{role}-{shade}-fg` and `.theme-text-{role}-{shade}-fg-tonal`, which the picker uses for the overlay (§6) but does not itself emit as output.
-
-**Non-curated shades (50, 400, 800, 950)** are *not* surfaced in the picker. The underlying `--nce-color-{role}-{shade}` CSS variables exist for those stops, but no Tailwind class is emitted — clicking one would write a class that doesn't paint. The picker hides them entirely.
+All 231 are real shipping classes in `nce_theme.css` — verified against the emitter loop at `css_writer.py:307-316` which writes `.theme-bg-{role}-{shade}`, `.theme-text-{role}-{shade}`, and `.theme-border-{role}-{shade}` (the three kinds the picker emits) for every shade stop of every role in `SHADE_SCALE_FIELDS`. The same loop also emits `.theme-text-{role}-{shade}-fg` and `.theme-text-{role}-{shade}-fg-tonal`, which the picker uses for the overlay (§6) but does not itself emit as output.
 
 ---
 
@@ -144,17 +142,26 @@ All 147 are real shipping classes in `nce_theme.css` — verified against the em
 
 Three host contexts, one shared core.
 
-### 8.1 Vue (`panel_page_v2` and other Vue apps)
+### 8.1 Vue (`panel_page_v2` Form Dialog and other Vue apps)
+
+Component: `Themes/frontend/src/components/ThemeSwatchPicker.vue`.
+
+**Agent requirement — Vue save path (mandatory when embedding in a real app).**
+
+The Desk adapter writes via `frm.set_value` — Frappe dirty-tracking and Save work automatically. The Vue wrapper **does not** call `frm.set_value`. Hosts that save through reactive `formData` (e.g. NCE Events `usePanelFormDialog` → `saveFrozenFormDocument`, which posts `{ ...formData }` to the server) **must** pass `:get-field` and `:set-field` that read/write that same `formData` object. If you omit `setField`, the picker may write to `inject("nceForm").doc` or nowhere useful — **the picked class will not appear in the save payload and the dirty indicator may not update.**
 
 ```vue
 <ThemeSwatchPicker
   theme-field="theme"
   value-field="header_color"
   v-model:open="pickerOpen"
+  :get-field="(fn) => formData[fn]"
+  :set-field="(fn, val) => { formData[fn] = val }"
 />
 ```
 
-Component: `Themes/frontend/src/components/ThemeSwatchPicker.vue`.
+- **Desk Page Panel config today:** edit on Desk with `frappe.ui.themeSwatchPicker.open({ frm, ... })` — no Vue wiring needed.
+- **Vue Form Dialog** (frozen schema tabs): wire `setField` → `formData` as above. Do not rely on `inject("nceForm")` unless the provider explicitly exposes the same reactive object used at save time.
 
 ### 8.2 Frappe Desk forms (any app)
 
@@ -242,10 +249,6 @@ Themes/
 - A text-only swatch renders as a single letter on white.
 - Using `theme-bg-*` for the swatch tile in all three Kind modes keeps the visual signal constant. The radio choice still controls what gets emitted; the swatch is just the color reference.
 
-**Why hide non-curated shades instead of falling back to the nearest curated one.**
-- Falling back silently turns a click on shade 400 into shade 500 without telling the user. The picker would be lying about what it just wrote.
-- Hiding makes the constraint visible: "these are the shades available." No confusion.
-
 ---
 
 ## 11. Future extension points
@@ -278,8 +281,8 @@ For polish: when the cursor leaves the swatch strip, dim the "Selected:" line ba
 
 After implementation, before merging:
 
-1. **Class existence.** For every (kind, role, shade) ∈ {3 × 7 × 7}, grep `themes/public/css/nce_theme.css` (after `bench` publish) and confirm the literal class string is present. Should match 147 hits across the three kind variants.
-2. **Reactive theme switch.** Open the picker on a Page Panel form. While the modal is open, change the Theme link field. Swatches re-paint, footer label updates, no scroll-jump.
+1. **Class existence.** For every (kind, role, shade) ∈ {3 × 7 × 11}, grep `themes/public/css/nce_theme.css` (after `bench` publish) and confirm the literal class string is present. Should match 231 hits across the three kind variants.
+2. **Theme blocked while open.** Open the picker on a Page Panel form. While the modal is open, confirm the Theme field cannot be clicked (backdrop intercepts). Close the picker — Theme field is usable again. Swatches do not re-paint mid-session.
 3. **Persisted value round-trip.** Pick `theme-text-secondary-500`. Save the form. Reload. Re-open picker. Confirm Kind=Text and Role=Secondary radios initialize correctly.
 4. **Three host targets.** Open the picker successfully from a `panel_page_v2` form, a vanilla Desk form (any DocType with a Custom Field bound via Client Script), and a standalone test page. Same artifact, three different mount paths.
 5. **Hidden-shade audit.** Inspect the rendered DOM with React/Vue devtools. Confirm only 7 swatches per role row (no 50/400/800/950).
@@ -293,7 +296,7 @@ After implementation, before merging:
 | Thing | File | Symbol |
 |---|---|---|
 | Roles with shade ramps | `themes/utils/css_writer.py` | `SHADE_SCALE_FIELDS` (line 76) |
-| Curated shade stops | `themes/utils/css_writer.py` | `CURATED_SHADES = (100, 200, 300, 500, 600, 700, 900)` (line 51) |
+| Shade stops | `themes/utils/css_writer.py` | `CURATED_SHADES = (50, 100, 200, 300, 400, 500, 600, 700, 800, 900, 950)` (line 51) |
 | Class emitter | `themes/utils/css_writer.py` | `_emit_role_shade_classes` (line 300) |
 | Foreground picker | `themes/utils/theme_color_utils.py` | `pick_fg_mono` |
 | Public class contract | `THEME_CLASS_CONTRACT.json` (project root) | `color_roles` |
@@ -305,4 +308,7 @@ When any of those change, this spec and the widget implementation must be update
 
 ## 14. Open items / questions for follow-up
 
-None at sign-off time. If implementation discovers an issue — e.g. a Desk-side dirty-tracking edge case when `frm.set_value` is called from outside the form's event loop, or a Vite library-mode quirk with CSS extraction — log it as a TODO comment in the widget core and surface it back in the PR description.
+| Item | Status |
+|------|--------|
+| Vue Form Dialog must pass `setField` → host `formData` (§8.1) | **Documented** — not optional for apps that save via reactive form state |
+| Other implementation surprises (Vite CSS extraction, etc.) | Log as TODO in widget core + PR description |

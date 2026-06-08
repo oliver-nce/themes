@@ -20,27 +20,19 @@ Every brand/state role generates an 11-stop OKLCH shade scale, matching the Tail
 
 The user's picked color always lands at **stop 600**. All other stops are computed from it in OKLCH space, then mapped back to sRGB with gamut clipping.
 
-## Curated classes
+## Shade classes
 
-Only **7 stops** are exposed as classes to keep the class list manageable:
+All **11 stops** are exposed as classes:
 
-- **100, 200, 300, 500, 600, 700, 900**
+- **50, 100, 200, 300, 400, 500, 600, 700, 800, 900, 950**
 
 These have classes like `theme-bg-primary-300`, `theme-text-primary-700`, plus matching fg variants.
-
-## Var-only stops
-
-**50, 400, 800, 950** are emitted as CSS variables but have NO class. Use inline style with `var()`:
-
-```html
-<div :style="{ background: 'var(--nce-color-primary-50)' }">Subtle tint</div>
-```
 
 ## Why this scale?
 
 - **OKLCH lightness** is perceptually uniform — stop 300 looks half as light as stop 700 to the eye, unlike HSL.
 - **Pinned 600** means the user's picked color shows up exactly — no automatic shifting.
-- **Curated subset** keeps the class bundle small (~150 classes vs ~300+).
+- **All 11 stops** ship as classes so authors and the swatch picker can use any step without falling back to `var()`.
 
 ## Gamma and saturation tuning
 

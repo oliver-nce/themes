@@ -18,7 +18,7 @@ export const ROLES = [
 ] as const
 export type ThemeRole = (typeof ROLES)[number]
 
-export const CURATED_SHADES = [100, 200, 300, 500, 600, 700, 900] as const
+export const CURATED_SHADES = [50, 100, 200, 300, 400, 500, 600, 700, 800, 900, 950] as const
 export type ThemeShade = (typeof CURATED_SHADES)[number]
 
 /** Primary / Secondary only — spec §6. Add "gray" when gray_color lands. */

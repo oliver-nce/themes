@@ -774,7 +774,7 @@ function computeCSSVariables(): Record<string, string> {
 		for (const s of shades) {
 			vars[`--nce-${varPrefix}-${s.shade}`] = s.hex
 			vars[`--${varPrefix}-${s.shade}`] = s.hex
-			if ([100, 200, 300, 500, 600, 700, 900].includes(s.shade)) {
+			if ([50, 100, 200, 300, 400, 500, 600, 700, 800, 900, 950].includes(s.shade)) {
 				vars[`--nce-${varPrefix}-${s.shade}-fg`] = pickFgMono(s.hex)
 				vars[`--nce-${varPrefix}-${s.shade}-fg-tonal`] = pickFgTonal(s.hex)
 			}

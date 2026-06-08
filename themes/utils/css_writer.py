@@ -48,7 +48,7 @@ RETIRED_FONT_ALIASES = {
     "DM Sans": "Public Sans",
 }
 
-CURATED_SHADES = (100, 200, 300, 500, 600, 700, 900)
+CURATED_SHADES = (50, 100, 200, 300, 400, 500, 600, 700, 800, 900, 950)
 FG_ROLES = (
     "primary_color", "secondary_color", "accent_color",
     "success_color", "info_color", "warning_color", "danger_color",

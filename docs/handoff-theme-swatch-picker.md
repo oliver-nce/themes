@@ -12,7 +12,7 @@ Implementation is complete in this repo. **nce_events** wires eight per-panel ch
 
 ### Shipped behavior
 
-- **Output:** `theme-{bg|text|border}-{role}-{shade}` (147 combinations; curated shades only).
+- **Output:** `theme-{bg|text|border}-{role}-{shade}` (231 combinations; all 11 shade stops).
 - **Desk:** `await frappe.ui.themeSwatchPicker.open({ frm, themeField, valueField })` — `themeField` is Link doc name; `resolveNceThemeSlug()` in `desk-adapter.ts` resolves to slug for `data-nce-theme`.
 - **Blocked open:** empty Theme or Inactive/missing slug → `blocked-dialog.ts` user message, no modal.
 - **While open:** theme pinned; full-screen backdrop blocks host form (no `watchThemeSlug`, no read_only lock).

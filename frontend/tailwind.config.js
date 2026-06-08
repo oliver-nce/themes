@@ -14,7 +14,7 @@ const ROLES = [
   "warning",
   "danger",
 ];
-const SHADES = [100, 200, 300, 500, 600, 700, 900];
+const SHADES = [50, 100, 200, 300, 400, 500, 600, 700, 800, 900, 950];
 
 function buildColorMap() {
   const map = {};

@@ -35,7 +35,7 @@
       "border_class":     { "name": "theme-border-primary", "var": "--nce-color-primary", "status": "shipping" },
       "foreground_mono":  { "name": "theme-text-primary-fg", "var": "--nce-color-primary-fg", "status": "shipping", "description": "Black or white, whichever has best contrast against theme-bg-primary." },
       "foreground_tonal": { "name": "theme-text-primary-fg-tonal", "var": "--nce-color-primary-fg-tonal", "status": "shipping", "description": "Same hue as primary, lightness flipped, chroma reduced." },
-      "shade_scale": { "classes": "theme-bg-primary-{shade}, theme-text-primary-{shade}, theme-text-primary-{shade}-fg, theme-text-primary-{shade}-fg-tonal, theme-border-primary-{shade}", "vars": "--nce-color-primary-{50,100,200,300,400,500,600,700,800,900,950}", "status": "shipping (curated shade classes: 100, 200, 300, 500, 600, 700, 900)", "note": "Non-curated stops remain var-only — use :style with var() if needed." }
+      "shade_scale": { "classes": "theme-bg-primary-{shade}, theme-text-primary-{shade}, theme-text-primary-{shade}-fg, theme-text-primary-{shade}-fg-tonal, theme-border-primary-{shade}", "vars": "--nce-color-primary-{50,100,200,300,400,500,600,700,800,900,950}", "status": "shipping (shade classes: 50, 100, 200, 300, 400, 500, 600, 700, 800, 900, 950)", "note": "All 11 shade stops have emitted classes." }
     },
     "secondary": {
       "purpose": "Supporting brand color. Secondary buttons, headers, alternate emphasis.",
@@ -44,7 +44,7 @@
       "border_class":     { "name": "theme-border-secondary", "var": "--nce-color-secondary", "status": "shipping" },
       "foreground_mono":  { "name": "theme-text-secondary-fg", "var": "--nce-color-secondary-fg", "status": "shipping" },
       "foreground_tonal": { "name": "theme-text-secondary-fg-tonal", "var": "--nce-color-secondary-fg-tonal", "status": "shipping" },
-      "shade_scale": { "classes": "theme-bg-secondary-{shade}, theme-text-secondary-{shade}, …, theme-border-secondary-{shade}", "vars": "--nce-color-secondary-{50…950}", "status": "shipping (curated: 100, 200, 300, 500, 600, 700, 900)", "note": "Non-curated stops remain var-only — use :style with var() if needed." }
+      "shade_scale": { "classes": "theme-bg-secondary-{shade}, theme-text-secondary-{shade}, …, theme-border-secondary-{shade}", "vars": "--nce-color-secondary-{50…950}", "status": "shipping (shade classes: 50, 100, 200, 300, 400, 500, 600, 700, 800, 900, 950)", "note": "All 11 shade stops have emitted classes." }
     },
     "accent": {
       "purpose": "Highlight color for emphasis, callouts, decorative accents.",
@@ -53,7 +53,7 @@
       "border_class":     { "name": "theme-border-accent", "var": "--nce-color-accent", "status": "shipping" },
       "foreground_mono":  { "name": "theme-text-accent-fg", "var": "--nce-color-accent-fg", "status": "shipping" },
       "foreground_tonal": { "name": "theme-text-accent-fg-tonal", "var": "--nce-color-accent-fg-tonal", "status": "shipping" },
-      "shade_scale": { "classes": "theme-bg-accent-{shade}, theme-text-accent-{shade}, …, theme-border-accent-{shade}", "vars": "--nce-color-accent-{50…950}", "status": "shipping (curated: 100, 200, 300, 500, 600, 700, 900)", "note": "Non-curated stops remain var-only — use :style with var() if needed." }
+      "shade_scale": { "classes": "theme-bg-accent-{shade}, theme-text-accent-{shade}, …, theme-border-accent-{shade}", "vars": "--nce-color-accent-{50…950}", "status": "shipping (shade classes: 50, 100, 200, 300, 400, 500, 600, 700, 800, 900, 950)", "note": "All 11 shade stops have emitted classes." }
     },
     "success": {
       "purpose": "Positive state — confirmations, healthy metrics, success badges.",
@@ -61,7 +61,7 @@
       "text_class":       { "name": "theme-text-success", "var": "--nce-color-success", "status": "shipping" },
       "foreground_mono":  { "name": "theme-text-success-fg", "var": "--nce-color-success-fg", "status": "shipping" },
       "foreground_tonal": { "name": "theme-text-success-fg-tonal", "var": "--nce-color-success-fg-tonal", "status": "shipping" },
-      "shade_scale": { "classes": "theme-bg-success-{shade}, …, theme-border-success-{shade}", "vars": "--nce-color-success-{50…950}", "status": "shipping (curated: 100, 200, 300, 500, 600, 700, 900)", "note": "Non-curated stops remain var-only — use :style with var() if needed." }
+      "shade_scale": { "classes": "theme-bg-success-{shade}, …, theme-border-success-{shade}", "vars": "--nce-color-success-{50…950}", "status": "shipping (shade classes: 50, 100, 200, 300, 400, 500, 600, 700, 800, 900, 950)", "note": "All 11 shade stops have emitted classes." }
     },
     "info": {
       "purpose": "Informational state — neutral notifications, help, tips.",
@@ -69,7 +69,7 @@
       "text_class":       { "name": "theme-text-info", "var": "--nce-color-info", "status": "shipping" },
       "foreground_mono":  { "name": "theme-text-info-fg", "var": "--nce-color-info-fg", "status": "shipping" },
       "foreground_tonal": { "name": "theme-text-info-fg-tonal", "var": "--nce-color-info-fg-tonal", "status": "shipping" },
-      "shade_scale": { "classes": "theme-bg-info-{shade}, …, theme-border-info-{shade}", "vars": "--nce-color-info-{50…950}", "status": "shipping (curated: 100, 200, 300, 500, 600, 700, 900)", "note": "Non-curated stops remain var-only — use :style with var() if needed." }
+      "shade_scale": { "classes": "theme-bg-info-{shade}, …, theme-border-info-{shade}", "vars": "--nce-color-info-{50…950}", "status": "shipping (shade classes: 50, 100, 200, 300, 400, 500, 600, 700, 800, 900, 950)", "note": "All 11 shade stops have emitted classes." }
     },
     "warning": {
       "purpose": "Caution state — warnings, pending items, attention needed.",
@@ -77,7 +77,7 @@
       "text_class":       { "name": "theme-text-warning", "var": "--nce-color-warning", "status": "shipping" },
       "foreground_mono":  { "name": "theme-text-warning-fg", "var": "--nce-color-warning-fg", "status": "shipping" },
       "foreground_tonal": { "name": "theme-text-warning-fg-tonal", "var": "--nce-color-warning-fg-tonal", "status": "shipping" },
-      "shade_scale": { "classes": "theme-bg-warning-{shade}, …, theme-border-warning-{shade}", "vars": "--nce-color-warning-{50…950}", "status": "shipping (curated: 100, 200, 300, 500, 600, 700, 900)", "note": "Non-curated stops remain var-only — use :style with var() if needed." }
+      "shade_scale": { "classes": "theme-bg-warning-{shade}, …, theme-border-warning-{shade}", "vars": "--nce-color-warning-{50…950}", "status": "shipping (shade classes: 50, 100, 200, 300, 400, 500, 600, 700, 800, 900, 950)", "note": "All 11 shade stops have emitted classes." }
     },
     "danger": {
       "purpose": "Error/destructive state — failures, delete buttons, critical alerts.",
@@ -85,7 +85,7 @@
       "text_class":       { "name": "theme-text-danger", "var": "--nce-color-danger", "status": "shipping" },
       "foreground_mono":  { "name": "theme-text-danger-fg", "var": "--nce-color-danger-fg", "status": "shipping" },
       "foreground_tonal": { "name": "theme-text-danger-fg-tonal", "var": "--nce-color-danger-fg-tonal", "status": "shipping" },
-      "shade_scale": { "classes": "theme-bg-danger-{shade}, …, theme-border-danger-{shade}", "vars": "--nce-color-danger-{50…950}", "status": "shipping (curated: 100, 200, 300, 500, 600, 700, 900)", "note": "Non-curated stops remain var-only — use :style with var() if needed." }
+      "shade_scale": { "classes": "theme-bg-danger-{shade}, …, theme-border-danger-{shade}", "vars": "--nce-color-danger-{50…950}", "status": "shipping (shade classes: 50, 100, 200, 300, 400, 500, 600, 700, 800, 900, 950)", "note": "All 11 shade stops have emitted classes." }
     }
   },
   "neutral_roles": {
@@ -181,7 +181,6 @@
   "things_not_to_do": [
     "Don't write hex literals (#3b82f6) in components.",
     "Don't write color: white as a default on a class that may sit on a light background.",
-    "Don't assume non-curated shade stops (e.g. 400, 800) have classes — use var() for those.",
     "Don't duplicate semantic colors inside <style scoped> when a theme- utility exists — layout-only scoped CSS is fine.",
     "Don't drop the theme- prefix on Desk/downstream pages — bare names collide with Bootstrap.",
     "Don't use frappe-ui Button variant=outline (or scoped CSS) with background var(--nce-color-bg) for buttons on panels — page bg is not control fill.",

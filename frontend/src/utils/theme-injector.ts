@@ -15,7 +15,7 @@ const FG_ROLES = [
 	"danger_color",
 ] as const
 const GAMMA_SAT_ROLES = new Set(["primary_color", "secondary_color"])
-const CURATED_SHADES = [100, 200, 300, 500, 600, 700, 900] as const
+const CURATED_SHADES = [50, 100, 200, 300, 400, 500, 600, 700, 800, 900, 950] as const
 const ROLE_VAR: Record<string, string> = {
 	primary_color: "color-primary",
 	secondary_color: "color-secondary",
