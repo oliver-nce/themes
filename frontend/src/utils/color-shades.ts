@@ -302,54 +302,30 @@ export const NEUTRAL_SHADE_TARGETS: Array<{ shade: number; l: number }> = [
   { shade: 900, l: 0.280 }, { shade: 950, l: 0.050 },
 ];
 
-export function neutralizeHex(hex: string): string {
-  if (!hex || !/^#[0-9A-Fa-f]{6}$/.test(hex)) return hex;
-  const { L } = hexToOklch(hex);
-  return oklchToHex(L, 0, 0);
-}
-
 export const NEUTRAL_MAX_CHROMA = 0.025;
 export const NEUTRAL_WARM_HUE = 60;
 export const NEUTRAL_COOL_HUE = 250;
 
-export interface NeutralColorParams {
-  gamma: number;
-  warmth: number;
-}
-
-function neutralHueAndChroma(warmth: number): { hue: number; baseC: number } {
-  if (warmth === 0) return { hue: 0, baseC: 0 };
+/** Generate neutral 11-stop scale from warmth alone — no base hex. */
+export function generateNeutralShades(warmth = 0): ColorShade[] {
+  if (warmth === 0) {
+    return NEUTRAL_SHADE_TARGETS.map(({ shade, l }) => ({
+      shade,
+      hex: oklchToHex(l, 0, 0),
+    }));
+  }
   const hue = warmth >= 0 ? NEUTRAL_WARM_HUE : NEUTRAL_COOL_HUE;
   const baseC = (Math.abs(warmth) / 100) * NEUTRAL_MAX_CHROMA;
-  return { hue, baseC };
-}
-
-export function generateNeutralShades(
-  baseHex: string,
-  options?: { warmth?: number },
-): ColorShade[] {
-  if (!baseHex || !/^#[0-9A-Fa-f]{6}$/.test(baseHex)) return [];
-
-  const warmth = options?.warmth ?? 0;
-  const { hue, baseC } = neutralHueAndChroma(warmth);
-
   return NEUTRAL_SHADE_TARGETS.map(({ shade, l: targetL }) => {
-    let useC = 0;
-    if (warmth !== 0) {
-      const maxC = maxChromaInGamut(targetL, hue, baseC * 1.5);
-      useC = Math.min(baseC, maxC);
-      useC = extremeChromaScale(targetL, useC);
-      useC = Math.min(useC, maxC);
-    }
+    const maxC = maxChromaInGamut(targetL, hue, baseC * 1.5);
+    let useC = Math.min(baseC, maxC);
+    useC = extremeChromaScale(targetL, useC);
+    useC = Math.min(useC, maxC);
     return { shade, hex: oklchToHex(targetL, useC, hue) };
   });
 }
 
-export function effectiveNeutralHex(hex: string, _gamma = 0, warmth = 0): string {
-  if (!hex || !/^#[0-9A-Fa-f]{6}$/.test(hex)) return hex;
-  if (warmth === 0) return neutralizeHex(hex);
-  return (
-    generateNeutralShades(hex, { warmth }).find((s) => s.shade === 600)?.hex ??
-    neutralizeHex(hex)
-  );
+/** 600-stop hex for a given warmth. */
+export function neutral600Hex(warmth = 0): string {
+  return generateNeutralShades(warmth).find((s) => s.shade === 600)?.hex ?? "#989898";
 }

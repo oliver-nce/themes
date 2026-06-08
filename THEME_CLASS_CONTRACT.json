@@ -89,13 +89,15 @@
     },
     "neutral": {
       "purpose": "Page-level body content, structural backgrounds, dividers, mid-tone surfaces. Use when the element should not carry brand or state meaning.",
-      "tuning_model": "gamma+warmth",
+      "tuning_model": "warmth-only",
+      "stored_token": "neutral_color_warmth (int, default 0; range -100..+100)",
+      "note": "No base hex. Scale is generated from fixed OKLCH lightness targets (50=near-white, 950=black). Warmth tints every stop toward amber (positive) or blue (negative).",
       "background_class": { "name": "theme-bg-neutral", "var": "--nce-color-neutral", "status": "shipping" },
       "text_class":       { "name": "theme-text-neutral", "var": "--nce-color-neutral", "status": "shipping" },
       "border_class":     { "name": "theme-border-neutral", "var": "--nce-color-neutral", "status": "shipping" },
-      "foreground_mono":  { "name": "theme-text-neutral-fg", "var": "--nce-color-neutral-fg", "status": "shipping", "description": "Black or white by OKLCH lightness threshold — preferred on neutral surfaces." },
-      "foreground_tonal": { "name": "theme-text-neutral-fg-tonal", "var": "--nce-color-neutral-fg-tonal", "status": "shipping", "description": "Reads near-mono at low chroma; prefer foreground_mono on neutral surfaces." },
-      "shade_scale": { "classes": "theme-bg-neutral-{shade}, theme-text-neutral-{shade}, theme-text-neutral-{shade}-fg, theme-text-neutral-{shade}-fg-tonal, theme-border-neutral-{shade}", "vars": "--nce-color-neutral-{50,100,200,300,400,500,600,700,800,900,950}", "status": "shipping (shade classes: 50, 100, 200, 300, 400, 500, 600, 700, 800, 900, 950)", "note": "Uses Bezier-smoothed neutral lightness targets; warmth replaces saturation." }
+      "foreground_mono":  { "name": "theme-text-neutral-fg", "var": "--nce-color-neutral-fg", "status": "shipping", "description": "Black or white by OKLCH lightness threshold." },
+      "foreground_tonal": { "name": "theme-text-neutral-fg-tonal", "var": "--nce-color-neutral-fg-tonal", "status": "shipping" },
+      "shade_scale": { "classes": "theme-bg-neutral-{shade}, theme-text-neutral-{shade}, theme-text-neutral-{shade}-fg, theme-text-neutral-{shade}-fg-tonal, theme-border-neutral-{shade}", "vars": "--nce-color-neutral-{50,100,200,300,400,500,600,700,800,900,950}", "status": "shipping (shade classes: 50, 100, 200, 300, 400, 500, 600, 700, 800, 900, 950)", "note": "Always emitted — not gated on any base hex." }
     }
   },
   "neutral_roles": {

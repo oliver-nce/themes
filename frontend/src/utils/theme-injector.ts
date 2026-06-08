@@ -3,8 +3,8 @@ import {
 	pickFgTonal,
 	generateShades,
 	generateNeutralShades,
+	neutral600Hex,
 	effectiveRoleHex,
-	effectiveNeutralHex,
 } from "./color-shades"
 
 const FG_ROLES = [
@@ -15,10 +15,8 @@ const FG_ROLES = [
 	"info_color",
 	"warning_color",
 	"danger_color",
-	"neutral_color",
 ] as const
 const GAMMA_SAT_ROLES = new Set(["primary_color", "secondary_color"])
-const GAMMA_WARMTH_ROLES = new Set(["neutral_color"])
 const CURATED_SHADES = [50, 100, 200, 300, 400, 500, 600, 700, 800, 900, 950] as const
 const ROLE_VAR: Record<string, string> = {
 	primary_color: "color-primary",
@@ -28,7 +26,6 @@ const ROLE_VAR: Record<string, string> = {
 	info_color: "color-info",
 	warning_color: "color-warning",
 	danger_color: "color-danger",
-	neutral_color: "color-neutral",
 }
 
 const RADIUS_MAP: Record<string, string> = {
@@ -47,9 +44,6 @@ const SPACING_MAP: Record<string, string> = {
 }
 
 function roleAdjustments(role: string, settings: Record<string, unknown>) {
-	if (GAMMA_WARMTH_ROLES.has(role)) {
-		return { warmth: Number(settings[`${role}_warmth`] ?? 0) }
-	}
 	if (!GAMMA_SAT_ROLES.has(role)) return undefined
 	return {
 		gamma: Number(settings[`${role}_gamma`] ?? 0),
@@ -97,18 +91,13 @@ export function injectCSSVars(settings: Record<string, any>) {
 		const v = ROLE_VAR[role]
 		const adj = roleAdjustments(role, settings)
 		let roleHex = hex
-		if (GAMMA_WARMTH_ROLES.has(role) && adj && "warmth" in adj) {
-			roleHex = effectiveNeutralHex(hex, 0, adj.warmth)
-			root.style.setProperty(`--nce-${v}`, roleHex)
-		} else if (GAMMA_SAT_ROLES.has(role) && adj && "saturation" in adj) {
+		if (GAMMA_SAT_ROLES.has(role) && adj && "saturation" in adj) {
 			roleHex = effectiveRoleHex(hex, adj.gamma, adj.saturation)
 			root.style.setProperty(`--nce-${v}`, roleHex)
 		}
 		root.style.setProperty(`--nce-${v}-fg`, pickFgMono(roleHex))
 		root.style.setProperty(`--nce-${v}-fg-tonal`, pickFgTonal(roleHex))
-		const shades = GAMMA_WARMTH_ROLES.has(role)
-			? generateNeutralShades(hex, { warmth: (adj as { warmth?: number })?.warmth ?? 0 })
-			: generateShades(hex, adj && "saturation" in adj ? adj : undefined)
+		const shades = generateShades(hex, adj && "saturation" in adj ? adj : undefined)
 		for (const s of shades) {
 			if (!CURATED_SHADES.includes(s.shade as (typeof CURATED_SHADES)[number]))
 				continue
@@ -116,6 +105,17 @@ export function injectCSSVars(settings: Record<string, any>) {
 			root.style.setProperty(`--nce-${v}-${s.shade}-fg`, pickFgMono(s.hex))
 			root.style.setProperty(`--nce-${v}-${s.shade}-fg-tonal`, pickFgTonal(s.hex))
 		}
+	}
+	// Neutral: warmth-only, no base hex
+	const neutralWarmth = Number(settings.neutral_color_warmth ?? 0)
+	const n600 = neutral600Hex(neutralWarmth)
+	root.style.setProperty("--nce-color-neutral", n600)
+	root.style.setProperty("--nce-color-neutral-fg", pickFgMono(n600))
+	root.style.setProperty("--nce-color-neutral-fg-tonal", pickFgTonal(n600))
+	for (const s of generateNeutralShades(neutralWarmth)) {
+		root.style.setProperty(`--nce-color-neutral-${s.shade}`, s.hex)
+		root.style.setProperty(`--nce-color-neutral-${s.shade}-fg`, pickFgMono(s.hex))
+		root.style.setProperty(`--nce-color-neutral-${s.shade}-fg-tonal`, pickFgTonal(s.hex))
 	}
 	if (settings.font_family) {
 		root.style.setProperty("--nce-font-family", `'${settings.font_family}', sans-serif`)

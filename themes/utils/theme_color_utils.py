@@ -231,7 +231,6 @@ def _extreme_chroma_scale(target_l, use_c):
 
 
 GAMMA_SAT_ROLE_FIELDS = frozenset({"primary_color", "secondary_color"})
-GAMMA_WARMTH_ROLE_FIELDS = frozenset({"neutral_color"})
 
 _NEUTRAL_SHADE_TARGETS = [
 	(50, 0.958), (100, 0.885), (200, 0.820), (300, 0.755),
@@ -239,60 +238,32 @@ _NEUTRAL_SHADE_TARGETS = [
 	(800, 0.440), (900, 0.280), (950, 0.050),
 ]
 
-_NEUTRAL_L600 = 0.680
-
-
-def _neutralize_hex(hex_color):
-	"""Strip chroma so stored / displayed neutral base is achromatic."""
-	if not hex_color or len(hex_color) < 7:
-		return hex_color
-	L, _, _ = _hex_to_oklch(hex_color)
-	return _oklch_to_hex(L, 0.0, 0.0)
-
 NEUTRAL_MAX_CHROMA = 0.025
 NEUTRAL_WARM_HUE = 60.0
 NEUTRAL_COOL_HUE = 250.0
 
 
-def _neutral_hue_and_chroma(warmth):
+def generate_neutral_shades(warmth=0):
+	"""Generate 11-stop neutral scale (50–950) from warmth only. No base hex."""
 	warmth = float(warmth or 0)
 	if warmth == 0:
-		return 0.0, 0.0
+		return [(shade, _oklch_to_hex(l, 0.0, 0.0)) for shade, l in _NEUTRAL_SHADE_TARGETS]
 	hue = NEUTRAL_WARM_HUE if warmth >= 0 else NEUTRAL_COOL_HUE
-	chroma_scale = abs(warmth) / 100.0
-	return hue, chroma_scale * NEUTRAL_MAX_CHROMA
-
-
-def _generate_neutral_shades(base_hex, gamma=0, warmth=0, pin_600_to_base=False):
-	"""Generate 11-stop neutral scale (50–950). Warmth tints every stop including 600."""
-	if not base_hex or len(base_hex) < 7:
-		return []
-
-	warmth = float(warmth or 0)
-	h, base_C = _neutral_hue_and_chroma(warmth)
-
+	base_C = (abs(warmth) / 100.0) * NEUTRAL_MAX_CHROMA
 	result = []
 	for shade, target_l in _NEUTRAL_SHADE_TARGETS:
-		if warmth == 0:
-			use_c = 0.0
-		else:
-			max_c = _max_chroma_in_gamut(target_l, h, base_C * 1.5)
-			use_c = min(base_C, max_c)
-			use_c = _extreme_chroma_scale(target_l, use_c)
-			use_c = min(use_c, max_c)
-		result.append((shade, _oklch_to_hex(target_l, use_c, h)))
+		max_c = _max_chroma_in_gamut(target_l, hue, base_C * 1.5)
+		use_c = min(base_C, max_c)
+		use_c = _extreme_chroma_scale(target_l, use_c)
+		use_c = min(use_c, max_c)
+		result.append((shade, _oklch_to_hex(target_l, use_c, hue)))
 	return result
 
 
-def _effective_neutral_hex(base_hex, gamma=0, warmth=0):
-	"""600-stop hex after warmth — matches frontend effectiveNeutralHex."""
-	if not base_hex or len(base_hex) < 7:
-		return base_hex
-	warmth = float(warmth or 0)
-	if warmth == 0:
-		return _neutralize_hex(base_hex)
-	shades = dict(_generate_neutral_shades(base_hex, warmth=warmth))
-	return shades.get(600, _neutralize_hex(base_hex)).upper()
+def neutral_600_hex(warmth=0):
+	"""Return the hex at stop 600 for a given warmth."""
+	shades = dict(generate_neutral_shades(warmth))
+	return shades.get(600, "#989898")
 
 
 def _generate_shades(base_hex, gamma=0, saturation=100, pin_600_to_base=True):
