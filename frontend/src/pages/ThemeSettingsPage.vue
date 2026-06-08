@@ -466,7 +466,7 @@
 						autocomplete="current-password"
 						class="w-full max-w-sm border border-gray-300 rounded-md px-3 py-2 text-sm mb-2"
 						placeholder="Your password"
-						@keyup.enter="submitSaveAsBaseTheme"
+						@keyup.enter="requestSaveAsBaseTheme"
 					/>
 					<p v-if="systemTab.error" class="text-sm text-red-600 mb-2">{{ systemTab.error }}</p>
 					<p v-if="systemTab.success" class="text-sm text-green-700 mb-2">{{ systemTab.success }}</p>
@@ -475,7 +475,7 @@
 						class="bg-primary text-primary-fg border border-primary"
 						:loading="systemTab.busy"
 						:disabled="!systemTab.password || loadingTheme"
-						@click="submitSaveAsBaseTheme"
+						@click="requestSaveAsBaseTheme"
 					>
 						Save as base theme
 					</Button>
@@ -515,6 +515,42 @@
 							@click="confirmSaveAndContinue"
 						>
 							Save &amp; continue
+						</Button>
+					</div>
+				</div>
+			</div>
+
+			<div
+				v-if="saveBaseThemeDialog.open"
+				class="fixed inset-0 z-50 flex items-center justify-center bg-black/30 p-4"
+				@click.self="closeSaveBaseThemeDialog"
+			>
+				<div class="bg-white rounded-lg shadow-xl p-5 max-w-md w-full">
+					<h3 class="text-base font-semibold text-gray-900">Save as Base Theme</h3>
+					<div class="text-sm text-gray-600 mt-2 space-y-3">
+						<p>
+							This action will overwrite any changes previously saved to the Default Theme and replace them with the current Theme settings.
+						</p>
+						<p>
+							The theme will be saved in the Themes application code. If the application is installed on another Frappe Bench, or migrated from one Bench to another Site, this saved theme will become the Default Theme for that installation.
+						</p>
+					</div>
+					<div class="flex flex-wrap gap-2 justify-end mt-5">
+						<Button
+							variant="solid"
+							class="bg-primary-100 text-primary-100-fg border border-border hover:bg-row-alt"
+							:disabled="saveBaseThemeDialog.busy"
+							@click="closeSaveBaseThemeDialog"
+						>
+							Cancel
+						</Button>
+						<Button
+							variant="solid"
+							class="bg-primary text-primary-fg border border-primary"
+							:loading="saveBaseThemeDialog.busy"
+							@click="confirmSaveAsBaseTheme"
+						>
+							Continue
 						</Button>
 					</div>
 				</div>
@@ -1086,6 +1122,11 @@ const confirmDialog = reactive({
 	busy: false,
 })
 
+const saveBaseThemeDialog = reactive({
+	open: false,
+	busy: false,
+})
+
 const saveAsDialog = reactive({
 	open: false,
 	name: "",
@@ -1585,8 +1626,31 @@ async function submitSaveAsBaseTheme() {
 		themesList.reload()
 	} catch (err: any) {
 		systemTab.error = err?.message || "Could not save as base theme."
+		throw err
 	} finally {
 		systemTab.busy = false
+	}
+}
+
+function requestSaveAsBaseTheme() {
+	if (!systemTab.password || loadingTheme.value) return
+	saveBaseThemeDialog.open = true
+}
+
+function closeSaveBaseThemeDialog() {
+	if (saveBaseThemeDialog.busy) return
+	saveBaseThemeDialog.open = false
+}
+
+async function confirmSaveAsBaseTheme() {
+	saveBaseThemeDialog.busy = true
+	try {
+		await submitSaveAsBaseTheme()
+		closeSaveBaseThemeDialog()
+	} catch {
+		// keep dialog open; error shown on system tab
+	} finally {
+		saveBaseThemeDialog.busy = false
 	}
 }
 
