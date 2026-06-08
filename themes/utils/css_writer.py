@@ -4,8 +4,9 @@ import hashlib
 import frappe
 from themes.utils.theme_color_utils import (
     BORDER_RADIUS_MAP, SPACING_SCALE_MAP, LINE_HEIGHT_MAP,
-    TRANSITION_MAP, _build_shadow, _generate_shades, _effective_role_hex,
-    GAMMA_SAT_ROLE_FIELDS,
+    TRANSITION_MAP, _build_shadow, _generate_shades, _generate_neutral_shades,
+    _effective_role_hex, _effective_neutral_hex,
+    GAMMA_SAT_ROLE_FIELDS, GAMMA_WARMTH_ROLE_FIELDS,
     pick_fg_mono, pick_fg_tonal,
 )
 
@@ -52,6 +53,7 @@ CURATED_SHADES = (50, 100, 200, 300, 400, 500, 600, 700, 800, 900, 950)
 FG_ROLES = (
     "primary_color", "secondary_color", "accent_color",
     "success_color", "info_color", "warning_color", "danger_color",
+    "neutral_color",
 )
 
 COLOR_FIELDS = {
@@ -62,6 +64,7 @@ COLOR_FIELDS = {
     "info_color": "color-info",
     "warning_color": "color-warning",
     "danger_color": "color-danger",
+    "neutral_color": "color-neutral",
     "text_color": "color-text",
     "heading_color": "color-heading",
     "muted_color": "color-muted",
@@ -81,6 +84,7 @@ SHADE_SCALE_FIELDS = {
     "info_color": "color-info",
     "warning_color": "color-warning",
     "danger_color": "color-danger",
+    "neutral_color": "color-neutral",
 }
 
 MIGRATED_FIELDS = list(COLOR_FIELDS.keys()) + [
@@ -97,6 +101,8 @@ TOKEN_FIELDS = MIGRATED_FIELDS + [
     "primary_color_saturation",
     "secondary_color_gamma",
     "secondary_color_saturation",
+    "neutral_color_gamma",
+    "neutral_color_warmth",
 ]
 
 
@@ -187,6 +193,16 @@ def generate_fonts_css() -> str:
     return "\n".join(lines)
 
 
+def _role_gamma_warmth(g, field):
+    if field not in GAMMA_WARMTH_ROLE_FIELDS:
+        return 0.0, 0.0
+    gamma = float(g(f"{field}_gamma") or 0)
+    warmth = g(f"{field}_warmth")
+    if warmth is None:
+        warmth = 0
+    return gamma, float(warmth)
+
+
 def _role_gamma_sat(g, field):
     if field not in GAMMA_SAT_ROLE_FIELDS:
         return 0.0, 100.0
@@ -212,6 +228,9 @@ def _emit_var_block(g, lines, selector=":root", include_custom_css=True):
         if f in GAMMA_SAT_ROLE_FIELDS:
             gamma, saturation = _role_gamma_sat(g, f)
             v = _effective_role_hex(v, gamma, saturation)
+        elif f in GAMMA_WARMTH_ROLE_FIELDS:
+            gamma, warmth = _role_gamma_warmth(g, f)
+            v = _effective_neutral_hex(v, gamma, warmth)
         lines.append(f"\t--nce-{var}: {v};")
     for f, var in COLOR_FIELDS.items():
         if f not in FG_ROLES:
@@ -222,6 +241,9 @@ def _emit_var_block(g, lines, selector=":root", include_custom_css=True):
         if f in GAMMA_SAT_ROLE_FIELDS:
             gamma, saturation = _role_gamma_sat(g, f)
             fg_hex = _effective_role_hex(v, gamma, saturation)
+        elif f in GAMMA_WARMTH_ROLE_FIELDS:
+            gamma, warmth = _role_gamma_warmth(g, f)
+            fg_hex = _effective_neutral_hex(v, gamma, warmth)
         else:
             fg_hex = v
         lines.append(f"\t--nce-{var}-fg: {pick_fg_mono(fg_hex)};")
@@ -231,11 +253,18 @@ def _emit_var_block(g, lines, selector=":root", include_custom_css=True):
         v = g(f)
         if not v:
             continue
-        gamma, saturation = _role_gamma_sat(g, f)
-        pin_600 = f not in GAMMA_SAT_ROLE_FIELDS or (gamma == 0 and saturation == 100)
-        for shade_num, shade_hex in _generate_shades(
-            v, gamma=gamma, saturation=saturation, pin_600_to_base=pin_600,
-        ):
+        if f in GAMMA_WARMTH_ROLE_FIELDS:
+            gamma, warmth = _role_gamma_warmth(g, f)
+            shade_gen = _generate_neutral_shades(
+                v, gamma=gamma, warmth=warmth, pin_600_to_base=True,
+            )
+        else:
+            gamma, saturation = _role_gamma_sat(g, f)
+            pin_600 = f not in GAMMA_SAT_ROLE_FIELDS or (gamma == 0 and saturation == 100)
+            shade_gen = _generate_shades(
+                v, gamma=gamma, saturation=saturation, pin_600_to_base=pin_600,
+            )
+        for shade_num, shade_hex in shade_gen:
             lines.append(f"\t--nce-{var}-{shade_num}: {shade_hex};")
             if shade_num in CURATED_SHADES:
                 lines.append(f"\t--nce-{var}-{shade_num}-fg: {pick_fg_mono(shade_hex)};")

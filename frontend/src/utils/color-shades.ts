@@ -292,3 +292,59 @@ export function pickFgTonal(hex: string): string {
   const targetC = C * 0.35;
   return oklchToHex(targetL, targetC, h);
 }
+
+// ── Neutral (greyscale) shade generation ────────────────────────────────────
+
+export const NEUTRAL_SHADE_TARGETS: Array<{ shade: number; l: number }> = [
+  { shade: 50, l: 0.985 }, { shade: 100, l: 0.973 }, { shade: 200, l: 0.945 },
+  { shade: 300, l: 0.902 }, { shade: 400, l: 0.843 }, { shade: 500, l: 0.769 },
+  { shade: 600, l: 0.680 }, { shade: 700, l: 0.576 }, { shade: 800, l: 0.456 },
+  { shade: 900, l: 0.321 }, { shade: 950, l: 0.170 },
+];
+
+export const NEUTRAL_MAX_CHROMA = 0.025;
+export const NEUTRAL_WARM_HUE = 60;
+export const NEUTRAL_COOL_HUE = 250;
+
+export interface NeutralColorParams {
+  gamma: number;
+  warmth: number;
+}
+
+function neutralHueAndChroma(warmth: number): { hue: number; baseC: number } {
+  if (warmth === 0) return { hue: 0, baseC: 0 };
+  const hue = warmth >= 0 ? NEUTRAL_WARM_HUE : NEUTRAL_COOL_HUE;
+  const baseC = (Math.abs(warmth) / 100) * NEUTRAL_MAX_CHROMA;
+  return { hue, baseC };
+}
+
+export function generateNeutralShades(
+  baseHex: string,
+  options?: { gamma?: number; warmth?: number; base600Hex?: string },
+): ColorShade[] {
+  if (!baseHex || !/^#[0-9A-Fa-f]{6}$/.test(baseHex)) return [];
+
+  const gamma = options?.gamma ?? 0;
+  const warmth = options?.warmth ?? 0;
+  const { hue, baseC } = neutralHueAndChroma(warmth);
+
+  const shades = NEUTRAL_SHADE_TARGETS.map(({ shade, l: baseL }) => {
+    const targetL = lightnessWithGamma(shade, baseL, gamma);
+    let useC = 0;
+    if (warmth !== 0) {
+      const maxC = maxChromaInGamut(targetL, hue, baseC * 1.5);
+      useC = Math.min(baseC, maxC);
+      useC = extremeChromaScale(targetL, useC);
+      useC = Math.min(useC, maxC);
+    }
+    return { shade, hex: oklchToHex(targetL, useC, hue) };
+  });
+  return withPinned600(shades, options?.base600Hex ?? baseHex);
+}
+
+export function effectiveNeutralHex(hex: string, gamma = 0, warmth = 0): string {
+  if (!hex || !/^#[0-9A-Fa-f]{6}$/.test(hex)) return hex;
+  if (gamma === 0 && warmth === 0) return hex.toUpperCase();
+  const shades = generateNeutralShades(hex, { gamma, warmth, base600Hex: undefined });
+  return shades.find((s) => s.shade === 600)?.hex ?? hex.toUpperCase();
+}

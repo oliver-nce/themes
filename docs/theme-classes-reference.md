@@ -21,6 +21,7 @@ Status legend: **shipping** = use today · **var-only** = use `:style="{ … var
 | info | `theme-bg-info` | `theme-text-info` | — | `theme-text-info-fg` | `theme-text-info-fg-tonal` |
 | warning | `theme-bg-warning` | `theme-text-warning` | — | `theme-text-warning-fg` | `theme-text-warning-fg-tonal` |
 | danger | `theme-bg-danger` | `theme-text-danger` | — | `theme-text-danger-fg` | `theme-text-danger-fg-tonal` |
+| neutral | `theme-bg-neutral` | `theme-text-neutral` | `theme-border-neutral` | `theme-text-neutral-fg` | `theme-text-neutral-fg-tonal` |
 
 Each `theme-bg-{role}` rule sets both background and the paired `--nce-color-{role}-fg` color, so you can omit the `-fg` class unless you want the tonal variant. The `theme-text-*` classes are emitted after the bg rules, so adding one overrides the paired color.
 
@@ -28,7 +29,7 @@ Each `theme-bg-{role}` rule sets both background and the paired `--nce-color-{ro
 
 ## Color Roles — Shade Scale (50, 100, 200, 300, 400, 500, 600, 700, 800, 900, 950)
 
-For each role above, these shade classes exist. Substitute `{role}` ∈ {primary, secondary, accent, success, info, warning, danger} and `{N}` ∈ {50, 100, 200, 300, 400, 500, 600, 700, 800, 900, 950}.
+For each role above, these shade classes exist. Substitute `{role}` ∈ {primary, secondary, accent, success, info, warning, danger, neutral} and `{N}` ∈ {50, 100, 200, 300, 400, 500, 600, 700, 800, 900, 950}.
 
 | Pattern | Example |
 |---|---|
@@ -37,8 +38,6 @@ For each role above, these shade classes exist. Substitute `{role}` ∈ {primary
 | `theme-text-{role}-{N}-fg` | `theme-text-primary-300-fg` |
 | `theme-text-{role}-{N}-fg-tonal` | `theme-text-primary-300-fg-tonal` |
 | `theme-border-{role}-{N}` | `theme-border-primary-300` |
-
-Stops **50, 400, 800, 950** are emitted as CSS vars but have NO class. Use `:style="{ background: 'var(--nce-color-primary-50)' }"` for those.
 
 ---
 

@@ -15,6 +15,7 @@ export const ROLES = [
 	"info",
 	"warning",
 	"danger",
+	"neutral",
 ] as const
 export type ThemeRole = (typeof ROLES)[number]
 

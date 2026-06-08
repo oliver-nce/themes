@@ -2,7 +2,9 @@ import {
 	pickFgMono,
 	pickFgTonal,
 	generateShades,
+	generateNeutralShades,
 	effectiveRoleHex,
+	effectiveNeutralHex,
 } from "./color-shades"
 
 const FG_ROLES = [
@@ -13,8 +15,10 @@ const FG_ROLES = [
 	"info_color",
 	"warning_color",
 	"danger_color",
+	"neutral_color",
 ] as const
 const GAMMA_SAT_ROLES = new Set(["primary_color", "secondary_color"])
+const GAMMA_WARMTH_ROLES = new Set(["neutral_color"])
 const CURATED_SHADES = [50, 100, 200, 300, 400, 500, 600, 700, 800, 900, 950] as const
 const ROLE_VAR: Record<string, string> = {
 	primary_color: "color-primary",
@@ -24,6 +28,7 @@ const ROLE_VAR: Record<string, string> = {
 	info_color: "color-info",
 	warning_color: "color-warning",
 	danger_color: "color-danger",
+	neutral_color: "color-neutral",
 }
 
 const RADIUS_MAP: Record<string, string> = {
@@ -42,6 +47,12 @@ const SPACING_MAP: Record<string, string> = {
 }
 
 function roleAdjustments(role: string, settings: Record<string, unknown>) {
+	if (GAMMA_WARMTH_ROLES.has(role)) {
+		return {
+			gamma: Number(settings[`${role}_gamma`] ?? 0),
+			warmth: Number(settings[`${role}_warmth`] ?? 0),
+		}
+	}
 	if (!GAMMA_SAT_ROLES.has(role)) return undefined
 	return {
 		gamma: Number(settings[`${role}_gamma`] ?? 0),
@@ -88,15 +99,23 @@ export function injectCSSVars(settings: Record<string, any>) {
 		if (!hex) continue
 		const v = ROLE_VAR[role]
 		const adj = roleAdjustments(role, settings)
-		const roleHex = adj
-			? effectiveRoleHex(hex, adj.gamma, adj.saturation)
-			: hex
-		if (GAMMA_SAT_ROLES.has(role)) {
+		let roleHex = hex
+		if (GAMMA_WARMTH_ROLES.has(role) && adj && "warmth" in adj) {
+			roleHex = effectiveNeutralHex(hex, adj.gamma, adj.warmth)
+			root.style.setProperty(`--nce-${v}`, roleHex)
+		} else if (GAMMA_SAT_ROLES.has(role) && adj && "saturation" in adj) {
+			roleHex = effectiveRoleHex(hex, adj.gamma, adj.saturation)
 			root.style.setProperty(`--nce-${v}`, roleHex)
 		}
 		root.style.setProperty(`--nce-${v}-fg`, pickFgMono(roleHex))
 		root.style.setProperty(`--nce-${v}-fg-tonal`, pickFgTonal(roleHex))
-		const shades = generateShades(hex, adj)
+		const shades = GAMMA_WARMTH_ROLES.has(role)
+			? generateNeutralShades(hex, {
+				gamma: adj?.gamma ?? 0,
+				warmth: (adj as { warmth?: number })?.warmth ?? 0,
+				base600Hex: hex,
+			})
+			: generateShades(hex, adj && "saturation" in adj ? adj : undefined)
 		for (const s of shades) {
 			if (!CURATED_SHADES.includes(s.shade as (typeof CURATED_SHADES)[number]))
 				continue

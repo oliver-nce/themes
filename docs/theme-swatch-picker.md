@@ -129,10 +129,10 @@ theme-{kind}-{role}-{shade}
 | Component | Allowed values | Source of truth |
 |---|---|---|
 | `kind` | `bg`, `text`, `border` | Kind radio |
-| `role` | `primary`, `secondary`, `accent`, `success`, `info`, `warning`, `danger` | `SHADE_SCALE_FIELDS` in `themes/utils/css_writer.py` |
+| `role` | `primary`, `secondary`, `accent`, `success`, `info`, `warning`, `danger`, `neutral` | `SHADE_SCALE_FIELDS` in `themes/utils/css_writer.py` |
 | `shade` | `50`, `100`, `200`, `300`, `400`, `500`, `600`, `700`, `800`, `900`, `950` | `CURATED_SHADES` in `themes/utils/css_writer.py` |
 
-Total combinations: **3 × 7 × 11 = 231**.
+Total combinations: **3 × 8 × 11 = 264**.
 
 All 231 are real shipping classes in `nce_theme.css` — verified against the emitter loop at `css_writer.py:307-316` which writes `.theme-bg-{role}-{shade}`, `.theme-text-{role}-{shade}`, and `.theme-border-{role}-{shade}` (the three kinds the picker emits) for every shade stop of every role in `SHADE_SCALE_FIELDS`. The same loop also emits `.theme-text-{role}-{shade}-fg` and `.theme-text-{role}-{shade}-fg-tonal`, which the picker uses for the overlay (§6) but does not itself emit as output.
 

@@ -33,7 +33,8 @@ const ne = ["bg", "text", "border"], ce = [
   "success",
   "info",
   "warning",
-  "danger"
+  "danger",
+  "neutral"
 ], re = [50, 100, 200, 300, 400, 500, 600, 700, 800, 900, 950], we = ["primary", "secondary"], _e = "bg", ke = "primary", be = "mono", ye = new Set(ce), ve = new Set(ne), Ee = new Set(re);
 function xe(e) {
   return ve.has(e);

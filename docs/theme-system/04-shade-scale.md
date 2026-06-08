@@ -42,3 +42,7 @@ Each role accepts optional `gamma` and `saturation` params (stored on NCE Theme 
 - `saturation` (0 → 200): scales chroma. 100 = max in-gamut at stop 600.
 
 These let designers tune the family without changing the base hex.
+
+## Neutral scale (separate path)
+
+The **neutral** role uses its own Bezier-smoothed lightness targets (`_NEUTRAL_SHADE_TARGETS`), not the brand `_SHADE_TARGETS` table. **Warmth** (−100 cool → +100 warm) replaces saturation as the chroma control; at warmth 0 the scale is pure grey. See `plans/greyscale-coding.md` for rationale and locked parameters.

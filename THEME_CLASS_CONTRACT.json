@@ -86,6 +86,16 @@
       "foreground_mono":  { "name": "theme-text-danger-fg", "var": "--nce-color-danger-fg", "status": "shipping" },
       "foreground_tonal": { "name": "theme-text-danger-fg-tonal", "var": "--nce-color-danger-fg-tonal", "status": "shipping" },
       "shade_scale": { "classes": "theme-bg-danger-{shade}, …, theme-border-danger-{shade}", "vars": "--nce-color-danger-{50…950}", "status": "shipping (shade classes: 50, 100, 200, 300, 400, 500, 600, 700, 800, 900, 950)", "note": "All 11 shade stops have emitted classes." }
+    },
+    "neutral": {
+      "purpose": "Page-level body content, structural backgrounds, dividers, mid-tone surfaces. Use when the element should not carry brand or state meaning.",
+      "tuning_model": "gamma+warmth",
+      "background_class": { "name": "theme-bg-neutral", "var": "--nce-color-neutral", "status": "shipping" },
+      "text_class":       { "name": "theme-text-neutral", "var": "--nce-color-neutral", "status": "shipping" },
+      "border_class":     { "name": "theme-border-neutral", "var": "--nce-color-neutral", "status": "shipping" },
+      "foreground_mono":  { "name": "theme-text-neutral-fg", "var": "--nce-color-neutral-fg", "status": "shipping", "description": "Black or white by OKLCH lightness threshold — preferred on neutral surfaces." },
+      "foreground_tonal": { "name": "theme-text-neutral-fg-tonal", "var": "--nce-color-neutral-fg-tonal", "status": "shipping", "description": "Reads near-mono at low chroma; prefer foreground_mono on neutral surfaces." },
+      "shade_scale": { "classes": "theme-bg-neutral-{shade}, theme-text-neutral-{shade}, theme-text-neutral-{shade}-fg, theme-text-neutral-{shade}-fg-tonal, theme-border-neutral-{shade}", "vars": "--nce-color-neutral-{50,100,200,300,400,500,600,700,800,900,950}", "status": "shipping (shade classes: 50, 100, 200, 300, 400, 500, 600, 700, 800, 900, 950)", "note": "Uses Bezier-smoothed neutral lightness targets; warmth replaces saturation." }
     }
   },
   "neutral_roles": {

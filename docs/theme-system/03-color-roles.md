@@ -19,7 +19,13 @@ For the complete class list see `THEME_CLASS_CONTRACT.json`. This file explains 
 | **warning** | Caution state | Warnings, pending items, "needs attention" badges. |
 | **danger** | Error / destructive state | Failure messages, delete buttons, critical alerts. |
 
-## Neutral roles
+## Neutral (greyscale role)
+
+| Role | Semantic meaning | When to use |
+|---|---|---|
+| **neutral** | Structural greyscale | Page-level body content, structural backgrounds, dividers, mid-tone surfaces. Use when the element should not carry brand or state meaning. Tuned with **gamma + warmth** (not saturation). |
+
+## Structural neutral roles
 
 These don't follow the role + shade + fg pattern — they're flat.
 
