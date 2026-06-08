@@ -88,10 +88,10 @@
 						<Button
 							variant="solid"
 							class="theme-btn theme-btn-quiet bg-primary-100 text-primary-100-fg border border-border hover:bg-row-alt"
-							:disabled="loadingTheme || !siteBaseTheme || editingTheme === siteBaseTheme"
-							@click="requestRestoreToBase"
-						>
-							Restore to Base Theme
+						:disabled="loadingTheme || !siteBaseTheme"
+						@click="requestRestoreToBase"
+					>
+						Restore to Base Theme
 						</Button>
 						<Button
 							variant="solid"
@@ -1548,7 +1548,7 @@ async function submitDelete() {
 }
 
 function requestRestoreToBase() {
-	if (!siteBaseTheme.value || editingTheme.value === siteBaseTheme.value) return
+	if (!siteBaseTheme.value) return
 	if (isDirty.value) {
 		openConfirmDialog("restore")
 		return
