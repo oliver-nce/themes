@@ -465,13 +465,9 @@
 						Editing <strong>{{ editorMeta.theme_name || "—" }}</strong>.
 						Requires your account password.
 					</p>
-					<input
+					<PasswordField
 						v-model="systemTab.password"
-						type="password"
-						autocomplete="current-password"
-						class="w-full max-w-sm border border-gray-300 rounded-md px-3 py-2 text-sm mb-2"
-						placeholder="Your password"
-						@keyup.enter="requestSaveAsBaseTheme"
+						@enter="requestSaveAsBaseTheme"
 					/>
 					<p v-if="systemTab.error" class="text-sm text-red-600 mb-2">{{ systemTab.error }}</p>
 					<p v-if="systemTab.success" class="text-sm text-green-700 mb-2">{{ systemTab.success }}</p>
@@ -679,6 +675,7 @@ import BrandColorPicker from "@/components/BrandColorPicker.vue"
 import NeutralColorPicker from "@/components/NeutralColorPicker.vue"
 import SelectField from "@/components/SelectField.vue"
 import FontSelectField from "@/components/FontSelectField.vue"
+import PasswordField from "@/components/PasswordField.vue"
 import SwatchPicker from "@/components/SwatchPicker.vue"
 
 // ─── Preview window ───────────────────────────────────────────────

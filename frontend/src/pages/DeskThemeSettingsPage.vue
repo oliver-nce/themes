@@ -250,13 +250,9 @@
 						Editing <strong>{{ editorMeta.theme_name || "—" }}</strong>.
 						Requires your account password.
 					</p>
-					<input
+					<PasswordField
 						v-model="systemTab.password"
-						type="password"
-						autocomplete="current-password"
-						class="w-full max-w-sm border border-gray-300 rounded-md px-3 py-2 text-sm mb-2"
-						placeholder="Your password"
-						@keyup.enter="submitSaveAsBaseTheme"
+						@enter="submitSaveAsBaseTheme"
 					/>
 					<p v-if="systemTab.error" class="text-sm text-red-600 mb-2">{{ systemTab.error }}</p>
 					<p v-if="systemTab.success" class="text-sm text-green-700 mb-2">{{ systemTab.success }}</p>
@@ -340,6 +336,7 @@ import { ref, reactive, watch, computed, onUnmounted, onMounted, nextTick } from
 import { useRoute } from "vue-router"
 import { createResource } from "frappe-ui"
 import EditorSection from "@/components/EditorSection.vue"
+import PasswordField from "@/components/PasswordField.vue"
 import SwatchPicker from "@/components/SwatchPicker.vue"
 import { applyDeskThemeVars, deskPayloadToCssVars } from "@/composables/useDeskTheme"
 
