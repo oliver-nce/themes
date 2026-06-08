@@ -1,20 +1,20 @@
 [PLAN OVERVIEW]
 Total phases: 6
-Summary: Path B complete in source (B1–B4); manual publish and browser smoke test remain (B5).
+Summary: Path B code complete; B5 local verify PASS; staging publish + browser smoke still required.
 
-Phase 1 — Refactor (B1.1) (`themes/utils/css_writer.py`) — DONE
+Phase 1 — Refactor (B1.1) — DONE
 Phase 2 — Role text/border (B1.2) — DONE
 Phase 3 — Role shades (B2) — DONE
 Phase 4 — Neutrals (B3) — DONE
 Phase 5 — Shape/typography/spacing (B4) — DONE
-Phase 6 — Publish smoke test (B5) — PENDING
+Phase 6 — Publish smoke test (B5) — PARTIAL (see `plans/phase-b5-results.md`)
 
-[CURRENT PHASE: 6 of 6] — Publish smoke test (B5)
-File(s): none (deployment); document in `plans/phase-b5-results.md`
+[CURRENT PHASE: 6 of 6] — B5 finish on staging
+File(s): none (server ops)
 Changes:
-  1. On server: `bench --site <site> execute themes.utils.css_writer.publish_theme --args "['<theme name>']"`
-  2. Browser: confirm `/assets/themes/css/nce_theme.css` size ~10× pre-Path-B; grep for `.bg-surface`, `.text-muted`, `.p-md`, etc.
-  3. DevTools: apply `class="bg-surface text-muted rounded p-md"` on a test element; screenshot before/after.
-  4. Write `plans/phase-b5-results.md` with URL, size, class checklist, screenshots, pass/fail line.
-Design context: No Python edits in B5; source changes are complete.
-Frappe notes: `publish_theme` writes `themes/public/css/nce_theme.css` and updates `css_hash`.
+  1. SSH staging bench → `git pull` in `apps/themes` (must include commit `6bfcf03`).
+  2. `bench --site manager.ncesoccer.com execute themes.init_theme.execute` (or `publish_theme` with active theme name).
+  3. Confirm https://manager.ncesoccer.com/assets/themes/css/nce_theme.css Content-Length ~30 KB+ and grep for `.bg-surface`, `.p-md`.
+  4. DevTools class smoke tests; update `plans/phase-b5-results.md` decision line to PASS.
+Design context: Local file at `themes/public/css/nce_theme.css` (32 KB) is valid reference output only until server publish.
+Frappe notes: `themes.init_theme.execute` republishes active theme and clears cache.

@@ -28,6 +28,7 @@ Reusable picker that writes a single `theme-{kind}-{role}-{shade}` class string 
 | Concern | Location |
 |---|---|
 | Full spec (layout, API, embed targets, verification) | `../theme-swatch-picker.md` |
+| Agent handoff (current state, next tasks) | `../handoff-theme-swatch-picker.md` |
 | DOM core | `frontend/src/widget/theme-swatch-picker-core.ts` |
 | Vue wrapper | `frontend/src/components/ThemeSwatchPicker.vue` |
 | Desk API | `await frappe.ui.themeSwatchPicker.open({ frm, themeField, valueField })` — **`themeField` = Link doc name → slug lookup** |
@@ -38,6 +39,8 @@ Reusable picker that writes a single `theme-{kind}-{role}-{shade}` class string 
 
 **Assumption:** `nce_theme.css` is published on the site (`publish_theme()` on save of Active/base themes). Swatches paint via `theme-bg-*` classes inside a `data-nce-theme="{slug}"` wrapper — zero color math in the widget. On Desk, `themeField` holds the **NCE Theme link** (doc name); the adapter looks up **`slug`** before scoping the modal (Page Panel `theme`, not the slug string).
 
+**Agent — Vue embed save path:** `ThemeSwatchPicker.vue` does not call `frm.set_value`. Downstream apps that save via reactive `formData` (e.g. NCE Events `usePanelFormDialog`) **must** pass `:set-field` / `:get-field` bound to that object or the pick will not persist. See `../theme-swatch-picker.md` §8.1.
+
 ## Quick Answers (vague-question → file)
 
 | Vague phrasing | File |
@@ -47,6 +50,7 @@ Reusable picker that writes a single `theme-{kind}-{role}-{shade}` class string 
 | "color picker preview" / "user-selected color at runtime" | `06-escape-hatch.md` |
 | "pick a theme class" / "header_color" / "swatch picker" / "theme-text-secondary-500" | `../theme-swatch-picker.md` |
 | "theme field is Link not slug" / "Page Panel theme picker" | `../theme-swatch-picker.md` §3–§4 (Desk resolves Link → slug) |
+| "ThemeSwatchPicker Vue save" / "setField formData" / "picker won't persist" | `../theme-swatch-picker.md` §8.1 |
 | "what class should I use for X" | (use `THEME_CLASS_CONTRACT.json` instead) |
 | "how do themes work in this app" | `01-architecture.md` |
 | "I want to add a brand color" | `08-extending.md` |

@@ -10,59 +10,76 @@ Frappe v15 app (`themes`) for site-wide CSS theming via `--nce-*` tokens in `nce
 
 ---
 
-## What's done (as of commit `190cf60`)
+## Architecture (authoritative)
 
-### Phase 2 — Multi-theme backend
+**Read first:** [`docs/theme-system/01-architecture.md`](theme-system/01-architecture.md)
 
-- `theme_color_utils.py`, `css_writer.py` (`generate_css`, `publish_theme`)
-- DocTypes: **NCE Theme**, **Site Theme Config** (legacy **Theme Settings** deprecated, `on_update` no-op)
-- Migration patch: Theme Settings → Default theme
-- API: `set_active_theme`, `regenerate_theme_css`, `list_themes`
-- Desk workspace with Theme Editor / Switch Theme pages
+That doc covers the full pipeline, the two-layer `nce_theme.css` output (`:root` base + `[data-nce-theme]` scoped palettes), the NCE Theme data model, theme lifecycle, and downstream consumer pattern.
 
-### Phase 3 — Vue editor wired to backend
+Supporting references:
 
-- SPA at **`/themes/theme-settings`** reads/writes active theme via `get_active_theme_editor` / `save_active_theme`
-- Theme picker dropdown in editor header
-
-### Phase 4 — Simplified model (no Theme Version required)
-
-- **`theme_json`** on **NCE Theme** (one record = name + definition)
-- **Site Theme Config**: only **Active Theme** (+ `css_hash`); `active_version` hidden/deprecated
-- Patch `collapse_theme_versions_to_nce_theme` copies legacy Theme Version JSON → NCE Theme
-- New themes auto-copy Default's `theme_json` on insert
-- Theme Versions removed from workspace UI (DocType still exists, deprecated)
-
-### Phase 5 — Legacy cleanup
-
-- **Theme Version** and **Theme Settings** DocTypes removed from app + DB patch
-- `active_version` field removed from Site Theme Config
-- `publish_version()` shim removed; `init_theme.py` and `after_install` use NCE Theme Default
-- Default token payload in `utils/default_theme.py`
-
-### Bug fixes (earlier)
-
-- Workspace crash: Single DocType shortcut → Desk **Pages** (`theme-editor`, `site-theme-switch`)
-- Theme dropdown freeze: `switchingTheme` stuck true (fixed with `async/finally`)
-- Form reset on theme switch so colors don't bleed between themes
+| Topic | Doc |
+|-------|-----|
+| Class catalog | `THEME_CLASS_CONTRACT.json` (repo root) |
+| Human-readable class tables | `docs/theme-classes-reference.md` |
+| Vue usage / `data-nce-theme` | `docs/theme-system/07-using-in-vue.md` |
+| Conceptual index | `docs/theme-system/INDEX.md` |
+| Code index | `themes/CODE_INDEX.json` |
 
 ---
 
-## Current architecture
+## What's done
+
+### Phase 2–5 — Foundation (through `190cf60`)
+
+- `theme_color_utils.py`, `css_writer.py`, DocTypes **NCE Theme** + **Site Theme Config**
+- Vue editor at `/themes/theme-settings`; Theme Version / Theme Settings removed
+- Default token payload in `utils/default_theme.py`
+
+### Phase 6 — Multi-theme scoped palettes (shipped)
+
+- **`nce_theme.css` two-layer output:**
+  - `:root { --nce-* }` — site-wide base from `Site Theme Config.base_theme`
+  - `[data-nce-theme="<slug>"] { --nce-* }` — one block per `status = Active` theme
+  - Utility classes (`theme-bg-primary`, etc.) emitted **once** from base; they read vars in scope
+- **`publish_theme()`** always rebuilds the whole file from DB state (no partial publish)
+- **`base_theme`** replaces `active_theme` on Site Theme Config (migration patch `rename_base_theme_and_status`)
+- **Status model:** `Active` = published as scoped palette; `Inactive` = stored only, no CSS output
+- **New themes** seed `theme_json` from current base theme on insert
+- **Editor:** Rename / Delete for Inactive non-base themes; Set as base on System tab; login gate on SPA (`themes/www/themes.py`)
+- **API:** `set_base_theme`, `save_as_base_theme`, `get_base_theme_editor` (+ legacy aliases for `active_theme` names)
+- **Frontend:** Vite hashed chunk filenames (cache-safe deploys)
+- **Helpers:** `utils/site_theme_config_helpers.py` reads `base_theme` / legacy `active_theme` during migration window
+
+### Per-panel theming — shipped (Themes side)
+
+Downstream apps (e.g. NCE Events) opt in by setting `data-nce-theme="<slug>"` on a panel root. Omit the attribute (or use a missing/Inactive slug) → inherits `:root` base. No Themes-app changes required beyond the scoped palette blocks above.
+
+---
+
+## Current architecture (summary)
 
 ```
-NCE Theme (theme_name, theme_json, is_default, status)
+NCE Theme (theme_name, slug, theme_json, status: Active|Inactive)
        ↓
-Site Theme Config (active_theme) → publish_theme() → nce_theme.css
+Site Theme Config (base_theme, css_hash)
+       ↓
+publish_theme() → generate_site_css()
+       → :root { --nce-* }                    (base_theme)
+       → [data-nce-theme="slug"] { --nce-* }  (each Active theme)
+       → .theme-bg-primary, …                 (utility layer, once)
+       → nce_theme.css
        ↑
 Vue Theme Editor (/themes/theme-settings)
 ```
 
 **User workflow:**
 
-1. Create **NCE Theme** → Save (gets Default's JSON copy)
-2. **Theme Editor** → dropdown to switch → edit → **Save Changes**
-3. Optional: **Switch Theme** desk page → Site Theme Config form
+1. Create **NCE Theme** → seeds from base theme's `theme_json`
+2. **Theme Editor** → edit tokens → **Save Changes** (republish if Active or base)
+3. **Set as base** → becomes `:root` fallback site-wide
+4. **Active** → included in next publish as `[data-nce-theme]` block (multiple Active themes allowed)
+5. **Inactive** → safe to edit/rename/delete without affecting live CSS
 
 **Do not use Theme Version or Theme Settings** — removed in Phase 5.
 
@@ -91,8 +108,9 @@ Hard-refresh browser after deploy.
 
 | Test | Status | Notes |
 |------|--------|-------|
-| Task 13 steps 1–5 (staging migrate, switch) | Assumed pass | Staging at `manager.ncesoccer.com` through `190cf60` |
-| Task 13 step 6 (fresh install) | **Pending** | No local bench — run on staging server; see `docs/fresh-install-verification.md` |
+| Multi-theme publish (`:root` + scoped blocks) | Shipped | See `01-architecture.md` |
+| Per-panel `data-nce-theme` consumer pattern | Shipped (contract) | Downstream app wires attribute on panel root |
+| Fresh install (Task 13 step 6) | **Pending** | See `docs/fresh-install-verification.md` |
 
 ---
 
@@ -102,9 +120,9 @@ Hard-refresh browser after deploy.
 |------|--------|
 | **Workspace fixture sync** | If shortcuts stale, edit Workspace "Themes" or re-import fixture after migrate. |
 | **URL shortcuts in Desk** | Require full `https://…` URL; use **Page** shortcuts instead. |
-| **Fresh install test (Task 13 step 6)** | Pending on staging bench — see `docs/fresh-install-verification.md` |
-| **Per-page theming** | Postponed by design. |
+| **Fresh install test** | Pending on staging bench — see `docs/fresh-install-verification.md` |
 | **`dark_mode`** | Stored in `theme_json`, not emitted to CSS (by choice). |
+| **`list_themes()` slug** | API returns `name` / `theme_name` / `status` but not `slug` — consumers resolve slug via NCE Theme Link or extend API. |
 
 ---
 
@@ -112,21 +130,16 @@ Hard-refresh browser after deploy.
 
 | Concern | Path |
 |---------|------|
+| **Architecture spec** | `docs/theme-system/01-architecture.md` |
 | Editor API | `themes/api.py` |
-| CSS publish | `themes/utils/css_writer.py` |
+| CSS publish | `themes/utils/css_writer.py` (`generate_site_css`, `publish_theme`) |
+| Base theme helpers | `themes/utils/site_theme_config_helpers.py` |
 | NCE Theme | `themes/themes/doctype/nce_theme/` |
 | Site config | `themes/themes/doctype/site_theme_config/` |
 | Vue editor | `frontend/src/pages/ThemeSettingsPage.vue` |
+| Login gate | `themes/www/themes.py` |
 | Workspace | `themes/themes/workspace/themes/themes.json` |
-| Desk pages | `themes/themes/page/theme_editor/`, `site_theme_switch/` |
 | Index | `themes/CODE_INDEX.json` |
-
----
-
-## Git state
-
-- **Branch:** `master`, pushed through `190cf60`
-- **Untracked:** none (plan doc committed)
 
 ---
 
@@ -136,16 +149,17 @@ Hard-refresh browser after deploy.
 I'm working on the Themes Frappe app (repo: oliver-nce/themes, branch master).
 
 Read themes/CODE_INDEX.json first.
+Read docs/theme-system/01-architecture.md for current architecture (base_theme, scoped palettes, Active/Inactive).
 
-Current state (post Phase 4):
-- Theme definitions live on NCE Theme.theme_json (NOT Theme Version)
-- Site Theme Config has active_theme only
-- Vue editor at /themes/theme-settings with theme dropdown
-- Latest commits through 190cf60 (dropdown freeze fix)
+Current state:
+- nce_theme.css: :root (base_theme) + [data-nce-theme] per Active theme + theme-* utility classes
+- Site Theme Config.base_theme is the site-wide default
+- Per-panel theming: downstream apps set data-nce-theme="<slug>" (shipped on Themes side)
+- Vue editor at /themes/theme-settings; login gate on SPA
 
 Staging site: manager.ncesoccer.com
 
-[Describe your task here — e.g. "Remove Theme Version DocType entirely", "Add auto theme creation UX", "Fix X", etc.]
+[Describe your task here]
 
 Do not bulk-load Frappe Context — use fc_route.ts if Frappe docs needed.
 Confirm plan before code changes unless I say "go".
