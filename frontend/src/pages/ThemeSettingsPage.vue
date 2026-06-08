@@ -102,6 +102,7 @@
 							Save as new theme
 						</Button>
 						<Button
+							v-if="showRenameDeleteActions"
 							variant="solid"
 							class="theme-btn theme-btn-quiet bg-primary-100 text-primary-100-fg border border-border hover:bg-row-alt"
 							:disabled="!canRenameOrDelete"
@@ -110,6 +111,7 @@
 							Rename
 						</Button>
 						<Button
+							v-if="showRenameDeleteActions"
 							variant="solid"
 							class="theme-btn theme-btn-quiet bg-primary-100 text-primary-100-fg border border-border hover:bg-row-alt"
 							:disabled="!canRenameOrDelete"
@@ -456,6 +458,9 @@
 					title="Save as base theme"
 					hint="Rare release action: sets the site base theme, rebuilds CSS, and writes bundled files into the app for new installs. Commit and push after running."
 				>
+					<p v-if="!canSaveAsBaseTheme" class="text-sm text-gray-500 mb-3">
+						Only available when editing the Default (site base) theme.
+					</p>
 					<p class="text-sm text-gray-600 mb-3">
 						Editing <strong>{{ editorMeta.theme_name || "—" }}</strong>.
 						Requires your account password.
@@ -474,7 +479,7 @@
 						variant="solid"
 						class="bg-primary text-primary-fg border border-primary"
 						:loading="systemTab.busy"
-						:disabled="!systemTab.password || loadingTheme"
+						:disabled="!canSaveAsBaseTheme || !systemTab.password"
 						@click="requestSaveAsBaseTheme"
 					>
 						Save as base theme
@@ -529,12 +534,13 @@
 					<h3 class="text-base font-semibold text-gray-900">Save as Base Theme</h3>
 					<div class="text-sm text-gray-600 mt-2 space-y-3">
 						<p>
-							This action will overwrite any changes previously saved to the Default Theme and replace them with the current Theme settings.
+							This action will save any current change to the Default Theme.
 						</p>
 						<p>
 							The theme will be saved in the Themes application code. If the application is installed on another Frappe Bench, or migrated from one Bench to another Site, this saved theme will become the Default Theme for that installation.
 						</p>
 					</div>
+					<p v-if="saveBaseThemeDialog.error" class="text-sm text-red-600 mt-3">{{ saveBaseThemeDialog.error }}</p>
 					<div class="flex flex-wrap gap-2 justify-end mt-5">
 						<Button
 							variant="solid"
@@ -1125,6 +1131,7 @@ const confirmDialog = reactive({
 const saveBaseThemeDialog = reactive({
 	open: false,
 	busy: false,
+	error: "",
 })
 
 const saveAsDialog = reactive({
@@ -1253,6 +1260,14 @@ const canRenameOrDelete = computed(
 		canChangeStatus.value &&
 		savedThemeStatus.value === "Inactive" &&
 		!editorMeta.is_base_theme,
+)
+
+const showRenameDeleteActions = computed(
+	() => editorLoaded.value && !editorMeta.is_base_theme,
+)
+
+const canSaveAsBaseTheme = computed(
+	() => editorLoaded.value && editorMeta.is_base_theme && !loadingTheme.value,
 )
 
 function applyPayloadToForm(payload: Record<string, any>) {
@@ -1633,22 +1648,30 @@ async function submitSaveAsBaseTheme() {
 }
 
 function requestSaveAsBaseTheme() {
-	if (!systemTab.password || loadingTheme.value) return
+	if (!canSaveAsBaseTheme.value || !systemTab.password) return
+	saveBaseThemeDialog.error = ""
 	saveBaseThemeDialog.open = true
 }
 
 function closeSaveBaseThemeDialog() {
 	if (saveBaseThemeDialog.busy) return
 	saveBaseThemeDialog.open = false
+	saveBaseThemeDialog.error = ""
 }
 
 async function confirmSaveAsBaseTheme() {
 	saveBaseThemeDialog.busy = true
+	saveBaseThemeDialog.error = ""
+	systemTab.error = ""
+	systemTab.success = ""
 	try {
+		await handleSave()
 		await submitSaveAsBaseTheme()
-		closeSaveBaseThemeDialog()
-	} catch {
-		// keep dialog open; error shown on system tab
+		saveBaseThemeDialog.open = false
+	} catch (err: any) {
+		const msg = err?.message || "Could not save as base theme."
+		saveBaseThemeDialog.error = msg
+		systemTab.error = msg
 	} finally {
 		saveBaseThemeDialog.busy = false
 	}
