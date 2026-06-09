@@ -165,20 +165,21 @@
 				<EditorSection>
 					<template #title>
 						<div class="brand-colors-header">
-							<label class="brand-palette-check">
+							<h2 class="brand-colors-title">Primary and Secondary Colors</h2>
+							<label
+								class="brand-palette-toggle"
+								:class="{ 'brand-palette-toggle--off': !isCorporateBrandPalette }"
+								for="brand_palette_mode"
+							>
 								<input
+									id="brand_palette_mode"
 									type="checkbox"
+									class="brand-palette-checkbox"
 									:checked="isCorporateBrandPalette"
 									@change="onBrandPaletteModeChange"
 								/>
-								<span class="section-title editor-section-title">Primary and Secondary Colors</span>
+								<span>These are from a Brand Palette</span>
 							</label>
-							<span
-								class="brand-palette-mode-label"
-								:class="{ 'brand-palette-mode-label--active': isCorporateBrandPalette }"
-							>
-								These are from a Brand Palette
-							</span>
 						</div>
 					</template>
 					<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -1788,36 +1789,48 @@ onMounted(() => {
 .brand-colors-header {
 	display: flex;
 	align-items: center;
+	justify-content: space-between;
 	gap: 1rem;
 	flex-wrap: wrap;
+	width: 100%;
 }
 
-.brand-palette-check {
+.brand-colors-title {
+	margin: 0;
+	font-size: 0.875rem;
+	font-weight: 600;
+	text-transform: uppercase;
+	letter-spacing: 0.05em;
+	color: var(--nce-color-muted, #6b7280);
+	font-family: var(--nce-font-heading, inherit);
+}
+
+.brand-palette-toggle {
 	display: inline-flex;
 	align-items: center;
-	gap: 0.375rem;
+	gap: 0.5rem;
 	cursor: pointer;
-	white-space: nowrap;
-}
-
-.brand-palette-check .section-title {
-	margin-bottom: 0;
-}
-
-.brand-palette-check input {
-	cursor: pointer;
-}
-
-.brand-palette-mode-label {
 	font-size: calc(var(--nce-font-size, 14px) * 0.875);
 	font-weight: 500;
-	color: var(--nce-color-muted, #9ca3af);
+	color: var(--nce-color-text, #374151);
 	font-family: var(--nce-font-family, inherit);
 	white-space: nowrap;
+	user-select: none;
 }
 
-.brand-palette-mode-label--active {
-	color: var(--nce-color-text, #374151);
+.brand-palette-checkbox {
+	width: 1rem;
+	height: 1rem;
+	margin: 0;
+	flex-shrink: 0;
+	border-radius: 0.25rem;
+	border: 1px solid var(--nce-color-border, #d1d5db);
+	accent-color: var(--nce-color-primary, #3b82f6);
+	cursor: pointer;
+}
+
+.brand-palette-toggle--off span {
+	color: var(--nce-color-muted, #6b7280);
 }
 
 .editor-warn {
