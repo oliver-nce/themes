@@ -273,6 +273,7 @@ export function generateShadesFromParams(
       hex: oklchToHex(targetL, useC, hue),
     };
   });
+  return shades;
 }
 
 export function color600FromParams(params: OklchColorParams): string {
