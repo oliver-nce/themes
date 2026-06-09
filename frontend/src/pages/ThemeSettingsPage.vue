@@ -1207,6 +1207,7 @@ const {
 	editorMeta,
 	isDirty,
 	themesList,
+	editorResource,
 	saveResource,
 	renameThemeResource,
 	deleteThemeResource,
