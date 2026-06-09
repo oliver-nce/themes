@@ -40,6 +40,16 @@ themes/public/dist/*
 !themes/public/dist/theme-swatch-picker.es.js
 *.map
 
+# Generated theme CSS — published per-site from the DB theme.
+# Must NOT be tracked: deploy's `git reset --hard` would clobber the live
+# published theme with the committed default-payload build. Regenerated on
+# install (themes.install.after_install) and on every theme save/publish.
+themes/public/css/nce_theme.css
+themes/public/css/nce_theme.css.hash
+themes/public/css/nce_desk_theme.css
+themes/public/css/nce_desk_theme.css.hash
+themes/public/css/fonts.css
+
 # Cursor AI rules (symlinked from shared config)
 .cursor/
 Frappe Context
