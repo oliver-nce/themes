@@ -1,3 +1,13 @@
+"""Whitelisted Frappe API — thin wrappers over theme_service (WEB_FAMILY / DESK_FAMILY).
+
+AGENT NAVIGATION — grep "AGENT:" in this file
+  AGENT:web-read      — get_theme_editor, get_base_theme_editor, get_base_theme_payload
+  AGENT:web-write     — save_theme, create_theme, set_base_theme, save_as_base_theme
+  AGENT:web-maintain  — list/rename/delete/regenerate_theme_css
+  AGENT:web-deprecated — get_active_theme_editor, save_active_theme, set_active_theme, save_as_default
+  AGENT:desk-*        — parallel desk_* endpoints (DESK_FAMILY)
+"""
+
 from __future__ import annotations
 
 from typing import Optional
@@ -7,6 +17,9 @@ from frappe import _
 
 from themes.utils.theme_family import DESK_FAMILY, WEB_FAMILY
 from themes.utils import theme_service as svc
+
+
+# ─── AGENT:test-shims ─── backward compat for tests (prefer theme_service directly)
 
 
 def _theme_editor_response(theme_name: str) -> dict:
@@ -21,6 +34,9 @@ def _desk_theme_editor_response(theme_name: str) -> dict:
 
 def _require_system_manager():
     frappe.only_for("System Manager")
+
+
+# ─── AGENT:web-read ─── load editor payloads (DB) and app fixture (restore)
 
 
 @frappe.whitelist()
@@ -52,6 +68,9 @@ def get_base_theme_payload():
     """Return the app-bundled base theme (data/base_theme.json) for Restore to Base Theme."""
     _require_system_manager()
     return svc.get_restore_base_payload(WEB_FAMILY)
+
+
+# ─── AGENT:web-write ─── save, create, set base, bundle to app
 
 
 @frappe.whitelist()
@@ -96,6 +115,9 @@ def save_as_base_theme(theme: str, password: str):
     return svc.save_as_base(WEB_FAMILY, theme, password)
 
 
+# ─── AGENT:web-deprecated ─── legacy aliases; grep callers before removing
+
+
 @frappe.whitelist()
 def set_active_theme(theme: str):
     """DEPRECATED — remove after callers confirmed gone.
@@ -112,6 +134,9 @@ def save_as_default(theme: str):
     Legacy alias for set_base_theme (no password). Prefer save_as_base_theme().
     """
     return set_base_theme(theme)
+
+
+# ─── AGENT:web-maintain ─── list, rename, delete, regenerate CSS
 
 
 @frappe.whitelist()
@@ -142,6 +167,9 @@ def delete_theme(theme: str):
     return svc.delete(WEB_FAMILY, theme)
 
 
+# ─── AGENT:desk-read ─── desk editor payloads
+
+
 @frappe.whitelist()
 def get_desk_theme_editor(theme: str):
     """Return desk chrome payload for any NCE Desk Theme."""
@@ -168,6 +196,9 @@ def get_base_desk_theme_payload():
     """Return theme_json for the site base desk theme."""
     _require_system_manager()
     return svc.get_restore_base_payload(DESK_FAMILY)
+
+
+# ─── AGENT:desk-write ─── desk save, create, set base, bundle
 
 
 @frappe.whitelist()
@@ -219,6 +250,9 @@ def set_active_desk_theme(theme: str):
     """Set one NCE Desk Theme Active and republish desk CSS."""
     _require_system_manager()
     return svc.set_active(DESK_FAMILY, theme)
+
+
+# ─── AGENT:desk-maintain ─── desk list, rename, delete, regenerate
 
 
 @frappe.whitelist()

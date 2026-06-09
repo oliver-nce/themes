@@ -160,7 +160,7 @@
 				</button>
 			</nav>
 
-			<!-- ==================== COLORS TAB ==================== -->
+			<!-- AGENT:TAB colours — brand, neutral warmth, status, text, surface pickers -->
 			<div v-show="activeTab === 'colors'" class="editor-tab">
 				<EditorSection title="Brand Colours">
 					<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -261,7 +261,7 @@
 				</EditorSection>
 			</div>
 
-			<!-- ==================== TYPOGRAPHY TAB ==================== -->
+			<!-- AGENT:TAB typography — fonts, sizes, line height, body weight -->
 			<div v-show="activeTab === 'typography'" class="editor-tab">
 				<EditorSection title="Fonts">
 					<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -336,7 +336,7 @@
 				</EditorSection>
 			</div>
 
-			<!-- ==================== LAYOUT TAB ==================== -->
+			<!-- AGENT:TAB layout — border radius, spacing, shadow, sidebar, container -->
 			<div v-show="activeTab === 'layout'" class="editor-tab">
 				<EditorSection title="Corners">
 					<div class="flex flex-wrap gap-3">
@@ -415,7 +415,7 @@
 				</EditorSection>
 			</div>
 
-			<!-- ==================== ADVANCED TAB ==================== -->
+			<!-- AGENT:TAB advanced — custom_css, tailwind_overrides, dark_mode -->
 			<div v-show="activeTab === 'advanced'" class="editor-tab">
 				<EditorSection title="Custom CSS">
 					<textarea
@@ -452,7 +452,7 @@
 				</EditorSection>
 			</div>
 
-			<!-- ==================== SYSTEM TAB ==================== -->
+			<!-- AGENT:TAB system — Save Default to app (bundle base_theme.json + publish CSS) -->
 			<div v-show="activeTab === 'system'" class="editor-tab">
 				<EditorSection
 					title="Save as base theme"
@@ -691,7 +691,21 @@ import {
 	TRANSITION_MAP,
 } from "@/domain/theme-tokens"
 
-// ─── Preview window ───────────────────────────────────────────────
+/*
+ * AGENT NAVIGATION — ThemeSettingsPage.vue (~1750 lines, single-file editor)
+ *
+ * Template: grep "AGENT:TAB" for tab panels (colours | typography | layout | advanced | system)
+ * Script:   grep "AGENT:" below for logic sections
+ *
+ * Related files:
+ *   composables/useThemeEditor.ts  — load/save/dirty/list CRUD wiring
+ *   domain/theme-tokens.ts         — token maps (generated from theme_tokens.py)
+ *   utils/color-shades.ts          — OKLCH preview math (keep in sync with theme_color_utils.py)
+ *   themes/api.py                    — whitelisted save/get/restore endpoints
+ *   themes/data/base_theme.json      — app fixture loaded by Restore to Base Theme
+ */
+
+// ─── AGENT:preview-window ─── openPreview, postMessage to ThemePreviewPage popup
 
 const route = useRoute()
 
@@ -716,6 +730,8 @@ function openPreview() {
 		previewWin.addEventListener("load", () => pushToPreview())
 	}
 }
+
+// ─── AGENT:live-css-vars ─── computeCSSVariables, applyLiveThemeVars, pushToPreview
 
 function hexToRgb(hex: string): string {
 	if (!hex || hex.length < 7) return "0,0,0"
@@ -811,7 +827,7 @@ onUnmounted(() => {
 	if (previewWin && !previewWin.closed) previewWin.close()
 })
 
-// ─── State ────────────────────────────────────────────────────────
+// ─── AGENT:form-state ─── form reactive, DEFAULTS, ALL_FIELDS, tabs, activeTab
 
 const activeTab = ref("colors")
 
@@ -909,7 +925,7 @@ const DEFAULTS: Record<FormKey, any> = {
 
 const form = reactive<Record<FormKey, any>>({ ...DEFAULTS })
 
-// ─── Colour group definitions ─────────────────────────────────────
+// ─── AGENT:colour-fields ─── brandColors, statusColors, textColors, surfaceColors (Colours tab)
 
 const brandColors = [
 	{
@@ -955,7 +971,7 @@ const surfaceColors = [
 	{ key: "row_alt_color", label: "Alternate Row" },
 ]
 
-// ─── Select options ───────────────────────────────────────────────
+// ─── AGENT:select-options ─── fontOptions, radiusOptions, normalizeFontChoice, body weight
 
 // Retired picker options — map to Public Sans when loading saved themes.
 function normalizeFontChoice(name: string): string {
@@ -1012,7 +1028,7 @@ const lineHeightMap: Record<string, string> = {
 	loose: "2",
 }
 
-// ─── Computed helpers ─────────────────────────────────────────────
+// ─── AGENT:computed-ui ─── fontCSS, lineHeightCSS, FONT_GENERIC
 
 const FONT_GENERIC: Record<string, string> = {
 	Inter: "sans-serif",
@@ -1036,7 +1052,7 @@ const lineHeightCSS = computed(
 	() => lineHeightMap[form.line_height] || "1.5",
 )
 
-// ─── Data fetching ────────────────────────────────────────────────
+// ─── AGENT:dialog-state ─── confirmDialog, saveAsDialog, renameDialog, deleteDialog, systemTab
 
 const confirmDialog = reactive({
 	open: false,
@@ -1089,6 +1105,8 @@ function themeOptionLabel(t: {
 	const isDefault = t.is_default_theme ?? t.is_base_theme ?? t.is_active
 	return isDefault ? `${t.theme_name} · Default` : t.theme_name
 }
+
+// ─── AGENT:payload-serialization ─── buildPayloadFromForm, canonicalPayload, applyPayloadToForm
 
 function buildPayloadFromForm(): Record<string, any> {
 	const payload: Record<string, any> = {}
@@ -1197,6 +1215,8 @@ function tryLoadThemeFromQuery(themes: any[]): boolean {
 	return true
 }
 
+// ─── AGENT:useThemeEditor ─── load/save/dirty/list via composable (shared with Desk page)
+
 const {
 	saving,
 	statusSaving,
@@ -1257,6 +1277,8 @@ const {
 	},
 )
 
+// ─── AGENT:permissions ─── canChangeStatus, canRenameOrDelete, canSaveAsDefaultTheme
+
 const siteBaseThemeName = computed(() => {
 	const row = themesList.data?.find((t: any) => t.name === siteBaseTheme.value)
 	return row?.theme_name || siteBaseTheme.value || ""
@@ -1291,6 +1313,8 @@ const showRenameDeleteActions = computed(
 const canSaveAsDefaultTheme = computed(
 	() => editorLoaded.value && editorMeta.is_default_theme && !loadingTheme.value,
 )
+
+// ─── AGENT:theme-switch-dialog ─── unsaved-changes confirm when switching themes (not restore)
 
 function openConfirmDialog(action: "switch" | "restore", pendingTheme = "") {
 	confirmDialog.action = action
@@ -1354,6 +1378,8 @@ function onThemeChange() {
 	loadTheme(next)
 }
 
+// ─── AGENT:save-revert ─── handleSave, revertChanges, setThemeStatus
+
 function revertChanges() {
 	applyPayloadToForm(savedSnapshot.value)
 }
@@ -1387,6 +1413,8 @@ async function setThemeStatus(next: ThemeAvailabilityStatus) {
 		statusSaving.value = false
 	}
 }
+
+// ─── AGENT:crud-dialogs ─── save-as-new, rename, delete theme modals
 
 function openSaveAsDialog() {
 	saveAsDialog.name = `${editorMeta.theme_name || "Theme"} copy`
@@ -1489,6 +1517,8 @@ async function submitDelete() {
 	}
 }
 
+// ─── AGENT:restore-to-app-fixture ─── loads data/base_theme.json into editor (unsaved preview)
+
 async function requestRestoreToBase() {
 	if (!siteBaseTheme.value) return
 	// Skip the confirm dialog: save any current changes first, then load the
@@ -1513,6 +1543,8 @@ async function restoreToBaseConfirmed() {
 		switchError.value = err?.message || "Could not load base theme."
 	}
 }
+
+// ─── AGENT:save-default-to-app ─── bundle base_theme.json + publish nce_theme.css (System tab)
 
 async function submitSaveAsBaseTheme() {
 	systemTab.busy = true
@@ -1577,6 +1609,8 @@ function applyLiveThemeVars() {
 		if (value) root.style.setProperty(key, value)
 	}
 }
+
+// ─── AGENT:form-watch ─── deep watch form → applyLiveThemeVars + debounced preview push
 
 let pushTimer: ReturnType<typeof setTimeout> | null = null
 watch(form, () => {

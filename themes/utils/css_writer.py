@@ -1,5 +1,11 @@
 """Web theme CSS generation and publish (nce_theme.css → --nce-* tokens).
 
+AGENT NAVIGATION — key emitters:
+  _emit_var_block           — :root --nce-* CSS variables
+  _emit_role_shade_classes  — theme-bg-{role}-{shade} utility classes
+  _emit_neutral_classes     — theme-bg-surface, theme-bg-row-alt (+ legacy bg-* aliases)
+  generate_css / publish_theme — entry points
+
 Paired module: themes.utils.desk_css_writer (Desk chrome → native --*-color vars).
 
 Shared with desk_css_writer: css_publish.write_published_css(), SHA-1 css_hash,

@@ -1,4 +1,12 @@
-"""Family-parameterized theme CRUD — single implementation for Web and Desk."""
+"""Family-parameterized theme CRUD — single implementation for Web and Desk.
+
+AGENT NAVIGATION — grep "AGENT:" in this file
+  AGENT:internals       — _is_default_theme_record, _legacy_editor_flags, _is_active
+  AGENT:read            — get_editor_response, get_base_editor_response, get_restore_base_payload
+  AGENT:write           — save, create, set_base, save_as_base, set_active
+  AGENT:maintain        — list_themes, rename, delete, regenerate_css
+  AGENT:auth            — _require_password (wrong password → ValidationError, not logout)
+"""
 from __future__ import annotations
 
 import json
@@ -10,6 +18,9 @@ from frappe import _
 from frappe.utils.password import check_password
 
 from themes.utils.theme_family import DESK_FAMILY, ThemeFamily, WEB_FAMILY
+
+
+# ─── AGENT:internals ─── Default theme detection, legacy API flags, is_active semantics
 
 
 def _is_default_theme_record(*, is_default: int | bool | None, theme_name: str) -> bool:
@@ -56,6 +67,9 @@ def _legacy_editor_flags(
     return flags
 
 
+# ─── AGENT:auth ─── password gate for save_as_base (must not raise AuthenticationError)
+
+
 def _require_password(password: str) -> None:
     if not password:
         frappe.throw(_("Password is required"))
@@ -77,6 +91,9 @@ def _editor_css_hash(family: ThemeFamily, *, is_default: bool, status: str) -> O
     if is_default or status == "Active":
         return family.read_css_hash()
     return None
+
+
+# ─── AGENT:read ─── editor payloads; get_restore_base_payload reads app fixture (base_theme.json)
 
 
 def get_editor_response(family: ThemeFamily, theme_name: str) -> dict:
@@ -133,6 +150,9 @@ def _deactivate_other(family: ThemeFamily, theme: str) -> None:
         pluck="name",
     ):
         frappe.db.set_value(family.doctype, name, "status", "Inactive")
+
+
+# ─── AGENT:write ─── save/create/set_base/save_as_base/set_active
 
 
 def save(
@@ -247,6 +267,9 @@ def list_themes(family: ThemeFamily) -> list[dict]:
             status=row["status"],
         )
     return rows
+
+
+# ─── AGENT:maintain ─── rename/delete (Inactive non-Default only), regenerate_css
 
 
 def _assert_theme_manageable(family: ThemeFamily, theme: str):
