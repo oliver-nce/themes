@@ -12,15 +12,15 @@ app_logo_url = "/assets/themes/images/logo.jpg"
 # any Frappe Desk elements — downstream apps opt-in by referencing the tokens.
 
 
-def _nce_theme_css_url() -> str:
-    """Return the theme CSS URL with a ?v=<hash> cache-buster when available.
+def _css_url(css_filename: str) -> str:
+    """Return /assets/themes/css/<css_filename> with a ?v=<hash> cache-buster when available.
 
-    The hash is read from a sidecar file written by publish_theme(). This runs at
-    hooks import time, so it must be DB-free and never raise: any problem falls
-    back to the bare path. (A previous approach monkey-patched frappe.get_hooks
-    and broke boot — never do that.)
+    The hash is read from the "<css_filename>.hash" sidecar written by the publish
+    step. This runs at hooks import time, so it must be DB-free and never raise:
+    any problem falls back to the bare path. (A previous approach monkey-patched
+    frappe.get_hooks and broke boot — never do that.)
     """
-    base_url = "/assets/themes/css/nce_theme.css"
+    base_url = f"/assets/themes/css/{css_filename}"
     try:
         import os
 
@@ -28,28 +28,7 @@ def _nce_theme_css_url() -> str:
             os.path.dirname(os.path.abspath(__file__)),
             "public",
             "css",
-            "nce_theme.css.hash",
-        )
-        with open(hash_path) as f:
-            css_hash = f.read().strip()
-        if css_hash:
-            return f"{base_url}?v={css_hash}"
-    except Exception:
-        pass
-    return base_url
-
-
-def _nce_desk_theme_css_url() -> str:
-    """Return the desk theme CSS URL with a ?v=<hash> cache-buster when available."""
-    base_url = "/assets/themes/css/nce_desk_theme.css"
-    try:
-        import os
-
-        hash_path = os.path.join(
-            os.path.dirname(os.path.abspath(__file__)),
-            "public",
-            "css",
-            "nce_desk_theme.css.hash",
+            f"{css_filename}.hash",
         )
         with open(hash_path) as f:
             css_hash = f.read().strip()
@@ -61,8 +40,8 @@ def _nce_desk_theme_css_url() -> str:
 
 
 app_include_css = [
-    _nce_theme_css_url(),
-    _nce_desk_theme_css_url(),
+    _css_url("nce_theme.css"),
+    _css_url("nce_desk_theme.css"),
     "/assets/themes/dist/theme-swatch-picker.css",
 ]
 
