@@ -162,25 +162,21 @@
 
 			<!-- AGENT:TAB colours — brand, neutral warmth, status, text, surface pickers -->
 			<div v-show="activeTab === 'colors'" class="editor-tab">
-				<EditorSection>
-					<template #title>
-						<div class="brand-colors-header">
-							<h2 class="brand-colors-title">Primary and Secondary Colors</h2>
-							<label
-								class="brand-palette-toggle"
-								:class="{ 'brand-palette-toggle--off': !isCorporateBrandPalette }"
-								for="brand_palette_mode"
-							>
-								<input
-									id="brand_palette_mode"
-									type="checkbox"
-									class="brand-palette-checkbox"
-									:checked="isCorporateBrandPalette"
-									@change="onBrandPaletteModeChange"
-								/>
-								<span>These are from a Brand Palette</span>
-							</label>
-						</div>
+				<EditorSection title="Primary and Secondary Colors">
+					<template #actions>
+						<label
+							class="flex items-center gap-2 cursor-pointer text-sm font-medium text-gray-700 shrink-0"
+							for="brand_palette_mode"
+						>
+							<input
+								id="brand_palette_mode"
+								type="checkbox"
+								class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+								:checked="isCorporateBrandPalette"
+								@change="onBrandPaletteModeChange"
+							/>
+							These are from a Brand Palette
+						</label>
 					</template>
 					<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
 						<BrandColorPicker
@@ -1784,53 +1780,6 @@ onMounted(() => {
 
 .editor-status-hint-warn {
 	color: var(--nce-color-warning, #d97706);
-}
-
-.brand-colors-header {
-	display: flex;
-	align-items: center;
-	justify-content: space-between;
-	gap: 1rem;
-	flex-wrap: wrap;
-	width: 100%;
-}
-
-.brand-colors-title {
-	margin: 0;
-	font-size: 0.875rem;
-	font-weight: 600;
-	text-transform: uppercase;
-	letter-spacing: 0.05em;
-	color: var(--nce-color-muted, #6b7280);
-	font-family: var(--nce-font-heading, inherit);
-}
-
-.brand-palette-toggle {
-	display: inline-flex;
-	align-items: center;
-	gap: 0.5rem;
-	cursor: pointer;
-	font-size: calc(var(--nce-font-size, 14px) * 0.875);
-	font-weight: 500;
-	color: var(--nce-color-text, #374151);
-	font-family: var(--nce-font-family, inherit);
-	white-space: nowrap;
-	user-select: none;
-}
-
-.brand-palette-checkbox {
-	width: 1rem;
-	height: 1rem;
-	margin: 0;
-	flex-shrink: 0;
-	border-radius: 0.25rem;
-	border: 1px solid var(--nce-color-border, #d1d5db);
-	accent-color: var(--nce-color-primary, #3b82f6);
-	cursor: pointer;
-}
-
-.brand-palette-toggle--off span {
-	color: var(--nce-color-muted, #6b7280);
 }
 
 .editor-warn {
