@@ -171,10 +171,12 @@ const currentHex = computed(() => props.modelValue || color600FromParams(current
 
 const currentShades = computed(() => {
 	if (!props.showShades) return []
-	return generateShadesFromParams(
-		currentParams(),
-		pinStop600.value ? { base600Hex: props.modelValue || undefined } : undefined,
-	)
+	const hex = props.modelValue || undefined
+	// Pin 600 to picked hex when corporate, or when flexible but sliders are at default
+	// (i.e. user hasn't moved the curve yet). When sliders are active in flexible mode,
+	// let 600 shift freely with the curve so the strip reflects what will be published.
+	const shouldAnchor = isCorporate.value || (gamma.value === 0 && saturation.value === 100)
+	return generateShadesFromParams(currentParams(), shouldAnchor && hex ? { base600Hex: hex } : undefined)
 })
 
 const canReset = computed(
