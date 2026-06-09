@@ -165,6 +165,47 @@ _SHADE_TARGETS = [
 
 
 _OKLCH_L_600 = 0.48
+_L_LIGHT_END = 0.97
+_L_DARK_END = 0.16
+_SHADE_L_STD = dict(_SHADE_TARGETS)
+
+
+def _clamp_lightness(l):
+	return max(0.06, min(0.985, l))
+
+
+def _chroma_at_lightness(target_l, base_c, h):
+	max_c = _max_chroma_in_gamut(target_l, h, base_c * 1.5)
+	use_c = min(base_c, max_c)
+	use_c = _extreme_chroma_scale(target_l, use_c)
+	return min(use_c, max_c)
+
+
+def _generate_anchored_shades(base_hex):
+	"""Brand-palette scale: exact hex at 600, smooth OKLCH ramp on both sides."""
+	if not base_hex or len(base_hex) < 7:
+		return []
+
+	pinned = base_hex.upper()
+	l600, base_c, h = _hex_to_oklch(pinned)
+	light_span = _L_LIGHT_END - _OKLCH_L_600
+	dark_span = _OKLCH_L_600 - _L_DARK_END
+	result = []
+
+	for shade, l_std in _SHADE_TARGETS:
+		if shade == 600:
+			result.append((600, pinned))
+			continue
+		if shade < 600:
+			frac = max(0.0, min(1.0, (l_std - _OKLCH_L_600) / light_span)) if light_span > 0 else 0.0
+			target_l = l600 + frac * (_L_LIGHT_END - l600)
+		else:
+			frac = max(0.0, min(1.0, (_OKLCH_L_600 - l_std) / dark_span)) if dark_span > 0 else 0.0
+			target_l = l600 - frac * (l600 - _L_DARK_END)
+		target_l = _clamp_lightness(target_l)
+		use_c = _chroma_at_lightness(target_l, base_c, h)
+		result.append((shade, _oklch_to_hex(target_l, use_c, h)))
+	return result
 
 
 def _base_chroma_at_600(hue):
@@ -238,9 +279,13 @@ def _generate_shades(base_hex, gamma=0, saturation=100, pin_600_to_base=True):
 	if not base_hex or len(base_hex) < 7:
 		return []
 
-	_L, base_C, h = _hex_to_oklch(base_hex)
 	gamma = float(gamma or 0)
 	saturation = float(saturation if saturation is not None else 100)
+
+	if pin_600_to_base and gamma == 0 and saturation == 100:
+		return _generate_anchored_shades(base_hex)
+
+	_L, base_C, h = _hex_to_oklch(base_hex)
 
 	if gamma != 0 or saturation != 100:
 		base_C = _base_chroma_at_600(h) * (saturation / 100.0)
@@ -253,9 +298,6 @@ def _generate_shades(base_hex, gamma=0, saturation=100, pin_600_to_base=True):
 		use_c = _extreme_chroma_scale(target_l, use_c)
 		use_c = min(use_c, max_c)
 		result.append((shade, _oklch_to_hex(target_l, use_c, h)))
-	if pin_600_to_base and base_hex and len(base_hex) >= 7:
-		pinned = base_hex.upper()
-		result = [(s, pinned if s == 600 else hx) for s, hx in result]
 	return result
 
 

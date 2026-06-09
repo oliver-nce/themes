@@ -14,6 +14,7 @@ install_frappe_stub()
 from themes.utils.theme_color_utils import (
     _effective_role_hex,
     _generate_shades,
+    _hex_to_oklch,
     generate_neutral_shades,
     pick_fg_mono,
     pick_fg_tonal,
@@ -31,6 +32,7 @@ def _build_parity_fixture() -> dict:
         "#FFFFFF",
         "#000000",
         "#8B5CF6",
+        "#7CDE69",
     ]
     fixture = {
         "hex_inputs": hex_inputs,
@@ -76,6 +78,23 @@ class TestColorMathParity(unittest.TestCase):
             self.skipTest("golden color_math_parity.json not committed")
         golden = json.loads(GOLDEN_PATH.read_text())
         self.assertEqual(self.live, golden)
+
+    def test_anchored_brand_scale_is_monotonic_in_lightness(self):
+        """Bright brand greens must lighten smoothly toward stop 50."""
+        shades = dict(_generate_shades("#7CDE69"))
+        self.assertEqual(shades[600], "#7CDE69")
+        light_stops = [50, 100, 200, 300, 400, 500, 600]
+        prev_l = 1.0
+        for stop in light_stops:
+            l_val, _, _ = _hex_to_oklch(shades[stop])
+            self.assertLessEqual(l_val, prev_l, f"stop {stop} not darker than previous toward 600")
+            prev_l = l_val
+        dark_stops = [600, 700, 800, 900, 950]
+        prev_l = 1.0
+        for stop in dark_stops:
+            l_val, _, _ = _hex_to_oklch(shades[stop])
+            self.assertLessEqual(l_val, prev_l, f"stop {stop} not darker than previous toward 950")
+            prev_l = l_val
 
 
 if __name__ == "__main__":

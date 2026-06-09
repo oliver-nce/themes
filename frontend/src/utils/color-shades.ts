@@ -176,10 +176,61 @@ export function parseHexInput(raw: string): string | null {
   return `#${cleaned.toUpperCase()}`;
 }
 
-function withPinned600(shades: ColorShade[], base600Hex?: string): ColorShade[] {
-  if (!base600Hex || !/^#[0-9A-Fa-f]{6}$/.test(base600Hex)) return shades;
-  const hex = base600Hex.toUpperCase();
-  return shades.map((s) => (s.shade === 600 ? { shade: 600, hex } : s));
+const L_LIGHT_END = 0.97;
+const L_DARK_END = 0.16;
+
+const SHADE_L_STD = Object.fromEntries(
+  SHADE_TARGETS.map(({ shade, l }) => [shade, l]),
+) as Record<number, number>;
+
+function clampLightness(l: number): number {
+  return Math.max(0.06, Math.min(0.985, l));
+}
+
+function chromaAtLightness(targetL: number, baseC: number, h: number): number {
+  const maxC = maxChromaInGamut(targetL, h, baseC * 1.5);
+  let useC = Math.min(baseC, maxC);
+  useC = extremeChromaScale(targetL, useC);
+  return Math.min(useC, maxC);
+}
+
+/**
+ * Brand-palette scale: pin the exact hex at 600 and derive lighter/darker stops
+ * from its actual OKLCH lightness so adjacent shades never cliff.
+ */
+export function generateAnchoredShades(base600Hex: string): ColorShade[] {
+  if (!base600Hex || !/^#[0-9A-Fa-f]{6}$/.test(base600Hex)) return [];
+
+  const hex600 = base600Hex.toUpperCase();
+  const { L: l600, C: baseC, h } = hexToOklch(hex600);
+  const lightSpan = L_LIGHT_END - OKLCH_L_600;
+  const darkSpan = OKLCH_L_600 - L_DARK_END;
+
+  return SHADE_TARGETS.map(({ shade }) => {
+    if (shade === 600) {
+      return { shade: 600, hex: hex600 };
+    }
+
+    let targetL: number;
+    const lStd = SHADE_L_STD[shade];
+    if (shade < 600) {
+      const frac =
+        lightSpan > 0
+          ? Math.max(0, Math.min(1, (lStd - OKLCH_L_600) / lightSpan))
+          : 0;
+      targetL = l600 + frac * (L_LIGHT_END - l600);
+    } else {
+      const frac =
+        darkSpan > 0
+          ? Math.max(0, Math.min(1, (OKLCH_L_600 - lStd) / darkSpan))
+          : 0;
+      targetL = l600 - frac * (l600 - L_DARK_END);
+    }
+
+    targetL = clampLightness(targetL);
+    const useC = chromaAtLightness(targetL, baseC, h);
+    return { shade, hex: oklchToHex(targetL, useC, h) };
+  });
 }
 
 /** Build params from a saved 600 hex (legacy themes may omit gamma/sat). */
@@ -203,6 +254,10 @@ export function generateShadesFromParams(
   params: OklchColorParams,
   options?: { base600Hex?: string },
 ): ColorShade[] {
+  if (options?.base600Hex) {
+    return generateAnchoredShades(options.base600Hex);
+  }
+
   const { hue, gamma, saturation } = params;
   const baseC = baseChromaAt600(hue) * (saturation / 100);
 
@@ -218,7 +273,6 @@ export function generateShadesFromParams(
       hex: oklchToHex(targetL, useC, hue),
     };
   });
-  return withPinned600(shades, options?.base600Hex);
 }
 
 export function color600FromParams(params: OklchColorParams): string {
@@ -257,20 +311,7 @@ export function generateShades(
     return generateShadesFromParams(params);
   }
 
-  const { C: baseC, h } = hexToOklch(baseHex);
-
-  const shades = SHADE_TARGETS.map(({ shade, l: targetL }) => {
-    const maxC = maxChromaInGamut(targetL, h, baseC * 1.5);
-    let useC = Math.min(baseC, maxC);
-    useC = extremeChromaScale(targetL, useC);
-    useC = Math.min(useC, maxC);
-
-    return {
-      shade,
-      hex: oklchToHex(targetL, useC, h),
-    };
-  });
-  return withPinned600(shades, baseHex);
+  return generateAnchoredShades(baseHex);
 }
 
 export function isDark(hex: string): boolean {
