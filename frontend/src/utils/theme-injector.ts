@@ -8,6 +8,7 @@ import {
 } from "./color-shades"
 import {
 	BORDER_RADIUS_MAP,
+	BORDER_WIDTH_MAP,
 	CURATED_SHADES,
 	FG_SHADE_ROLES,
 	GAMMA_SAT_ROLE_FIELDS,
@@ -39,6 +40,13 @@ export function generateCSSVars(settings: Record<string, any>): string {
 
 	const radius = BORDER_RADIUS_MAP[settings.border_radius || "md"] || "0.375rem"
 	lines.push(`\t--nce-border-radius: ${radius};`)
+
+	const bwThin = BORDER_WIDTH_MAP[settings.border_width_thin || "0.5px"] || "0.5px"
+	lines.push(`\t--nce-border-width-thin: ${bwThin};`)
+	const bw = BORDER_WIDTH_MAP[settings.border_width || "1px"] || "1px"
+	lines.push(`\t--nce-border-width: ${bw};`)
+	const bwStrong = BORDER_WIDTH_MAP[settings.border_width_strong || "2px"] || "2px"
+	lines.push(`\t--nce-border-width-strong: ${bwStrong};`)
 
 	const spacing = SPACING_SCALE_MAP[settings.spacing_scale || "normal"] || "1rem"
 	lines.push(`\t--nce-spacing-base: ${spacing};`)
@@ -101,6 +109,13 @@ export function injectCSSVars(settings: Record<string, any>) {
 
 	const radius = BORDER_RADIUS_MAP[settings.border_radius || "md"] || "0.375rem"
 	root.style.setProperty("--nce-border-radius", radius)
+
+	const bwThin = BORDER_WIDTH_MAP[settings.border_width_thin || "0.5px"] || "0.5px"
+	root.style.setProperty("--nce-border-width-thin", bwThin)
+	const bw = BORDER_WIDTH_MAP[settings.border_width || "1px"] || "1px"
+	root.style.setProperty("--nce-border-width", bw)
+	const bwStrong = BORDER_WIDTH_MAP[settings.border_width_strong || "2px"] || "2px"
+	root.style.setProperty("--nce-border-width-strong", bwStrong)
 
 	const spacing = SPACING_SCALE_MAP[settings.spacing_scale || "normal"] || "1rem"
 	root.style.setProperty("--nce-spacing-base", spacing)

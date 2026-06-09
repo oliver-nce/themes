@@ -306,6 +306,9 @@
 	--nce-font-weight: 400;
 	--nce-line-height: 1.5;
 	--nce-border-radius: 0.375rem;
+	--nce-border-width-thin: 0.5px;
+	--nce-border-width: 1px;
+	--nce-border-width-strong: 2px;
 	--nce-spacing-base: 1rem;
 	--nce-shadow-color: #000000;
 	--nce-shadow: 0px 4px 8px -1px rgba(0, 0, 0, 0.15), 0px 2px 4px -2px rgba(0, 0, 0, 0.1);
@@ -810,7 +813,9 @@
 .theme-text-heading, .text-heading { color: var(--nce-color-heading); }
 .theme-text-muted, .text-muted { color: var(--nce-color-muted); }
 .theme-text-link, .text-link { color: var(--nce-color-link); }
-.theme-border, .border { border-width: 1px; border-style: solid; border-color: var(--nce-color-border); }
+.theme-border-thin, .border-thin { border-width: var(--nce-border-width-thin); border-style: solid; border-color: var(--nce-color-border); }
+.theme-border, .border { border-width: var(--nce-border-width); border-style: solid; border-color: var(--nce-color-border); }
+.theme-border-strong, .border-strong { border-width: var(--nce-border-width-strong); border-style: solid; border-color: var(--nce-color-border); }
 .theme-border-input-border, .border-input-border { border-color: var(--nce-color-border); }
 .theme-border-input-focus, .border-input-focus { border-color: var(--nce-color-focus); }
 

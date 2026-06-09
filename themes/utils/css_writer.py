@@ -25,7 +25,7 @@ from themes.utils.theme_color_utils import (
     pick_fg_mono, pick_fg_tonal,
 )
 from themes.utils.theme_tokens import (
-    BORDER_RADIUS_MAP, SPACING_SCALE_MAP, LINE_HEIGHT_MAP, TRANSITION_MAP,
+    BORDER_RADIUS_MAP, BORDER_WIDTH_MAP, SPACING_SCALE_MAP, LINE_HEIGHT_MAP, TRANSITION_MAP,
     FONT_REGISTRY, FONT_SUBSETS, FONT_BASE_URL, RETIRED_FONT_ALIASES,
     CURATED_SHADES, FG_ROLES, COLOR_FIELDS, SHADE_SCALE_FIELDS,
     GAMMA_SAT_ROLE_FIELDS, MIGRATED_FIELDS, TOKEN_FIELDS,
@@ -33,7 +33,7 @@ from themes.utils.theme_tokens import (
 
 # Re-export token contract symbols for backward compatibility (api.py, patches, tests).
 __all__ = [
-    "BORDER_RADIUS_MAP", "SPACING_SCALE_MAP", "LINE_HEIGHT_MAP", "TRANSITION_MAP",
+    "BORDER_RADIUS_MAP", "BORDER_WIDTH_MAP", "SPACING_SCALE_MAP", "LINE_HEIGHT_MAP", "TRANSITION_MAP",
     "FONT_REGISTRY", "FONT_SUBSETS", "FONT_BASE_URL", "RETIRED_FONT_ALIASES",
     "CURATED_SHADES", "FG_ROLES", "COLOR_FIELDS", "SHADE_SCALE_FIELDS",
     "GAMMA_SAT_ROLE_FIELDS", "MIGRATED_FIELDS", "TOKEN_FIELDS",
@@ -256,6 +256,9 @@ def _emit_var_block(g, lines, selector=":root", include_custom_css=True):
     lines.append(f"\t--nce-font-weight: {g('font_weight_body') or '400'};")
     lines.append(f"\t--nce-line-height: {LINE_HEIGHT_MAP.get(g('line_height') or 'normal', '1.5')};")
     lines.append(f"\t--nce-border-radius: {BORDER_RADIUS_MAP.get(g('border_radius') or 'md', '0.375rem')};")
+    lines.append(f"\t--nce-border-width-thin: {BORDER_WIDTH_MAP.get(g('border_width_thin') or '0.5px', '0.5px')};")
+    lines.append(f"\t--nce-border-width: {BORDER_WIDTH_MAP.get(g('border_width') or '1px', '1px')};")
+    lines.append(f"\t--nce-border-width-strong: {BORDER_WIDTH_MAP.get(g('border_width_strong') or '2px', '2px')};")
     lines.append(f"\t--nce-spacing-base: {SPACING_SCALE_MAP.get(g('spacing_scale') or 'normal', '1rem')};")
     sc = g("shadow_color") or "#000000"
     lines.append(f"\t--nce-shadow-color: {sc};")
@@ -370,9 +373,21 @@ def _emit_neutral_classes(g, lines):
     if g("border_color"):
         _emit_prefixed_rule(
             lines,
+            "theme-border-thin",
+            "border-thin",
+            "border-width: var(--nce-border-width-thin); border-style: solid; border-color: var(--nce-color-border);",
+        )
+        _emit_prefixed_rule(
+            lines,
             "theme-border",
             "border",
-            "border-width: 1px; border-style: solid; border-color: var(--nce-color-border);",
+            "border-width: var(--nce-border-width); border-style: solid; border-color: var(--nce-color-border);",
+        )
+        _emit_prefixed_rule(
+            lines,
+            "theme-border-strong",
+            "border-strong",
+            "border-width: var(--nce-border-width-strong); border-style: solid; border-color: var(--nce-color-border);",
         )
         _emit_prefixed_rule(
             lines,

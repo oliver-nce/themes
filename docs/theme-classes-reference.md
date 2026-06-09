@@ -67,12 +67,22 @@ For each role above, these shade classes exist. Substitute `{role}` ∈ {primary
 
 ## Borders & Focus
 
-| Class | Var | Purpose |
+| Class | Color var | Width var | Purpose |
+|---|---|---|---|
+| `theme-border-thin` | `--nce-color-border` | `--nce-border-width-thin` | Hairline border (0.5px default) — subtle separators on high-density screens |
+| `theme-border` | `--nce-color-border` | `--nce-border-width` | Standard card edges, dividers, inputs (1px default) |
+| `theme-border-strong` | `--nce-color-border` | `--nce-border-width-strong` | Heavier border for table headers, active tabs (2px default) |
+| `theme-border-input-border` | `--nce-color-border` | — | Form input idle border color only |
+| `theme-border-input-focus` | `--nce-color-focus` | — | Form input focused border color only |
+| (focus ring — manual, not emitted) | `--nce-color-focus` | — | Keyboard focus ring |
+
+**Width vars for directional use** (e.g. `border-bottom` in scoped CSS):
+
+| Var | Default | Set via |
 |---|---|---|
-| `theme-border` | `--nce-color-border` | Card edges, dividers, inputs (1px solid) |
-| `theme-border-input-border` | `--nce-color-border` | Form input idle border |
-| `theme-border-input-focus` | `--nce-color-focus` | Form input focused border |
-| (focus ring — manual, not emitted) | `--nce-color-focus` | Keyboard focus ring |
+| `--nce-border-width-thin` | `0.5px` | Theme editor → Line Widths → Thin |
+| `--nce-border-width` | `1px` | Theme editor → Line Widths → Normal |
+| `--nce-border-width-strong` | `2px` | Theme editor → Line Widths → Strong |
 
 ---
 

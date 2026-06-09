@@ -7,6 +7,12 @@
     "sm": "0.125rem",
     "x-lg": "0.75rem"
   },
+  "borderWidthMap": {
+    "0.5px": "0.5px",
+    "1px": "1px",
+    "2px": "2px",
+    "3px": "3px"
+  },
   "colorFields": {
     "accent_color": "color-accent",
     "background_color": "color-bg",
@@ -310,6 +316,9 @@
     "line_height",
     "font_weight_body",
     "border_radius",
+    "border_width_thin",
+    "border_width",
+    "border_width_strong",
     "spacing_scale",
     "shadow",
     "shadow_color",

@@ -354,7 +354,7 @@
 
 			<!-- AGENT:TAB layout — border radius, spacing, shadow, sidebar, container -->
 			<div v-show="activeTab === 'layout'" class="editor-tab">
-				<EditorSection title="Corners">
+			<EditorSection title="Corners">
 					<div class="flex flex-wrap gap-3">
 						<div
 							v-for="r in radiusOptions"
@@ -369,7 +369,27 @@
 					</div>
 				</EditorSection>
 
-				<EditorSection title="Spacing &amp; Shadows">
+				<EditorSection title="Line Widths" hint="Controls border and divider thickness. 'Normal' is used for cards and inputs; 'Strong' for table headers and tab underlines; 'Thin' for subtle hairlines on high-density screens.">
+					<div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+						<SelectField
+							label="Thin"
+							:options="borderWidthOptions"
+							v-model="form.border_width_thin"
+						/>
+						<SelectField
+							label="Normal"
+							:options="borderWidthOptions"
+							v-model="form.border_width"
+						/>
+						<SelectField
+							label="Strong"
+							:options="borderWidthOptions"
+							v-model="form.border_width_strong"
+						/>
+					</div>
+				</EditorSection>
+
+			<EditorSection title="Spacing &amp; Shadows">
 					<div class="grid grid-cols-1 md:grid-cols-3 gap-6">
 						<SelectField
 							label="Spacing Scale"
@@ -695,6 +715,7 @@ import PasswordField from "@/components/PasswordField.vue"
 import SwatchPicker from "@/components/SwatchPicker.vue"
 import {
 	BORDER_RADIUS_MAP,
+	BORDER_WIDTH_MAP,
 	COLOR_VAR_MAP,
 	CURATED_SHADES,
 	FONT_OPTIONS,
@@ -819,6 +840,9 @@ function computeCSSVariables(): Record<string, string> {
 	if (form.font_weight_body) vars["--nce-font-weight"] = form.font_weight_body
 	if (form.line_height) vars["--nce-line-height"] = LINE_HEIGHT_MAP[form.line_height] || "1.5"
 	if (form.border_radius) vars["--nce-border-radius"] = BORDER_RADIUS_MAP[form.border_radius] || "0.375rem"
+	if (form.border_width_thin) vars["--nce-border-width-thin"] = BORDER_WIDTH_MAP[form.border_width_thin] || "0.5px"
+	if (form.border_width) vars["--nce-border-width"] = BORDER_WIDTH_MAP[form.border_width] || "1px"
+	if (form.border_width_strong) vars["--nce-border-width-strong"] = BORDER_WIDTH_MAP[form.border_width_strong] || "2px"
 	if (form.spacing_scale) {
 		vars["--nce-spacing-base"] = SPACING_SCALE_MAP[form.spacing_scale] || "1rem"
 	}
@@ -916,6 +940,9 @@ const ALL_FIELDS = [
 	"line_height",
 	"font_weight_body",
 	"border_radius",
+	"border_width_thin",
+	"border_width",
+	"border_width_strong",
 	"spacing_scale",
 	"shadow",
 	"shadow_color",
@@ -961,6 +988,9 @@ const DEFAULTS: Record<FormKey, any> = {
 	line_height: "normal",
 	font_weight_body: "400",
 	border_radius: "md",
+	border_width_thin: "0.5px",
+	border_width: "1px",
+	border_width_strong: "2px",
 	spacing_scale: "normal",
 	shadow: "md",
 	shadow_color: "#000000",
@@ -1070,6 +1100,7 @@ function onBodyWeightInput(e: Event) {
 	form.font_weight_body = String((e.target as HTMLInputElement).value)
 }
 const radiusOptions = ["none", "sm", "md", "lg", "x-lg"]
+const borderWidthOptions = ["0.5px", "1px", "2px", "3px"]
 const spacingOptions = ["tight", "normal", "relaxed"]
 const shadowOptions = ["none", "sm", "md", "lg", "xl", "2xl", "3xl"]
 const sidebarOptions = ["200px", "220px", "240px", "260px", "280px"]

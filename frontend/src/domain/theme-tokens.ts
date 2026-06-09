@@ -22,6 +22,12 @@ export const BORDER_RADIUS_MAP: Record<string, string> = {
 "x-lg": "0.75rem",
 "full": "0.75rem",
 }
+export const BORDER_WIDTH_MAP: Record<string, string> = {
+"0.5px": "0.5px",
+"1px": "1px",
+"2px": "2px",
+"3px": "3px",
+}
 export const SPACING_SCALE_MAP: Record<string, string> = {
 "tight": "0.75rem",
 "normal": "1rem",
@@ -117,5 +123,5 @@ export const RETIRED_FONT_ALIASES: Record<string, string> = {
 "DM Sans": "Public Sans",
 }
 export const FONT_OPTIONS: readonly string[] = ["Inter", "Source Sans 3", "Public Sans", "Open Sans", "Roboto", "Nunito", "Source Serif 4", "JetBrains Mono", "System Default"] as const
-export const TOKEN_FIELDS: readonly string[] = ["primary_color", "secondary_color", "accent_color", "success_color", "info_color", "warning_color", "danger_color", "neutral_color", "text_color", "heading_color", "muted_color", "link_color", "focus_color", "background_color", "surface_color", "border_color", "row_alt_color", "font_family", "heading_font_family", "font_size", "line_height", "font_weight_body", "border_radius", "spacing_scale", "shadow", "shadow_color", "transition_speed", "sidebar_width", "container_max_width", "tailwind_overrides", "custom_css", "dark_mode", "primary_color_gamma", "primary_color_saturation", "secondary_color_gamma", "secondary_color_saturation", "neutral_color_warmth", "neutral_color_shades"] as const
+export const TOKEN_FIELDS: readonly string[] = ["primary_color", "secondary_color", "accent_color", "success_color", "info_color", "warning_color", "danger_color", "neutral_color", "text_color", "heading_color", "muted_color", "link_color", "focus_color", "background_color", "surface_color", "border_color", "row_alt_color", "font_family", "heading_font_family", "font_size", "line_height", "font_weight_body", "border_radius", "border_width_thin", "border_width", "border_width_strong", "spacing_scale", "shadow", "shadow_color", "transition_speed", "sidebar_width", "container_max_width", "tailwind_overrides", "custom_css", "dark_mode", "primary_color_gamma", "primary_color_saturation", "secondary_color_gamma", "secondary_color_saturation", "neutral_color_warmth", "neutral_color_shades", "brand_palette_mode"] as const
 

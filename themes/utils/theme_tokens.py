@@ -16,6 +16,13 @@ BORDER_RADIUS_MAP = {
 	"full": "0.75rem",  # legacy — was pill/circle; now maps to x-lg
 }
 
+BORDER_WIDTH_MAP = {
+	"0.5px": "0.5px",
+	"1px": "1px",
+	"2px": "2px",
+	"3px": "3px",
+}
+
 SPACING_SCALE_MAP = {
 	"tight": "0.75rem",
 	"normal": "1rem",
@@ -138,6 +145,9 @@ MIGRATED_FIELDS = list(COLOR_FIELDS.keys()) + [
 	"line_height",
 	"font_weight_body",
 	"border_radius",
+	"border_width_thin",
+	"border_width",
+	"border_width_strong",
 	"spacing_scale",
 	"shadow",
 	"shadow_color",
@@ -176,6 +186,7 @@ def export_token_contract() -> dict:
 
 	return {
 		"borderRadiusMap": BORDER_RADIUS_MAP,
+		"borderWidthMap": BORDER_WIDTH_MAP,
 		"spacingScaleMap": SPACING_SCALE_MAP,
 		"lineHeightMap": LINE_HEIGHT_MAP,
 		"transitionMap": TRANSITION_MAP,

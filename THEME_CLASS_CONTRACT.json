@@ -124,10 +124,15 @@
     "link":          { "class": "theme-text-link", "var": "--nce-color-link", "purpose": "Hyperlinks.", "status": "shipping" }
   },
   "border_and_focus": {
-    "default_border": { "class": "theme-border", "var": "--nce-color-border", "purpose": "Card edges, dividers, input borders (1px solid).", "status": "shipping" },
-    "input_border":   { "class": "theme-border-input-border", "var": "--nce-color-border", "purpose": "Form input idle border.", "status": "shipping" },
-    "input_focus":    { "class": "theme-border-input-focus", "var": "--nce-color-focus", "purpose": "Form input focused border.", "status": "shipping" },
-    "focus_ring":     { "class": "(manual — not emitted)", "var": "--nce-color-focus", "purpose": "Keyboard focus ring color.", "status": "var-only" }
+    "border_thin":    { "class": "theme-border-thin", "var": "--nce-color-border", "width_var": "--nce-border-width-thin", "purpose": "Hairline border — 0.5px default, reliable on high-density screens. Use for subtle separators.", "status": "shipping" },
+    "default_border": { "class": "theme-border", "var": "--nce-color-border", "width_var": "--nce-border-width", "purpose": "Standard card edges, dividers, input borders. Width follows --nce-border-width (1px default).", "status": "shipping" },
+    "border_strong":  { "class": "theme-border-strong", "var": "--nce-color-border", "width_var": "--nce-border-width-strong", "purpose": "Heavier border for table headers, active tab underlines, prominent dividers. 2px default.", "status": "shipping" },
+    "input_border":   { "class": "theme-border-input-border", "var": "--nce-color-border", "purpose": "Form input idle border color only — pair with theme-border for width.", "status": "shipping" },
+    "input_focus":    { "class": "theme-border-input-focus", "var": "--nce-color-focus", "purpose": "Form input focused border color only.", "status": "shipping" },
+    "focus_ring":     { "class": "(manual — not emitted)", "var": "--nce-color-focus", "purpose": "Keyboard focus ring color.", "status": "var-only" },
+    "border_width_thin_var":   { "class": "(var-only)", "var": "--nce-border-width-thin", "purpose": "Raw CSS var for thin border width. Use in directional CSS: border-bottom: var(--nce-border-width-thin) solid var(--nce-color-border)", "status": "var-only" },
+    "border_width_var":        { "class": "(var-only)", "var": "--nce-border-width", "purpose": "Raw CSS var for normal border width.", "status": "var-only" },
+    "border_width_strong_var": { "class": "(var-only)", "var": "--nce-border-width-strong", "purpose": "Raw CSS var for strong border width. Use for table headers, active tabs.", "status": "var-only" }
   },
   "typography": {
     "font_body":    { "class": "theme-font-sans", "var": "--nce-font-family", "purpose": "Body font.", "status": "shipping" },

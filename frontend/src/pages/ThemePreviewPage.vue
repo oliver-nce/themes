@@ -660,10 +660,10 @@ onUnmounted(() => window.removeEventListener("message", handleMessage))
 .table-header {
 	background-color: var(--nce-color-surface, #f9fafb);
 	color: var(--nce-color-heading, #111827);
-	border-bottom: 2px solid var(--nce-color-border, #e5e7eb);
+	border-bottom: var(--nce-border-width-strong, 2px) solid var(--nce-color-border, #e5e7eb);
 }
 .table-row {
-	border-bottom: 1px solid var(--nce-color-border, #e5e7eb);
+	border-bottom: var(--nce-border-width, 1px) solid var(--nce-color-border, #e5e7eb);
 	transition: background-color var(--nce-transition-speed, 200ms) ease;
 }
 .table-row:hover {

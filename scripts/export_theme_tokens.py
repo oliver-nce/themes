@@ -73,6 +73,7 @@ def render_ts(contract: dict) -> str:
 		f"export const GAMMA_SAT_ROLE_FIELDS = new Set<string>({json.dumps(c['gammaSatRoleFields'])})",
 		"",
 		f"export const BORDER_RADIUS_MAP: Record<string, string> = {_ts_object(c['borderRadiusMap'], 0)}",
+		f"export const BORDER_WIDTH_MAP: Record<string, string> = {_ts_object(c['borderWidthMap'], 0)}",
 		f"export const SPACING_SCALE_MAP: Record<string, string> = {_ts_object(c['spacingScaleMap'], 0)}",
 		f"export const LINE_HEIGHT_MAP: Record<string, string> = {_ts_object(c['lineHeightMap'], 0)}",
 		f"export const TRANSITION_MAP: Record<string, string> = {_ts_object(c['transitionMap'], 0)}",
