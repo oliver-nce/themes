@@ -1,55 +1,78 @@
 {
-    "version": 1,
+    "version": 2,
     "description": "Machine-readable index of every module in the Themes Frappe app. Read this file FIRST before exploring the codebase — it tells you exactly where to look for any given concern.",
     "modules": {
         "themes": {
-            "purpose": "Frappe custom app for site-wide CSS theming",
+            "purpose": "Frappe custom app for site-wide CSS theming (Web tokens → --nce-*) and Frappe Desk chrome theming (Desk tokens → native --*-color)",
             "entry_points": {
-                "hooks.py": "Frappe app metadata, CSS/JS loading (nce_theme.css + theme-swatch-picker), SPA routing, Apps screen entry, after_install",
-                "api.py": "Whitelisted API: get_theme_editor(), get_base_theme_payload(), save_theme(), save_as_base_theme(), create_theme(), list_themes(), rename_theme(), delete_theme()",
-                "install.py": "after_install hook: Site Theme Config + NCE Theme Default on fresh install",
-                "init_theme.py": "One-time init script: ensure NCE Theme Default exists and publish CSS. Run via bench execute.",
+                "hooks.py": "Frappe app metadata, CSS/JS loading (nce_theme.css + nce_desk_theme.css + theme-swatch-picker), SPA routing, Apps screen entry, after_install",
+                "api.py": "Whitelisted API — Web: get_theme_editor(), get_base_theme_editor(), save_theme(), set_base_theme(), save_as_base_theme(), create_theme(), list_themes(), rename_theme(), delete_theme(), regenerate_theme_css(). Desk: mirrored get/save/set_base/create/list/rename/delete/regenerate with desk_ prefix. Legacy aliases: get_active_theme_editor, save_active_theme, set_active_theme, save_as_default (Web); get_active_desk_theme_editor, save_active_desk_theme, set_active_desk_theme (Desk).",
+                "install.py": "after_install hook: Site Theme Config + NCE Theme Default + NCE Desk Theme Default on fresh install",
+                "init_theme.py": "One-time init script: ensure NCE Theme Default exists and publish Web CSS. Run via bench execute.",
+                "init_desk_theme.py": "One-time init script: ensure NCE Desk Theme Default exists and publish Desk CSS. Run via bench execute.",
+                "verify_fresh_install.py": "Post-install verification script for theme + desk theme bootstrap",
                 "patches/v1_0/migrate_theme_settings_to_nce_theme.py": "Post-migrate patch: legacy Theme Settings → NCE Theme Default",
                 "patches/v1_0/collapse_theme_versions_to_nce_theme.py": "Copy legacy Theme Version JSON onto NCE Theme.theme_json",
-                "patches/v1_0/remove_legacy_theme_doctypes.py": "Drop Theme Version and Theme Settings from database"
+                "patches/v1_0/remove_legacy_theme_doctypes.py": "Drop Theme Version and Theme Settings from database",
+                "patches/v1_0/add_base_desk_theme_field.py": "Add base_desk_theme to Site Theme Config",
+                "patches/v1_0/bootstrap_default_desk_theme.py": "Bootstrap NCE Desk Theme Default on migrate",
+                "patches/v1_0/sync_themes_workspace.py": "Sync Themes workspace shortcuts"
             },
             "utils": {
-                "utils/theme_color_utils.py": "Color math helpers: OKLCH shade generation, _effective_role_hex (gamma-aware 600 stop), shadow building, token maps (BORDER_RADIUS_MAP, etc.)",
-                "utils/css_writer.py": "CSS generation and publish: generate_css(), generate_site_css(), publish_theme(), TOKEN_FIELDS",
+                "utils/theme_color_utils.py": "Color math helpers: OKLCH shade generation, _effective_role_hex (gamma-aware 600 stop), shadow building, token maps (BORDER_RADIUS_MAP, SHADOW_DEFS, etc.). Keep in sync with frontend/src/utils/color-shades.ts",
+                "utils/css_writer.py": "Web CSS generation and publish: generate_css(), generate_site_css(), publish_theme(), TOKEN_FIELDS, ROLES, CURATED_SHADES. Paired with desk_css_writer.py — see module header.",
+                "utils/desk_css_writer.py": "Desk CSS generation and publish: generate_desk_css(), publish_desk_theme(), DESK_TOKEN_FIELDS. Paired with css_writer.py — see module header.",
                 "utils/bundle_base_theme.py": "bundle_base_theme_to_app() — write base_theme.json + default_theme.py for new installs",
-                "data/base_theme.json": "Bundled base theme payload (updated by save_as_base_theme)",
-                "utils/default_theme.py": "Default token payload for new NCE Theme installs"
+                "utils/bundle_base_desk_theme.py": "bundle_base_desk_theme_to_app() — write base_desk_theme.json + default_desk_theme.py for new installs",
+                "utils/site_theme_config_helpers.py": "Read/write Site Theme Config base_theme and base_desk_theme (includes legacy active_theme tolerance)",
+                "utils/workspace_sync.py": "Sync Themes workspace shortcuts after install/migrate",
+                "data/base_theme.json": "Bundled Web base theme payload (updated by save_as_base_theme)",
+                "data/base_desk_theme.json": "Bundled Desk base theme payload (updated by save_as_base_desk_theme)",
+                "utils/default_theme.py": "Default Web token payload for new NCE Theme installs",
+                "utils/default_desk_theme.py": "Default Desk token payload for new NCE Desk Theme installs"
             },
             "doctypes": {
-                "themes/doctype/nce_theme/": "Theme registry + definition: theme_name, slug, is_default, status, theme_json.",
-                "themes/doctype/site_theme_config/": "Single: base_theme, css_hash; on_update publishes CSS."
+                "themes/doctype/nce_theme/": "Web theme registry: theme_name, slug, is_default, status, theme_json. on_update republishes when Active or site base.",
+                "themes/doctype/nce_desk_theme/": "Desk theme registry: same shape as NCE Theme; single Active enforced at save time.",
+                "themes/doctype/site_theme_config/": "Single: base_theme, base_desk_theme, css_hash; on_update publishes Web CSS."
             },
             "static_files": {
-                "public/css/": "Generated theme CSS (nce_theme.css)",
+                "public/css/": "Generated theme CSS (nce_theme.css, nce_desk_theme.css) + sidecar .hash files for hooks cache-busting",
                 "public/dist/": "ThemeSwatchPicker widget build output (committed: theme-swatch-picker.umd.js/css/es.js; rebuild with npm run build:widget in frontend/)",
                 "public/frontend/": "Vue SPA build output (regenerated by Vite)",
                 "www/themes.html": "SPA entry point template"
             },
             "pages": {
                 "themes/page/theme_editor/": "Desk Page redirect → /themes/theme-settings",
+                "themes/page/desk_theme_editor/": "Desk Page redirect → /themes/desk-theme-settings",
                 "themes/page/site_theme_switch/": "Desk Page redirect → Site Theme Config form"
+            },
+            "tests": {
+                "tests/test_css_snapshots.py": "Golden-file regression tests for generate_css / generate_site_css / desk CSS output",
+                "tests/test_api_contract.py": "Response shape tests for _theme_editor_response and _desk_theme_editor_response",
+                "tests/test_color_math_parity.py": "Python side of color-math parity vs frontend color-shades.ts",
+                "tests/golden/": "Committed golden CSS + hash sidecars and color_math_parity.json"
             }
         },
         "frontend": {
-            "purpose": "Vue 3 SPA for theme configuration and preview",
+            "purpose": "Vue 3 SPA for Web and Desk theme configuration and preview",
             "key_files": {
                 "src/router.ts": "Vue Router config — maps /themes/* paths to page components",
                 "src/main.ts": "App entry point",
                 "src/App.vue": "Root component with sidebar navigation"
             },
             "pages": {
-                "src/pages/ThemeSettingsPage.vue": "Main theme configuration UI (tabbed: Colors, Typography, Layout, Advanced)",
-                "src/pages/ThemePreviewPage.vue": "Live theme preview page",
-                "src/pages/HomePage.vue": "Landing page with links to settings and preview"
+                "src/pages/ThemeSettingsPage.vue": "Web theme configuration UI (tabbed: Colors, Typography, Layout, Advanced) — large god-component; token maps duplicated from css_writer.py",
+                "src/pages/DeskThemeSettingsPage.vue": "Desk chrome theme configuration UI — structural clone of Web editor",
+                "src/pages/ThemePreviewPage.vue": "Live Web theme preview page",
+                "src/pages/DeskThemePreviewPage.vue": "Live Desk theme preview page",
+                "src/pages/HomePage.vue": "Web themes landing page",
+                "src/pages/DeskThemeHomePage.vue": "Desk themes landing page"
             },
             "composables": {
-                "src/composables/useTheme.ts": "Loads active theme via get_active_theme_editor API and applies CSS vars",
-                "src/composables/useThemeDefaults.ts": "Default theme color/typography values"
+                "src/composables/useTheme.ts": "Loads site base Web theme via get_active_theme_editor API (legacy alias for get_base_theme_editor) and applies CSS vars",
+                "src/composables/useDeskTheme.ts": "Loads Active Desk theme via get_active_desk_theme_editor API and applies Desk CSS vars",
+                "src/composables/useThemeDefaults.ts": "Default theme color/typography values for editor seeding"
             },
             "components": {
                 "src/components/BrandColorPicker.vue": "Brand color picker with swatch presets",
@@ -58,7 +81,7 @@
                 "src/components/ThemePreview.vue": "Mini theme preview component"
             },
             "widget": {
-                "src/widget/constants.ts": "Roles, kinds, curated shades — mirrors css_writer.py",
+                "src/widget/constants.ts": "Roles, kinds, curated shades — mirrors css_writer.py (keep in sync comment)",
                 "src/widget/class-utils.ts": "parseThemeClass / composeThemeClass",
                 "src/widget/theme-swatch-picker-core.ts": "Framework-agnostic modal DOM core (open/close)",
                 "src/widget/theme-swatch-picker.css": "Widget modal layout styles (backdrop z-index 10000 blocks host form)",
@@ -70,7 +93,7 @@
             },
             "utilities": {
                 "src/utils/theme-injector.ts": "CSS variable injection utility",
-                "src/utils/color-shades.ts": "OKLCH shade generation (11-stop scale)",
+                "src/utils/color-shades.ts": "OKLCH shade generation (11-stop scale) — keep in sync with theme_color_utils.py",
                 "tailwind.config.js": "Maps Tailwind utilities to --nce-* CSS tokens"
             }
         }
@@ -84,12 +107,15 @@
         }
     },
     "architecture_notes": [
-        "Theme uses CSS custom properties (--nce-*) injected as :root vars (default) plus [data-nce-theme=\"slug\"] scoped blocks per Active theme — downstream apps consume via var() or data-nce-theme scoping",
-        "Theme CSS is loaded site-wide via app_include_css in hooks.py",
+        "Web theme uses CSS custom properties (--nce-*) injected as :root vars (base theme) plus [data-nce-theme=\"slug\"] scoped blocks per Active theme — downstream apps consume via var() or data-nce-theme scoping",
+        "Desk theme uses native Frappe Desk CSS variables (--primary-color, --bg-color, etc.) emitted to :root from nce_desk_theme.css",
+        "Web and Desk CSS loaded site-wide via app_include_css in hooks.py (nce_theme.css + nce_desk_theme.css)",
+        "is_active semantics DIFFER intentionally: Web is_active == is_base (site base theme); Desk is_active == status=='Active' (single active enforced). Do NOT unify without product sign-off.",
         "Vue SPA is served at /themes/* routes via www/themes.html",
         "ThemeSwatchPicker Desk: themeField = NCE Theme Link doc name → resolveNceThemeSlug before data-nce-theme; empty/invalid theme → blocked-dialog, no modal",
         "ThemeSwatchPicker while open: slug cached at open time; backdrop blocks host form (no watchThemeSlug)",
         "theme-bg-* classes auto-pair foreground (color: var(--nce-*-fg)) — consumers should not hardcode theme-text-primary-fg on children inside a dynamic bg surface",
-        "ThemeSwatchPicker Vue embed: pass :set-field/:get-field to host formData — Desk uses frm.set_value via desk-adapter.ts; Vue wrapper does not. See docs/theme-swatch-picker.md §8.1. Page Panel chrome is Desk-only today."
+        "ThemeSwatchPicker Vue embed: pass :set-field/:get-field to host formData — Desk uses frm.set_value via desk-adapter.ts; Vue wrapper does not. See docs/theme-swatch-picker.md §8.1. Page Panel chrome is Desk-only today.",
+        "Refactoring plan: plans/REFACTORING_PLAN.md — build tests/golden before consolidating duplicated token tables."
     ]
 }

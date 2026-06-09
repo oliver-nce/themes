@@ -1,3 +1,14 @@
+"""Web theme CSS generation and publish (nce_theme.css → --nce-* tokens).
+
+Paired module: themes.utils.desk_css_writer (Desk chrome → native --*-color vars).
+
+Shared with desk_css_writer: _write_css/_write_hash sidecar pattern, SHA-1 css_hash,
+cache.delete_value("assets_json"), frappe.clear_cache() — publish tail only; content
+generation differs (OKLCH shade classes vs flat Desk var blocks).
+
+Token tables and color math live in theme_color_utils.py; keep in sync with
+frontend/src/utils/color-shades.ts and src/widget/constants.ts.
+"""
 import json
 import os
 import hashlib

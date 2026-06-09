@@ -1,3 +1,13 @@
+"""Desk theme CSS generation and publish (nce_desk_theme.css → Frappe Desk vars).
+
+Paired module: themes.utils.css_writer (Web site tokens → --nce-* classes and vars).
+
+Shared with css_writer: file write + .hash sidecar + assets_json cache bust — publish
+tail only. Content generation is intentionally different: flat DESK_CSS_VARS on :root,
+no OKLCH shade scale or theme-bg-* class layer.
+
+See themes/CODE_INDEX.json and plans/REFACTORING_PLAN.md for consolidation notes.
+"""
 from __future__ import annotations
 
 import hashlib

@@ -45,12 +45,14 @@ def _theme_editor_response(theme_name: str) -> dict:
     css_hash = None
     if is_base:
         css_hash = frappe.db.get_single_value("Site Theme Config", "css_hash")
+    # NOTE: Web is_active == is_base; Desk is_active == status=='Active'.
+    # These are intentionally different — do not unify without product sign-off.
     return {
         "theme": theme.name,
         "theme_name": theme.theme_name,
         "status": theme.status,
         "is_base_theme": is_base,
-        "is_active": is_base,  # legacy alias
+        "is_active": is_base,  # legacy alias — Web: same as is_base_theme
         "site_base_theme": base,
         "site_active_theme": base,  # legacy alias
         "css_hash": css_hash,
@@ -86,7 +88,11 @@ def get_base_theme_editor():
 
 @frappe.whitelist()
 def get_active_theme_editor():
-    """Legacy alias for get_base_theme_editor."""
+    """DEPRECATED — remove after callers confirmed gone.
+
+    Legacy alias for get_base_theme_editor(). Still called from frontend useTheme.ts.
+    Prefer get_base_theme_editor() or get_theme_editor(theme).
+    """
     return get_base_theme_editor()
 
 
@@ -132,7 +138,10 @@ def save_theme(theme: str, payload, status: Optional[str] = None):
 
 @frappe.whitelist()
 def save_active_theme(payload):
-    """Legacy: save the site base theme."""
+    """DEPRECATED — remove after callers confirmed gone.
+
+    Legacy: save the site base theme. Prefer save_theme(base, payload).
+    """
     frappe.only_for("System Manager")
     base = get_site_base_theme_name()
     if not base:
@@ -202,13 +211,19 @@ def save_as_base_theme(theme: str, password: str):
 
 @frappe.whitelist()
 def set_active_theme(theme: str):
-    """Legacy alias for set_base_theme."""
+    """DEPRECATED — remove after callers confirmed gone.
+
+    Legacy alias for set_base_theme(). Prefer set_base_theme(theme).
+    """
     return set_base_theme(theme)
 
 
 @frappe.whitelist()
 def save_as_default(theme: str):
-    """Legacy alias for set_base_theme (no password — prefer save_as_base_theme)."""
+    """DEPRECATED — remove after callers confirmed gone.
+
+    Legacy alias for set_base_theme (no password). Prefer save_as_base_theme().
+    """
     return set_base_theme(theme)
 
 
@@ -319,12 +334,14 @@ def _desk_theme_editor_response(theme_name: str) -> dict:
     css_hash = None
     if is_base or theme.status == "Active":
         css_hash = _read_desk_css_hash()
+    # NOTE: Web is_active == is_base; Desk is_active == status=='Active'.
+    # These are intentionally different — do not unify without product sign-off.
     return {
         "theme": theme.name,
         "theme_name": theme.theme_name,
         "status": theme.status,
         "is_base_theme": is_base,
-        "is_active": theme.status == "Active",
+        "is_active": theme.status == "Active",  # Desk: Active status, not base
         "site_base_theme": base,
         "css_hash": css_hash,
         "payload": json.loads(theme.theme_json or "{}"),
