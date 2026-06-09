@@ -1,38 +1,7 @@
 import json
 import math
 
-BORDER_RADIUS_MAP = {
-	"none": "0",
-	"sm": "0.125rem",
-	"md": "0.375rem",
-	"lg": "0.5rem",
-	"x-lg": "0.75rem",
-	"full": "0.75rem",  # legacy — was pill/circle; now maps to x-lg
-}
-
-SPACING_SCALE_MAP = {
-	"tight": "0.75rem",
-	"normal": "1rem",
-	"relaxed": "1.5rem",
-}
-
-LINE_HEIGHT_MAP = {
-	"tight": "1.25",
-	"snug": "1.375",
-	"normal": "1.5",
-	"relaxed": "1.625",
-	"loose": "2",
-}
-
-SHADOW_DEFS = {
-	"none": [],
-	"sm": [(0, 1, 3, 0, 0.12), (0, 1, 2, -1, 0.08)],
-	"md": [(0, 4, 8, -1, 0.15), (0, 2, 4, -2, 0.1)],
-	"lg": [(0, 10, 20, -3, 0.18), (0, 4, 8, -4, 0.1)],
-	"xl": [(0, 20, 30, -5, 0.22), (0, 8, 12, -6, 0.12)],
-	"2xl": [(0, 25, 50, -12, 0.3)],
-	"3xl": [(0, 35, 60, -15, 0.35)],
-}
+from themes.utils.theme_tokens import SHADOW_DEFS
 
 
 def _hex_to_rgb(hex_color):
@@ -230,8 +199,6 @@ def _extreme_chroma_scale(target_l, use_c):
 	return use_c
 
 
-GAMMA_SAT_ROLE_FIELDS = frozenset({"primary_color", "secondary_color"})
-
 _NEUTRAL_SHADE_TARGETS = [
 	(50, 0.958), (100, 0.885), (200, 0.820), (300, 0.755),
 	(400, 0.705), (500, 0.690), (600, 0.680), (700, 0.565),
@@ -315,13 +282,6 @@ def _build_shadow(level, color_hex):
 	return ", ".join(parts)
 
 
-TRANSITION_MAP = {
-	"fast": "150ms",
-	"normal": "200ms",
-	"slow": "300ms",
-}
-
-
 def resolve_neutral_into_payload(payload: dict) -> dict:
 	"""Resolve editor warmth input into published neutral tokens."""
 	warmth = float(payload.get("neutral_color_warmth") or 0)
@@ -329,3 +289,14 @@ def resolve_neutral_into_payload(payload: dict) -> dict:
 	payload["neutral_color_shades"] = {str(shade): hex_val for shade, hex_val in shades.items()}
 	payload["neutral_color"] = shades.get(600, "#989898")
 	return payload
+
+
+# Re-export token maps (canonical source: themes.utils.theme_tokens)
+from themes.utils.theme_tokens import (  # noqa: E402, F401
+	BORDER_RADIUS_MAP,
+	GAMMA_SAT_ROLE_FIELDS,
+	LINE_HEIGHT_MAP,
+	SHADOW_DEFS,
+	SPACING_SCALE_MAP,
+	TRANSITION_MAP,
+)

@@ -6,7 +6,7 @@ Shared with desk_css_writer: css_publish.write_published_css(), SHA-1 css_hash,
 cache.delete_value("assets_json"), frappe.clear_cache() — publish tail only; content
 generation differs (OKLCH shade classes vs flat Desk var blocks).
 
-Token tables and color math live in theme_color_utils.py; keep in sync with
+Token tables live in theme_tokens.py; color math in theme_color_utils.py. Keep in sync with
 frontend/src/utils/color-shades.ts and src/widget/constants.ts.
 """
 import json
@@ -14,106 +14,24 @@ import os
 import frappe
 from themes.utils.css_publish import write_published_css
 from themes.utils.theme_color_utils import (
-    BORDER_RADIUS_MAP, SPACING_SCALE_MAP, LINE_HEIGHT_MAP,
-    TRANSITION_MAP, _build_shadow, _generate_shades, generate_neutral_shades,
+    _build_shadow, _generate_shades, generate_neutral_shades,
     _effective_role_hex,
-    GAMMA_SAT_ROLE_FIELDS,
     pick_fg_mono, pick_fg_tonal,
 )
-
-# ── Self-hosted variable fonts ──
-# Each entry: display name -> (folder slug under public/fonts, generic fallback).
-# Files live at public/fonts/<slug>/<subset>-wght-normal.woff2 and are served at
-# /assets/themes/fonts/<slug>/<subset>-wght-normal.woff2. All are variable fonts
-# with a continuous weight axis, so the Body Weight setting applies smoothly.
-FONT_REGISTRY = {
-    "Inter": ("inter", "sans-serif"),
-    "Source Sans 3": ("source-sans-3", "sans-serif"),
-    "Public Sans": ("public-sans", "sans-serif"),
-    "Open Sans": ("open-sans", "sans-serif"),
-    "Roboto": ("roboto", "sans-serif"),
-    "Nunito": ("nunito", "sans-serif"),
-    "Source Serif 4": ("source-serif-4", "serif"),
-    "JetBrains Mono": ("jetbrains-mono", "monospace"),
-}
-
-# Standard Fontsource subset ranges. latin-ext covers accented Latin glyphs
-# (e.g. names like Muñoz / Müller) and is only fetched when such glyphs appear.
-FONT_SUBSETS = {
-    "latin": (
-        "U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,"
-        "U+0304,U+0308,U+0329,U+2000-206F,U+2074,U+20AC,U+2122,U+2191,U+2193,"
-        "U+2212,U+2215,U+FEFF,U+FFFD"
-    ),
-    "latin-ext": (
-        "U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,"
-        "U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,"
-        "U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF"
-    ),
-}
-
-FONT_BASE_URL = "/assets/themes/fonts"
-
-# Retired picker options — still resolve when loading older theme JSON.
-RETIRED_FONT_ALIASES = {
-    "Work Sans": "Public Sans",
-    "DM Sans": "Public Sans",
-}
-
-CURATED_SHADES = (50, 100, 200, 300, 400, 500, 600, 700, 800, 900, 950)
-FG_ROLES = (
-    "primary_color", "secondary_color", "accent_color",
-    "success_color", "info_color", "warning_color", "danger_color",
-    "neutral_color",
+from themes.utils.theme_tokens import (
+    BORDER_RADIUS_MAP, SPACING_SCALE_MAP, LINE_HEIGHT_MAP, TRANSITION_MAP,
+    FONT_REGISTRY, FONT_SUBSETS, FONT_BASE_URL, RETIRED_FONT_ALIASES,
+    CURATED_SHADES, FG_ROLES, COLOR_FIELDS, SHADE_SCALE_FIELDS,
+    GAMMA_SAT_ROLE_FIELDS, MIGRATED_FIELDS, TOKEN_FIELDS,
 )
 
-COLOR_FIELDS = {
-    "primary_color": "color-primary",
-    "secondary_color": "color-secondary",
-    "accent_color": "color-accent",
-    "success_color": "color-success",
-    "info_color": "color-info",
-    "warning_color": "color-warning",
-    "danger_color": "color-danger",
-    "neutral_color": "color-neutral",
-    "text_color": "color-text",
-    "heading_color": "color-heading",
-    "muted_color": "color-muted",
-    "link_color": "color-link",
-    "focus_color": "color-focus",
-    "background_color": "color-bg",
-    "surface_color": "color-surface",
-    "border_color": "color-border",
-    "row_alt_color": "color-row-alt",
-}
-
-SHADE_SCALE_FIELDS = {
-    "primary_color": "color-primary",
-    "secondary_color": "color-secondary",
-    "accent_color": "color-accent",
-    "success_color": "color-success",
-    "info_color": "color-info",
-    "warning_color": "color-warning",
-    "danger_color": "color-danger",
-    "neutral_color": "color-neutral",
-}
-
-MIGRATED_FIELDS = list(COLOR_FIELDS.keys()) + [
-    "font_family", "heading_font_family", "font_size", "line_height",
-    "font_weight_body", "border_radius", "spacing_scale", "shadow",
-    "shadow_color", "transition_speed", "sidebar_width",
-    "container_max_width", "tailwind_overrides", "custom_css",
-]
-
-# SPA editor payload keys (MIGRATED_FIELDS + stored-but-not-CSS fields)
-TOKEN_FIELDS = MIGRATED_FIELDS + [
-    "dark_mode",
-    "primary_color_gamma",
-    "primary_color_saturation",
-    "secondary_color_gamma",
-    "secondary_color_saturation",
-    "neutral_color_warmth",
-    "neutral_color_shades",
+# Re-export token contract symbols for backward compatibility (api.py, patches, tests).
+__all__ = [
+    "BORDER_RADIUS_MAP", "SPACING_SCALE_MAP", "LINE_HEIGHT_MAP", "TRANSITION_MAP",
+    "FONT_REGISTRY", "FONT_SUBSETS", "FONT_BASE_URL", "RETIRED_FONT_ALIASES",
+    "CURATED_SHADES", "FG_ROLES", "COLOR_FIELDS", "SHADE_SCALE_FIELDS",
+    "GAMMA_SAT_ROLE_FIELDS", "MIGRATED_FIELDS", "TOKEN_FIELDS",
+    "generate_css", "generate_site_css", "publish_theme",
 ]
 
 
