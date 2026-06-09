@@ -2,7 +2,7 @@
 
 Paired module: themes.utils.desk_css_writer (Desk chrome → native --*-color vars).
 
-Shared with desk_css_writer: _write_css/_write_hash sidecar pattern, SHA-1 css_hash,
+Shared with desk_css_writer: css_publish.write_published_css(), SHA-1 css_hash,
 cache.delete_value("assets_json"), frappe.clear_cache() — publish tail only; content
 generation differs (OKLCH shade classes vs flat Desk var blocks).
 
@@ -11,8 +11,8 @@ frontend/src/utils/color-shades.ts and src/widget/constants.ts.
 """
 import json
 import os
-import hashlib
 import frappe
+from themes.utils.css_publish import write_published_css
 from themes.utils.theme_color_utils import (
     BORDER_RADIUS_MAP, SPACING_SCALE_MAP, LINE_HEIGHT_MAP,
     TRANSITION_MAP, _build_shadow, _generate_shades, generate_neutral_shades,
@@ -557,16 +557,6 @@ def generate_site_css(default_payload: dict, active_themes: list[tuple[str, dict
     return "\n".join(lines)
 
 
-def _write_css_file(css: str) -> str:
-    app_path = frappe.get_app_path("themes")
-    css_dir = os.path.join(app_path, "public", "css")
-    os.makedirs(css_dir, exist_ok=True)
-    path = os.path.join(css_dir, "nce_theme.css")
-    with open(path, "w") as f:
-        f.write(css)
-    return path
-
-
 def _write_fonts_css() -> str:
     """Write the all-curated-fonts stylesheet consumed only by the editor page."""
     app_path = frappe.get_app_path("themes")
@@ -575,22 +565,6 @@ def _write_fonts_css() -> str:
     path = os.path.join(css_dir, "fonts.css")
     with open(path, "w") as f:
         f.write(generate_fonts_css())
-    return path
-
-
-def _write_css_hash_file(css_hash: str) -> str:
-    """Write the published css_hash to a sidecar file read by hooks.py for cache-busting.
-
-    Using a plain file (not the DB) keeps hooks.py import-time and DB-free, so a
-    missing/unreadable hash can never break boot — hooks.py just falls back to the
-    bare CSS path.
-    """
-    app_path = frappe.get_app_path("themes")
-    css_dir = os.path.join(app_path, "public", "css")
-    os.makedirs(css_dir, exist_ok=True)
-    path = os.path.join(css_dir, "nce_theme.css.hash")
-    with open(path, "w") as f:
-        f.write(css_hash)
     return path
 
 
@@ -621,10 +595,8 @@ def publish_theme(theme_name: str) -> dict:
         active_themes.append((slug, json.loads(row.theme_json or "{}")))
 
     css = generate_site_css(default_payload, active_themes)
-    _write_css_file(css)
     _write_fonts_css()
-    css_hash = hashlib.sha1(css.encode("utf-8")).hexdigest()[:8]
-    _write_css_hash_file(css_hash)
+    css_hash = write_published_css("nce_theme.css", css)
     frappe.db.set_single_value("Site Theme Config", "css_hash", css_hash)
     frappe.cache.delete_value("assets_json")
     frappe.clear_cache()

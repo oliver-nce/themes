@@ -2,19 +2,20 @@
 
 Paired module: themes.utils.css_writer (Web site tokens → --nce-* classes and vars).
 
-Shared with css_writer: file write + .hash sidecar + assets_json cache bust — publish
-tail only. Content generation is intentionally different: flat DESK_CSS_VARS on :root,
+Shared with css_writer: css_publish.write_published_css() + assets_json cache bust —
+publish tail only. Content generation is intentionally different: flat DESK_CSS_VARS on :root,
 no OKLCH shade scale or theme-bg-* class layer.
 
 See themes/CODE_INDEX.json and plans/REFACTORING_PLAN.md for consolidation notes.
 """
 from __future__ import annotations
 
-import hashlib
 import json
 import os
 
 import frappe
+
+from themes.utils.css_publish import write_published_css
 
 DESK_CSS_VARS = (
     ("primary_color", "--primary-color"),
@@ -74,26 +75,6 @@ def generate_desk_css(base_theme_name: str | None, active_theme_names: list[str]
     return "\n".join(lines)
 
 
-def _write_desk_css_file(css: str) -> str:
-    app_path = frappe.get_app_path("themes")
-    css_dir = os.path.join(app_path, "public", "css")
-    os.makedirs(css_dir, exist_ok=True)
-    path = os.path.join(css_dir, "nce_desk_theme.css")
-    with open(path, "w") as f:
-        f.write(css)
-    return path
-
-
-def _write_desk_css_hash_file(css_hash: str) -> str:
-    app_path = frappe.get_app_path("themes")
-    css_dir = os.path.join(app_path, "public", "css")
-    os.makedirs(css_dir, exist_ok=True)
-    path = os.path.join(css_dir, "nce_desk_theme.css.hash")
-    with open(path, "w") as f:
-        f.write(css_hash)
-    return path
-
-
 def _read_desk_css_hash() -> str | None:
     try:
         path = os.path.join(
@@ -126,9 +107,7 @@ def publish_desk_theme(theme_name: str | None = None) -> dict:
         pluck="name",
     )
     css = generate_desk_css(base_name, active_names)
-    _write_desk_css_file(css)
-    css_hash = hashlib.sha1(css.encode("utf-8")).hexdigest()[:8]
-    _write_desk_css_hash_file(css_hash)
+    css_hash = write_published_css("nce_desk_theme.css", css)
     frappe.cache.delete_value("assets_json")
     frappe.clear_cache()
     return {"status": "ok", "theme": base_name, "css_hash": css_hash, "bytes": len(css)}
