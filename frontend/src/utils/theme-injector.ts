@@ -6,45 +6,17 @@ import {
 	neutral600Hex,
 	effectiveRoleHex,
 } from "./color-shades"
-
-const FG_ROLES = [
-	"primary_color",
-	"secondary_color",
-	"accent_color",
-	"success_color",
-	"info_color",
-	"warning_color",
-	"danger_color",
-] as const
-const GAMMA_SAT_ROLES = new Set(["primary_color", "secondary_color"])
-const CURATED_SHADES = [50, 100, 200, 300, 400, 500, 600, 700, 800, 900, 950] as const
-const ROLE_VAR: Record<string, string> = {
-	primary_color: "color-primary",
-	secondary_color: "color-secondary",
-	accent_color: "color-accent",
-	success_color: "color-success",
-	info_color: "color-info",
-	warning_color: "color-warning",
-	danger_color: "color-danger",
-}
-
-const RADIUS_MAP: Record<string, string> = {
-	none: "0",
-	sm: "0.125rem",
-	md: "0.375rem",
-	lg: "0.5rem",
-	"x-lg": "0.75rem",
-	full: "0.75rem",
-}
-
-const SPACING_MAP: Record<string, string> = {
-	tight: "0.75rem",
-	normal: "1rem",
-	relaxed: "1.5rem",
-}
+import {
+	BORDER_RADIUS_MAP,
+	CURATED_SHADES,
+	FG_SHADE_ROLES,
+	GAMMA_SAT_ROLE_FIELDS,
+	ROLE_VAR_MAP,
+	SPACING_SCALE_MAP,
+} from "@/domain/theme-tokens"
 
 function roleAdjustments(role: string, settings: Record<string, unknown>) {
-	if (!GAMMA_SAT_ROLES.has(role)) return undefined
+	if (!GAMMA_SAT_ROLE_FIELDS.has(role)) return undefined
 	return {
 		gamma: Number(settings[`${role}_gamma`] ?? 0),
 		saturation: Number(settings[`${role}_saturation`] ?? 100),
@@ -65,10 +37,10 @@ export function generateCSSVars(settings: Record<string, any>): string {
 		lines.push(`\t--nce-font-family: '${settings.font_family}', sans-serif;`)
 	}
 
-	const radius = RADIUS_MAP[settings.border_radius || "md"] || "0.375rem"
+	const radius = BORDER_RADIUS_MAP[settings.border_radius || "md"] || "0.375rem"
 	lines.push(`\t--nce-border-radius: ${radius};`)
 
-	const spacing = SPACING_MAP[settings.spacing_scale || "normal"] || "1rem"
+	const spacing = SPACING_SCALE_MAP[settings.spacing_scale || "normal"] || "1rem"
 	lines.push(`\t--nce-spacing-base: ${spacing};`)
 
 	lines.push("}")
@@ -85,13 +57,13 @@ export function injectCSSVars(settings: Record<string, any>) {
 			: settings.primary_color
 		root.style.setProperty("--nce-color-primary", hex)
 	}
-	for (const role of FG_ROLES) {
+	for (const role of FG_SHADE_ROLES) {
 		const hex = settings[role]
 		if (!hex) continue
-		const v = ROLE_VAR[role]
+		const v = ROLE_VAR_MAP[role]
 		const adj = roleAdjustments(role, settings)
 		let roleHex = hex
-		if (GAMMA_SAT_ROLES.has(role) && adj && "saturation" in adj) {
+		if (GAMMA_SAT_ROLE_FIELDS.has(role) && adj && "saturation" in adj) {
 			roleHex = effectiveRoleHex(hex, adj.gamma, adj.saturation)
 			root.style.setProperty(`--nce-${v}`, roleHex)
 		}
@@ -127,9 +99,9 @@ export function injectCSSVars(settings: Record<string, any>) {
 		root.style.setProperty("--nce-font-family", `'${settings.font_family}', sans-serif`)
 	}
 
-	const radius = RADIUS_MAP[settings.border_radius || "md"] || "0.375rem"
+	const radius = BORDER_RADIUS_MAP[settings.border_radius || "md"] || "0.375rem"
 	root.style.setProperty("--nce-border-radius", radius)
 
-	const spacing = SPACING_MAP[settings.spacing_scale || "normal"] || "1rem"
+	const spacing = SPACING_SCALE_MAP[settings.spacing_scale || "normal"] || "1rem"
 	root.style.setProperty("--nce-spacing-base", spacing)
 }

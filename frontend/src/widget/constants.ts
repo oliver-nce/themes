@@ -1,25 +1,16 @@
 /**
- * ThemeSwatchPicker constants — keep in sync with themes/utils/css_writer.py:
- * CURATED_SHADES (line 51), SHADE_SCALE_FIELDS (line 76).
+ * ThemeSwatchPicker constants — ROLES and CURATED_SHADES from generated theme-tokens.ts.
  */
+
+import { CURATED_SHADES, ROLES } from "@/domain/theme-tokens"
+
+export { CURATED_SHADES, ROLES }
 
 export const KINDS = ["bg", "text", "border"] as const
 export type ThemeKind = (typeof KINDS)[number]
 
-/** Role slugs from SHADE_SCALE_FIELDS value names (color-primary → primary). */
-export const ROLES = [
-	"primary",
-	"secondary",
-	"accent",
-	"success",
-	"info",
-	"warning",
-	"danger",
-	"neutral",
-] as const
 export type ThemeRole = (typeof ROLES)[number]
 
-export const CURATED_SHADES = [50, 100, 200, 300, 400, 500, 600, 700, 800, 900, 950] as const
 export type ThemeShade = (typeof CURATED_SHADES)[number]
 
 /** Primary / Secondary only — spec §6. Add "gray" when gray_color lands. */

@@ -5,10 +5,11 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vite build",
+    "build": "npm run export:tokens && vite build",
     "build:widget": "vite build --config vite.widget.config.js && cp src/widget/theme-swatch-picker.css ../themes/public/dist/theme-swatch-picker.css",
     "build:all": "npm run build && npm run build:widget",
     "preview": "vite preview",
+    "export:tokens": "python3 ../scripts/export_theme_tokens.py",
     "test": "vitest run",
     "test:parity": "vitest run src/utils/__tests__/color-shades.parity.test.ts"
   },

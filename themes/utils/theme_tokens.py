@@ -155,3 +155,42 @@ TOKEN_FIELDS = MIGRATED_FIELDS + [
 	"neutral_color_warmth",
 	"neutral_color_shades",
 ]
+
+
+def export_token_contract() -> dict:
+	"""Return the Web theme token contract as JSON-serializable data for the frontend build."""
+	roles = [css_var.replace("color-", "") for css_var in SHADE_SCALE_FIELDS.values()]
+	color_var_map = {field: f"--nce-{css_var}" for field, css_var in COLOR_FIELDS.items()}
+	shade_preview_fields = [
+		[field, css_var]
+		for field, css_var in SHADE_SCALE_FIELDS.items()
+		if field != "neutral_color"
+	]
+	fg_shade_roles = [field for field in SHADE_SCALE_FIELDS if field != "neutral_color"]
+	role_var_map = dict(SHADE_SCALE_FIELDS)
+	role_var_map.pop("neutral_color", None)
+
+	return {
+		"borderRadiusMap": BORDER_RADIUS_MAP,
+		"spacingScaleMap": SPACING_SCALE_MAP,
+		"lineHeightMap": LINE_HEIGHT_MAP,
+		"transitionMap": TRANSITION_MAP,
+		"shadowDefs": {
+			level: [list(layer) for layer in layers]
+			for level, layers in SHADOW_DEFS.items()
+		},
+		"gammaSatRoleFields": sorted(GAMMA_SAT_ROLE_FIELDS),
+		"curatedShades": list(CURATED_SHADES),
+		"colorFields": COLOR_FIELDS,
+		"shadeScaleFields": SHADE_SCALE_FIELDS,
+		"fgRoles": list(FG_ROLES),
+		"fgShadeRoles": fg_shade_roles,
+		"roles": roles,
+		"colorVarMap": color_var_map,
+		"shadePreviewFields": shade_preview_fields,
+		"roleVarMap": role_var_map,
+		"fontRegistry": {name: list(entry) for name, entry in FONT_REGISTRY.items()},
+		"retiredFontAliases": RETIRED_FONT_ALIASES,
+		"fontOptions": list(FONT_REGISTRY.keys()) + ["System Default"],
+		"tokenFields": TOKEN_FIELDS,
+	}

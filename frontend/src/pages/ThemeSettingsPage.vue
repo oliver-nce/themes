@@ -677,6 +677,19 @@ import SelectField from "@/components/SelectField.vue"
 import FontSelectField from "@/components/FontSelectField.vue"
 import PasswordField from "@/components/PasswordField.vue"
 import SwatchPicker from "@/components/SwatchPicker.vue"
+import {
+	BORDER_RADIUS_MAP,
+	COLOR_VAR_MAP,
+	CURATED_SHADES,
+	FONT_OPTIONS,
+	GAMMA_SAT_ROLE_FIELDS,
+	LINE_HEIGHT_MAP,
+	RETIRED_FONT_ALIASES,
+	SHADE_PREVIEW_FIELDS,
+	SHADOW_DEFS,
+	SPACING_SCALE_MAP,
+	TRANSITION_MAP,
+} from "@/domain/theme-tokens"
 
 // ─── Preview window ───────────────────────────────────────────────
 
@@ -712,39 +725,6 @@ function openPreview() {
 	}
 }
 
-const COLOR_VAR_MAP: Record<string, string> = {
-	primary_color: "--nce-color-primary",
-	secondary_color: "--nce-color-secondary",
-	accent_color: "--nce-color-accent",
-	success_color: "--nce-color-success",
-	info_color: "--nce-color-info",
-	warning_color: "--nce-color-warning",
-	danger_color: "--nce-color-danger",
-	text_color: "--nce-color-text",
-	heading_color: "--nce-color-heading",
-	muted_color: "--nce-color-muted",
-	link_color: "--nce-color-link",
-	focus_color: "--nce-color-focus",
-	background_color: "--nce-color-bg",
-	surface_color: "--nce-color-surface",
-	border_color: "--nce-color-border",
-	row_alt_color: "--nce-color-row-alt",
-}
-
-const BORDER_RADIUS_CSS: Record<string, string> = {
-	none: "0", sm: "0.125rem", md: "0.375rem", lg: "0.5rem", "x-lg": "0.75rem", full: "0.75rem",
-}
-
-const SHADOW_DEFS: Record<string, Array<[number,number,number,number,number]>> = {
-	none: [],
-	sm: [[0,1,3,0,0.12],[0,1,2,-1,0.08]],
-	md: [[0,4,8,-1,0.15],[0,2,4,-2,0.1]],
-	lg: [[0,10,20,-3,0.18],[0,4,8,-4,0.1]],
-	xl: [[0,20,30,-5,0.22],[0,8,12,-6,0.12]],
-	"2xl": [[0,25,50,-12,0.3]],
-	"3xl": [[0,35,60,-15,0.35]],
-}
-
 function hexToRgb(hex: string): string {
 	if (!hex || hex.length < 7) return "0,0,0"
 	const r = parseInt(hex.slice(1,3), 16)
@@ -760,17 +740,12 @@ function buildShadow(level: string, color: string): string {
 	return defs.map(([x,y,b,s,a]) => `${x}px ${y}px ${b}px ${s}px rgba(${rgb},${a})`).join(", ")
 }
 
-const TRANSITION_CSS: Record<string, string> = { fast: "150ms", normal: "200ms", slow: "300ms" }
-const LINE_HEIGHT_CSS: Record<string, string> = { tight: "1.25", snug: "1.375", normal: "1.5", relaxed: "1.625", loose: "2" }
-
-const GAMMA_SAT_COLOR_FIELDS = new Set(["primary_color", "secondary_color"])
-
 function computeCSSVariables(): Record<string, string> {
 	const vars: Record<string, string> = {}
 	for (const [field, cssVar] of Object.entries(COLOR_VAR_MAP)) {
 		const hex = form[field as FormKey]
 		if (!hex) continue
-		if (GAMMA_SAT_COLOR_FIELDS.has(field)) {
+		if (GAMMA_SAT_ROLE_FIELDS.has(field)) {
 			const gamma = form[`${field}_gamma` as FormKey] ?? 0
 			const saturation = form[`${field}_saturation` as FormKey] ?? 100
 			vars[cssVar] = effectiveRoleHex(hex, Number(gamma), Number(saturation))
@@ -789,35 +764,25 @@ function computeCSSVariables(): Record<string, string> {
 
 	if (form.font_size) vars["--nce-font-size"] = form.font_size
 	if (form.font_weight_body) vars["--nce-font-weight"] = form.font_weight_body
-	if (form.line_height) vars["--nce-line-height"] = LINE_HEIGHT_CSS[form.line_height] || "1.5"
-	if (form.border_radius) vars["--nce-border-radius"] = BORDER_RADIUS_CSS[form.border_radius] || "0.375rem"
+	if (form.line_height) vars["--nce-line-height"] = LINE_HEIGHT_MAP[form.line_height] || "1.5"
+	if (form.border_radius) vars["--nce-border-radius"] = BORDER_RADIUS_MAP[form.border_radius] || "0.375rem"
 	if (form.spacing_scale) {
-		const m: Record<string, string> = { tight: "0.75rem", normal: "1rem", relaxed: "1.5rem" }
-		vars["--nce-spacing-base"] = m[form.spacing_scale] || "1rem"
+		vars["--nce-spacing-base"] = SPACING_SCALE_MAP[form.spacing_scale] || "1rem"
 	}
 	if (form.shadow_color) vars["--nce-shadow-color"] = form.shadow_color
 	if (form.shadow) vars["--nce-shadow"] = buildShadow(form.shadow, form.shadow_color || "#000000")
-	if (form.transition_speed) vars["--nce-transition-speed"] = TRANSITION_CSS[form.transition_speed] || "200ms"
+	if (form.transition_speed) vars["--nce-transition-speed"] = TRANSITION_MAP[form.transition_speed] || "200ms"
 	if (form.sidebar_width) vars["--nce-sidebar-width"] = form.sidebar_width
 	if (form.container_max_width) {
 		vars["--nce-container-max-width"] = form.container_max_width === "full" ? "100%" : form.container_max_width
 	}
 	// Shade scales for brand/status colors (live preview)
-	const SHADE_FIELDS: Array<[string, string]> = [
-		["primary_color", "color-primary"],
-		["secondary_color", "color-secondary"],
-		["accent_color", "color-accent"],
-		["success_color", "color-success"],
-		["info_color", "color-info"],
-		["warning_color", "color-warning"],
-		["danger_color", "color-danger"],
-	]
-	for (const [field, varPrefix] of SHADE_FIELDS) {
+	for (const [field, varPrefix] of SHADE_PREVIEW_FIELDS) {
 		const hex = form[field as FormKey]
 		if (!hex) continue
 		const gammaKey = `${field}_gamma` as FormKey
 		const satKey = `${field}_saturation` as FormKey
-		const hasAdjust = GAMMA_SAT_COLOR_FIELDS.has(field)
+		const hasAdjust = GAMMA_SAT_ROLE_FIELDS.has(field)
 		const gamma = hasAdjust ? Number(form[gammaKey] ?? 0) : 0
 		const saturation = hasAdjust ? Number(form[satKey] ?? 100) : 100
 		const roleHex = hasAdjust ? effectiveRoleHex(hex, gamma, saturation) : hex
@@ -827,7 +792,7 @@ function computeCSSVariables(): Record<string, string> {
 		for (const s of shades) {
 			vars[`--nce-${varPrefix}-${s.shade}`] = s.hex
 			vars[`--${varPrefix}-${s.shade}`] = s.hex
-			if ([50, 100, 200, 300, 400, 500, 600, 700, 800, 900, 950].includes(s.shade)) {
+			if (CURATED_SHADES.includes(s.shade as (typeof CURATED_SHADES)[number])) {
 				vars[`--nce-${varPrefix}-${s.shade}-fg`] = pickFgMono(s.hex)
 				vars[`--nce-${varPrefix}-${s.shade}-fg-tonal`] = pickFgTonal(s.hex)
 			}
@@ -1001,28 +966,11 @@ const surfaceColors = [
 // ─── Select options ───────────────────────────────────────────────
 
 // Retired picker options — map to Public Sans when loading saved themes.
-const RETIRED_FONT_ALIASES: Record<string, string> = {
-	"Work Sans": "Public Sans",
-	"DM Sans": "Public Sans",
-}
-
 function normalizeFontChoice(name: string): string {
 	return RETIRED_FONT_ALIASES[name] || name
 }
 
-// Curated self-hosted variable fonts (all respond to the Body Weight slider).
-// Must stay in sync with FONT_REGISTRY in themes/utils/css_writer.py.
-const fontOptions = [
-	"Inter",
-	"Source Sans 3",
-	"Public Sans",
-	"Open Sans",
-	"Roboto",
-	"Nunito",
-	"Source Serif 4",
-	"JetBrains Mono",
-	"System Default",
-]
+const fontOptions = [...FONT_OPTIONS]
 const sizeOptions = ["12px", "13px", "14px", "15px", "16px", "18px"]
 const lineHeightOptions = ["tight", "snug", "normal", "relaxed", "loose"]
 const BODY_WEIGHT_MIN = 100
@@ -1184,7 +1132,7 @@ function buildPayloadFromForm(): Record<string, any> {
 		if (key === "neutral_color" || key === "neutral_color_shades") continue
 		payload[key] = key === "dark_mode" ? (form[key] ? 1 : 0) : form[key]
 	}
-	for (const field of GAMMA_SAT_COLOR_FIELDS) {
+	for (const field of GAMMA_SAT_ROLE_FIELDS) {
 		const hex = payload[field]
 		const gamma = Number(payload[`${field}_gamma`] ?? 0)
 		const saturation = Number(payload[`${field}_saturation`] ?? 100)
@@ -1313,7 +1261,7 @@ function applyPayloadToForm(payload: Record<string, any>) {
 			form[key] = val
 		}
 	}
-	for (const field of GAMMA_SAT_COLOR_FIELDS) {
+	for (const field of GAMMA_SAT_ROLE_FIELDS) {
 		const hex = form[field as FormKey]
 		if (typeof hex !== "string") continue
 		const gamma = Number(form[`${field}_gamma` as FormKey] ?? 0)

@@ -1,0 +1,334 @@
+{
+  "borderRadiusMap": {
+    "full": "0.75rem",
+    "lg": "0.5rem",
+    "md": "0.375rem",
+    "none": "0",
+    "sm": "0.125rem",
+    "x-lg": "0.75rem"
+  },
+  "colorFields": {
+    "accent_color": "color-accent",
+    "background_color": "color-bg",
+    "border_color": "color-border",
+    "danger_color": "color-danger",
+    "focus_color": "color-focus",
+    "heading_color": "color-heading",
+    "info_color": "color-info",
+    "link_color": "color-link",
+    "muted_color": "color-muted",
+    "neutral_color": "color-neutral",
+    "primary_color": "color-primary",
+    "row_alt_color": "color-row-alt",
+    "secondary_color": "color-secondary",
+    "success_color": "color-success",
+    "surface_color": "color-surface",
+    "text_color": "color-text",
+    "warning_color": "color-warning"
+  },
+  "colorVarMap": {
+    "accent_color": "--nce-color-accent",
+    "background_color": "--nce-color-bg",
+    "border_color": "--nce-color-border",
+    "danger_color": "--nce-color-danger",
+    "focus_color": "--nce-color-focus",
+    "heading_color": "--nce-color-heading",
+    "info_color": "--nce-color-info",
+    "link_color": "--nce-color-link",
+    "muted_color": "--nce-color-muted",
+    "neutral_color": "--nce-color-neutral",
+    "primary_color": "--nce-color-primary",
+    "row_alt_color": "--nce-color-row-alt",
+    "secondary_color": "--nce-color-secondary",
+    "success_color": "--nce-color-success",
+    "surface_color": "--nce-color-surface",
+    "text_color": "--nce-color-text",
+    "warning_color": "--nce-color-warning"
+  },
+  "curatedShades": [
+    50,
+    100,
+    200,
+    300,
+    400,
+    500,
+    600,
+    700,
+    800,
+    900,
+    950
+  ],
+  "fgRoles": [
+    "primary_color",
+    "secondary_color",
+    "accent_color",
+    "success_color",
+    "info_color",
+    "warning_color",
+    "danger_color",
+    "neutral_color"
+  ],
+  "fgShadeRoles": [
+    "primary_color",
+    "secondary_color",
+    "accent_color",
+    "success_color",
+    "info_color",
+    "warning_color",
+    "danger_color"
+  ],
+  "fontOptions": [
+    "Inter",
+    "Source Sans 3",
+    "Public Sans",
+    "Open Sans",
+    "Roboto",
+    "Nunito",
+    "Source Serif 4",
+    "JetBrains Mono",
+    "System Default"
+  ],
+  "fontRegistry": {
+    "Inter": [
+      "inter",
+      "sans-serif"
+    ],
+    "JetBrains Mono": [
+      "jetbrains-mono",
+      "monospace"
+    ],
+    "Nunito": [
+      "nunito",
+      "sans-serif"
+    ],
+    "Open Sans": [
+      "open-sans",
+      "sans-serif"
+    ],
+    "Public Sans": [
+      "public-sans",
+      "sans-serif"
+    ],
+    "Roboto": [
+      "roboto",
+      "sans-serif"
+    ],
+    "Source Sans 3": [
+      "source-sans-3",
+      "sans-serif"
+    ],
+    "Source Serif 4": [
+      "source-serif-4",
+      "serif"
+    ]
+  },
+  "gammaSatRoleFields": [
+    "primary_color",
+    "secondary_color"
+  ],
+  "lineHeightMap": {
+    "loose": "2",
+    "normal": "1.5",
+    "relaxed": "1.625",
+    "snug": "1.375",
+    "tight": "1.25"
+  },
+  "retiredFontAliases": {
+    "DM Sans": "Public Sans",
+    "Work Sans": "Public Sans"
+  },
+  "roleVarMap": {
+    "accent_color": "color-accent",
+    "danger_color": "color-danger",
+    "info_color": "color-info",
+    "primary_color": "color-primary",
+    "secondary_color": "color-secondary",
+    "success_color": "color-success",
+    "warning_color": "color-warning"
+  },
+  "roles": [
+    "primary",
+    "secondary",
+    "accent",
+    "success",
+    "info",
+    "warning",
+    "danger",
+    "neutral"
+  ],
+  "shadePreviewFields": [
+    [
+      "primary_color",
+      "color-primary"
+    ],
+    [
+      "secondary_color",
+      "color-secondary"
+    ],
+    [
+      "accent_color",
+      "color-accent"
+    ],
+    [
+      "success_color",
+      "color-success"
+    ],
+    [
+      "info_color",
+      "color-info"
+    ],
+    [
+      "warning_color",
+      "color-warning"
+    ],
+    [
+      "danger_color",
+      "color-danger"
+    ]
+  ],
+  "shadeScaleFields": {
+    "accent_color": "color-accent",
+    "danger_color": "color-danger",
+    "info_color": "color-info",
+    "neutral_color": "color-neutral",
+    "primary_color": "color-primary",
+    "secondary_color": "color-secondary",
+    "success_color": "color-success",
+    "warning_color": "color-warning"
+  },
+  "shadowDefs": {
+    "2xl": [
+      [
+        0,
+        25,
+        50,
+        -12,
+        0.3
+      ]
+    ],
+    "3xl": [
+      [
+        0,
+        35,
+        60,
+        -15,
+        0.35
+      ]
+    ],
+    "lg": [
+      [
+        0,
+        10,
+        20,
+        -3,
+        0.18
+      ],
+      [
+        0,
+        4,
+        8,
+        -4,
+        0.1
+      ]
+    ],
+    "md": [
+      [
+        0,
+        4,
+        8,
+        -1,
+        0.15
+      ],
+      [
+        0,
+        2,
+        4,
+        -2,
+        0.1
+      ]
+    ],
+    "none": [],
+    "sm": [
+      [
+        0,
+        1,
+        3,
+        0,
+        0.12
+      ],
+      [
+        0,
+        1,
+        2,
+        -1,
+        0.08
+      ]
+    ],
+    "xl": [
+      [
+        0,
+        20,
+        30,
+        -5,
+        0.22
+      ],
+      [
+        0,
+        8,
+        12,
+        -6,
+        0.12
+      ]
+    ]
+  },
+  "spacingScaleMap": {
+    "normal": "1rem",
+    "relaxed": "1.5rem",
+    "tight": "0.75rem"
+  },
+  "tokenFields": [
+    "primary_color",
+    "secondary_color",
+    "accent_color",
+    "success_color",
+    "info_color",
+    "warning_color",
+    "danger_color",
+    "neutral_color",
+    "text_color",
+    "heading_color",
+    "muted_color",
+    "link_color",
+    "focus_color",
+    "background_color",
+    "surface_color",
+    "border_color",
+    "row_alt_color",
+    "font_family",
+    "heading_font_family",
+    "font_size",
+    "line_height",
+    "font_weight_body",
+    "border_radius",
+    "spacing_scale",
+    "shadow",
+    "shadow_color",
+    "transition_speed",
+    "sidebar_width",
+    "container_max_width",
+    "tailwind_overrides",
+    "custom_css",
+    "dark_mode",
+    "primary_color_gamma",
+    "primary_color_saturation",
+    "secondary_color_gamma",
+    "secondary_color_saturation",
+    "neutral_color_warmth",
+    "neutral_color_shades"
+  ],
+  "transitionMap": {
+    "fast": "150ms",
+    "normal": "200ms",
+    "slow": "300ms"
+  }
+}
