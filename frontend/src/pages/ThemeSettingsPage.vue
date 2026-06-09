@@ -1624,13 +1624,18 @@ async function submitDelete() {
 	}
 }
 
-function requestRestoreToBase() {
+async function requestRestoreToBase() {
 	if (!siteBaseTheme.value) return
+	// Skip the confirm dialog: save any current changes first, then load the
+	// app base into the editor. If the save fails, abort so edits aren't lost.
 	if (isDirty.value) {
-		openConfirmDialog("restore")
-		return
+		try {
+			await handleSave()
+		} catch {
+			return
+		}
 	}
-	restoreToBaseConfirmed()
+	await restoreToBaseConfirmed()
 }
 
 async function restoreToBaseConfirmed() {
