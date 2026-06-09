@@ -162,7 +162,25 @@
 
 			<!-- AGENT:TAB colours — brand, neutral warmth, status, text, surface pickers -->
 			<div v-show="activeTab === 'colors'" class="editor-tab">
-				<EditorSection title="Brand Colours">
+				<EditorSection>
+					<template #title>
+						<div class="brand-colors-header">
+							<label class="brand-palette-check">
+								<input
+									type="checkbox"
+									:checked="isCorporateBrandPalette"
+									@change="onBrandPaletteModeChange"
+								/>
+								<span class="section-title editor-section-title">Primary and Secondary Colors</span>
+							</label>
+							<span
+								class="brand-palette-mode-label"
+								:class="{ 'brand-palette-mode-label--active': isCorporateBrandPalette }"
+							>
+								These are from a Brand Palette
+							</span>
+						</div>
+					</template>
 					<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
 						<BrandColorPicker
 							v-for="c in brandColors"
@@ -171,6 +189,7 @@
 							:model-value="form[c.key]"
 							:gamma="form[c.gammaKey]"
 							:saturation="form[c.satKey]"
+							:palette-mode="brandPaletteMode"
 							@update:model-value="form[c.key] = $event"
 							@update:gamma="form[c.gammaKey] = $event"
 							@update:saturation="form[c.satKey] = $event"
@@ -214,10 +233,10 @@
 							@update:model-value="form[c.key] = $event"
 							:primary-color="form.primary_color"
 							:secondary-color="form.secondary_color"
-							:primary-gamma="form.primary_color_gamma"
-							:primary-saturation="form.primary_color_saturation"
-							:secondary-gamma="form.secondary_color_gamma"
-							:secondary-saturation="form.secondary_color_saturation"
+							:primary-gamma="primaryShadeAdjust.gamma"
+							:primary-saturation="primaryShadeAdjust.saturation"
+							:secondary-gamma="secondaryShadeAdjust.gamma"
+							:secondary-saturation="secondaryShadeAdjust.saturation"
 						/>
 					</div>
 				</EditorSection>
@@ -233,10 +252,10 @@
 							@update:model-value="form[c.key] = $event"
 							:primary-color="form.primary_color"
 							:secondary-color="form.secondary_color"
-							:primary-gamma="form.primary_color_gamma"
-							:primary-saturation="form.primary_color_saturation"
-							:secondary-gamma="form.secondary_color_gamma"
-							:secondary-saturation="form.secondary_color_saturation"
+							:primary-gamma="primaryShadeAdjust.gamma"
+							:primary-saturation="primaryShadeAdjust.saturation"
+							:secondary-gamma="secondaryShadeAdjust.gamma"
+							:secondary-saturation="secondaryShadeAdjust.saturation"
 						/>
 					</div>
 				</EditorSection>
@@ -252,10 +271,10 @@
 							@update:model-value="form[c.key] = $event"
 							:primary-color="form.primary_color"
 							:secondary-color="form.secondary_color"
-							:primary-gamma="form.primary_color_gamma"
-							:primary-saturation="form.primary_color_saturation"
-							:secondary-gamma="form.secondary_color_gamma"
-							:secondary-saturation="form.secondary_color_saturation"
+							:primary-gamma="primaryShadeAdjust.gamma"
+							:primary-saturation="primaryShadeAdjust.saturation"
+							:secondary-gamma="secondaryShadeAdjust.gamma"
+							:secondary-saturation="secondaryShadeAdjust.saturation"
 						/>
 					</div>
 				</EditorSection>
@@ -372,10 +391,10 @@
 							@update:model-value="form.shadow_color = $event"
 							:primary-color="form.primary_color"
 							:secondary-color="form.secondary_color"
-							:primary-gamma="form.primary_color_gamma"
-							:primary-saturation="form.primary_color_saturation"
-							:secondary-gamma="form.secondary_color_gamma"
-							:secondary-saturation="form.secondary_color_saturation"
+							:primary-gamma="primaryShadeAdjust.gamma"
+							:primary-saturation="primaryShadeAdjust.saturation"
+							:secondary-gamma="secondaryShadeAdjust.gamma"
+							:secondary-saturation="secondaryShadeAdjust.saturation"
 						/>
 					</div>
 				</EditorSection>
@@ -671,7 +690,7 @@ import { useThemeEditor, type ThemeAvailabilityStatus } from "@/composables/useT
 import { generateShades, generateNeutralShades, neutral600Hex, effectiveRoleHex, pickFgMono, pickFgTonal, resolveNeutralIntoPayload, isDark, type ColorShade } from "@/utils/color-shades"
 import { STATUS_COLOR_DEFAULTS, STATUS_COLOR_KEYS } from "@/composables/useThemeDefaults"
 import EditorSection from "@/components/EditorSection.vue"
-import BrandColorPicker from "@/components/BrandColorPicker.vue"
+import BrandColorPicker, { type BrandPaletteMode } from "@/components/BrandColorPicker.vue"
 import NeutralColorPicker from "@/components/NeutralColorPicker.vue"
 import SelectField from "@/components/SelectField.vue"
 import FontSelectField from "@/components/FontSelectField.vue"
@@ -748,15 +767,44 @@ function buildShadow(level: string, color: string): string {
 	return defs.map(([x,y,b,s,a]) => `${x}px ${y}px ${b}px ${s}px rgba(${rgb},${a})`).join(", ")
 }
 
+function isCorporateBrandPaletteMode(mode: unknown): boolean {
+	return mode !== "flexible"
+}
+
+function normalizeBrandPaletteMode(mode: unknown): BrandPaletteMode {
+	return mode === "flexible" ? "flexible" : "corporate"
+}
+
+function resetBrandPaletteAdjustments() {
+	for (const field of GAMMA_SAT_ROLE_FIELDS) {
+		form[`${field}_gamma` as FormKey] = 0
+		form[`${field}_saturation` as FormKey] = 100
+	}
+}
+
+function roleShadeAdjustments(field: string) {
+	if (isCorporateBrandPaletteMode(form.brand_palette_mode)) {
+		return { gamma: 0, saturation: 100 }
+	}
+	return {
+		gamma: Number(form[`${field}_gamma` as FormKey] ?? 0),
+		saturation: Number(form[`${field}_saturation` as FormKey] ?? 100),
+	}
+}
+
 function computeCSSVariables(): Record<string, string> {
 	const vars: Record<string, string> = {}
+	const corporateBrand = isCorporateBrandPaletteMode(form.brand_palette_mode)
 	for (const [field, cssVar] of Object.entries(COLOR_VAR_MAP)) {
 		const hex = form[field as FormKey]
 		if (!hex) continue
 		if (GAMMA_SAT_ROLE_FIELDS.has(field)) {
-			const gamma = form[`${field}_gamma` as FormKey] ?? 0
-			const saturation = form[`${field}_saturation` as FormKey] ?? 100
-			vars[cssVar] = effectiveRoleHex(hex, Number(gamma), Number(saturation))
+			if (corporateBrand) {
+				vars[cssVar] = hex
+			} else {
+				const { gamma, saturation } = roleShadeAdjustments(field)
+				vars[cssVar] = effectiveRoleHex(hex, gamma, saturation)
+			}
 		} else {
 			vars[cssVar] = hex
 		}
@@ -788,12 +836,14 @@ function computeCSSVariables(): Record<string, string> {
 	for (const [field, varPrefix] of SHADE_PREVIEW_FIELDS) {
 		const hex = form[field as FormKey]
 		if (!hex) continue
-		const gammaKey = `${field}_gamma` as FormKey
-		const satKey = `${field}_saturation` as FormKey
 		const hasAdjust = GAMMA_SAT_ROLE_FIELDS.has(field)
-		const gamma = hasAdjust ? Number(form[gammaKey] ?? 0) : 0
-		const saturation = hasAdjust ? Number(form[satKey] ?? 100) : 100
-		const roleHex = hasAdjust ? effectiveRoleHex(hex, gamma, saturation) : hex
+		const { gamma, saturation } = hasAdjust
+			? roleShadeAdjustments(field)
+			: { gamma: 0, saturation: 100 }
+		const roleHex =
+			hasAdjust && !corporateBrand && (gamma !== 0 || saturation !== 100)
+				? effectiveRoleHex(hex, gamma, saturation)
+				: hex
 		vars[`--nce-${varPrefix}-fg`] = pickFgMono(roleHex)
 		vars[`--nce-${varPrefix}-fg-tonal`] = pickFgTonal(roleHex)
 		const shades = generateShades(hex, hasAdjust ? { gamma, saturation } : undefined)
@@ -847,6 +897,7 @@ const ALL_FIELDS = [
 	"secondary_color",
 	"secondary_color_gamma",
 	"secondary_color_saturation",
+	"brand_palette_mode",
 	"neutral_color_warmth",
 	"accent_color",
 	"success_color",
@@ -895,6 +946,7 @@ const DEFAULTS: Record<FormKey, any> = {
 	secondary_color: "#10B981",
 	secondary_color_gamma: 0,
 	secondary_color_saturation: 100,
+	brand_palette_mode: "corporate",
 	neutral_color_warmth: 0,
 	...STATUS_COLOR_DEFAULTS,
 	text_color: "#1F2937",
@@ -924,6 +976,22 @@ const DEFAULTS: Record<FormKey, any> = {
 }
 
 const form = reactive<Record<FormKey, any>>({ ...DEFAULTS })
+
+const brandPaletteMode = computed(
+	(): BrandPaletteMode => normalizeBrandPaletteMode(form.brand_palette_mode),
+)
+const isCorporateBrandPalette = computed(() => brandPaletteMode.value === "corporate")
+
+const primaryShadeAdjust = computed(() => roleShadeAdjustments("primary_color"))
+const secondaryShadeAdjust = computed(() => roleShadeAdjustments("secondary_color"))
+
+function onBrandPaletteModeChange(event: Event) {
+	const checked = (event.target as HTMLInputElement).checked
+	form.brand_palette_mode = checked ? "corporate" : "flexible"
+	if (checked) {
+		resetBrandPaletteAdjustments()
+	}
+}
 
 // ─── AGENT:colour-fields ─── brandColors, statusColors, textColors, surfaceColors (Colours tab)
 
@@ -1114,12 +1182,20 @@ function buildPayloadFromForm(): Record<string, any> {
 		if (key === "neutral_color" || key === "neutral_color_shades") continue
 		payload[key] = key === "dark_mode" ? (form[key] ? 1 : 0) : form[key]
 	}
-	for (const field of GAMMA_SAT_ROLE_FIELDS) {
-		const hex = payload[field]
-		const gamma = Number(payload[`${field}_gamma`] ?? 0)
-		const saturation = Number(payload[`${field}_saturation`] ?? 100)
-		if (typeof hex === "string" && (gamma !== 0 || saturation !== 100)) {
-			payload[field] = effectiveRoleHex(hex, gamma, saturation)
+	payload.brand_palette_mode = normalizeBrandPaletteMode(payload.brand_palette_mode)
+	if (isCorporateBrandPaletteMode(payload.brand_palette_mode)) {
+		for (const field of GAMMA_SAT_ROLE_FIELDS) {
+			payload[`${field}_gamma`] = 0
+			payload[`${field}_saturation`] = 100
+		}
+	} else {
+		for (const field of GAMMA_SAT_ROLE_FIELDS) {
+			const hex = payload[field]
+			const gamma = Number(payload[`${field}_gamma`] ?? 0)
+			const saturation = Number(payload[`${field}_saturation`] ?? 100)
+			if (typeof hex === "string" && (gamma !== 0 || saturation !== 100)) {
+				payload[field] = effectiveRoleHex(hex, gamma, saturation)
+			}
 		}
 	}
 	return resolveNeutralIntoPayload(payload)
@@ -1165,6 +1241,8 @@ function canonicalPayload(source: Record<string, any>): Record<string, any> {
 			payload[key] = val.toUpperCase()
 		} else if (key === "font_weight_body") {
 			payload[key] = String(clampBodyWeight(val ?? DEFAULTS.font_weight_body))
+		} else if (key === "brand_palette_mode") {
+			payload[key] = normalizeBrandPaletteMode(val ?? DEFAULTS.brand_palette_mode)
 		} else if (key === "custom_css" || key === "tailwind_overrides") {
 			payload[key] = String(val ?? "")
 		} else {
@@ -1197,6 +1275,11 @@ function applyPayloadToForm(payload: Record<string, any>) {
 		}
 	}
 	for (const field of GAMMA_SAT_ROLE_FIELDS) {
+		if (isCorporateBrandPaletteMode(form.brand_palette_mode)) {
+			form[`${field}_gamma` as FormKey] = 0
+			form[`${field}_saturation` as FormKey] = 100
+			continue
+		}
 		const hex = form[field as FormKey]
 		if (typeof hex !== "string") continue
 		const gamma = Number(form[`${field}_gamma` as FormKey] ?? 0)
@@ -1205,6 +1288,7 @@ function applyPayloadToForm(payload: Record<string, any>) {
 			form[field as FormKey] = effectiveRoleHex(hex, gamma, saturation)
 		}
 	}
+	form.brand_palette_mode = normalizeBrandPaletteMode(form.brand_palette_mode)
 }
 
 function tryLoadThemeFromQuery(themes: any[]): boolean {
@@ -1699,6 +1783,41 @@ onMounted(() => {
 
 .editor-status-hint-warn {
 	color: var(--nce-color-warning, #d97706);
+}
+
+.brand-colors-header {
+	display: flex;
+	align-items: center;
+	gap: 1rem;
+	flex-wrap: wrap;
+}
+
+.brand-palette-check {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.375rem;
+	cursor: pointer;
+	white-space: nowrap;
+}
+
+.brand-palette-check .section-title {
+	margin-bottom: 0;
+}
+
+.brand-palette-check input {
+	cursor: pointer;
+}
+
+.brand-palette-mode-label {
+	font-size: calc(var(--nce-font-size, 14px) * 0.875);
+	font-weight: 500;
+	color: var(--nce-color-muted, #9ca3af);
+	font-family: var(--nce-font-family, inherit);
+	white-space: nowrap;
+}
+
+.brand-palette-mode-label--active {
+	color: var(--nce-color-text, #374151);
 }
 
 .editor-warn {

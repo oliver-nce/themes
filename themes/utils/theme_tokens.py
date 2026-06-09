@@ -48,6 +48,9 @@ TRANSITION_MAP = {
 
 GAMMA_SAT_ROLE_FIELDS = frozenset({"primary_color", "secondary_color"})
 
+BRAND_PALETTE_MODES = frozenset({"corporate", "flexible"})
+DEFAULT_BRAND_PALETTE_MODE = "corporate"
+
 # ── Self-hosted variable fonts (formerly in css_writer.py) ──
 # Each entry: display name -> (folder slug under public/fonts, generic fallback).
 
@@ -154,6 +157,7 @@ TOKEN_FIELDS = MIGRATED_FIELDS + [
 	"secondary_color_saturation",
 	"neutral_color_warmth",
 	"neutral_color_shades",
+	"brand_palette_mode",
 ]
 
 

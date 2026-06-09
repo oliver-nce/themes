@@ -36,6 +36,7 @@ def _load_payloads() -> dict:
         default = resolve_neutral_into_payload(json.load(f))
 
     gamma = dict(default)
+    gamma["brand_palette_mode"] = "flexible"
     gamma["primary_color_gamma"] = 20
     gamma["primary_color_saturation"] = 120
 

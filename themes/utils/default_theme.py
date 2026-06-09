@@ -4,6 +4,7 @@ import json
 import os
 
 _FALLBACK_PAYLOAD = {
+    "brand_palette_mode": "corporate",
     "primary_color": "#3B82F6",
     "secondary_color": "#10B981",
     "accent_color": "#8B5CF6",

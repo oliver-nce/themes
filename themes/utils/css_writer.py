@@ -138,6 +138,20 @@ def _role_gamma_sat(g, field):
     return gamma, float(saturation)
 
 
+def _brand_palette_mode(g):
+    mode = (g("brand_palette_mode") or "corporate").strip().lower()
+    return mode if mode == "flexible" else "corporate"
+
+
+def _pin_stop_600_for_role(g, field):
+    if field not in GAMMA_SAT_ROLE_FIELDS:
+        return True
+    if _brand_palette_mode(g) != "flexible":
+        return True
+    gamma, saturation = _role_gamma_sat(g, field)
+    return gamma == 0 and saturation == 100
+
+
 def _parse_shades_map(raw):
     if not raw:
         return None
@@ -170,7 +184,9 @@ def _get_role_shades(g, field):
     if not value:
         return []
     gamma, saturation = _role_gamma_sat(g, field)
-    pin_600 = field not in GAMMA_SAT_ROLE_FIELDS or (gamma == 0 and saturation == 100)
+    if _brand_palette_mode(g) != "flexible":
+        gamma, saturation = 0.0, 100.0
+    pin_600 = _pin_stop_600_for_role(g, field)
     return _generate_shades(
         value, gamma=gamma, saturation=saturation, pin_600_to_base=pin_600,
     )
@@ -180,7 +196,7 @@ def _role_base_hex(g, field):
     """Base hex for a role token (stop 600 for shade-scale roles)."""
     value = g(field)
     if value:
-        if field in GAMMA_SAT_ROLE_FIELDS:
+        if field in GAMMA_SAT_ROLE_FIELDS and _brand_palette_mode(g) == "flexible":
             gamma, saturation = _role_gamma_sat(g, field)
             return _effective_role_hex(value, gamma, saturation)
         return value
@@ -211,7 +227,7 @@ def _emit_var_block(g, lines, selector=":root", include_custom_css=True):
             v = g(f)
             if not v:
                 continue
-            if f in GAMMA_SAT_ROLE_FIELDS:
+            if f in GAMMA_SAT_ROLE_FIELDS and _brand_palette_mode(g) == "flexible":
                 gamma, saturation = _role_gamma_sat(g, f)
                 v = _effective_role_hex(v, gamma, saturation)
         if not v:

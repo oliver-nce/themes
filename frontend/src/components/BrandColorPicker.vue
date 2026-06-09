@@ -28,7 +28,7 @@
 				</div>
 			</div>
 
-			<div class="adjust-sliders mt-2">
+			<div v-if="showAdjustSliders" class="adjust-sliders mt-2">
 				<div class="adjust-row">
 					<label>Lightness</label>
 					<input
@@ -68,7 +68,7 @@
 			<div v-if="open" class="picker-panel">
 				<div class="swatch-large" :style="{ backgroundColor: previewHex }" />
 
-				<div class="hue-only">
+				<div v-if="!isCorporate" class="hue-only">
 					<label>Hue</label>
 					<input
 						type="range"
@@ -120,16 +120,20 @@ import {
 	type OklchColorParams,
 } from "@/utils/color-shades"
 
+export type BrandPaletteMode = "corporate" | "flexible"
+
 const props = withDefaults(defineProps<{
 	label: string
 	modelValue: string
 	gamma?: number
 	saturation?: number
 	showShades?: boolean
+	paletteMode?: BrandPaletteMode
 }>(), {
 	gamma: 0,
 	saturation: 100,
 	showShades: false,
+	paletteMode: "flexible",
 })
 
 const emit = defineEmits<{
@@ -145,8 +149,15 @@ const dialogHex = ref("#3B82F6")
 const pinned600Hex = ref<string | null>(null)
 const hasEyeDropper = typeof window !== "undefined" && "EyeDropper" in window
 
-const gamma = computed(() => props.gamma ?? 0)
-const saturation = computed(() => props.saturation ?? 100)
+const isCorporate = computed(() => props.paletteMode !== "flexible")
+const showAdjustSliders = computed(() => !isCorporate.value && props.showShades)
+
+const gamma = computed(() => (isCorporate.value ? 0 : props.gamma ?? 0))
+const saturation = computed(() => (isCorporate.value ? 100 : props.saturation ?? 100))
+
+const pinStop600 = computed(
+	() => isCorporate.value || (gamma.value === 0 && saturation.value === 100),
+)
 
 function currentParams(): OklchColorParams {
 	return paramsFromHex(
@@ -160,17 +171,22 @@ const currentHex = computed(() => props.modelValue || color600FromParams(current
 
 const currentShades = computed(() => {
 	if (!props.showShades) return []
-	return generateShadesFromParams(currentParams(), {
-		base600Hex: props.modelValue || undefined,
-	})
+	return generateShadesFromParams(
+		currentParams(),
+		pinStop600.value ? { base600Hex: props.modelValue || undefined } : undefined,
+	)
 })
 
 const canReset = computed(
-	() => gamma.value !== 0 || saturation.value !== 100,
+	() => !isCorporate.value && (gamma.value !== 0 || saturation.value !== 100),
 )
 
 const previewHex = computed(() => {
 	if (pinned600Hex.value) return pinned600Hex.value
+	if (isCorporate.value) {
+		const parsed = parseHexInput(dialogHex.value)
+		return parsed || props.modelValue || "#3B82F6"
+	}
 	return color600FromParams({
 		hue: dialogHue.value,
 		gamma: 0,
@@ -213,10 +229,11 @@ function onDialogHexInput() {
 }
 
 function emitAll(params: OklchColorParams) {
+	if (isCorporate.value) return
 	const nextHex = color600FromParams(params)
-	const currentHex = (props.modelValue || "").toUpperCase()
+	const currentHexValue = (props.modelValue || "").toUpperCase()
 	if (
-		nextHex === currentHex &&
+		nextHex === currentHexValue &&
 		params.gamma === gamma.value &&
 		params.saturation === saturation.value
 	) {
@@ -264,11 +281,13 @@ function applyHue() {
 	const hex =
 		pinned600Hex.value ??
 		parsed ??
-		color600FromParams({
-			hue: dialogHue.value,
-			gamma: 0,
-			saturation: 100,
-		})
+		(isCorporate.value
+			? props.modelValue || "#3B82F6"
+			: color600FromParams({
+					hue: dialogHue.value,
+					gamma: 0,
+					saturation: 100,
+				}))
 	emit("update:modelValue", hex)
 	emit("update:gamma", 0)
 	emit("update:saturation", 100)

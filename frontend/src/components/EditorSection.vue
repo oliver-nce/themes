@@ -1,17 +1,20 @@
 <template>
 	<section class="editor-panel editor-section">
 		<div class="editor-section-header">
-			<button
-				v-if="collapsible"
-				type="button"
-				class="editor-section-toggle"
-				:aria-expanded="open"
-				@click="open = !open"
-			>
-				<h2 class="section-title editor-section-title">{{ title }}</h2>
-				<span class="editor-section-chevron" :class="{ open }">&#9660;</span>
-			</button>
-			<h2 v-else class="section-title editor-section-title">{{ title }}</h2>
+			<slot v-if="$slots.title" name="title" />
+			<template v-else>
+				<button
+					v-if="collapsible"
+					type="button"
+					class="editor-section-toggle"
+					:aria-expanded="open"
+					@click="open = !open"
+				>
+					<h2 class="section-title editor-section-title">{{ title }}</h2>
+					<span class="editor-section-chevron" :class="{ open }">&#9660;</span>
+				</button>
+				<h2 v-else class="section-title editor-section-title">{{ title }}</h2>
+			</template>
 			<div v-if="$slots.actions" class="editor-section-actions">
 				<slot name="actions" />
 			</div>
@@ -28,12 +31,13 @@ import { ref, watch } from "vue"
 
 const props = withDefaults(
 	defineProps<{
-		title: string
+		title?: string
 		hint?: string
 		collapsible?: boolean
 		defaultOpen?: boolean
 	}>(),
 	{
+		title: "",
 		hint: "",
 		collapsible: false,
 		defaultOpen: true,
