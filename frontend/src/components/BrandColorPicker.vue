@@ -65,19 +65,35 @@
 
 		<Teleport to="body">
 			<div v-if="open" class="fixed inset-0 z-40" @click="open = false" />
-			<div v-if="open" class="picker-panel">
+			<div v-if="open" class="picker-panel" :style="{ width: panelWidth + 'px' }">
 				<div class="swatch-large" :style="{ backgroundColor: previewHex }" />
+
+				<div v-if="!isCorporate" class="hue-strip">
+					<button
+						v-for="(sq, i) in HUE_SQUARES"
+						:key="sq.hue"
+						type="button"
+						class="hue-square"
+						:class="{ 'hue-square--selected': i === selectedSquareIndex }"
+						:style="{ backgroundColor: sq.hex }"
+						:title="Math.round(sq.hue) + '°'"
+						@click="selectHueSquare(sq.hue)"
+					/>
+				</div>
 
 				<div v-if="!isCorporate" class="hue-only">
 					<label>Hue</label>
 					<input
 						type="range"
 						class="hue-slider"
-						min="0"
-						max="360"
-						:value="Math.round(dialogHue)"
+						:min="fineMin"
+						:max="fineMax"
+						step="0.5"
+						:value="dialogHue"
+						:style="{ background: fineGradient }"
 						@input="onHueInput($event)"
 					/>
+					<span class="adjust-value">{{ hueDisplayDeg }}°</span>
 				</div>
 
 				<div class="hex-row">
@@ -142,11 +158,33 @@ const emit = defineEmits<{
 	"update:saturation": [value: number]
 }>()
 
+const HUE_SQUARE_COUNT = 48
+const HUE_SQUARE_STEP = 360 / HUE_SQUARE_COUNT
+/** Fine-tune slider half-range in degrees around the selected square. */
+const FINE_RANGE = 15
+const PANEL_MIN_WIDTH = 320
+
+/** Static strip — each square painted with the actual OKLCH 600-stop color for its hue. */
+const HUE_SQUARES: ReadonlyArray<{ hue: number; hex: string }> = Array.from(
+	{ length: HUE_SQUARE_COUNT },
+	(_, i) => {
+		const hue = i * HUE_SQUARE_STEP
+		return { hue, hex: color600FromParams({ hue, gamma: 0, saturation: 100 }) }
+	},
+)
+
+function normalizeHue(h: number): number {
+	return ((h % 360) + 360) % 360
+}
+
+const wrapper = ref<HTMLElement | null>(null)
 const open = ref(false)
 const showCopied = ref(false)
 const dialogHue = ref(250)
 const dialogHex = ref("#3B82F6")
 const pinned600Hex = ref<string | null>(null)
+const fineCenter = ref(250)
+const panelWidth = ref(PANEL_MIN_WIDTH)
 const hasEyeDropper = typeof window !== "undefined" && "EyeDropper" in window
 
 const isCorporate = computed(() => props.paletteMode !== "flexible")
@@ -203,23 +241,63 @@ const satGradient = computed(() => {
 	return `linear-gradient(to right, ${low}, ${mid})`
 })
 
+const fineMin = computed(() => fineCenter.value - FINE_RANGE)
+const fineMax = computed(() => fineCenter.value + FINE_RANGE)
+
+const selectedSquareIndex = computed(
+	() => Math.round(normalizeHue(dialogHue.value) / HUE_SQUARE_STEP) % HUE_SQUARE_COUNT,
+)
+
+const hueDisplayDeg = computed(() => Math.round(normalizeHue(dialogHue.value)))
+
+/** Track gradient sampled from the actual OKLCH output across the fine range. */
+const fineGradient = computed(() => {
+	const samples = 11
+	const span = fineMax.value - fineMin.value
+	const stops: string[] = []
+	for (let i = 0; i < samples; i++) {
+		const hue = fineMin.value + (span * i) / (samples - 1)
+		stops.push(color600FromParams({ hue, gamma: 0, saturation: 100 }))
+	}
+	return `linear-gradient(to right, ${stops.join(", ")})`
+})
+
+function measurePanelWidth() {
+	const w = wrapper.value?.offsetWidth ?? PANEL_MIN_WIDTH
+	const viewportCap =
+		typeof window !== "undefined" ? window.innerWidth - 32 : PANEL_MIN_WIDTH
+	panelWidth.value = Math.min(Math.max(w, PANEL_MIN_WIDTH), viewportCap)
+}
+
 watch(open, (val) => {
 	if (val) {
 		const hex = (props.modelValue || "#3B82F6").toUpperCase()
 		dialogHue.value = currentParams().hue
+		fineCenter.value = dialogHue.value
 		dialogHex.value = hex
 		pinned600Hex.value = hex
+		measurePanelWidth()
 	}
 })
 
-function onHueInput(e: Event) {
+function setDialogHue(hue: number) {
 	pinned600Hex.value = null
-	dialogHue.value = +((e.target as HTMLInputElement).value)
+	dialogHue.value = hue
 	dialogHex.value = color600FromParams({
-		hue: dialogHue.value,
+		hue: normalizeHue(hue),
 		gamma: 0,
 		saturation: 100,
 	})
+}
+
+function selectHueSquare(hue: number) {
+	setDialogHue(hue)
+	fineCenter.value = hue
+}
+
+function onHueInput(e: Event) {
+	// Do not re-center fineCenter while dragging — keeps the track stable under the thumb.
+	setDialogHue(+((e.target as HTMLInputElement).value))
 }
 
 function onDialogHexInput() {
@@ -227,6 +305,7 @@ function onDialogHexInput() {
 	if (!parsed) return
 	pinned600Hex.value = parsed
 	dialogHue.value = hexToOklch(parsed).h
+	fineCenter.value = dialogHue.value
 	dialogHex.value = parsed
 }
 
@@ -274,6 +353,7 @@ async function useEyeDropper() {
 		if (!parsed) return
 		pinned600Hex.value = parsed
 		dialogHue.value = hexToOklch(parsed).h
+		fineCenter.value = dialogHue.value
 		dialogHex.value = parsed
 	} catch { /* cancelled */ }
 }
@@ -286,7 +366,7 @@ function applyHue() {
 		(isCorporate.value
 			? props.modelValue || "#3B82F6"
 			: color600FromParams({
-					hue: dialogHue.value,
+					hue: normalizeHue(dialogHue.value),
 					gamma: 0,
 					saturation: 100,
 				}))
@@ -309,10 +389,30 @@ function applyHue() {
 	border-radius: 12px;
 	padding: 16px;
 	box-shadow: 0 2px 24px rgba(0,0,0,0.08), 0 1px 6px rgba(0,0,0,0.05);
-	width: 280px;
 	display: flex;
 	flex-direction: column;
 	gap: 12px;
+}
+
+.hue-strip {
+	display: flex;
+	gap: 2px;
+	width: 100%;
+}
+.hue-square {
+	flex: 1;
+	min-width: 0;
+	aspect-ratio: 1;
+	padding: 0;
+	border: 1px solid transparent;
+	border-radius: 2px;
+	cursor: pointer;
+}
+.hue-square--selected {
+	position: relative;
+	z-index: 1;
+	transform: scale(1.25);
+	box-shadow: 0 0 0 2px #111;
 }
 
 .swatch-large {
@@ -351,12 +451,6 @@ function applyHue() {
 	border: 2px solid #666;
 	box-shadow: 0 1px 3px rgba(0,0,0,0.3);
 }
-.hue-slider {
-	background: linear-gradient(to right,
-		hsl(0,100%,50%), hsl(60,100%,50%), hsl(120,100%,50%),
-		hsl(180,100%,50%), hsl(240,100%,50%), hsl(300,100%,50%), hsl(360,100%,50%));
-}
-
 .adjust-sliders {
 	display: flex;
 	flex-direction: column;
