@@ -68,7 +68,7 @@
 			<div
 				v-if="open"
 				class="picker-panel"
-				:style="{ width: panelWidth + 'px' }"
+				:style="panelStyle"
 				@click.stop
 			>
 				<div class="swatch-large" :style="{ backgroundColor: previewHex }" />
@@ -85,11 +85,7 @@
 						type="button"
 						class="hue-square"
 						:class="{ 'hue-square--selected': i === selectedSquareIndex }"
-						:style="{
-							backgroundColor: sq.hex,
-							width: hueSquareSize + 'px',
-							height: hueSquareSize + 'px',
-						}"
+						:style="{ backgroundColor: sq.hex }"
 						:title="Math.round(sq.hue) + '° — ' + sq.hex"
 						@click.stop="selectHueSquare(sq.hue)"
 					/>
@@ -180,16 +176,27 @@ const PANEL_MIN_WIDTH = 480
 const PANEL_H_PADDING = 32
 const HUE_STRIP_GAP = 3
 const HUE_SQUARE_MAX = 32
-const HUE_SQUARE_MIN = 14
-/** Measure this ancestor for popup width (full Primary/Secondary section). */
-const PANEL_WIDTH_SELECTOR = ".brand-color-panel-grid, .editor-panel"
+const HUE_SQUARE_MIN = 10
+/** Strip swatches use a lighter stop so hues are easier to tell apart. */
+const HUE_STRIP_PREVIEW_SHADE = 400
+/** Measure this ancestor for popup width and horizontal alignment. */
+const PANEL_ANCHOR_SELECTOR = ".editor-panel"
 
-/** Static strip — each square painted with the actual OKLCH 600-stop color for its hue. */
+/** Strip preview hex at the lighter preview stop (hue selection still commits at 600). */
+function hueStripDisplayHex(hue: number): string {
+	const params = { hue, gamma: 0, saturation: 100 }
+	return (
+		generateShadesFromParams(params).find((s) => s.shade === HUE_STRIP_PREVIEW_SHADE)?.hex ??
+		color600FromParams(params)
+	)
+}
+
+/** Static strip — lighter OKLCH preview at shade 400 for each hue step. */
 const HUE_SQUARES: ReadonlyArray<{ hue: number; hex: string }> = Array.from(
 	{ length: HUE_SQUARE_COUNT },
 	(_, i) => {
 		const hue = i * HUE_SQUARE_STEP
-		return { hue, hex: color600FromParams({ hue, gamma: 0, saturation: 100 }) }
+		return { hue, hex: hueStripDisplayHex(hue) }
 	},
 )
 
@@ -210,6 +217,7 @@ const dialogHex = ref("#3B82F6")
 const pinned600Hex = ref<string | null>(null)
 const fineCenter = ref(250)
 const panelWidth = ref(PANEL_MIN_WIDTH)
+const panelLeft = ref(16)
 const hasEyeDropper = typeof window !== "undefined" && "EyeDropper" in window
 
 const isCorporate = computed(() => props.paletteMode !== "flexible")
@@ -275,39 +283,48 @@ const selectedSquareIndex = computed(
 
 const hueDisplayDeg = computed(() => Math.round(normalizeHue(dialogHue.value)))
 
-/** Square size: 32px max; scales down when panel inner width < 36×32 + gaps. */
-const hueSquareSize = computed(() => {
+/** Cell height derived from inner panel width so 36 squares always fit exactly. */
+const hueCellSize = computed(() => {
 	const inner = panelWidth.value - PANEL_H_PADDING
 	const gaps = (HUE_SQUARE_COUNT - 1) * HUE_STRIP_GAP
-	const raw = Math.floor((inner - gaps) / HUE_SQUARE_COUNT)
-	return Math.max(HUE_SQUARE_MIN, Math.min(HUE_SQUARE_MAX, raw))
+	const cell = (inner - gaps) / HUE_SQUARE_COUNT
+	return Math.max(HUE_SQUARE_MIN, Math.min(HUE_SQUARE_MAX, cell))
 })
 
-const hueStripStyle = computed(() => ({
-	gridTemplateColumns: `repeat(${HUE_SQUARE_COUNT}, ${hueSquareSize.value}px)`,
-	gap: `${HUE_STRIP_GAP}px`,
+const panelStyle = computed(() => ({
+	width: `${panelWidth.value}px`,
+	left: `${panelLeft.value}px`,
 }))
 
-/** Track gradient sampled from the actual OKLCH output across the fine range. */
+const hueStripStyle = computed(() => ({
+	gridTemplateColumns: `repeat(${HUE_SQUARE_COUNT}, minmax(0, 1fr))`,
+	gap: `${HUE_STRIP_GAP}px`,
+	"--hue-cell-size": `${hueCellSize.value}px`,
+}))
+
+/** Track gradient — lighter preview colors matching the strip. */
 const fineGradient = computed(() => {
 	const samples = 11
 	const span = fineMax.value - fineMin.value
 	const stops: string[] = []
 	for (let i = 0; i < samples; i++) {
 		const hue = fineMin.value + (span * i) / (samples - 1)
-		stops.push(color600FromParams({ hue, gamma: 0, saturation: 100 }))
+		stops.push(hueStripDisplayHex(hue))
 	}
 	return `linear-gradient(to right, ${stops.join(", ")})`
 })
 
-function measurePanelWidth() {
+function measurePanelLayout() {
+	if (typeof window === "undefined") return
 	const anchor =
-		(wrapper.value?.closest(PANEL_WIDTH_SELECTOR) as HTMLElement | null) ??
+		(wrapper.value?.closest(PANEL_ANCHOR_SELECTOR) as HTMLElement | null) ??
 		wrapper.value
-	const w = anchor?.offsetWidth ?? PANEL_MIN_WIDTH
-	const viewportCap =
-		typeof window !== "undefined" ? window.innerWidth - 32 : PANEL_MIN_WIDTH
-	panelWidth.value = Math.min(Math.max(w, PANEL_MIN_WIDTH), viewportCap)
+	if (!anchor) return
+	const rect = anchor.getBoundingClientRect()
+	const viewportCap = window.innerWidth - 32
+	const w = Math.min(Math.max(rect.width, PANEL_MIN_WIDTH), viewportCap)
+	panelWidth.value = w
+	panelLeft.value = Math.max(16, Math.min(rect.left, window.innerWidth - w - 16))
 }
 
 watch(open, async (val) => {
@@ -320,7 +337,7 @@ watch(open, async (val) => {
 		dialogHex.value = hex
 		pinned600Hex.value = hex
 		await nextTick()
-		measurePanelWidth()
+		measurePanelLayout()
 	}
 })
 
@@ -426,8 +443,7 @@ function applyHue() {
 	position: fixed;
 	z-index: 50;
 	top: 50%;
-	left: 50%;
-	transform: translate(-50%, -50%);
+	transform: translateY(-50%);
 	background: white;
 	border: 1px solid rgba(0,0,0,0.12);
 	border-radius: 12px;
@@ -436,20 +452,23 @@ function applyHue() {
 	display: flex;
 	flex-direction: column;
 	gap: 12px;
+	overflow: hidden;
+	box-sizing: border-box;
 }
 
 .hue-strip {
 	display: grid;
 	width: 100%;
-	justify-content: center;
 }
 .hue-square {
-	flex-shrink: 0;
+	width: 100%;
+	height: var(--hue-cell-size, 24px);
 	padding: 0;
 	border: 1px solid rgba(0, 0, 0, 0.08);
 	border-radius: 3px;
 	cursor: pointer;
 	-webkit-tap-highlight-color: transparent;
+	box-sizing: border-box;
 }
 .hue-square:hover {
 	border-color: rgba(0, 0, 0, 0.25);
