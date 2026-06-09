@@ -178,7 +178,7 @@
 							These are from a Brand Palette
 						</label>
 					</template>
-					<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+					<div class="grid grid-cols-1 md:grid-cols-2 gap-6 brand-color-panel-grid">
 						<BrandColorPicker
 							v-for="c in brandColors"
 							:key="c.key"

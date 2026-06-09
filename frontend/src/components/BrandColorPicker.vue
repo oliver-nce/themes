@@ -65,19 +65,33 @@
 
 		<Teleport to="body">
 			<div v-if="open" class="fixed inset-0 z-40" @click="open = false" />
-			<div v-if="open" class="picker-panel" :style="{ width: panelWidth + 'px' }">
+			<div
+				v-if="open"
+				class="picker-panel"
+				:style="{ width: panelWidth + 'px' }"
+				@click.stop
+			>
 				<div class="swatch-large" :style="{ backgroundColor: previewHex }" />
 
-				<div v-if="!isCorporate" class="hue-strip">
+				<div
+					v-if="!isCorporate"
+					class="hue-strip"
+					:style="hueStripStyle"
+					@click.stop
+				>
 					<button
 						v-for="(sq, i) in HUE_SQUARES"
 						:key="sq.hue"
 						type="button"
 						class="hue-square"
 						:class="{ 'hue-square--selected': i === selectedSquareIndex }"
-						:style="{ backgroundColor: sq.hex }"
-						:title="Math.round(sq.hue) + '°'"
-						@click="selectHueSquare(sq.hue)"
+						:style="{
+							backgroundColor: sq.hex,
+							width: hueSquareSize + 'px',
+							height: hueSquareSize + 'px',
+						}"
+						:title="Math.round(sq.hue) + '° — ' + sq.hex"
+						@click.stop="selectHueSquare(sq.hue)"
 					/>
 				</div>
 
@@ -126,7 +140,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch } from "vue"
+import { ref, computed, watch, nextTick } from "vue"
 import {
 	color600FromParams,
 	generateShadesFromParams,
@@ -158,11 +172,17 @@ const emit = defineEmits<{
 	"update:saturation": [value: number]
 }>()
 
-const HUE_SQUARE_COUNT = 48
+const HUE_SQUARE_COUNT = 36
 const HUE_SQUARE_STEP = 360 / HUE_SQUARE_COUNT
 /** Fine-tune slider half-range in degrees around the selected square. */
-const FINE_RANGE = 15
-const PANEL_MIN_WIDTH = 320
+const FINE_RANGE = 20
+const PANEL_MIN_WIDTH = 480
+const PANEL_H_PADDING = 32
+const HUE_STRIP_GAP = 3
+const HUE_SQUARE_MAX = 32
+const HUE_SQUARE_MIN = 14
+/** Measure this ancestor for popup width (full Primary/Secondary section). */
+const PANEL_WIDTH_SELECTOR = ".brand-color-panel-grid, .editor-panel"
 
 /** Static strip — each square painted with the actual OKLCH 600-stop color for its hue. */
 const HUE_SQUARES: ReadonlyArray<{ hue: number; hex: string }> = Array.from(
@@ -175,6 +195,11 @@ const HUE_SQUARES: ReadonlyArray<{ hue: number; hex: string }> = Array.from(
 
 function normalizeHue(h: number): number {
 	return ((h % 360) + 360) % 360
+}
+
+function nearestSquareHue(hue: number): number {
+	const idx = Math.round(normalizeHue(hue) / HUE_SQUARE_STEP) % HUE_SQUARE_COUNT
+	return idx * HUE_SQUARE_STEP
 }
 
 const wrapper = ref<HTMLElement | null>(null)
@@ -250,6 +275,19 @@ const selectedSquareIndex = computed(
 
 const hueDisplayDeg = computed(() => Math.round(normalizeHue(dialogHue.value)))
 
+/** Square size: 32px max; scales down when panel inner width < 36×32 + gaps. */
+const hueSquareSize = computed(() => {
+	const inner = panelWidth.value - PANEL_H_PADDING
+	const gaps = (HUE_SQUARE_COUNT - 1) * HUE_STRIP_GAP
+	const raw = Math.floor((inner - gaps) / HUE_SQUARE_COUNT)
+	return Math.max(HUE_SQUARE_MIN, Math.min(HUE_SQUARE_MAX, raw))
+})
+
+const hueStripStyle = computed(() => ({
+	gridTemplateColumns: `repeat(${HUE_SQUARE_COUNT}, ${hueSquareSize.value}px)`,
+	gap: `${HUE_STRIP_GAP}px`,
+}))
+
 /** Track gradient sampled from the actual OKLCH output across the fine range. */
 const fineGradient = computed(() => {
 	const samples = 11
@@ -263,19 +301,25 @@ const fineGradient = computed(() => {
 })
 
 function measurePanelWidth() {
-	const w = wrapper.value?.offsetWidth ?? PANEL_MIN_WIDTH
+	const anchor =
+		(wrapper.value?.closest(PANEL_WIDTH_SELECTOR) as HTMLElement | null) ??
+		wrapper.value
+	const w = anchor?.offsetWidth ?? PANEL_MIN_WIDTH
 	const viewportCap =
 		typeof window !== "undefined" ? window.innerWidth - 32 : PANEL_MIN_WIDTH
 	panelWidth.value = Math.min(Math.max(w, PANEL_MIN_WIDTH), viewportCap)
 }
 
-watch(open, (val) => {
+watch(open, async (val) => {
 	if (val) {
 		const hex = (props.modelValue || "#3B82F6").toUpperCase()
-		dialogHue.value = currentParams().hue
-		fineCenter.value = dialogHue.value
+		const hue = hexToOklch(hex).h
+		const snapped = nearestSquareHue(hue)
+		dialogHue.value = hue
+		fineCenter.value = snapped
 		dialogHex.value = hex
 		pinned600Hex.value = hex
+		await nextTick()
 		measurePanelWidth()
 	}
 })
@@ -395,24 +439,26 @@ function applyHue() {
 }
 
 .hue-strip {
-	display: flex;
-	gap: 2px;
+	display: grid;
 	width: 100%;
+	justify-content: center;
 }
 .hue-square {
-	flex: 1;
-	min-width: 0;
-	aspect-ratio: 1;
+	flex-shrink: 0;
 	padding: 0;
-	border: 1px solid transparent;
-	border-radius: 2px;
+	border: 1px solid rgba(0, 0, 0, 0.08);
+	border-radius: 3px;
 	cursor: pointer;
+	-webkit-tap-highlight-color: transparent;
+}
+.hue-square:hover {
+	border-color: rgba(0, 0, 0, 0.25);
+	filter: brightness(1.08);
 }
 .hue-square--selected {
-	position: relative;
+	border-color: #111;
+	box-shadow: 0 0 0 2px #fff, 0 0 0 3px #111;
 	z-index: 1;
-	transform: scale(1.25);
-	box-shadow: 0 0 0 2px #111;
 }
 
 .swatch-large {
