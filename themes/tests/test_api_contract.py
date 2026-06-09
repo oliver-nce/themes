@@ -1,7 +1,6 @@
 """API response shape tests for editor helpers (mocked — no Frappe bench required)."""
 from __future__ import annotations
 
-import json
 import sys
 import unittest
 from types import SimpleNamespace
@@ -62,9 +61,10 @@ class TestApiContract(unittest.TestCase):
             status="Active",
             theme_json='{"primary_color":"#3B82F6"}',
         )
-        with patch("themes.api.frappe") as frappe_mock, patch(
-            "themes.api.get_site_base_theme_name", return_value="NCE Theme Default"
-        ):
+        with patch("themes.utils.theme_service.frappe") as frappe_mock, patch(
+            "themes.utils.theme_family.get_site_base_theme_name",
+            return_value="NCE Theme Default",
+        ), patch("themes.utils.theme_family.read_web_css_hash", return_value="abc12345"):
             frappe_mock.db.exists.return_value = True
             frappe_mock.get_doc.return_value = theme_doc
             frappe_mock.db.get_single_value.return_value = "abc12345"
@@ -86,8 +86,9 @@ class TestApiContract(unittest.TestCase):
             status="Active",
             theme_json="{}",
         )
-        with patch("themes.api.frappe") as frappe_mock, patch(
-            "themes.api.get_site_base_theme_name", return_value="NCE Theme Default"
+        with patch("themes.utils.theme_service.frappe") as frappe_mock, patch(
+            "themes.utils.theme_family.get_site_base_theme_name",
+            return_value="NCE Theme Default",
         ):
             frappe_mock.db.exists.return_value = True
             frappe_mock.get_doc.return_value = theme_doc
@@ -107,10 +108,10 @@ class TestApiContract(unittest.TestCase):
             status="Active",
             theme_json='{"primary_color":"#2490EF"}',
         )
-        with patch("themes.api.frappe") as frappe_mock, patch(
-            "themes.api.get_site_base_desk_theme_name",
+        with patch("themes.utils.theme_service.frappe") as frappe_mock, patch(
+            "themes.utils.theme_family.get_site_base_desk_theme_name",
             return_value="NCE Desk Theme Default",
-        ), patch("themes.api._read_desk_css_hash", return_value="desk1234"):
+        ), patch("themes.utils.desk_css_writer._read_desk_css_hash", return_value="desk1234"):
             frappe_mock.db.exists.return_value = True
             frappe_mock.get_doc.return_value = theme_doc
 
@@ -130,10 +131,10 @@ class TestApiContract(unittest.TestCase):
             status="Inactive",
             theme_json="{}",
         )
-        with patch("themes.api.frappe") as frappe_mock, patch(
-            "themes.api.get_site_base_desk_theme_name",
+        with patch("themes.utils.theme_service.frappe") as frappe_mock, patch(
+            "themes.utils.theme_family.get_site_base_desk_theme_name",
             return_value="NCE Desk Theme Default",
-        ), patch("themes.api._read_desk_css_hash", return_value="desk1234"):
+        ), patch("themes.utils.desk_css_writer._read_desk_css_hash", return_value="desk1234"):
             frappe_mock.db.exists.return_value = True
             frappe_mock.get_doc.return_value = theme_doc
 
@@ -149,10 +150,10 @@ class TestApiContract(unittest.TestCase):
             status="Inactive",
             theme_json="{}",
         )
-        with patch("themes.api.frappe") as frappe_mock, patch(
-            "themes.api.get_site_base_desk_theme_name",
+        with patch("themes.utils.theme_service.frappe") as frappe_mock, patch(
+            "themes.utils.theme_family.get_site_base_desk_theme_name",
             return_value="NCE Desk Theme Default",
-        ), patch("themes.api._read_desk_css_hash", return_value="desk1234"):
+        ), patch("themes.utils.desk_css_writer._read_desk_css_hash", return_value="desk1234"):
             frappe_mock.db.exists.return_value = True
             frappe_mock.get_doc.return_value = theme_doc
 

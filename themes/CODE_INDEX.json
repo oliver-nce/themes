@@ -6,7 +6,9 @@
             "purpose": "Frappe custom app for site-wide CSS theming (Web tokens → --nce-*) and Frappe Desk chrome theming (Desk tokens → native --*-color)",
             "entry_points": {
                 "hooks.py": "Frappe app metadata, CSS/JS loading (nce_theme.css + nce_desk_theme.css + theme-swatch-picker), SPA routing, Apps screen entry, after_install",
-                "api.py": "Whitelisted API — Web: get_theme_editor(), get_base_theme_editor(), save_theme(), set_base_theme(), save_as_base_theme(), create_theme(), list_themes(), rename_theme(), delete_theme(), regenerate_theme_css(). Desk: mirrored get/save/set_base/create/list/rename/delete/regenerate with desk_ prefix. Legacy aliases: get_active_theme_editor, save_active_theme, set_active_theme, save_as_default (Web); get_active_desk_theme_editor, save_active_desk_theme, set_active_desk_theme (Desk).",
+                "api.py": "Thin whitelisted wrappers — delegates to theme_service with WEB_FAMILY / DESK_FAMILY. Same method names and wire contract as before.",
+                "utils/theme_family.py": "ThemeFamily frozen descriptors: WEB_FAMILY, DESK_FAMILY (doctype, parse/publish/bundle, is_active semantics, single_active flag).",
+                "utils/theme_service.py": "Family-parameterized CRUD: get_editor_response, save, create, set_base, list_themes, rename, delete, set_active (desk), regenerate_css.",
                 "install.py": "after_install hook: Site Theme Config + NCE Theme Default + NCE Desk Theme Default on fresh install",
                 "init_theme.py": "One-time init script: ensure NCE Theme Default exists and publish Web CSS. Run via bench execute.",
                 "init_desk_theme.py": "One-time init script: ensure NCE Desk Theme Default exists and publish Desk CSS. Run via bench execute.",
@@ -71,6 +73,7 @@
             },
             "composables": {
                 "src/composables/useTheme.ts": "Loads site base Web theme via get_active_theme_editor API (legacy alias for get_base_theme_editor) and applies CSS vars",
+                "src/composables/useThemeEditor.ts": "Shared editor state/resources for Web + Desk settings pages (load, dirty, save, list CRUD resources)",
                 "src/composables/useDeskTheme.ts": "Loads Active Desk theme via get_active_desk_theme_editor API and applies Desk CSS vars",
                 "src/composables/useThemeDefaults.ts": "Default theme color/typography values for editor seeding"
             },

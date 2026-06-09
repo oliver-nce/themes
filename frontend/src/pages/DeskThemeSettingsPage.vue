@@ -332,15 +332,13 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, watch, computed, onUnmounted, onMounted, nextTick } from "vue"
+import { ref, reactive, watch, computed, onUnmounted, onMounted } from "vue"
 import { useRoute } from "vue-router"
-import { createResource } from "frappe-ui"
 import EditorSection from "@/components/EditorSection.vue"
 import PasswordField from "@/components/PasswordField.vue"
 import SwatchPicker from "@/components/SwatchPicker.vue"
 import { applyDeskThemeVars, deskPayloadToCssVars } from "@/composables/useDeskTheme"
-
-type ThemeAvailabilityStatus = "Active" | "Inactive"
+import { useThemeEditor, type ThemeAvailabilityStatus } from "@/composables/useThemeEditor"
 
 const ALL_FIELDS = [
 	"theme_name",
@@ -454,26 +452,6 @@ const ganttColors = [
 ]
 
 const form = reactive<Record<FormKey, string>>({ ...DEFAULTS })
-const editingTheme = ref("")
-const selectedTheme = ref("")
-const siteBaseTheme = ref("")
-const loadingTheme = ref(false)
-const saving = ref(false)
-const statusSaving = ref(false)
-const editorLoaded = ref(false)
-const editorError = ref("")
-const listLoadError = ref("")
-const switchError = ref("")
-const dirtyBaselineReady = ref(false)
-const savedSnapshot = ref<Record<string, any>>({})
-const savedThemeStatus = ref<ThemeAvailabilityStatus>("Inactive")
-
-const editorMeta = reactive({
-	theme: "",
-	theme_name: "",
-	css_hash: "",
-	is_base_theme: false,
-})
 
 const systemTab = reactive({ password: "", busy: false, error: "", success: "" })
 const confirmDialog = reactive({
@@ -488,13 +466,16 @@ const saveAsDialog = reactive({ open: false, name: "", error: "", busy: false })
 const renameDialog = reactive({ open: false, name: "", error: "", busy: false })
 const deleteDialog = reactive({ open: false, error: "", busy: false })
 
-const siteBaseThemeName = computed(() => {
-	const row = themesList.data?.find((t: any) => t.name === siteBaseTheme.value)
-	return row?.theme_name || siteBaseTheme.value || ""
-})
-
 function themeFromQuery(): string {
 	return String(route.query.theme || "").trim()
+}
+
+function tryLoadThemeFromQuery(themes: any[]): boolean {
+	const q = themeFromQuery()
+	if (!q || !themes?.length) return false
+	if (!themes.some((t) => t.name === q)) return false
+	loadTheme(q)
+	return true
 }
 
 function themeOptionLabel(t: any): string {
@@ -503,12 +484,6 @@ function themeOptionLabel(t: any): string {
 	if (t.is_active) label += " (active)"
 	return label
 }
-
-const themeSelectWidth = computed(() => {
-	const labels = (themesList.data || []).map((t: any) => themeOptionLabel(t))
-	const chars = Math.max(20, ...labels.map((l: string) => l.length), 0)
-	return `${Math.min(Math.max(chars * 0.62, 14), 26)}rem`
-})
 
 function computeCSSVariables(): Record<string, string> {
 	return deskPayloadToCssVars(buildPayloadFromForm())
@@ -553,35 +528,6 @@ function canonicalPayload(source: Record<string, any>): Record<string, any> {
 	return payload
 }
 
-function captureSnapshot(payload?: Record<string, any>) {
-	savedSnapshot.value = canonicalPayload(payload || buildPayloadFromForm())
-}
-
-async function establishDirtyBaseline() {
-	dirtyBaselineReady.value = false
-	captureSnapshot()
-	await nextTick()
-	captureSnapshot()
-	dirtyBaselineReady.value = true
-}
-
-const isDirty = computed(() => {
-	if (!editorLoaded.value || !dirtyBaselineReady.value || loadingTheme.value) return false
-	return JSON.stringify(canonicalPayload(buildPayloadFromForm())) !== JSON.stringify(canonicalPayload(savedSnapshot.value))
-})
-
-function normalizeThemeStatus(status: string | undefined | null): ThemeAvailabilityStatus {
-	return status === "Active" ? "Active" : "Inactive"
-}
-
-const canChangeStatus = computed(
-	() => editorLoaded.value && !loadingTheme.value && !saving.value && !statusSaving.value && !isDirty.value,
-)
-
-const canRenameOrDelete = computed(
-	() => canChangeStatus.value && savedThemeStatus.value === "Inactive" && !editorMeta.is_base_theme,
-)
-
 function applyPayloadToForm(payload: Record<string, any>) {
 	for (const key of ALL_FIELDS) form[key] = DEFAULTS[key]
 	for (const key of ALL_FIELDS) {
@@ -591,107 +537,88 @@ function applyPayloadToForm(payload: Record<string, any>) {
 	}
 }
 
-const themesList = createResource({
-	url: "themes.api.list_desk_themes",
-	auto: true,
-	onSuccess(data: any[]) {
-		listLoadError.value = ""
-		if (!data?.length || editingTheme.value) return
-		if (tryLoadThemeFromQuery(data)) return
-		const pick =
-			data.find((t) => t.is_base_theme)?.name ||
-			data.find((t) => t.is_active)?.name ||
-			data[0].name
-		if (pick) loadTheme(pick)
+const {
+	loadingTheme,
+	saving,
+	statusSaving,
+	editorLoaded,
+	editorError,
+	switchError,
+	listLoadError,
+	selectedTheme,
+	editingTheme,
+	siteBaseTheme,
+	savedThemeStatus,
+	editorMeta,
+	isDirty,
+	savedSnapshot,
+	themesList,
+	saveResource,
+	renameThemeResource,
+	deleteThemeResource,
+	createThemeResource,
+	baseThemePayloadResource,
+	saveAsBaseThemeResource,
+	loadTheme,
+} = useThemeEditor(
+	{
+		list: "themes.api.list_desk_themes",
+		getEditor: "themes.api.get_desk_theme_editor",
+		save: "themes.api.save_desk_theme",
+		rename: "themes.api.rename_desk_theme",
+		delete: "themes.api.delete_desk_theme",
+		create: "themes.api.create_desk_theme",
+		basePayload: "themes.api.get_base_desk_theme_payload",
+		saveAsBase: "themes.api.save_as_base_desk_theme",
 	},
-	onError(err: any) {
-		listLoadError.value =
-			err?.message || "Could not load desk themes. Check System Manager permissions and that migrate has run."
+	{
+		applyPayloadToForm,
+		buildPayloadFromForm,
+		canonicalPayload,
+		applyLiveThemeVars: () => applyDeskThemeVars(computeCSSVariables()),
+		tryLoadThemeFromQuery,
+		pickInitialTheme: (data) =>
+			(data.find((t) => t.is_base_theme)?.name as string | undefined) ||
+			(data.find((t) => t.is_active)?.name as string | undefined) ||
+			(data[0]?.name as string | undefined),
+		defaultSavedStatus: "Inactive",
+		notFoundMessage: "Desk theme not found.",
+		loadErrorMessage:
+			"Could not load desk themes. Check System Manager permissions and that migrate has run.",
+		onEditorLoaded: (data) => {
+			if (data.theme_name) form.theme_name = data.theme_name as string
+		},
+		onCreateSuccess: (data) => {
+			saveAsDialog.open = false
+			saveAsDialog.busy = false
+			themesList.reload()
+			if (data?.theme) loadTheme(data.theme as string)
+		},
+		onCreateError: (err) => {
+			saveAsDialog.error = err?.message || "Could not create desk theme."
+			saveAsDialog.busy = false
+		},
 	},
+)
+
+const siteBaseThemeName = computed(() => {
+	const row = themesList.data?.find((t: any) => t.name === siteBaseTheme.value)
+	return row?.theme_name || siteBaseTheme.value || ""
 })
 
-const editorResource = createResource({
-	url: "themes.api.get_desk_theme_editor",
-	auto: false,
-	async onSuccess(data: any) {
-		loadingTheme.value = false
-		editorError.value = ""
-		switchError.value = ""
-		editorLoaded.value = false
-		dirtyBaselineReady.value = false
-		if (!data) {
-			editorError.value = "Desk theme not found."
-			return
-		}
-		editingTheme.value = data.theme || ""
-		selectedTheme.value = data.theme || ""
-		siteBaseTheme.value = data.site_base_theme || siteBaseTheme.value
-		editorMeta.theme = data.theme || ""
-		editorMeta.theme_name = data.theme_name || data.theme || ""
-		editorMeta.css_hash = data.css_hash || ""
-		editorMeta.is_base_theme = !!data.is_base_theme
-		savedThemeStatus.value = normalizeThemeStatus(data.status)
-		if (data.theme_name) form.theme_name = data.theme_name
-		applyPayloadToForm(data.payload || {})
-		editorLoaded.value = true
-		await establishDirtyBaseline()
-		applyLiveThemeVars()
-	},
-	onError(err: any) {
-		loadingTheme.value = false
-		editorLoaded.value = false
-		editorError.value = err?.message || "Failed to load desk theme."
-	},
+const themeSelectWidth = computed(() => {
+	const labels = (themesList.data || []).map((t: any) => themeOptionLabel(t))
+	const chars = Math.max(20, ...labels.map((l: string) => l.length), 0)
+	return `${Math.min(Math.max(chars * 0.62, 14), 26)}rem`
 })
 
-async function loadTheme(theme: string) {
-	if (!theme) return
-	loadingTheme.value = true
-	dirtyBaselineReady.value = false
-	editorError.value = ""
-	try {
-		await editorResource.submit({ theme })
-	} catch {
-		// onError
-	}
-}
+const canChangeStatus = computed(
+	() => editorLoaded.value && !loadingTheme.value && !saving.value && !statusSaving.value && !isDirty.value,
+)
 
-function tryLoadThemeFromQuery(themes: any[]): boolean {
-	const q = themeFromQuery()
-	if (!q || !themes?.length) return false
-	if (!themes.some((t) => t.name === q)) return false
-	loadTheme(q)
-	return true
-}
-
-const saveResource = createResource({
-	url: "themes.api.save_desk_theme",
-	onSuccess(data: any) {
-		if (data?.css_hash) editorMeta.css_hash = data.css_hash
-		editorMeta.is_base_theme = !!data?.is_base_theme
-		if (data?.theme_status) savedThemeStatus.value = normalizeThemeStatus(data.theme_status)
-		captureSnapshot()
-		themesList.reload()
-	},
-})
-
-const renameThemeResource = createResource({ url: "themes.api.rename_desk_theme", auto: false })
-const deleteThemeResource = createResource({ url: "themes.api.delete_desk_theme", auto: false })
-const createThemeResource = createResource({
-	url: "themes.api.create_desk_theme",
-	onSuccess(data: any) {
-		saveAsDialog.open = false
-		saveAsDialog.busy = false
-		themesList.reload()
-		if (data?.theme) loadTheme(data.theme)
-	},
-	onError(err: any) {
-		saveAsDialog.error = err?.message || "Could not create desk theme."
-		saveAsDialog.busy = false
-	},
-})
-const baseThemePayloadResource = createResource({ url: "themes.api.get_base_desk_theme_payload", auto: false })
-const saveAsBaseThemeResource = createResource({ url: "themes.api.save_as_base_desk_theme", auto: false })
+const canRenameOrDelete = computed(
+	() => canChangeStatus.value && savedThemeStatus.value === "Inactive" && !editorMeta.is_base_theme,
+)
 
 function openConfirmDialog(action: "switch" | "restore", pendingTheme = "") {
 	confirmDialog.action = action
