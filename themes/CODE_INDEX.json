@@ -109,11 +109,21 @@
             "spec": "docs/theme-swatch-picker.md"
         }
     },
+    "agent_glossary": {
+        "READ_FIRST": "Agents: use this glossary. Do NOT confuse these terms.",
+        "Default_theme": "The one NCE Theme / NCE Desk Theme record with is_default=1 and theme_name='Default'. ALWAYS the site :root fallback. Users never promote another theme to replace Default.",
+        "is_default_theme": "API boolean: true only on the Default theme record. CANONICAL — use this in new code.",
+        "is_base_theme": "DEPRECATED API alias for is_default_theme. Same value. Do not use in new code or docs.",
+        "status_Active": "Theme is published for consumers: web → included as [data-nce-theme=slug] block; desk → live desk chrome. Multiple web themes can be Active; desk allows only one Active.",
+        "is_active": "DEPRECATED. Web: wrongly aliased is_default_theme historically. Desk: means status==Active. Prefer status or is_default_theme.",
+        "app_fixture": "themes/data/base_theme.json and base_desk_theme.json — git-shipped JSON for new installs and 'Restore to Base Theme'. NOT the same as Default theme live DB record. Updated by Save Default to app (System tab).",
+        "Site_Theme_Config_base_theme": "Internal DB link used by CSS publish for :root. Should always point at Default; do not expose 'pick any theme as base' to users."
+    },
     "architecture_notes": [
-        "Web theme uses CSS custom properties (--nce-*) injected as :root vars (base theme) plus [data-nce-theme=\"slug\"] scoped blocks per Active theme — downstream apps consume via var() or data-nce-theme scoping",
+        "Web theme: Default → :root --nce-* vars; each status=Active theme → [data-nce-theme=slug] scoped block. See agent_glossary.",
         "Desk theme uses native Frappe Desk CSS variables (--primary-color, --bg-color, etc.) emitted to :root from nce_desk_theme.css",
         "Web and Desk CSS loaded site-wide via app_include_css in hooks.py (nce_theme.css + nce_desk_theme.css)",
-        "is_active semantics DIFFER intentionally: Web is_active == is_base (site base theme); Desk is_active == status=='Active' (single active enforced). Do NOT unify without product sign-off.",
+        "API naming: prefer is_default_theme; is_base_theme is deprecated alias. See agent_glossary.",
         "Vue SPA is served at /themes/* routes via www/themes.html",
         "ThemeSwatchPicker Desk: themeField = NCE Theme Link doc name → resolveNceThemeSlug before data-nce-theme; empty/invalid theme → blocked-dialog, no modal",
         "ThemeSwatchPicker while open: slug cached at open time; backdrop blocks host form (no watchThemeSlug)",

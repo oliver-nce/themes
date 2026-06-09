@@ -244,8 +244,11 @@
 			<div v-show="activeTab === 'system'" class="editor-tab">
 				<EditorSection
 					title="Save as base desk theme"
-					hint="Sets the site base desk theme, rebuilds nce_desk_theme.css, and bundles defaults into the app for new installs."
+					hint="Rare release action: sets the site base desk theme, rebuilds CSS, and writes bundled files into the app for new installs. Commit and push after running."
 				>
+					<p v-if="!canSaveAsDefaultTheme" class="text-sm text-gray-500 mb-3">
+						Only available when editing the Default (site base desk) theme.
+					</p>
 					<p class="text-sm text-gray-600 mb-3">
 						Editing <strong>{{ editorMeta.theme_name || "—" }}</strong>.
 						Requires your account password.
@@ -260,7 +263,7 @@
 						variant="solid"
 						class="bg-primary text-primary-fg border border-primary"
 						:loading="systemTab.busy"
-						:disabled="!systemTab.password || loadingTheme"
+						:disabled="!canSaveAsDefaultTheme || !systemTab.password"
 						@click="submitSaveAsBaseTheme"
 					>
 						Save as base desk theme
@@ -480,7 +483,7 @@ function tryLoadThemeFromQuery(themes: any[]): boolean {
 
 function themeOptionLabel(t: any): string {
 	let label = t.theme_name || t.name
-	if (t.is_base_theme) label += " (base)"
+	if (t.is_default_theme ?? t.is_base_theme) label += " (Default)"
 	if (t.is_active) label += " (active)"
 	return label
 }
@@ -578,7 +581,7 @@ const {
 		applyLiveThemeVars: () => applyDeskThemeVars(computeCSSVariables()),
 		tryLoadThemeFromQuery,
 		pickInitialTheme: (data) =>
-			(data.find((t) => t.is_base_theme)?.name as string | undefined) ||
+			(data.find((t) => t.is_default_theme || t.is_base_theme)?.name as string | undefined) ||
 			(data.find((t) => t.is_active)?.name as string | undefined) ||
 			(data[0]?.name as string | undefined),
 		defaultSavedStatus: "Inactive",
@@ -617,7 +620,11 @@ const canChangeStatus = computed(
 )
 
 const canRenameOrDelete = computed(
-	() => canChangeStatus.value && savedThemeStatus.value === "Inactive" && !editorMeta.is_base_theme,
+	() => canChangeStatus.value && savedThemeStatus.value === "Inactive" && !editorMeta.is_default_theme,
+)
+
+const canSaveAsDefaultTheme = computed(
+	() => editorLoaded.value && editorMeta.is_default_theme && !loadingTheme.value,
 )
 
 function openConfirmDialog(action: "switch" | "restore", pendingTheme = "") {
@@ -780,7 +787,7 @@ async function submitDelete() {
 		await themesList.reload()
 		const pick =
 			themesList.data?.find((t: any) => t.is_active)?.name ||
-			themesList.data?.find((t: any) => t.is_base_theme)?.name ||
+			themesList.data?.find((t: any) => t.is_default_theme || t.is_base_theme)?.name ||
 			themesList.data?.[0]?.name
 		if (pick) await loadTheme(pick)
 	} catch (err: any) {
@@ -811,6 +818,7 @@ async function restoreToBaseConfirmed() {
 }
 
 async function submitSaveAsBaseTheme() {
+	if (!canSaveAsDefaultTheme.value || !systemTab.password) return
 	systemTab.busy = true
 	systemTab.error = ""
 	systemTab.success = ""
@@ -823,7 +831,7 @@ async function submitSaveAsBaseTheme() {
 		systemTab.success =
 			"Base desk theme saved and bundled into the app. Commit and push the themes app to ship it on new installs."
 		siteBaseTheme.value = data?.theme || editingTheme.value
-		editorMeta.is_base_theme = true
+		editorMeta.is_default_theme = true
 		if (data?.css_hash) editorMeta.css_hash = data.css_hash
 		themesList.reload()
 	} catch (err: any) {

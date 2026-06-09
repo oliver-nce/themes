@@ -439,11 +439,11 @@
 				</EditorSection>
 
 				<EditorSection title="Published CSS">
-					<p v-if="editorMeta.is_base_theme && editorMeta.css_hash" class="text-sm text-gray-600">
+					<p v-if="editorMeta.is_default_theme && editorMeta.css_hash" class="text-sm text-gray-600">
 						Site base theme published to <code>nce_theme.css</code>
 						(hash: {{ editorMeta.css_hash }})
 					</p>
-					<p v-else-if="editorMeta.is_base_theme" class="text-sm text-gray-400">
+					<p v-else-if="editorMeta.is_default_theme" class="text-sm text-gray-400">
 						Save to publish CSS to the site
 					</p>
 					<p v-else class="text-sm text-gray-500">
@@ -458,7 +458,7 @@
 					title="Save as base theme"
 					hint="Rare release action: sets the site base theme, rebuilds CSS, and writes bundled files into the app for new installs. Commit and push after running."
 				>
-					<p v-if="!canSaveAsBaseTheme" class="text-sm text-gray-500 mb-3">
+					<p v-if="!canSaveAsDefaultTheme" class="text-sm text-gray-500 mb-3">
 						Only available when editing the Default (site base) theme.
 					</p>
 					<p class="text-sm text-gray-600 mb-3">
@@ -475,7 +475,7 @@
 						variant="solid"
 						class="bg-primary text-primary-fg border border-primary"
 						:loading="systemTab.busy"
-						:disabled="!canSaveAsBaseTheme || !systemTab.password"
+						:disabled="!canSaveAsDefaultTheme || !systemTab.password"
 						@click="requestSaveAsBaseTheme"
 					>
 						Save as base theme
@@ -1080,9 +1080,14 @@ const systemTab = reactive({
 	busy: false,
 })
 
-function themeOptionLabel(t: { theme_name: string; is_base_theme?: boolean; is_active?: boolean }) {
-	const isBase = t.is_base_theme ?? t.is_active
-	return isBase ? `${t.theme_name} · site base` : t.theme_name
+function themeOptionLabel(t: {
+	theme_name: string
+	is_default_theme?: boolean
+	is_base_theme?: boolean
+	is_active?: boolean
+}) {
+	const isDefault = t.is_default_theme ?? t.is_base_theme ?? t.is_active
+	return isDefault ? `${t.theme_name} · Default` : t.theme_name
 }
 
 function buildPayloadFromForm(): Record<string, any> {
@@ -1276,15 +1281,15 @@ const canRenameOrDelete = computed(
 	() =>
 		canChangeStatus.value &&
 		savedThemeStatus.value === "Inactive" &&
-		!editorMeta.is_base_theme,
+		!editorMeta.is_default_theme,
 )
 
 const showRenameDeleteActions = computed(
-	() => editorLoaded.value && !editorMeta.is_base_theme,
+	() => editorLoaded.value && !editorMeta.is_default_theme,
 )
 
-const canSaveAsBaseTheme = computed(
-	() => editorLoaded.value && editorMeta.is_base_theme && !loadingTheme.value,
+const canSaveAsDefaultTheme = computed(
+	() => editorLoaded.value && editorMeta.is_default_theme && !loadingTheme.value,
 )
 
 function openConfirmDialog(action: "switch" | "restore", pendingTheme = "") {
@@ -1474,7 +1479,7 @@ async function submitDelete() {
 		editingTheme.value = ""
 		await themesList.reload()
 		const base =
-			themesList.data?.find((t: any) => t.is_base_theme || t.is_active)?.name ||
+			themesList.data?.find((t: any) => t.is_default_theme || t.is_base_theme)?.name ||
 			themesList.data?.[0]?.name
 		if (base) await loadTheme(base)
 	} catch (err: any) {
@@ -1522,7 +1527,7 @@ async function submitSaveAsBaseTheme() {
 		systemTab.success =
 			"Base theme saved and bundled into the app. Commit and push the themes app to ship it on new installs."
 		siteBaseTheme.value = data?.theme || editingTheme.value
-		editorMeta.is_base_theme = true
+		editorMeta.is_default_theme = true
 		if (data?.css_hash) editorMeta.css_hash = data.css_hash
 		themesList.reload()
 	} catch (err: any) {
@@ -1534,7 +1539,7 @@ async function submitSaveAsBaseTheme() {
 }
 
 function requestSaveAsBaseTheme() {
-	if (!canSaveAsBaseTheme.value || !systemTab.password) return
+	if (!canSaveAsDefaultTheme.value || !systemTab.password) return
 	saveBaseThemeDialog.error = ""
 	saveBaseThemeDialog.open = true
 }

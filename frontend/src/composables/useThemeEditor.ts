@@ -49,8 +49,26 @@ export function useThemeEditor(api: ThemeEditorApiConfig, hooks: ThemeEditorLoad
 		theme: "",
 		theme_name: "",
 		css_hash: "",
-		is_base_theme: false,
+		is_default_theme: false,
 	})
+
+	function readIsDefaultTheme(data: Record<string, unknown> | null | undefined): boolean {
+		if (!data) return false
+		if (data.is_default_theme !== undefined) return !!data.is_default_theme
+		if (data.is_base_theme !== undefined) return !!data.is_base_theme
+		if (hooks.useLegacyIsActive && data.is_active !== undefined) return !!data.is_active
+		return false
+	}
+
+	function readSiteDefaultTheme(data: Record<string, unknown> | null | undefined): string {
+		if (!data) return ""
+		return (
+			(data.site_default_theme as string) ||
+			(data.site_base_theme as string) ||
+			(hooks.useLegacyIsActive ? (data.site_active_theme as string) : "") ||
+			""
+		)
+	}
 
 	function normalizeThemeStatus(status: string | undefined | null): ThemeAvailabilityStatus {
 		return status === "Inactive" ? "Inactive" : "Active"
@@ -83,7 +101,8 @@ export function useThemeEditor(api: ThemeEditorApiConfig, hooks: ThemeEditorLoad
 			if (hooks.tryLoadThemeFromQuery(data)) return
 			const pick =
 				hooks.pickInitialTheme?.(data) ||
-				(data.find((t) => t.is_base_theme || t.is_active)?.name as string | undefined) ||
+				(data.find((t) => t.is_default_theme || t.is_base_theme)?.name as string | undefined) ||
+				(data.find((t) => t.is_active)?.name as string | undefined) ||
 				(data[0]?.name as string | undefined)
 			if (pick) loadTheme(pick)
 		},
@@ -107,18 +126,11 @@ export function useThemeEditor(api: ThemeEditorApiConfig, hooks: ThemeEditorLoad
 			}
 			editingTheme.value = (data.theme as string) || ""
 			selectedTheme.value = (data.theme as string) || ""
-			siteBaseTheme.value =
-				(data.site_base_theme as string) ||
-				(hooks.useLegacyIsActive ? (data.site_active_theme as string) : "") ||
-				siteBaseTheme.value
+			siteBaseTheme.value = readSiteDefaultTheme(data) || siteBaseTheme.value
 			editorMeta.theme = (data.theme as string) || ""
 			editorMeta.theme_name = (data.theme_name as string) || (data.theme as string) || ""
 			editorMeta.css_hash = (data.css_hash as string) || ""
-			if (hooks.useLegacyIsActive) {
-				editorMeta.is_base_theme = !!(data.is_base_theme ?? data.is_active)
-			} else {
-				editorMeta.is_base_theme = !!data.is_base_theme
-			}
+			editorMeta.is_default_theme = readIsDefaultTheme(data)
 			savedThemeStatus.value = normalizeThemeStatus(data.status as string)
 			hooks.onEditorLoaded?.(data)
 			hooks.applyPayloadToForm((data.payload as Record<string, unknown>) || {})
@@ -149,11 +161,7 @@ export function useThemeEditor(api: ThemeEditorApiConfig, hooks: ThemeEditorLoad
 		url: api.save,
 		onSuccess(data: Record<string, unknown> | null | undefined) {
 			if (data?.css_hash) editorMeta.css_hash = data.css_hash as string
-			if (hooks.useLegacyIsActive) {
-				editorMeta.is_base_theme = !!(data?.is_base_theme ?? data?.is_active)
-			} else {
-				editorMeta.is_base_theme = !!data?.is_base_theme
-			}
+			editorMeta.is_default_theme = readIsDefaultTheme(data)
 			if (data?.theme_status) {
 				savedThemeStatus.value = normalizeThemeStatus(data.theme_status as string)
 			}

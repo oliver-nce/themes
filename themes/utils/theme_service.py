@@ -12,6 +12,50 @@ from frappe.utils.password import check_password
 from themes.utils.theme_family import DESK_FAMILY, ThemeFamily, WEB_FAMILY
 
 
+def _is_default_theme_record(*, is_default: int | bool | None, theme_name: str) -> bool:
+    """True when this row is the product Default theme (site :root fallback). Always exactly one per family."""
+    return bool(is_default) or theme_name == "Default"
+
+
+def _default_theme_name(family: ThemeFamily) -> Optional[str]:
+    """Primary key of the Default theme doc, if present."""
+    names = frappe.get_all(
+        family.doctype,
+        filters={"is_default": 1},
+        pluck="name",
+        limit=1,
+    )
+    if names:
+        return names[0]
+    names = frappe.get_all(
+        family.doctype,
+        filters={"theme_name": "Default"},
+        pluck="name",
+        limit=1,
+    )
+    return names[0] if names else None
+
+
+def _legacy_editor_flags(
+    family: ThemeFamily,
+    *,
+    is_default: bool,
+    status: str,
+) -> dict:
+    """Canonical is_default_theme plus deprecated is_base_theme / site_* aliases for old clients."""
+    site_default = _default_theme_name(family)
+    flags = {
+        "is_default_theme": is_default,
+        "site_default_theme": site_default,
+        # DEPRECATED — same values as is_default_theme / site_default_theme; do not use in new code.
+        "is_base_theme": is_default,
+        "site_base_theme": site_default,
+    }
+    if family.include_site_active_theme_legacy:
+        flags["site_active_theme"] = site_default
+    return flags
+
+
 def _require_password(password: str) -> None:
     if not password:
         frappe.throw(_("Password is required"))
@@ -21,16 +65,16 @@ def _require_password(password: str) -> None:
         frappe.throw(_("Incorrect password. Please try again."))
 
 
-def _is_active(family: ThemeFamily, *, is_base: bool, status: str) -> bool:
+def _is_active(family: ThemeFamily, *, is_default: bool, status: str) -> bool:
     if family.is_active_is_base:
-        return is_base
+        return is_default
     return status == "Active"
 
 
-def _editor_css_hash(family: ThemeFamily, *, is_base: bool, status: str) -> Optional[str]:
+def _editor_css_hash(family: ThemeFamily, *, is_default: bool, status: str) -> Optional[str]:
     if family.is_active_is_base:
-        return family.read_css_hash() if is_base else None
-    if is_base or status == "Active":
+        return family.read_css_hash() if is_default else None
+    if is_default or status == "Active":
         return family.read_css_hash()
     return None
 
@@ -39,30 +83,27 @@ def get_editor_response(family: ThemeFamily, theme_name: str) -> dict:
     if not frappe.db.exists(family.doctype, theme_name):
         frappe.throw(_(family.theme_exists_label).format(theme_name))
     theme = frappe.get_doc(family.doctype, theme_name)
-    base = family.get_base_theme_name()
-    is_base = base == theme.name
-    # NOTE: Web is_active == is_base; Desk is_active == status=='Active'.
-    # These are intentionally different — do not unify without product sign-off.
+    is_default = _is_default_theme_record(
+        is_default=theme.is_default,
+        theme_name=theme.theme_name,
+    )
     result = {
         "theme": theme.name,
         "theme_name": theme.theme_name,
         "status": theme.status,
-        "is_base_theme": is_base,
-        "is_active": _is_active(family, is_base=is_base, status=theme.status),
-        "site_base_theme": base,
-        "css_hash": _editor_css_hash(family, is_base=is_base, status=theme.status),
+        "is_active": _is_active(family, is_default=is_default, status=theme.status),
+        "css_hash": _editor_css_hash(family, is_default=is_default, status=theme.status),
         "payload": json.loads(theme.theme_json or "{}"),
+        **_legacy_editor_flags(family, is_default=is_default, status=theme.status),
     }
-    if family.include_site_active_theme_legacy:
-        result["site_active_theme"] = base
     return result
 
 
 def get_base_editor_response(family: ThemeFamily) -> dict:
-    base = family.get_base_theme_name()
-    if not base:
+    default = _default_theme_name(family)
+    if not default:
         frappe.throw(_(family.no_base_set_message))
-    return get_editor_response(family, base)
+    return get_editor_response(family, default)
 
 
 def get_active_editor_response(family: ThemeFamily) -> dict:
@@ -111,14 +152,19 @@ def save(
         doc.status = status
     doc.flags.ignore_permissions = True
     doc.save()
-    base = family.get_base_theme_name()
+    is_default = _is_default_theme_record(
+        is_default=doc.is_default,
+        theme_name=doc.theme_name,
+    )
     result = {
         "status": "ok",
         "theme": theme,
         "theme_status": doc.status,
-        "is_base_theme": base == theme,
-        "is_active": _is_active(family, is_base=base == theme, status=doc.status),
+        "is_default_theme": is_default,
+        "is_base_theme": is_default,  # deprecated alias
+        "is_active": _is_active(family, is_default=is_default, status=doc.status),
     }
+    base = family.get_base_theme_name()
     if base == theme or doc.status == "Active":
         result["css_hash"] = family.read_css_hash()
     return result
@@ -183,26 +229,30 @@ def set_active(family: ThemeFamily, theme: str) -> dict:
 
 
 def list_themes(family: ThemeFamily) -> list[dict]:
-    base = family.get_base_theme_name()
     rows = frappe.get_all(
         family.doctype,
         fields=["name", "theme_name", "is_default", "status"],
         order_by="theme_name asc",
     )
     for row in rows:
-        row["is_base_theme"] = row.name == base
+        is_default = _is_default_theme_record(
+            is_default=row.get("is_default"),
+            theme_name=row["theme_name"],
+        )
+        row["is_default_theme"] = is_default
+        row["is_base_theme"] = is_default  # deprecated alias
         row["is_active"] = _is_active(
             family,
-            is_base=row["is_base_theme"],
+            is_default=is_default,
             status=row["status"],
         )
     return rows
 
 
 def _assert_theme_manageable(family: ThemeFamily, theme: str):
-    base = family.get_base_theme_name()
-    if base == theme:
-        frappe.throw(_(family.base_manage_error))
+    default_name = _default_theme_name(family)
+    if default_name and theme == default_name:
+        frappe.throw(_("The Default theme cannot be renamed or deleted."))
     doc = frappe.get_doc(family.doctype, theme)
     if doc.status == "Active":
         frappe.throw(_(family.active_manage_error))
