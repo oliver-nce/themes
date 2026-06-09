@@ -92,9 +92,16 @@ def get_active_theme_editor():
 
 @frappe.whitelist()
 def get_base_theme_payload():
-    """Return theme_json for the site base theme (for Restore to Base Theme)."""
+    """Return the app-bundled base theme (data/base_theme.json) for Restore to Base Theme.
+
+    Reads the shipped/canonical default from the repo — not the live DB base —
+    so "Restore to Base Theme" loads the version controlled via the app, letting
+    the editor revert to the bundled profile even when the DB Default has drifted.
+    """
     frappe.only_for("System Manager")
-    return {"payload": _base_theme_payload()}
+    from themes.utils.default_theme import load_bundled_base_theme_payload
+
+    return {"payload": load_bundled_base_theme_payload()}
 
 
 @frappe.whitelist()
