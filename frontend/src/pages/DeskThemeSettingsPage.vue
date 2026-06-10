@@ -175,6 +175,9 @@
 							:key="c.key"
 							:label="c.label"
 							:model-value="form[c.key]"
+							:default-value="DEFAULTS[c.key]"
+							:primary-color="form.primary_color"
+							:secondary-color="form.brand_color"
 							@update:model-value="form[c.key] = $event"
 						/>
 					</div>
@@ -187,6 +190,9 @@
 							:key="c.key"
 							:label="c.label"
 							:model-value="form[c.key]"
+							:default-value="DEFAULTS[c.key]"
+							:primary-color="form.primary_color"
+							:secondary-color="form.brand_color"
 							@update:model-value="form[c.key] = $event"
 						/>
 					</div>
@@ -199,6 +205,9 @@
 							:key="c.key"
 							:label="c.label"
 							:model-value="form[c.key]"
+							:default-value="DEFAULTS[c.key]"
+							:primary-color="form.primary_color"
+							:secondary-color="form.brand_color"
 							@update:model-value="form[c.key] = $event"
 						/>
 					</div>
@@ -229,6 +238,9 @@
 							:key="c.key"
 							:label="c.label"
 							:model-value="form[c.key]"
+							:default-value="DEFAULTS[c.key]"
+							:primary-color="form.primary_color"
+							:secondary-color="form.brand_color"
 							@update:model-value="form[c.key] = $event"
 						/>
 					</div>
