@@ -168,6 +168,18 @@ export type CatalogSection = {
 	rows: CatalogRow[]
 }
 
+/**
+ * Resolve the full var map for a theme.
+ * Always starts from :root (Default / site base values).
+ * If a slug is provided, merges the scoped block on top — named theme overrides win.
+ */
+export function resolveThemeVars(css: string, themeSlug?: string): Record<string, string> {
+	const root = parseVarBlock(css, ":root")
+	if (!themeSlug) return root
+	const scoped = parseVarBlock(css, `[data-nce-theme="${themeSlug}"]`)
+	return { ...root, ...scoped }
+}
+
 /** Build accordion sections from parsed class rules + resolved var values. */
 export function buildCatalogSections(
 	rules: ClassRule[],

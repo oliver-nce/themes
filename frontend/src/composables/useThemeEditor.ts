@@ -48,6 +48,7 @@ export function useThemeEditor(api: ThemeEditorApiConfig, hooks: ThemeEditorLoad
 	const editorMeta = reactive({
 		theme: "",
 		theme_name: "",
+		slug: "",
 		css_hash: "",
 		is_default_theme: false,
 	})
@@ -129,6 +130,7 @@ export function useThemeEditor(api: ThemeEditorApiConfig, hooks: ThemeEditorLoad
 			siteBaseTheme.value = readSiteDefaultTheme(data) || siteBaseTheme.value
 			editorMeta.theme = (data.theme as string) || ""
 			editorMeta.theme_name = (data.theme_name as string) || (data.theme as string) || ""
+			editorMeta.slug = (data.slug as string) || ""
 			editorMeta.css_hash = (data.css_hash as string) || ""
 			editorMeta.is_default_theme = readIsDefaultTheme(data)
 			savedThemeStatus.value = normalizeThemeStatus(data.status as string)

@@ -107,6 +107,7 @@ def get_editor_response(family: ThemeFamily, theme_name: str) -> dict:
     result = {
         "theme": theme.name,
         "theme_name": theme.theme_name,
+        "slug": getattr(theme, "slug", None) or "",
         "status": theme.status,
         "is_active": _is_active(family, is_default=is_default, status=theme.status),
         "css_hash": _editor_css_hash(family, is_default=is_default, status=theme.status),

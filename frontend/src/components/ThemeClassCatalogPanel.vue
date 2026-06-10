@@ -79,13 +79,14 @@ import {
 	buildCatalogSections,
 	fetchNceThemeCss,
 	parseClassRules,
-	parseVarBlock,
+	resolveThemeVars,
 	type CatalogSection,
 } from "@/utils/nceThemeCssParser"
 
 const props = defineProps<{
 	cssHash?: string
 	isDirty?: boolean
+	themeSlug?: string
 }>()
 
 const loading = ref(false)
@@ -98,7 +99,7 @@ async function load() {
 	error.value = ""
 	try {
 		const css = await fetchNceThemeCss(props.cssHash)
-		const vars = parseVarBlock(css, ":root")
+		const vars = resolveThemeVars(css, props.themeSlug)
 		const rules = parseClassRules(css)
 		sections.value = buildCatalogSections(rules, vars)
 	} catch (e: any) {

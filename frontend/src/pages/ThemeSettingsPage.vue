@@ -493,6 +493,7 @@
 				<ThemeClassCatalogPanel
 					:css-hash="editorMeta.css_hash"
 					:is-dirty="isDirty"
+					:theme-slug="editorMeta.slug"
 				/>
 
 				<EditorSection
