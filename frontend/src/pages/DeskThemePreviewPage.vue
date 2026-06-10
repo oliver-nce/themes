@@ -27,7 +27,7 @@ import { onMounted, onUnmounted, ref } from "vue"
 import { applyDeskThemeVars } from "@/composables/useDeskTheme"
 
 const previewTargets = [
-	{ label: "Home", path: "/app/home" },
+	{ label: "Desk", path: "/app" },
 	{ label: "User", path: "/app/user" },
 	{ label: "System Settings", path: "/app/system-settings" },
 ]
