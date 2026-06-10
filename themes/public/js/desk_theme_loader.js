@@ -22,10 +22,26 @@
 		document.head.appendChild(link);
 	}
 
+	function whenDeskReady(fn) {
+		if (typeof frappe !== "undefined" && typeof frappe.ready === "function") {
+			frappe.ready(fn);
+			return;
+		}
+		if (typeof jQuery !== "undefined") {
+			jQuery(fn);
+			return;
+		}
+		if (document.readyState === "loading") {
+			document.addEventListener("DOMContentLoaded", fn);
+		} else {
+			fn();
+		}
+	}
+
 	if (typeof frappe === "undefined") return;
 
 	if (frappe.boot && frappe.boot.desk_theme_css_url) {
 		syncDeskThemeCss();
 	}
-	frappe.ready(syncDeskThemeCss);
+	whenDeskReady(syncDeskThemeCss);
 })();
