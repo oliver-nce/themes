@@ -488,8 +488,10 @@
 				</EditorSection>
 			</div>
 
-			<!-- AGENT:TAB system — Save Default to app (bundle base_theme.json + publish CSS) -->
+			<!-- AGENT:TAB system — class catalog + Save Default to app -->
 			<div v-show="activeTab === 'system'" class="editor-tab">
+				<ThemeClassCatalogPanel :variables="themeCSSVariables" />
+
 				<EditorSection
 					title="Save as base theme"
 					hint="Rare release action: sets the site base theme, rebuilds CSS, and writes bundled files into the app for new installs. Commit and push after running."
@@ -713,6 +715,7 @@ import SelectField from "@/components/SelectField.vue"
 import FontSelectField from "@/components/FontSelectField.vue"
 import PasswordField from "@/components/PasswordField.vue"
 import SwatchPicker from "@/components/SwatchPicker.vue"
+import ThemeClassCatalogPanel from "@/components/ThemeClassCatalogPanel.vue"
 import {
 	BORDER_RADIUS_MAP,
 	BORDER_WIDTH_MAP,
@@ -888,6 +891,8 @@ function computeCSSVariables(): Record<string, string> {
 	}
 	return vars
 }
+
+const themeCSSVariables = computed(() => computeCSSVariables())
 
 function pushToPreview() {
 	if (!previewWin || previewWin.closed) return
