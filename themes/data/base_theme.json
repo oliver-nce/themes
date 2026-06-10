@@ -39,6 +39,7 @@
   "secondary_color": "#10B981",
   "shadow": "md",
   "shadow_color": "#000000",
+  "shadow_opacity": 100,
   "sidebar_width": "240px",
   "spacing_scale": "normal",
   "success_color": "#10B981",

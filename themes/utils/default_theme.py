@@ -48,6 +48,7 @@ _FALLBACK_PAYLOAD = {
     "border_width_strong": "2px",
     "spacing_scale": "normal",
     "shadow": "md",
+    "shadow_opacity": 100,
     "transition_speed": "normal",
     "sidebar_width": "240px",
     "container_max_width": "1200px",

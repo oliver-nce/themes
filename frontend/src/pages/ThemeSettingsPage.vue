@@ -390,7 +390,7 @@
 				</EditorSection>
 
 			<EditorSection title="Spacing &amp; Shadows">
-					<div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+					<div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
 						<SelectField
 							label="Spacing Scale"
 							:options="spacingOptions"
@@ -413,6 +413,26 @@
 							:secondary-gamma="secondaryShadeAdjust.gamma"
 							:secondary-saturation="secondaryShadeAdjust.saturation"
 						/>
+						<div>
+							<label class="block text-sm font-medium text-gray-700 mb-1.5">
+								Shadow Opacity
+								<span class="font-normal text-gray-500">({{ shadowOpacityDisplay }})</span>
+							</label>
+							<input
+								type="range"
+								class="shadow-opacity-slider w-full"
+								min="0"
+								max="100"
+								step="1"
+								:value="shadowOpacityNumber"
+								@input="onShadowOpacityInput"
+							/>
+							<div class="flex justify-between text-xs text-gray-400 mt-1 px-0.5">
+								<span>0%</span>
+								<span>50%</span>
+								<span>100%</span>
+							</div>
+						</div>
 					</div>
 				</EditorSection>
 
@@ -785,11 +805,17 @@ function hexToRgb(hex: string): string {
 	return `${r},${g},${b}`
 }
 
-function buildShadow(level: string, color: string): string {
+function buildShadow(level: string, color: string, opacityPct = 100): string {
 	const defs = SHADOW_DEFS[level] || SHADOW_DEFS.md
 	if (!defs.length) return "none"
 	const rgb = hexToRgb(color)
-	return defs.map(([x,y,b,s,a]) => `${x}px ${y}px ${b}px ${s}px rgba(${rgb},${a})`).join(", ")
+	const scale = Math.max(0, Math.min(100, Number(opacityPct) || 0)) / 100
+	return defs
+		.map(([x, y, b, s, a]) => {
+			const alpha = Math.round(a * scale * 10000) / 10000
+			return `${x}px ${y}px ${b}px ${s}px rgba(${rgb},${alpha})`
+		})
+		.join(", ")
 }
 
 function isCorporateBrandPaletteMode(mode: unknown): boolean {
@@ -854,7 +880,13 @@ function computeCSSVariables(): Record<string, string> {
 		vars["--nce-spacing-base"] = SPACING_SCALE_MAP[form.spacing_scale] || "1rem"
 	}
 	if (form.shadow_color) vars["--nce-shadow-color"] = form.shadow_color
-	if (form.shadow) vars["--nce-shadow"] = buildShadow(form.shadow, form.shadow_color || "#000000")
+	if (form.shadow) {
+		vars["--nce-shadow"] = buildShadow(
+			form.shadow,
+			form.shadow_color || "#000000",
+			form.shadow_opacity ?? DEFAULTS.shadow_opacity,
+		)
+	}
 	if (form.transition_speed) vars["--nce-transition-speed"] = TRANSITION_MAP[form.transition_speed] || "200ms"
 	if (form.sidebar_width) vars["--nce-sidebar-width"] = form.sidebar_width
 	if (form.container_max_width) {
@@ -953,6 +985,7 @@ const ALL_FIELDS = [
 	"spacing_scale",
 	"shadow",
 	"shadow_color",
+	"shadow_opacity",
 	"sidebar_width",
 	"container_max_width",
 	"transition_speed",
@@ -1001,6 +1034,7 @@ const DEFAULTS: Record<FormKey, any> = {
 	spacing_scale: "normal",
 	shadow: "md",
 	shadow_color: "#000000",
+	shadow_opacity: 100,
 	sidebar_width: "240px",
 	container_max_width: "1280px",
 	transition_speed: "normal",
@@ -1110,6 +1144,20 @@ const radiusOptions = ["none", "sm", "md", "lg", "x-lg"]
 const borderWidthOptions = ["0.5px", "1px", "2px", "3px"]
 const spacingOptions = ["tight", "normal", "relaxed"]
 const shadowOptions = ["none", "sm", "md", "lg", "xl", "2xl", "3xl"]
+
+function clampShadowOpacity(raw: unknown): number {
+	const n = Number(raw)
+	if (!Number.isFinite(n)) return DEFAULTS.shadow_opacity
+	return Math.max(0, Math.min(100, Math.round(n)))
+}
+
+const shadowOpacityNumber = computed(() => clampShadowOpacity(form.shadow_opacity))
+
+const shadowOpacityDisplay = computed(() => `${shadowOpacityNumber.value}%`)
+
+function onShadowOpacityInput(e: Event) {
+	form.shadow_opacity = clampShadowOpacity((e.target as HTMLInputElement).value)
+}
 const sidebarOptions = ["200px", "220px", "240px", "260px", "280px"]
 const containerOptions = ["960px", "1024px", "1152px", "1280px", "1440px", "full"]
 const transitionOptions = ["fast", "normal", "slow"]
@@ -1276,6 +1324,8 @@ function canonicalPayload(source: Record<string, any>): Record<string, any> {
 			payload[key] = val.toUpperCase()
 		} else if (key === "font_weight_body") {
 			payload[key] = String(clampBodyWeight(val ?? DEFAULTS.font_weight_body))
+		} else if (key === "shadow_opacity") {
+			payload[key] = clampShadowOpacity(val ?? DEFAULTS.shadow_opacity)
 		} else if (key === "brand_palette_mode") {
 			payload[key] = normalizeBrandPaletteMode(val ?? DEFAULTS.brand_palette_mode)
 		} else if (key === "custom_css" || key === "tailwind_overrides") {
@@ -1305,6 +1355,8 @@ function applyPayloadToForm(payload: Record<string, any>) {
 			form[key] = normalizeFontChoice(val)
 		} else if (key === "font_weight_body") {
 			form[key] = String(clampBodyWeight(val))
+		} else if (key === "shadow_opacity") {
+			form[key] = clampShadowOpacity(val ?? DEFAULTS.shadow_opacity)
 		} else if (val !== undefined && val !== null) {
 			form[key] = val
 		}

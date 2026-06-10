@@ -151,6 +151,7 @@ MIGRATED_FIELDS = list(COLOR_FIELDS.keys()) + [
 	"spacing_scale",
 	"shadow",
 	"shadow_color",
+	"shadow_opacity",
 	"transition_speed",
 	"sidebar_width",
 	"container_max_width",

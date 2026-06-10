@@ -313,14 +313,16 @@ def _effective_role_hex(base_hex, gamma=0, saturation=100):
 	return shades.get(600, base_hex).upper()
 
 
-def _build_shadow(level, color_hex):
+def _build_shadow(level, color_hex, opacity_pct=100):
 	defs = SHADOW_DEFS.get(level, SHADOW_DEFS["md"])
 	if not defs:
 		return "none"
 	r, g, b = _hex_to_rgb(color_hex) if color_hex else (0, 0, 0)
+	scale = max(0.0, min(100.0, float(opacity_pct if opacity_pct is not None else 100))) / 100.0
 	parts = []
-	for x, y, blur, spread, opacity in defs:
-		parts.append(f"{x}px {y}px {blur}px {spread}px rgba({r}, {g}, {b}, {opacity})")
+	for x, y, blur, spread, preset_opacity in defs:
+		alpha = round(preset_opacity * scale, 4)
+		parts.append(f"{x}px {y}px {blur}px {spread}px rgba({r}, {g}, {b}, {alpha})")
 	return ", ".join(parts)
 
 
