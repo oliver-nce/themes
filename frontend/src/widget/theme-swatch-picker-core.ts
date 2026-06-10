@@ -26,6 +26,8 @@ export type ThemeSwatchPickerCoreOpts = {
 	setValue: (className: string) => void
 	getFgType?: () => string
 	setFgType?: (fgType: ThemeFgType) => void
+	/** When set, hides Kind radios and always emits theme-{lockKind}-* classes. */
+	lockKind?: ThemeKind
 	onClose?: (result: ThemeSwatchPickerCloseResult) => void
 }
 
@@ -98,6 +100,8 @@ function buildModal(
 } {
 	const persistFgType = !!(opts.getFgType && opts.setFgType)
 	const chromePickMode = persistFgType
+	const lockedKind = opts.lockKind
+	const hideKind = chromePickMode || !!lockedKind
 	const backdrop = document.createElement("div")
 	backdrop.className = "nce-theme-swatch-picker__backdrop"
 	backdrop.addEventListener("click", () => close({ saved: false }))
@@ -174,9 +178,13 @@ function buildModal(
 	}
 
 	layout.append(kindField, roleField, swatchHost)
-	if (chromePickMode) {
+	if (hideKind) {
 		kindField.hidden = true
-		state = { ...state, kind: "bg" }
+		if (chromePickMode) {
+			state = { ...state, kind: "bg" }
+		} else if (lockedKind) {
+			state = { ...state, kind: lockedKind }
+		}
 	}
 
 	const fgTypeField = document.createElement("fieldset")
@@ -269,8 +277,10 @@ function buildModal(
 	const readState = (): PickerState => {
 		const kind = chromePickMode
 			? "bg"
-			: (([...kindInputs.entries()].find(([, el]) => el.checked)?.[0] as ThemeKind) ||
-					state.kind)
+			: lockedKind
+				? lockedKind
+				: (([...kindInputs.entries()].find(([, el]) => el.checked)?.[0] as ThemeKind) ||
+						state.kind)
 		const role =
 			([...roleInputs.entries()].find(([, el]) => el.checked)?.[0] as ThemeRole) ||
 			state.role
@@ -419,7 +429,10 @@ export function open(opts: ThemeSwatchPickerCoreOpts): boolean {
 	}
 
 	const committedValue = (opts.getValue() || "").trim()
-	const state = resolveInitialState(committedValue)
+	let state = resolveInitialState(committedValue)
+	if (opts.lockKind) {
+		state = { ...state, kind: opts.lockKind }
+	}
 	const initialFgType = opts.getFgType ? parseFgType(opts.getFgType()) : "mono"
 
 	const { root, refreshThemeScope } = buildModal(

@@ -3,7 +3,7 @@ import {
 	themePickerBlockReason,
 } from "../blocked-dialog"
 import { open, close, type ThemeSwatchPickerCoreOpts } from "../theme-swatch-picker-core"
-import type { ThemeFgType } from "../constants"
+import type { ThemeFgType, ThemeKind } from "../constants"
 
 type FrappeDb = {
 	exists: (doctype: string, name: string) => boolean
@@ -68,6 +68,8 @@ export type DeskThemeSwatchPickerOpts = {
 	valueField: string
 	/** Optional; defaults to valueField with `_bg_class` → `_fg_type`. */
 	fgTypeField?: string
+	/** Optional; hides Kind radios and locks output to this kind (e.g. border line colors). */
+	lockKind?: ThemeKind
 	onClose?: () => void
 }
 
@@ -121,6 +123,10 @@ export async function openDeskThemeSwatchPicker(
 				throw err
 			}
 		}
+	}
+
+	if (opts.lockKind) {
+		coreOpts.lockKind = opts.lockKind
 	}
 
 	return new Promise((resolve) => {
