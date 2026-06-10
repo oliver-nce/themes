@@ -390,7 +390,7 @@
 				</EditorSection>
 
 			<EditorSection title="Spacing &amp; Shadows">
-					<div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
+					<div class="grid grid-cols-1 md:grid-cols-3 gap-6">
 						<SelectField
 							label="Spacing Scale"
 							:options="spacingOptions"
@@ -413,6 +413,8 @@
 							:secondary-gamma="secondaryShadeAdjust.gamma"
 							:secondary-saturation="secondaryShadeAdjust.saturation"
 						/>
+					</div>
+					<div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
 						<div>
 							<label class="block text-sm font-medium text-gray-700 mb-1.5">
 								Shadow Opacity
@@ -432,7 +434,9 @@
 								<span>50%</span>
 								<span>100%</span>
 							</div>
+							<p class="text-xs text-gray-500 mt-1">Direct alpha — 96% → rgba(…, 0.96)</p>
 						</div>
+						<ShadowDirectionDial v-model="form.shadow_direction" />
 					</div>
 				</EditorSection>
 
@@ -739,7 +743,9 @@ import SelectField from "@/components/SelectField.vue"
 import FontSelectField from "@/components/FontSelectField.vue"
 import PasswordField from "@/components/PasswordField.vue"
 import SwatchPicker from "@/components/SwatchPicker.vue"
+import ShadowDirectionDial from "@/components/ShadowDirectionDial.vue"
 import ThemeClassCatalogPanel from "@/components/ThemeClassCatalogPanel.vue"
+import { buildThemeShadow } from "@/utils/shadowBuild"
 import {
 	BORDER_RADIUS_MAP,
 	BORDER_WIDTH_MAP,
@@ -750,7 +756,6 @@ import {
 	LINE_HEIGHT_MAP,
 	RETIRED_FONT_ALIASES,
 	SHADE_PREVIEW_FIELDS,
-	SHADOW_DEFS,
 	SPACING_SCALE_MAP,
 	TRANSITION_MAP,
 } from "@/domain/theme-tokens"
@@ -796,27 +801,6 @@ function openPreview() {
 }
 
 // ─── AGENT:live-css-vars ─── computeCSSVariables, applyLiveThemeVars, pushToPreview
-
-function hexToRgb(hex: string): string {
-	if (!hex || hex.length < 7) return "0,0,0"
-	const r = parseInt(hex.slice(1,3), 16)
-	const g = parseInt(hex.slice(3,5), 16)
-	const b = parseInt(hex.slice(5,7), 16)
-	return `${r},${g},${b}`
-}
-
-function buildShadow(level: string, color: string, opacityPct = 100): string {
-	const defs = SHADOW_DEFS[level] || SHADOW_DEFS.md
-	if (!defs.length) return "none"
-	const rgb = hexToRgb(color)
-	const scale = Math.max(0, Math.min(100, Number(opacityPct) || 0)) / 100
-	return defs
-		.map(([x, y, b, s, a]) => {
-			const alpha = Math.round(a * scale * 10000) / 10000
-			return `${x}px ${y}px ${b}px ${s}px rgba(${rgb},${alpha})`
-		})
-		.join(", ")
-}
 
 function isCorporateBrandPaletteMode(mode: unknown): boolean {
 	return mode !== "flexible"
@@ -881,10 +865,11 @@ function computeCSSVariables(): Record<string, string> {
 	}
 	if (form.shadow_color) vars["--nce-shadow-color"] = form.shadow_color
 	if (form.shadow) {
-		vars["--nce-shadow"] = buildShadow(
+		vars["--nce-shadow"] = buildThemeShadow(
 			form.shadow,
 			form.shadow_color || "#000000",
 			form.shadow_opacity ?? DEFAULTS.shadow_opacity,
+			form.shadow_direction ?? DEFAULTS.shadow_direction,
 		)
 	}
 	if (form.transition_speed) vars["--nce-transition-speed"] = TRANSITION_MAP[form.transition_speed] || "200ms"
@@ -986,6 +971,7 @@ const ALL_FIELDS = [
 	"shadow",
 	"shadow_color",
 	"shadow_opacity",
+	"shadow_direction",
 	"sidebar_width",
 	"container_max_width",
 	"transition_speed",
@@ -1035,6 +1021,7 @@ const DEFAULTS: Record<FormKey, any> = {
 	shadow: "md",
 	shadow_color: "#000000",
 	shadow_opacity: 100,
+	shadow_direction: 180,
 	sidebar_width: "240px",
 	container_max_width: "1280px",
 	transition_speed: "normal",
@@ -1157,6 +1144,12 @@ const shadowOpacityDisplay = computed(() => `${shadowOpacityNumber.value}%`)
 
 function onShadowOpacityInput(e: Event) {
 	form.shadow_opacity = clampShadowOpacity((e.target as HTMLInputElement).value)
+}
+
+function clampShadowDirection(raw: unknown): number {
+	const n = Number(raw)
+	if (!Number.isFinite(n)) return DEFAULTS.shadow_direction
+	return Math.max(0, Math.min(360, Math.round(n)))
 }
 const sidebarOptions = ["200px", "220px", "240px", "260px", "280px"]
 const containerOptions = ["960px", "1024px", "1152px", "1280px", "1440px", "full"]
@@ -1326,6 +1319,8 @@ function canonicalPayload(source: Record<string, any>): Record<string, any> {
 			payload[key] = String(clampBodyWeight(val ?? DEFAULTS.font_weight_body))
 		} else if (key === "shadow_opacity") {
 			payload[key] = clampShadowOpacity(val ?? DEFAULTS.shadow_opacity)
+		} else if (key === "shadow_direction") {
+			payload[key] = clampShadowDirection(val ?? DEFAULTS.shadow_direction)
 		} else if (key === "brand_palette_mode") {
 			payload[key] = normalizeBrandPaletteMode(val ?? DEFAULTS.brand_palette_mode)
 		} else if (key === "custom_css" || key === "tailwind_overrides") {
@@ -1357,6 +1352,8 @@ function applyPayloadToForm(payload: Record<string, any>) {
 			form[key] = String(clampBodyWeight(val))
 		} else if (key === "shadow_opacity") {
 			form[key] = clampShadowOpacity(val ?? DEFAULTS.shadow_opacity)
+		} else if (key === "shadow_direction") {
+			form[key] = clampShadowDirection(val ?? DEFAULTS.shadow_direction)
 		} else if (val !== undefined && val !== null) {
 			form[key] = val
 		}

@@ -265,7 +265,10 @@ def _emit_var_block(g, lines, selector=":root", include_custom_css=True):
     opacity = g("shadow_opacity")
     if opacity is None:
         opacity = 100
-    lines.append(f"\t--nce-shadow: {_build_shadow(g('shadow') or 'md', sc, opacity)};")
+    direction = g("shadow_direction")
+    if direction is None:
+        direction = 180
+    lines.append(f"\t--nce-shadow: {_build_shadow(g('shadow') or 'md', sc, opacity, direction)};")
     lines.append(f"\t--nce-transition-speed: {TRANSITION_MAP.get(g('transition_speed') or 'normal', '200ms')};")
     if g("sidebar_width"):
         lines.append(f"\t--nce-sidebar-width: {g('sidebar_width')};")

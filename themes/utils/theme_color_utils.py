@@ -313,16 +313,36 @@ def _effective_role_hex(base_hex, gamma=0, saturation=100):
 	return shades.get(600, base_hex).upper()
 
 
-def _build_shadow(level, color_hex, opacity_pct=100):
+def _rotate_shadow_offset(x, y, direction_deg):
+	mag = math.hypot(float(x), float(y))
+	if mag == 0:
+		return 0.0, 0.0
+	target_rad = math.radians(float(direction_deg) - 90.0)
+	new_x = mag * math.cos(target_rad)
+	new_y = mag * math.sin(target_rad)
+	return round(new_x, 4), round(new_y, 4)
+
+
+def _fmt_shadow_px(value):
+	v = float(value)
+	if abs(v - round(v)) < 1e-9:
+		return f"{int(round(v))}px"
+	return f"{v}px"
+
+
+def _build_shadow(level, color_hex, opacity_pct=100, direction_deg=180):
 	defs = SHADOW_DEFS.get(level, SHADOW_DEFS["md"])
 	if not defs:
 		return "none"
 	r, g, b = _hex_to_rgb(color_hex) if color_hex else (0, 0, 0)
-	scale = max(0.0, min(100.0, float(opacity_pct if opacity_pct is not None else 100))) / 100.0
+	alpha = round(max(0.0, min(100.0, float(opacity_pct if opacity_pct is not None else 100))) / 100.0, 4)
+	dir_deg = float(direction_deg if direction_deg is not None else 180)
 	parts = []
-	for x, y, blur, spread, preset_opacity in defs:
-		alpha = round(preset_opacity * scale, 4)
-		parts.append(f"{x}px {y}px {blur}px {spread}px rgba({r}, {g}, {b}, {alpha})")
+	for x, y, blur, spread, _preset_opacity in defs:
+		ox, oy = _rotate_shadow_offset(x, y, dir_deg)
+		parts.append(
+			f"{_fmt_shadow_px(ox)} {_fmt_shadow_px(oy)} {blur}px {spread}px rgba({r}, {g}, {b}, {alpha})"
+		)
 	return ", ".join(parts)
 
 
