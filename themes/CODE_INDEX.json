@@ -84,6 +84,30 @@
                 "themes/tests/test_token_contract_export.py"
             ]
         },
+        "border_width_tokens": {
+            "summary": "Three independently configurable line/border widths (thin, normal, strong) → CSS vars + theme-border-* classes",
+            "token_fields": [
+                "border_width_thin → --nce-border-width-thin (default 0.5px)",
+                "border_width → --nce-border-width (default 1px)",
+                "border_width_strong → --nce-border-width-strong (default 2px)"
+            ],
+            "classes": [
+                "theme-border-thin — all sides, thin width + --nce-color-border",
+                "theme-border — all sides, normal width + --nce-color-border",
+                "theme-border-strong — all sides, strong width + --nce-color-border",
+                "theme-border-{role} — color only; pair with one of the above for width"
+            ],
+            "editor": "ThemeSettingsPage.vue Layout tab → Line Widths (3 SelectField dropdowns: 0.5px / 1px / 2px / 3px)",
+            "files": [
+                "themes/utils/theme_tokens.py — BORDER_WIDTH_MAP, MIGRATED_FIELDS",
+                "themes/utils/css_writer.py — _emit_var_block (3 vars), _emit_semantic_classes (3 classes)",
+                "frontend/src/pages/ThemeSettingsPage.vue — grep 'Line Widths'",
+                "frontend/src/utils/theme-injector.ts — live preview vars",
+                "THEME_CLASS_CONTRACT.json — border_and_focus section",
+                "docs/theme-classes-reference.md — Borders & Focus table"
+            ],
+            "directional_use": "No theme-border-b class — use border-bottom: var(--nce-border-width) solid var(--nce-color-border) in scoped CSS (table rows, tab underlines)"
+        },
         "deploy_stale_css_trap": {
             "summary": "nce_theme.css in git must be regenerated after emitter changes or pulls serve stale class names",
             "symptom": "grep -c theme-bg- on served CSS returns 0 → transparent panel fills",
@@ -121,7 +145,7 @@
             },
             "utils": {
                 "utils/theme_color_utils.py": "Color math helpers: OKLCH shade generation, neutral warmth, _effective_role_hex, shadow building. Keep in sync with frontend/src/utils/color-shades.ts",
-                "utils/css_writer.py": "Web CSS generation and publish: generate_css(), generate_site_css(), publish_theme(). Emits theme-bg-* classes. Paired with desk_css_writer.py.",
+                "utils/css_writer.py": "Web CSS generation and publish: generate_css(), generate_site_css(), publish_theme(). Emits theme-bg-* classes and theme-border-{thin,normal,strong}. Paired with desk_css_writer.py.",
                 "utils/desk_css_writer.py": "Desk CSS generation and publish: generate_desk_css(), publish_desk_theme(), DESK_TOKEN_FIELDS. Paired with css_writer.py.",
                 "utils/bundle_base_theme.py": "bundle_base_theme_to_app() — write base_theme.json + default_theme.py for new installs",
                 "utils/bundle_base_desk_theme.py": "bundle_base_desk_theme_to_app() — write base_desk_theme.json + default_desk_theme.py for new installs",
@@ -235,6 +259,7 @@
         "Vue SPA is served at /themes/* routes via www/themes.html",
         "ThemeSwatchPicker: themeField Link → slug; classes are theme-bg-* with auto-paired fg",
         "Refactoring status: Stages 1–3 largely done (theme_family, theme_service, theme_tokens, css_publish, useThemeEditor, tests). Stage 4 (retire legacy endpoints) pending caller audit. God-component split deferred — use AGENT: markers instead.",
+        "Border widths: three token fields (border_width_thin, border_width, border_width_strong) → --nce-border-width-{thin,normal,strong} vars and theme-border-{thin,normal,strong} classes. Editor: Layout tab → Line Widths. See concern_lookup.border_width_tokens.",
         "plans/REFACTORING_PLAN.md — full staged plan; tests in themes/tests/ are the safety net before further consolidation"
     ]
 }

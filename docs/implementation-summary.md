@@ -97,7 +97,9 @@ Each role colour also has `-fg` / `-fg-tonal` and shade scales `50`–`950` (uti
 `--nce-font-family`, `--nce-font-heading`, `--nce-font-size`, `--nce-font-weight`, `--nce-line-height`
 
 ### Layout / motion
-`--nce-border-radius`, `--nce-spacing-base`, `--nce-shadow`, `--nce-shadow-color`, `--nce-transition-speed`, `--nce-sidebar-width`, `--nce-container-max-width`
+`--nce-border-radius`, `--nce-border-width-thin`, `--nce-border-width`, `--nce-border-width-strong`, `--nce-spacing-base`, `--nce-shadow`, `--nce-shadow-color`, `--nce-transition-speed`, `--nce-sidebar-width`, `--nce-container-max-width`
+
+Border width classes: `theme-border-thin`, `theme-border`, `theme-border-strong` (each sets width + solid + `--nce-color-border`). Configured in the Theme Editor → Layout → **Line Widths**.
 
 See `THEME_CLASS_CONTRACT.json` for the full class ↔ var mapping.
 

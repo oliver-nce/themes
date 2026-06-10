@@ -172,7 +172,9 @@ Text: theme-text-heading, theme-text-muted, theme-text-link. Body text applies b
 Type: theme-font-sans, theme-font-heading, theme-text-{xs,sm,base,lg,xl,2xl,3xl,4xl}.
 Shape: theme-rounded[-sm|-md|-lg|-xl], theme-shadow, theme-shadow-theme.
 Spacing: theme-{p,m,gap}-{xs,sm,md,lg,xl}.
-Border: theme-border, theme-border-input-border, theme-border-input-focus.
+Border: theme-border-thin, theme-border, theme-border-strong (width + color);
+  theme-border-input-border, theme-border-input-focus (color only — pair with theme-border for width).
+  Directional lines: var(--nce-border-width) or var(--nce-border-width-strong) in scoped CSS.
 Motion: theme-duration-theme.
 Dynamic shade: theme-bg-themed + :style="{ '--bg': 'var(--nce-color-{role}-{N})' }".
 

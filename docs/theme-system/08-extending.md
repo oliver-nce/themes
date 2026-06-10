@@ -40,6 +40,31 @@ The shade is already emitted as a CSS var; you're just adding the class alias.
 4. **`THEME_CLASS_CONTRACT.json`** — add the entry under the right top-level key.
 5. **`docs/theme-classes-reference.md`** — add the row.
 
+## Border width tokens (shipped reference)
+
+Three independent width tokens control line/border thickness site-wide:
+
+| Token field | CSS var | Class | Default |
+|---|---|---|---|
+| `border_width_thin` | `--nce-border-width-thin` | `theme-border-thin` | `0.5px` |
+| `border_width` | `--nce-border-width` | `theme-border` | `1px` |
+| `border_width_strong` | `--nce-border-width-strong` | `theme-border-strong` | `2px` |
+
+To add or change the allowed px values:
+
+1. **`themes/utils/theme_tokens.py`** — update `BORDER_WIDTH_MAP` and ensure fields are in `MIGRATED_FIELDS`.
+2. **`themes/utils/css_writer.py`** — `_emit_var_block()` reads the three fields; `_emit_semantic_classes()` emits the three classes.
+3. **`scripts/export_theme_tokens.py`** — regenerate `frontend/src/domain/theme-tokens.ts`.
+4. **`frontend/src/pages/ThemeSettingsPage.vue`** — Layout tab → Line Widths (`borderWidthOptions`).
+5. **`THEME_CLASS_CONTRACT.json`** + **`docs/theme-classes-reference.md`** — keep in sync.
+
+Directional borders (table rows, tab underlines) are **not** emitted as `theme-border-b` classes. Downstream apps use:
+
+```css
+border-bottom: var(--nce-border-width) solid var(--nce-color-border);
+/* or --nce-border-width-strong for table headers */
+```
+
 ## Add a third fg variant (e.g., `-fg-soft`)
 
 The system currently ships `mono` and `tonal`. Adding `soft`:

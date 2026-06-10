@@ -78,6 +78,19 @@ See `button_hierarchy` in `THEME_CLASS_CONTRACT.json`.
 </table>
 ```
 
+For row separator lines, use scoped CSS with the width vars (no `theme-border-b` class exists):
+
+```css
+.table-row {
+  border-bottom: var(--nce-border-width) solid var(--nce-color-border);
+}
+.table-header {
+  border-bottom: var(--nce-border-width-strong) solid var(--nce-color-border);
+}
+```
+
+Or apply `theme-border` on elements that need a full box border (cards, inputs). Use `theme-border-thin` for hairlines and `theme-border-strong` for prominent dividers.
+
 > Note: `w-full` and `uppercase` are vanilla layout utilities, not theme classes — leave
 > them unprefixed. Only color / spacing / typography / shape tokens from the contract
 > carry the `theme-` prefix.

@@ -55,6 +55,18 @@ Supporting references:
 
 Downstream apps (e.g. NCE Events) opt in by setting `data-nce-theme="<slug>"` on a panel root. Omit the attribute (or use a missing/Inactive slug) → inherits `:root` base. No Themes-app changes required beyond the scoped palette blocks above.
 
+### Border width tokens — shipped
+
+Three independently configurable line/border widths in `theme_json`, edited via Theme Editor → Layout → **Line Widths**:
+
+| Field | Var | Class | Default |
+|-------|-----|-------|---------|
+| `border_width_thin` | `--nce-border-width-thin` | `theme-border-thin` | `0.5px` |
+| `border_width` | `--nce-border-width` | `theme-border` | `1px` |
+| `border_width_strong` | `--nce-border-width-strong` | `theme-border-strong` | `2px` |
+
+See `THEME_CLASS_CONTRACT.json` → `border_and_focus` and `themes/CODE_INDEX.json` → `concern_lookup.border_width_tokens`.
+
 ---
 
 ## Current architecture (summary)
