@@ -50,7 +50,12 @@ app_include_js = ["/assets/themes/dist/theme-swatch-picker.umd.js"]
 # SPA route rules — Frappe serves the Vue app for /themes/* paths
 website_route_rules = [
 	{"from_route": "/themes/<path:app_path>", "to_route": "themes"},
+	{"from_route": "/themes", "to_route": "themes"},
 	{"from_route": "/desk-themes/<path:app_path>", "to_route": "themes"},
+	{"from_route": "/desk-themes", "to_route": "themes"},
+	# Frappe app portal rewrites desk-themes → app-themes for the themes app tile
+	{"from_route": "/app-themes/<path:app_path>", "to_route": "themes"},
+	{"from_route": "/app-themes", "to_route": "themes"},
 ]
 
 add_to_apps_screen = [

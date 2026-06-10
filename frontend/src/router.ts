@@ -19,17 +19,20 @@ const routes = [
 	},
 	{
 		path: "/desk-themes/theme-settings",
+		alias: "/app-themes/theme-settings",
 		name: "DeskThemeSettings",
 		component: () => import("@/pages/DeskThemeSettingsPage.vue"),
 	},
 	{
 		path: "/desk-themes/preview",
+		alias: "/app-themes/preview",
 		name: "DeskThemePreview",
 		component: () => import("@/pages/DeskThemePreviewPage.vue"),
 		meta: { standalone: true },
 	},
 	{
 		path: "/desk-themes",
+		alias: "/app-themes",
 		name: "DeskHome",
 		component: () => import("@/pages/DeskThemeHomePage.vue"),
 	},
