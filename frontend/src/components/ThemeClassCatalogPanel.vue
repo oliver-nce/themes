@@ -22,13 +22,10 @@
 			<EditorSection
 				v-for="section in filteredSections"
 				:key="section.id"
+				:title="`${section.title} (${section.rows.length})`"
 				collapsible
 				:default-open="false"
 			>
-				<template #title>
-					<span class="catalog-section-title">{{ section.title }}</span>
-					<span class="catalog-section-count">({{ section.rows.length }})</span>
-				</template>
 				<div class="catalog-table-wrap">
 					<table class="catalog-table">
 						<thead>
@@ -132,21 +129,8 @@ const totalRows = computed(() => catalogRowCount(filteredSections.value))
 	background: var(--nce-color-bg, #fff);
 }
 
-.catalog-section-title {
-	font-size: 0.875rem;
-	font-weight: 600;
-	text-transform: uppercase;
-	letter-spacing: 0.05em;
-	color: var(--nce-color-muted, #6b7280);
-}
-
-.catalog-section-count {
-	margin-left: 0.35rem;
-	font-size: 0.8125rem;
-	font-weight: 500;
-	color: var(--nce-color-muted, #9ca3af);
-	text-transform: none;
-	letter-spacing: normal;
+.catalog-sections :deep(.editor-section-toggle) {
+	width: 100%;
 }
 
 .catalog-table-wrap {

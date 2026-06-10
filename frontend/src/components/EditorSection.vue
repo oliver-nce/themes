@@ -1,18 +1,19 @@
 <template>
 	<section class="editor-panel editor-section">
 		<div class="editor-section-header">
-			<slot v-if="$slots.title" name="title" />
+			<button
+				v-if="collapsible"
+				type="button"
+				class="editor-section-toggle"
+				:aria-expanded="open"
+				@click="open = !open"
+			>
+				<slot v-if="$slots.title" name="title" />
+				<h2 v-else class="section-title editor-section-title">{{ title }}</h2>
+				<span class="editor-section-chevron" :class="{ open }">&#9660;</span>
+			</button>
 			<template v-else>
-				<button
-					v-if="collapsible"
-					type="button"
-					class="editor-section-toggle"
-					:aria-expanded="open"
-					@click="open = !open"
-				>
-					<h2 class="section-title editor-section-title">{{ title }}</h2>
-					<span class="editor-section-chevron" :class="{ open }">&#9660;</span>
-				</button>
+				<slot v-if="$slots.title" name="title" />
 				<h2 v-else class="section-title editor-section-title">{{ title }}</h2>
 			</template>
 			<div v-if="$slots.actions" class="editor-section-actions">
