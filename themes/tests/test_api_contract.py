@@ -117,7 +117,7 @@ class TestApiContract(unittest.TestCase):
         with patch("themes.utils.theme_service.frappe") as frappe_mock, patch(
             "themes.utils.theme_service._default_theme_name",
             return_value="Default",
-        ), patch("themes.utils.desk_css_writer._read_desk_css_hash", return_value="desk1234"):
+        ), patch("themes.utils.desk_css_writer.read_desk_css_hash", return_value="desk1234"):
             frappe_mock.db.exists.return_value = True
             frappe_mock.get_doc.return_value = theme_doc
 
@@ -141,7 +141,7 @@ class TestApiContract(unittest.TestCase):
         with patch("themes.utils.theme_service.frappe") as frappe_mock, patch(
             "themes.utils.theme_service._default_theme_name",
             return_value="Default",
-        ), patch("themes.utils.desk_css_writer._read_desk_css_hash", return_value="desk1234"):
+        ), patch("themes.utils.desk_css_writer.read_desk_css_hash", return_value="desk1234"):
             frappe_mock.db.exists.return_value = True
             frappe_mock.get_doc.return_value = theme_doc
 
@@ -161,7 +161,7 @@ class TestApiContract(unittest.TestCase):
         with patch("themes.utils.theme_service.frappe") as frappe_mock, patch(
             "themes.utils.theme_service._default_theme_name",
             return_value="Default",
-        ), patch("themes.utils.desk_css_writer._read_desk_css_hash", return_value="desk1234"):
+        ), patch("themes.utils.desk_css_writer.read_desk_css_hash", return_value="desk1234"):
             frappe_mock.db.exists.return_value = True
             frappe_mock.get_doc.return_value = theme_doc
 

@@ -41,11 +41,16 @@ def _css_url(css_filename: str) -> str:
 
 app_include_css = [
     _css_url("nce_theme.css"),
-    _css_url("nce_desk_theme.css"),
+    "/assets/themes/css/nce_desk_theme.css",
     "/assets/themes/dist/theme-swatch-picker.css",
 ]
 
-app_include_js = ["/assets/themes/dist/theme-swatch-picker.umd.js"]
+app_include_js = [
+    "/assets/themes/dist/theme-swatch-picker.umd.js",
+    "/assets/themes/js/desk_theme_loader.js",
+]
+
+extend_bootinfo = "themes.boot.extend_bootinfo"
 
 # SPA route rules — Frappe serves the Vue app for /themes/* paths
 website_route_rules = [

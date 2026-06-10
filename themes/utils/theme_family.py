@@ -108,9 +108,9 @@ def invoke_read_web_css_hash() -> Optional[str]:
 
 
 def _desk_css_hash():
-    from themes.utils.desk_css_writer import _read_desk_css_hash
+    from themes.utils.desk_css_writer import read_desk_css_hash
 
-    return _read_desk_css_hash()
+    return read_desk_css_hash()
 
 
 def read_desk_css_hash() -> Optional[str]:

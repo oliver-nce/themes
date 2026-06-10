@@ -9,3 +9,4 @@ themes.patches.v1_0.rename_base_theme_and_status
 themes.patches.v1_0.add_base_desk_theme_field
 themes.patches.v1_0.bootstrap_default_desk_theme
 themes.patches.v1_0.resolve_neutral_color_shades
+themes.patches.v1_0.add_desk_css_hash_field
