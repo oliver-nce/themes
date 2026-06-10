@@ -490,7 +490,10 @@
 
 			<!-- AGENT:TAB system — class catalog + Save Default to app -->
 			<div v-show="activeTab === 'system'" class="editor-tab">
-				<ThemeClassCatalogPanel :variables="themeCSSVariables" />
+				<ThemeClassCatalogPanel
+					:css-hash="editorMeta.css_hash"
+					:is-dirty="isDirty"
+				/>
 
 				<EditorSection
 					title="Save as base theme"
@@ -891,8 +894,6 @@ function computeCSSVariables(): Record<string, string> {
 	}
 	return vars
 }
-
-const themeCSSVariables = computed(() => computeCSSVariables())
 
 function pushToPreview() {
 	if (!previewWin || previewWin.closed) return
