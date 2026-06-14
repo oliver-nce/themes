@@ -193,6 +193,8 @@
 						:flip-tonal="form.primary_color_fg_flip_tonal"
 						:pole-tonal-dark="form.primary_color_fg_pole_tonal_dark"
 						:pole-tonal-light="form.primary_color_fg_pole_tonal_light"
+						:linked-pole-tonal-dark="form.secondary_color_fg_pole_tonal_dark"
+						:linked-pole-tonal-light="form.secondary_color_fg_pole_tonal_light"
 						@update:model-value="form.primary_color = $event"
 						@update:gamma="form.primary_color_gamma = $event"
 						@update:saturation="form.primary_color_saturation = $event"
@@ -200,6 +202,8 @@
 						@update:flip-tonal="form.primary_color_fg_flip_tonal = $event"
 						@update:pole-tonal-dark="form.primary_color_fg_pole_tonal_dark = $event"
 						@update:pole-tonal-light="form.primary_color_fg_pole_tonal_light = $event"
+						@update:linked-pole-tonal-dark="form.secondary_color_fg_pole_tonal_dark = $event"
+						@update:linked-pole-tonal-light="form.secondary_color_fg_pole_tonal_light = $event"
 						show-shades
 					/>
 				</EditorSection>
@@ -220,6 +224,8 @@
 						:flip-tonal="form.secondary_color_fg_flip_tonal"
 						:pole-tonal-dark="form.secondary_color_fg_pole_tonal_dark"
 						:pole-tonal-light="form.secondary_color_fg_pole_tonal_light"
+						:linked-pole-tonal-dark="form.primary_color_fg_pole_tonal_dark"
+						:linked-pole-tonal-light="form.primary_color_fg_pole_tonal_light"
 						@update:model-value="form.secondary_color = $event"
 						@update:gamma="form.secondary_color_gamma = $event"
 						@update:saturation="form.secondary_color_saturation = $event"
@@ -227,6 +233,8 @@
 						@update:flip-tonal="form.secondary_color_fg_flip_tonal = $event"
 						@update:pole-tonal-dark="form.secondary_color_fg_pole_tonal_dark = $event"
 						@update:pole-tonal-light="form.secondary_color_fg_pole_tonal_light = $event"
+						@update:linked-pole-tonal-dark="form.primary_color_fg_pole_tonal_dark = $event"
+						@update:linked-pole-tonal-light="form.primary_color_fg_pole_tonal_light = $event"
 						show-shades
 					/>
 				</EditorSection>

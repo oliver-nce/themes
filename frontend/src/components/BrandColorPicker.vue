@@ -281,6 +281,9 @@ const props = withDefaults(defineProps<{
 	flipTonal?: number | null
 	poleTonalDark?: number | null
 	poleTonalLight?: number | null
+	/** Opposite tonal role pole stops — edited via markers on this strip when showPoleMarkers. */
+	linkedPoleTonalDark?: number | null
+	linkedPoleTonalLight?: number | null
 	/** When true, show draggable pole markers (set when opposite brand picker is in tonal). */
 	showPoleMarkers?: boolean
 }>(), {
@@ -295,6 +298,8 @@ const props = withDefaults(defineProps<{
 	flipTonal: null,
 	poleTonalDark: null,
 	poleTonalLight: null,
+	linkedPoleTonalDark: null,
+	linkedPoleTonalLight: null,
 	showPoleMarkers: false,
 })
 
@@ -308,6 +313,8 @@ const emit = defineEmits<{
 	"update:flipTonal": [value: number | null]
 	"update:poleTonalDark": [value: number | null]
 	"update:poleTonalLight": [value: number | null]
+	"update:linkedPoleTonalDark": [value: number | null]
+	"update:linkedPoleTonalLight": [value: number | null]
 }>()
 
 const HUE_SQUARE_COUNT = 36
@@ -417,16 +424,38 @@ const effectiveTonalFlipShade = computed(() =>
 	resolveFgFlipShade(props.flipTonal, currentShades.value),
 )
 
+const markerPoleDarkSource = computed(() =>
+	poleMarkersVisible.value ? props.linkedPoleTonalDark : props.poleTonalDark,
+)
+
+const markerPoleLightSource = computed(() =>
+	poleMarkersVisible.value ? props.linkedPoleTonalLight : props.poleTonalLight,
+)
+
 const effectiveTonalPoleDark = computed(() =>
-	resolveTonalPoleShade(props.poleTonalDark, DEFAULT_TONAL_POLE_DARK, currentShades.value),
+	resolveTonalPoleShade(
+		markerPoleDarkSource.value,
+		DEFAULT_TONAL_POLE_DARK,
+		currentShades.value,
+	),
 )
 
 const effectiveTonalPoleLight = computed(() =>
-	resolveTonalPoleShade(props.poleTonalLight, DEFAULT_TONAL_POLE_LIGHT, currentShades.value),
+	resolveTonalPoleShade(
+		markerPoleLightSource.value,
+		DEFAULT_TONAL_POLE_LIGHT,
+		currentShades.value,
+	),
 )
 
 const hasFlipOverride = computed(() => {
-	if (fgPreviewMode.value === "mono") return props.flipMono != null
+	if (fgPreviewMode.value === "mono") {
+		return (
+			props.flipMono != null ||
+			(poleMarkersVisible.value &&
+				(props.linkedPoleTonalDark != null || props.linkedPoleTonalLight != null))
+		)
+	}
 	return (
 		props.flipTonal != null ||
 		props.poleTonalDark != null ||
@@ -521,7 +550,10 @@ function applyMarkerAtIndex(idx: number) {
 		if (fgPreviewMode.value === "mono") emit("update:flipMono", shade)
 		else emit("update:flipTonal", shade)
 	} else if (dragTarget.value === "dark") {
-		emit("update:poleTonalDark", shade)
+		if (poleMarkersVisible.value) emit("update:linkedPoleTonalDark", shade)
+		else emit("update:poleTonalDark", shade)
+	} else if (poleMarkersVisible.value) {
+		emit("update:linkedPoleTonalLight", shade)
 	} else {
 		emit("update:poleTonalLight", shade)
 	}
@@ -574,13 +606,21 @@ function fgColorForShade(s: ColorShade): string {
 			? displayFlipShade.value
 			: props.flipTonal ?? props.flipMono
 	const poleDark =
-		dragTarget.value === "dark" || poleMarkersVisible.value
-			? displayTonalPoleDark.value
-			: props.poleTonalDark
+		poleMarkersVisible.value
+			? dragTarget.value === "dark"
+				? displayTonalPoleDark.value
+				: props.linkedPoleTonalDark
+			: dragTarget.value === "dark"
+				? displayTonalPoleDark.value
+				: props.poleTonalDark
 	const poleLight =
-		dragTarget.value === "light" || poleMarkersVisible.value
-			? displayTonalPoleLight.value
-			: props.poleTonalLight
+		poleMarkersVisible.value
+			? dragTarget.value === "light"
+				? displayTonalPoleLight.value
+				: props.linkedPoleTonalLight
+			: dragTarget.value === "light"
+				? displayTonalPoleLight.value
+				: props.poleTonalLight
 	return brandShadeForeground(
 		s.shade,
 		currentShades.value,
@@ -600,6 +640,10 @@ function isLowContrast(s: ColorShade): boolean {
 function resetFlip() {
 	if (fgPreviewMode.value === "mono") {
 		emit("update:flipMono", null)
+		if (poleMarkersVisible.value) {
+			emit("update:linkedPoleTonalDark", null)
+			emit("update:linkedPoleTonalLight", null)
+		}
 	} else {
 		emit("update:flipTonal", null)
 		emit("update:poleTonalDark", null)
