@@ -87,7 +87,9 @@ def _desk_font_face_blocks(name: str) -> list[str]:
         ]
     return out
 
-DESK_TOKEN_FIELDS = [key for key, _ in DESK_CSS_VARS]
+# font_family is not in DESK_CSS_VARS (needs stack conversion, handled separately in generate_desk_css)
+# but it must be in DESK_TOKEN_FIELDS so _desk_parse_payload doesn't strip it on save.
+DESK_TOKEN_FIELDS = [key for key, _ in DESK_CSS_VARS] + ["font_family"]
 
 # Frappe v15 Espresso re-declares Desk vars on [data-theme="light"] after app_include_css.
 DESK_CSS_SELECTOR = ":root, [data-theme=\"light\"]"
