@@ -43,8 +43,8 @@ DESK_CSS_VARS = (
     ("g_row_color", "--g-row-color"),
     ("g_today_highlight", "--g-today-highlight"),
     # Typography — font_family is handled separately (needs CSS stack conversion)
-    ("font_size", "--font-size-base"),
-    ("font_weight_body", "--nce-font-weight"),
+    # font_size omitted: Frappe v15 does not use --font-size-base (uses --text-sm/base instead)
+    ("font_weight_body", "--weight-regular"),
 )
 
 _DESK_FONT_GENERIC: dict[str, str] = {

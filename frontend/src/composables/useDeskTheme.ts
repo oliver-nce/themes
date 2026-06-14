@@ -25,9 +25,9 @@ export const DESK_VAR_MAP: Record<string, string> = {
 	g_header_background: "--g-header-background",
 	g_row_color: "--g-row-color",
 	g_today_highlight: "--g-today-highlight",
-	// Typography — font_size and font_weight_body are direct values
-	font_size: "--font-size-base",
-	font_weight_body: "--nce-font-weight",
+	// Typography — font_weight_body targets Frappe v15's --weight-regular (body text weight token)
+	// font_size omitted: Frappe v15 does not use --font-size-base
+	font_weight_body: "--weight-regular",
 	// font_family is handled separately (needs CSS stack conversion)
 }
 
