@@ -346,6 +346,93 @@ export function pickFgTonalCrossBrand(bgHex: string, brandHex: string): string {
   return oklchToHex(targetL, targetC, h);
 }
 
+/** Tonal text poles pulled from the opposite brand ramp (Option B). */
+export const FG_POLE_LIGHT_SHADE = 300;
+export const FG_POLE_DARK_SHADE = 800;
+export const MONO_POLE_DARK = "#0A0A0A";
+export const MONO_POLE_LIGHT = "#FFFFFF";
+export const FG_FLIP_AUTO_THRESHOLD = 0.62;
+
+export type FgFlipMode = "mono" | "tonal";
+
+export function computeAutoFgFlipShade(shades: readonly ColorShade[]): number {
+  for (const s of shades) {
+    const { L } = hexToOklch(s.hex);
+    if (L <= FG_FLIP_AUTO_THRESHOLD) return s.shade;
+  }
+  return shades[shades.length - 1]?.shade ?? 950;
+}
+
+export function resolveFgFlipShade(
+  flipOverride: number | null | undefined,
+  shades: readonly ColorShade[],
+): number {
+  if (flipOverride != null && Number.isFinite(flipOverride)) {
+    const n = Math.round(flipOverride);
+    if (shades.some((s) => s.shade === n)) return n;
+  }
+  return computeAutoFgFlipShade(shades);
+}
+
+export function fgColorForFlipShade(
+  shadeNum: number,
+  flipShade: number,
+  shades: readonly ColorShade[],
+  darkPole: string,
+  lightPole: string,
+): string {
+  const flipIdx = shades.findIndex((s) => s.shade === flipShade);
+  const idx = shades.findIndex((s) => s.shade === shadeNum);
+  if (flipIdx < 0 || idx < 0) return darkPole;
+  return idx >= flipIdx ? lightPole : darkPole;
+}
+
+export function tonalPolesFromShades(shades: readonly ColorShade[]): {
+  darkPole: string;
+  lightPole: string;
+} {
+  const dark =
+    shades.find((s) => s.shade === FG_POLE_DARK_SHADE)?.hex ??
+    shades[shades.length - 1]?.hex ??
+    MONO_POLE_DARK;
+  const light =
+    shades.find((s) => s.shade === FG_POLE_LIGHT_SHADE)?.hex ??
+    shades[0]?.hex ??
+    MONO_POLE_LIGHT;
+  return { darkPole: dark, lightPole: light };
+}
+
+export function brandFgPoles(
+  mode: FgFlipMode,
+  oppositeShades: readonly ColorShade[],
+): { darkPole: string; lightPole: string } {
+  if (mode === "mono") {
+    return { darkPole: MONO_POLE_DARK, lightPole: MONO_POLE_LIGHT };
+  }
+  if (oppositeShades.length) return tonalPolesFromShades(oppositeShades);
+  return { darkPole: MONO_POLE_DARK, lightPole: MONO_POLE_LIGHT };
+}
+
+export function brandShadeForeground(
+  shadeNum: number,
+  shades: readonly ColorShade[],
+  mode: FgFlipMode,
+  flipOverride: number | null | undefined,
+  oppositeShades: readonly ColorShade[],
+): string {
+  const flip = resolveFgFlipShade(flipOverride, shades);
+  const { darkPole, lightPole } = brandFgPoles(mode, oppositeShades);
+  return fgColorForFlipShade(shadeNum, flip, shades, darkPole, lightPole);
+}
+
+/** True when bg and text OKLCH lightness are too close to read comfortably. */
+export function isLowContrastFg(bgHex: string, fgHex: string): boolean {
+  if (!bgHex || !fgHex) return false;
+  const bgL = hexToOklch(bgHex).L;
+  const fgL = hexToOklch(fgHex).L;
+  return Math.abs(bgL - fgL) < 0.25;
+}
+
 // ── Neutral (greyscale) shade generation ────────────────────────────────────
 
 export const NEUTRAL_SHADE_TARGETS: Array<{ shade: number; l: number }> = [

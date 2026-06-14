@@ -185,9 +185,15 @@
 						:saturation="form.primary_color_saturation"
 						:palette-mode="brandPaletteMode"
 						:opposite-brand-color="form.secondary_color"
+						:opposite-brand-gamma="secondaryShadeAdjust.gamma"
+						:opposite-brand-saturation="secondaryShadeAdjust.saturation"
+						:flip-mono="form.primary_color_fg_flip_mono"
+						:flip-tonal="form.primary_color_fg_flip_tonal"
 						@update:model-value="form.primary_color = $event"
 						@update:gamma="form.primary_color_gamma = $event"
 						@update:saturation="form.primary_color_saturation = $event"
+						@update:flip-mono="form.primary_color_fg_flip_mono = $event"
+						@update:flip-tonal="form.primary_color_fg_flip_tonal = $event"
 						show-shades
 					/>
 				</EditorSection>
@@ -200,9 +206,15 @@
 						:saturation="form.secondary_color_saturation"
 						:palette-mode="brandPaletteMode"
 						:opposite-brand-color="form.primary_color"
+						:opposite-brand-gamma="primaryShadeAdjust.gamma"
+						:opposite-brand-saturation="primaryShadeAdjust.saturation"
+						:flip-mono="form.secondary_color_fg_flip_mono"
+						:flip-tonal="form.secondary_color_fg_flip_tonal"
 						@update:model-value="form.secondary_color = $event"
 						@update:gamma="form.secondary_color_gamma = $event"
 						@update:saturation="form.secondary_color_saturation = $event"
+						@update:flip-mono="form.secondary_color_fg_flip_mono = $event"
+						@update:flip-tonal="form.secondary_color_fg_flip_tonal = $event"
 						show-shades
 					/>
 				</EditorSection>
@@ -744,7 +756,7 @@
 import { ref, reactive, watch, computed, onUnmounted, onMounted, nextTick } from "vue"
 import { useRoute } from "vue-router"
 import { useThemeEditor, type ThemeAvailabilityStatus } from "@/composables/useThemeEditor"
-import { generateShades, generateNeutralShades, neutral600Hex, effectiveRoleHex, pickFgMono, pickFgTonal, pickFgTonalCrossBrand, resolveNeutralIntoPayload, isDark, type ColorShade } from "@/utils/color-shades"
+import { generateShades, generateNeutralShades, neutral600Hex, effectiveRoleHex, pickFgMono, pickFgTonal, brandShadeForeground, resolveNeutralIntoPayload, isDark, type ColorShade } from "@/utils/color-shades"
 import { STATUS_COLOR_DEFAULTS, STATUS_COLOR_KEYS } from "@/composables/useThemeDefaults"
 import EditorSection from "@/components/EditorSection.vue"
 import BrandColorPicker, { type BrandPaletteMode } from "@/components/BrandColorPicker.vue"
@@ -899,37 +911,44 @@ function computeCSSVariables(): Record<string, string> {
 			hasAdjust && !corporateBrand && (gamma !== 0 || saturation !== 100)
 				? effectiveRoleHex(hex, gamma, saturation)
 				: hex
-		vars[`--nce-${varPrefix}-fg`] = pickFgMono(roleHex)
-		// Cross-brand tonal: opposite brand hue/chroma, lightness flipped per shade.
-		if (field === "primary_color") {
-			vars[`--nce-${varPrefix}-fg-tonal`] = form.secondary_color
-				? pickFgTonalCrossBrand(roleHex, form.secondary_color)
-				: pickFgTonal(roleHex)
-		} else if (field === "secondary_color") {
-			vars[`--nce-${varPrefix}-fg-tonal`] = form.primary_color
-				? pickFgTonalCrossBrand(roleHex, form.primary_color)
-				: pickFgTonal(roleHex)
+		const shades = generateShades(hex, hasAdjust ? { gamma, saturation } : undefined)
+		const isBrand = field === "primary_color" || field === "secondary_color"
+		let oppShades: ColorShade[] = []
+		if (field === "primary_color" && form.secondary_color) {
+			const oppAdj = roleShadeAdjustments("secondary_color")
+			oppShades = generateShades(form.secondary_color, oppAdj)
+		} else if (field === "secondary_color" && form.primary_color) {
+			const oppAdj = roleShadeAdjustments("primary_color")
+			oppShades = generateShades(form.primary_color, oppAdj)
+		}
+		if (isBrand) {
+			const flipMono = form[`${field}_fg_flip_mono` as FormKey] as number | null
+			const flipTonal = form[`${field}_fg_flip_tonal` as FormKey] as number | null
+			vars[`--nce-${varPrefix}-fg`] = brandShadeForeground(
+				600, shades, "mono", flipMono, oppShades,
+			)
+			vars[`--nce-${varPrefix}-fg-tonal`] = brandShadeForeground(
+				600, shades, "tonal", flipTonal, oppShades,
+			)
 		} else {
+			vars[`--nce-${varPrefix}-fg`] = pickFgMono(roleHex)
 			vars[`--nce-${varPrefix}-fg-tonal`] = pickFgTonal(roleHex)
 		}
-		const shades = generateShades(hex, hasAdjust ? { gamma, saturation } : undefined)
 		for (const s of shades) {
 			vars[`--nce-${varPrefix}-${s.shade}`] = s.hex
 			vars[`--${varPrefix}-${s.shade}`] = s.hex
 			if (CURATED_SHADES.includes(s.shade as (typeof CURATED_SHADES)[number])) {
-				vars[`--nce-${varPrefix}-${s.shade}-fg`] = pickFgMono(s.hex)
-				// Cross-brand tonal: per-shade lightness, opposite brand hue/chroma.
-				if (field === "primary_color" && form.secondary_color) {
-					vars[`--nce-${varPrefix}-${s.shade}-fg-tonal`] = pickFgTonalCrossBrand(
-						s.hex,
-						form.secondary_color,
+				if (isBrand) {
+					const flipMono = form[`${field}_fg_flip_mono` as FormKey] as number | null
+					const flipTonal = form[`${field}_fg_flip_tonal` as FormKey] as number | null
+					vars[`--nce-${varPrefix}-${s.shade}-fg`] = brandShadeForeground(
+						s.shade, shades, "mono", flipMono, oppShades,
 					)
-				} else if (field === "secondary_color" && form.primary_color) {
-					vars[`--nce-${varPrefix}-${s.shade}-fg-tonal`] = pickFgTonalCrossBrand(
-						s.hex,
-						form.primary_color,
+					vars[`--nce-${varPrefix}-${s.shade}-fg-tonal`] = brandShadeForeground(
+						s.shade, shades, "tonal", flipTonal, oppShades,
 					)
 				} else {
+					vars[`--nce-${varPrefix}-${s.shade}-fg`] = pickFgMono(s.hex)
 					vars[`--nce-${varPrefix}-${s.shade}-fg-tonal`] = pickFgTonal(s.hex)
 				}
 			}
@@ -976,6 +995,10 @@ const ALL_FIELDS = [
 	"secondary_color",
 	"secondary_color_gamma",
 	"secondary_color_saturation",
+	"primary_color_fg_flip_mono",
+	"primary_color_fg_flip_tonal",
+	"secondary_color_fg_flip_mono",
+	"secondary_color_fg_flip_tonal",
 	"brand_palette_mode",
 	"neutral_color_warmth",
 	"accent_color",
@@ -1030,6 +1053,10 @@ const DEFAULTS: Record<FormKey, any> = {
 	secondary_color: "#10B981",
 	secondary_color_gamma: 0,
 	secondary_color_saturation: 100,
+	primary_color_fg_flip_mono: null,
+	primary_color_fg_flip_tonal: null,
+	secondary_color_fg_flip_mono: null,
+	secondary_color_fg_flip_tonal: null,
 	brand_palette_mode: "corporate",
 	neutral_color_warmth: 0,
 	...STATUS_COLOR_DEFAULTS,
@@ -1342,6 +1369,13 @@ function canonicalPayload(source: Record<string, any>): Record<string, any> {
 			payload[key] = clampShadowDirection(val ?? DEFAULTS.shadow_direction)
 		} else if (key === "brand_palette_mode") {
 			payload[key] = normalizeBrandPaletteMode(val ?? DEFAULTS.brand_palette_mode)
+		} else if (key.endsWith("_fg_flip_mono") || key.endsWith("_fg_flip_tonal")) {
+			if (val === null || val === undefined || val === "") {
+				payload[key] = null
+			} else {
+				const n = Number(val)
+				payload[key] = Number.isFinite(n) ? Math.round(n) : null
+			}
 		} else if (key === "custom_css" || key === "tailwind_overrides") {
 			payload[key] = String(val ?? "")
 		} else {
@@ -1373,6 +1407,13 @@ function applyPayloadToForm(payload: Record<string, any>) {
 			form[key] = clampShadowOpacity(val ?? DEFAULTS.shadow_opacity)
 		} else if (key === "shadow_direction") {
 			form[key] = clampShadowDirection(val ?? DEFAULTS.shadow_direction)
+		} else if (key.endsWith("_fg_flip_mono") || key.endsWith("_fg_flip_tonal")) {
+			if (val === null || val === undefined || val === "") {
+				form[key] = null
+			} else {
+				const n = Number(val)
+				form[key] = Number.isFinite(n) ? Math.round(n) : null
+			}
 		} else if (val !== undefined && val !== null) {
 			form[key] = val
 		}

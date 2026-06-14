@@ -22,7 +22,9 @@ from themes.utils.css_publish import write_published_css
 from themes.utils.theme_color_utils import (
     _build_shadow, _generate_shades, generate_neutral_shades,
     _effective_role_hex,
-    pick_fg_mono, pick_fg_tonal, pick_fg_tonal_cross_brand,
+    pick_fg_mono, pick_fg_tonal,
+    BRAND_COLOR_FIELDS, OPPOSITE_BRAND_FIELD,
+    brand_shade_foreground,
 )
 from themes.utils.theme_tokens import (
     BORDER_RADIUS_MAP, BORDER_WIDTH_MAP, SPACING_SCALE_MAP, LINE_HEIGHT_MAP, TRANSITION_MAP,
@@ -239,35 +241,47 @@ def _emit_var_block(g, lines, selector=":root", include_custom_css=True):
         fg_hex = _role_base_hex(g, f)
         if not fg_hex:
             continue
-        lines.append(f"\t--nce-{var}-fg: {pick_fg_mono(fg_hex)};")
-        # Cross-brand tonal: primary bg → secondary hue, secondary bg → primary hue.
-        if f == "primary_color":
-            opp = _role_base_hex(g, "secondary_color")
-            tonal = pick_fg_tonal_cross_brand(fg_hex, opp) if opp else pick_fg_tonal(fg_hex)
-        elif f == "secondary_color":
-            opp = _role_base_hex(g, "primary_color")
-            tonal = pick_fg_tonal_cross_brand(fg_hex, opp) if opp else pick_fg_tonal(fg_hex)
+        if f in BRAND_COLOR_FIELDS:
+            role_shades = _get_role_shades(g, f)
+            opp_field = OPPOSITE_BRAND_FIELD[f]
+            opp_shades = _get_role_shades(g, opp_field) if _role_is_configured(g, opp_field) else []
+            flip_mono = g(f"{f}_fg_flip_mono")
+            flip_tonal = g(f"{f}_fg_flip_tonal")
+            fg_mono = brand_shade_foreground(600, role_shades, "mono", flip_mono, opp_shades)
+            fg_tonal = brand_shade_foreground(600, role_shades, "tonal", flip_tonal, opp_shades)
+            lines.append(f"\t--nce-{var}-fg: {fg_mono};")
+            lines.append(f"\t--nce-{var}-fg-tonal: {fg_tonal};")
         else:
-            tonal = pick_fg_tonal(fg_hex)
-        lines.append(f"\t--nce-{var}-fg-tonal: {tonal};")
+            lines.append(f"\t--nce-{var}-fg: {pick_fg_mono(fg_hex)};")
+            lines.append(f"\t--nce-{var}-fg-tonal: {pick_fg_tonal(fg_hex)};")
     lines += ["", "\t/* ── Shade scales (50–950) ── */"]
     for f, var in SHADE_SCALE_FIELDS.items():
         if not _role_is_configured(g, f):
             continue
-        for shade_num, shade_hex in _get_role_shades(g, f):
+        role_shades = _get_role_shades(g, f)
+        opp_shades: list[tuple[int, str]] = []
+        flip_mono = flip_tonal = None
+        if f in BRAND_COLOR_FIELDS:
+            opp_field = OPPOSITE_BRAND_FIELD[f]
+            if _role_is_configured(g, opp_field):
+                opp_shades = _get_role_shades(g, opp_field)
+            flip_mono = g(f"{f}_fg_flip_mono")
+            flip_tonal = g(f"{f}_fg_flip_tonal")
+        for shade_num, shade_hex in role_shades:
             lines.append(f"\t--nce-{var}-{shade_num}: {shade_hex};")
             if shade_num in CURATED_SHADES:
-                lines.append(f"\t--nce-{var}-{shade_num}-fg: {pick_fg_mono(shade_hex)};")
-                # Cross-brand tonal: per-shade lightness, opposite brand hue/chroma.
-                if f == "primary_color":
-                    opp = _role_base_hex(g, "secondary_color")
-                    shade_tonal = pick_fg_tonal_cross_brand(shade_hex, opp) if opp else pick_fg_tonal(shade_hex)
-                elif f == "secondary_color":
-                    opp = _role_base_hex(g, "primary_color")
-                    shade_tonal = pick_fg_tonal_cross_brand(shade_hex, opp) if opp else pick_fg_tonal(shade_hex)
+                if f in BRAND_COLOR_FIELDS:
+                    fg_mono = brand_shade_foreground(
+                        shade_num, role_shades, "mono", flip_mono, opp_shades,
+                    )
+                    fg_tonal = brand_shade_foreground(
+                        shade_num, role_shades, "tonal", flip_tonal, opp_shades,
+                    )
+                    lines.append(f"\t--nce-{var}-{shade_num}-fg: {fg_mono};")
+                    lines.append(f"\t--nce-{var}-{shade_num}-fg-tonal: {fg_tonal};")
                 else:
-                    shade_tonal = pick_fg_tonal(shade_hex)
-                lines.append(f"\t--nce-{var}-{shade_num}-fg-tonal: {shade_tonal};")
+                    lines.append(f"\t--nce-{var}-{shade_num}-fg: {pick_fg_mono(shade_hex)};")
+                    lines.append(f"\t--nce-{var}-{shade_num}-fg-tonal: {pick_fg_tonal(shade_hex)};")
     lines.append(f"\t--nce-font-family: {_font_stack(g('font_family'))};")
     lines.append(f"\t--nce-font-heading: {_font_stack(g('heading_font_family'))};")
     lines.append(f"\t--nce-font-size: {g('font_size') or '14px'};")

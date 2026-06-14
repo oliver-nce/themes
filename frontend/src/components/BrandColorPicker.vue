@@ -17,24 +17,67 @@
 
 		<template v-if="showShades">
 			<div v-if="currentShades.length" class="shade-strip-row mt-1.5">
-				<div class="color-shade-strip flex gap-px rounded overflow-hidden">
+				<div class="shade-strip-wrap">
 					<div
-						v-for="s in currentShades"
-						:key="s.shade"
-						class="flex-1 group relative"
+						class="flip-controls-grid"
+						:style="{ gridTemplateColumns: `repeat(${currentShades.length}, minmax(0, 1fr))` }"
 					>
 						<div
-							class="color-shade-swatch flex items-center justify-center"
-							:style="{ backgroundColor: s.hex }"
+							v-for="s in currentShades"
+							:key="'flip-' + s.shade"
+							class="flip-cell"
 						>
-							<span
-								class="shade-text-sample"
-								:style="{ color: fgColorForShade(s.hex) }"
-							>Text</span>
+							<div v-if="s.shade === effectiveFlipShade" class="flip-arrows">
+								<button
+									type="button"
+									class="flip-arrow-btn"
+									:disabled="!canNudgeFlipLeft"
+									title="Move flip point lighter"
+									@click="nudgeFlip(-1)"
+								>&#9664;</button>
+								<button
+									type="button"
+									class="flip-arrow-btn"
+									:disabled="!canNudgeFlipRight"
+									title="Move flip point darker"
+									@click="nudgeFlip(1)"
+								>&#9654;</button>
+							</div>
 						</div>
-						<div class="text-center mt-0.5 text-[8px] text-gray-400">{{ s.shade }}</div>
-						<div class="absolute -top-6 left-1/2 -translate-x-1/2 bg-gray-900 text-white text-[10px] px-1.5 py-0.5 rounded opacity-0 group-hover:opacity-100 pointer-events-none whitespace-nowrap transition-opacity z-10">{{ s.hex }}</div>
 					</div>
+					<div class="color-shade-strip flex gap-px rounded overflow-hidden">
+						<div
+							v-for="s in currentShades"
+							:key="s.shade"
+							class="flex-1 group relative"
+						>
+							<div
+								class="color-shade-swatch flex items-center justify-center"
+								:class="{ 'swatch-flip-halo': s.shade === effectiveFlipShade }"
+								:style="{ backgroundColor: s.hex }"
+							>
+								<span
+									class="shade-text-sample"
+									:style="{ color: fgColorForShade(s) }"
+								>Text</span>
+								<span
+									v-if="isLowContrast(s)"
+									class="contrast-warn"
+									title="Low contrast at this flip setting"
+								>!</span>
+							</div>
+							<div class="text-center mt-0.5 text-[8px] text-gray-400">{{ s.shade }}</div>
+							<div class="absolute -top-6 left-1/2 -translate-x-1/2 bg-gray-900 text-white text-[10px] px-1.5 py-0.5 rounded opacity-0 group-hover:opacity-100 pointer-events-none whitespace-nowrap transition-opacity z-10">{{ s.hex }}</div>
+						</div>
+					</div>
+					<button
+						v-if="hasFlipOverride"
+						type="button"
+						class="flip-reset-btn"
+						@click="resetFlip"
+					>
+						Reset flip to auto
+					</button>
 				</div>
 				<fieldset class="fg-mode-picker">
 					<legend class="sr-only">Foreground preview</legend>
@@ -160,13 +203,15 @@
 import { ref, computed, watch, nextTick } from "vue"
 import {
 	color600FromParams,
+	generateShades,
 	generateShadesFromParams,
 	hexToOklch,
 	paramsFromHex,
 	parseHexInput,
-	pickFgMono,
-	pickFgTonal,
-	pickFgTonalCrossBrand,
+	brandShadeForeground,
+	isLowContrastFg,
+	resolveFgFlipShade,
+	type ColorShade,
 	type OklchColorParams,
 } from "@/utils/color-shades"
 
@@ -182,12 +227,21 @@ const props = withDefaults(defineProps<{
 	paletteMode?: BrandPaletteMode
 	/** Opposite brand colour for cross-brand tonal preview (secondary on primary, primary on secondary). */
 	oppositeBrandColor?: string
+	oppositeBrandGamma?: number
+	oppositeBrandSaturation?: number
+	/** First shade stop that uses the light text pole; null = auto. */
+	flipMono?: number | null
+	flipTonal?: number | null
 }>(), {
 	gamma: 0,
 	saturation: 100,
 	showShades: false,
 	paletteMode: "flexible",
 	oppositeBrandColor: "",
+	oppositeBrandGamma: 0,
+	oppositeBrandSaturation: 100,
+	flipMono: null,
+	flipTonal: null,
 })
 
 const fgPreviewMode = ref<FgPreviewMode>("mono")
@@ -196,6 +250,8 @@ const emit = defineEmits<{
 	"update:modelValue": [value: string]
 	"update:gamma": [value: number]
 	"update:saturation": [value: number]
+	"update:flipMono": [value: number | null]
+	"update:flipTonal": [value: number | null]
 }>()
 
 const HUE_SQUARE_COUNT = 36
@@ -284,11 +340,68 @@ const canReset = computed(
 	() => !isCorporate.value && (gamma.value !== 0 || saturation.value !== 100),
 )
 
-function fgColorForShade(shadeHex: string): string {
-	if (fgPreviewMode.value === "mono") return pickFgMono(shadeHex)
-	const opposite = (props.oppositeBrandColor || "").trim()
-	if (opposite) return pickFgTonalCrossBrand(shadeHex, opposite)
-	return pickFgTonal(shadeHex)
+const oppositeShades = computed((): ColorShade[] => {
+	const hex = (props.oppositeBrandColor || "").trim()
+	if (!hex) return []
+	return generateShades(hex, {
+		gamma: props.oppositeBrandGamma ?? 0,
+		saturation: props.oppositeBrandSaturation ?? 100,
+	})
+})
+
+const activeFlipOverride = computed(() =>
+	fgPreviewMode.value === "mono" ? props.flipMono : props.flipTonal,
+)
+
+const effectiveFlipShade = computed(() =>
+	resolveFgFlipShade(activeFlipOverride.value, currentShades.value),
+)
+
+const hasFlipOverride = computed(() => activeFlipOverride.value != null)
+
+const flipIndex = computed(() =>
+	currentShades.value.findIndex((s) => s.shade === effectiveFlipShade.value),
+)
+
+const canNudgeFlipLeft = computed(() => flipIndex.value > 0)
+const canNudgeFlipRight = computed(
+	() => flipIndex.value >= 0 && flipIndex.value < currentShades.value.length - 1,
+)
+
+function fgColorForShade(s: ColorShade): string {
+	return brandShadeForeground(
+		s.shade,
+		currentShades.value,
+		fgPreviewMode.value,
+		activeFlipOverride.value,
+		oppositeShades.value,
+	)
+}
+
+function isLowContrast(s: ColorShade): boolean {
+	return isLowContrastFg(s.hex, fgColorForShade(s))
+}
+
+function nudgeFlip(delta: number) {
+	const shades = currentShades.value
+	const idx = shades.findIndex((s) => s.shade === effectiveFlipShade.value)
+	if (idx < 0) return
+	const next = Math.max(0, Math.min(shades.length - 1, idx + delta))
+	const nextShade = shades[next]?.shade
+	if (nextShade == null) return
+	if (fgPreviewMode.value === "mono") {
+		emit("update:flipMono", nextShade)
+	} else {
+		emit("update:flipTonal", nextShade)
+	}
+}
+
+function resetFlip() {
+	if (fgPreviewMode.value === "mono") {
+		emit("update:flipMono", null)
+	} else {
+		emit("update:flipTonal", null)
+	}
 }
 
 const previewHex = computed(() => {
@@ -481,12 +594,79 @@ function applyHue() {
 	align-items: flex-start;
 	gap: 1rem;
 }
-.color-shade-strip {
+.shade-strip-wrap {
 	width: 75%;
 	flex-shrink: 0;
 }
+.flip-controls-grid {
+	display: grid;
+	width: 100%;
+	margin-bottom: 2px;
+	min-height: 1.25rem;
+}
+.flip-cell {
+	display: flex;
+	justify-content: center;
+	align-items: flex-end;
+}
+.flip-arrows {
+	display: flex;
+	gap: 2px;
+}
+.flip-arrow-btn {
+	width: 1.1rem;
+	height: 1.1rem;
+	padding: 0;
+	border: 1px solid #ccc;
+	border-radius: 3px;
+	background: #fafafa;
+	color: #333;
+	font-size: 9px;
+	line-height: 1;
+	cursor: pointer;
+}
+.flip-arrow-btn:hover:not(:disabled) {
+	background: #eee;
+	border-color: #999;
+}
+.flip-arrow-btn:disabled {
+	opacity: 0.35;
+	cursor: default;
+}
+.color-shade-strip {
+	width: 100%;
+}
 .color-shade-swatch {
 	height: 2.5rem;
+	position: relative;
+}
+.swatch-flip-halo {
+	box-shadow: 0 0 0 2px #fff, 0 0 0 3px #111;
+	z-index: 1;
+}
+.contrast-warn {
+	position: absolute;
+	top: 2px;
+	right: 2px;
+	font-size: 8px;
+	font-weight: 700;
+	color: #ef4444;
+	line-height: 1;
+	pointer-events: none;
+}
+.flip-reset-btn {
+	margin-top: 0.35rem;
+	padding: 2px 6px;
+	font-size: 10px;
+	border: 1px solid #ddd;
+	border-radius: 4px;
+	background: #fafafa;
+	color: #555;
+	cursor: pointer;
+}
+.flip-reset-btn:hover {
+	background: #f0f0f0;
+	border-color: #ccc;
 }
 .shade-text-sample {
 	font-size: 9px;

@@ -133,6 +133,89 @@ def pick_fg_tonal_cross_brand(bg_hex: str, brand_hex: str) -> str:
 	return _oklch_to_hex(target_L, target_C, h)
 
 
+FG_POLE_LIGHT_SHADE = 300
+FG_POLE_DARK_SHADE = 800
+MONO_POLE_DARK = "#0A0A0A"
+MONO_POLE_LIGHT = "#FFFFFF"
+FG_FLIP_AUTO_THRESHOLD = 0.62
+BRAND_COLOR_FIELDS = frozenset({"primary_color", "secondary_color"})
+OPPOSITE_BRAND_FIELD = {
+	"primary_color": "secondary_color",
+	"secondary_color": "primary_color",
+}
+
+
+def compute_auto_fg_flip_shade(shades: list[tuple[int, str]]) -> int:
+	for shade_num, shade_hex in shades:
+		L, _, _ = _hex_to_oklch(shade_hex)
+		if L <= FG_FLIP_AUTO_THRESHOLD:
+			return shade_num
+	return shades[-1][0] if shades else 950
+
+
+def resolve_fg_flip_shade(flip_override, shades: list[tuple[int, str]]) -> int:
+	if flip_override is not None:
+		try:
+			n = int(flip_override)
+			if any(sn == n for sn, _ in shades):
+				return n
+		except (TypeError, ValueError):
+			pass
+	return compute_auto_fg_flip_shade(shades)
+
+
+def _shade_index(shades: list[tuple[int, str]], shade_num: int) -> int:
+	for i, (sn, _) in enumerate(shades):
+		if sn == shade_num:
+			return i
+	return -1
+
+
+def fg_color_for_flip_shade(
+	shade_num: int,
+	flip_shade: int,
+	shades: list[tuple[int, str]],
+	dark_pole: str,
+	light_pole: str,
+) -> str:
+	flip_idx = _shade_index(shades, flip_shade)
+	idx = _shade_index(shades, shade_num)
+	if flip_idx < 0 or idx < 0:
+		return dark_pole
+	return light_pole if idx >= flip_idx else dark_pole
+
+
+def tonal_poles_from_shades(opposite_shades: list[tuple[int, str]]) -> tuple[str, str]:
+	by_shade = dict(opposite_shades)
+	dark = by_shade.get(FG_POLE_DARK_SHADE) or (
+		opposite_shades[-1][1] if opposite_shades else MONO_POLE_DARK
+	)
+	light = by_shade.get(FG_POLE_LIGHT_SHADE) or (
+		opposite_shades[0][1] if opposite_shades else MONO_POLE_LIGHT
+	)
+	return dark, light
+
+
+def brand_fg_poles(mode: str, opposite_shades: list[tuple[int, str]]) -> tuple[str, str]:
+	if mode == "mono":
+		return MONO_POLE_DARK, MONO_POLE_LIGHT
+	if opposite_shades:
+		return tonal_poles_from_shades(opposite_shades)
+	return MONO_POLE_DARK, MONO_POLE_LIGHT
+
+
+def brand_shade_foreground(
+	shade_num: int,
+	shades: list[tuple[int, str]],
+	mode: str,
+	flip_override,
+	opposite_shades: list[tuple[int, str]],
+) -> str:
+	flip = resolve_fg_flip_shade(flip_override, shades)
+	dark_pole, light_pole = brand_fg_poles(mode, opposite_shades)
+	return fg_color_for_flip_shade(shade_num, flip, shades, dark_pole, light_pole)
+
+
 def _max_chroma_in_gamut(L, h, upper):
 	"""Largest chroma at (L, h) inside sRGB. Matches frontend color-shades.ts."""
 	h_rad = math.radians(h)

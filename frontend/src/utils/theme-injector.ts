@@ -1,11 +1,12 @@
 import {
 	pickFgMono,
 	pickFgTonal,
-	pickFgTonalCrossBrand,
+	brandShadeForeground,
 	generateShades,
 	generateNeutralShades,
 	neutral600Hex,
 	effectiveRoleHex,
+	type ColorShade,
 } from "./color-shades"
 import {
 	BORDER_RADIUS_MAP,
@@ -17,12 +18,33 @@ import {
 	SPACING_SCALE_MAP,
 } from "@/domain/theme-tokens"
 
+const BRAND_ROLES = new Set(["primary_color", "secondary_color"])
+const OPPOSITE_BRAND: Record<string, string> = {
+	primary_color: "secondary_color",
+	secondary_color: "primary_color",
+}
+
 function roleAdjustments(role: string, settings: Record<string, unknown>) {
 	if (!GAMMA_SAT_ROLE_FIELDS.has(role)) return undefined
 	return {
 		gamma: Number(settings[`${role}_gamma`] ?? 0),
 		saturation: Number(settings[`${role}_saturation`] ?? 100),
 	}
+}
+
+function flipOverride(settings: Record<string, unknown>, role: string, mode: "mono" | "tonal") {
+	const raw = settings[`${role}_fg_flip_${mode}`]
+	if (raw === null || raw === undefined || raw === "") return null
+	const n = Number(raw)
+	return Number.isFinite(n) ? n : null
+}
+
+function oppositeShades(settings: Record<string, unknown>, role: string): ColorShade[] {
+	const oppRole = OPPOSITE_BRAND[role]
+	const hex = settings[oppRole]
+	if (!hex || typeof hex !== "string") return []
+	const adj = roleAdjustments(oppRole, settings)
+	return generateShades(hex, adj && "saturation" in adj ? adj : undefined)
 }
 
 export function generateCSSVars(settings: Record<string, any>): string {
@@ -76,32 +98,60 @@ export function injectCSSVars(settings: Record<string, any>) {
 			roleHex = effectiveRoleHex(hex, adj.gamma, adj.saturation)
 			root.style.setProperty(`--nce-${v}`, roleHex)
 		}
-		root.style.setProperty(`--nce-${v}-fg`, pickFgMono(roleHex))
-		// Cross-brand tonal: opposite brand hue/chroma, lightness flipped per shade.
-		let tonalHex: string
-		if (role === "primary_color" && settings.secondary_color) {
-			tonalHex = pickFgTonalCrossBrand(roleHex, String(settings.secondary_color))
-		} else if (role === "secondary_color" && settings.primary_color) {
-			tonalHex = pickFgTonalCrossBrand(roleHex, String(settings.primary_color))
-		} else {
-			tonalHex = pickFgTonal(roleHex)
-		}
-		root.style.setProperty(`--nce-${v}-fg-tonal`, tonalHex)
 		const shades = generateShades(hex, adj && "saturation" in adj ? adj : undefined)
+		const oppShades = BRAND_ROLES.has(role) ? oppositeShades(settings, role) : []
+
+		if (BRAND_ROLES.has(role)) {
+			const fgMono = brandShadeForeground(
+				600,
+				shades,
+				"mono",
+				flipOverride(settings, role, "mono"),
+				oppShades,
+			)
+			const fgTonal = brandShadeForeground(
+				600,
+				shades,
+				"tonal",
+				flipOverride(settings, role, "tonal"),
+				oppShades,
+			)
+			root.style.setProperty(`--nce-${v}-fg`, fgMono)
+			root.style.setProperty(`--nce-${v}-fg-tonal`, fgTonal)
+		} else {
+			root.style.setProperty(`--nce-${v}-fg`, pickFgMono(roleHex))
+			root.style.setProperty(`--nce-${v}-fg-tonal`, pickFgTonal(roleHex))
+		}
+
 		for (const s of shades) {
 			if (!CURATED_SHADES.includes(s.shade as (typeof CURATED_SHADES)[number]))
 				continue
 			root.style.setProperty(`--nce-${v}-${s.shade}`, s.hex)
-			root.style.setProperty(`--nce-${v}-${s.shade}-fg`, pickFgMono(s.hex))
-			let shadeTonal: string
-			if (role === "primary_color" && settings.secondary_color) {
-				shadeTonal = pickFgTonalCrossBrand(s.hex, String(settings.secondary_color))
-			} else if (role === "secondary_color" && settings.primary_color) {
-				shadeTonal = pickFgTonalCrossBrand(s.hex, String(settings.primary_color))
+			if (BRAND_ROLES.has(role)) {
+				root.style.setProperty(
+					`--nce-${v}-${s.shade}-fg`,
+					brandShadeForeground(
+						s.shade,
+						shades,
+						"mono",
+						flipOverride(settings, role, "mono"),
+						oppShades,
+					),
+				)
+				root.style.setProperty(
+					`--nce-${v}-${s.shade}-fg-tonal`,
+					brandShadeForeground(
+						s.shade,
+						shades,
+						"tonal",
+						flipOverride(settings, role, "tonal"),
+						oppShades,
+					),
+				)
 			} else {
-				shadeTonal = pickFgTonal(s.hex)
+				root.style.setProperty(`--nce-${v}-${s.shade}-fg`, pickFgMono(s.hex))
+				root.style.setProperty(`--nce-${v}-${s.shade}-fg-tonal`, pickFgTonal(s.hex))
 			}
-			root.style.setProperty(`--nce-${v}-${s.shade}-fg-tonal`, shadeTonal)
 		}
 	}
 	const neutralShades = settings.neutral_color_shades as Record<string, string> | undefined

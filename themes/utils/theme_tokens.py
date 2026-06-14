@@ -54,6 +54,14 @@ TRANSITION_MAP = {
 }
 
 GAMMA_SAT_ROLE_FIELDS = frozenset({"primary_color", "secondary_color"})
+BRAND_FG_FLIP_FIELDS = frozenset(
+	{
+		"primary_color_fg_flip_mono",
+		"primary_color_fg_flip_tonal",
+		"secondary_color_fg_flip_mono",
+		"secondary_color_fg_flip_tonal",
+	}
+)
 
 BRAND_PALETTE_MODES = frozenset({"corporate", "flexible"})
 DEFAULT_BRAND_PALETTE_MODE = "corporate"
@@ -170,6 +178,10 @@ TOKEN_FIELDS = MIGRATED_FIELDS + [
 	"neutral_color_warmth",
 	"neutral_color_shades",
 	"brand_palette_mode",
+	"primary_color_fg_flip_mono",
+	"primary_color_fg_flip_tonal",
+	"secondary_color_fg_flip_mono",
+	"secondary_color_fg_flip_tonal",
 ]
 
 
@@ -197,6 +209,9 @@ def export_token_contract() -> dict:
 			for level, layers in SHADOW_DEFS.items()
 		},
 		"gammaSatRoleFields": sorted(GAMMA_SAT_ROLE_FIELDS),
+		"brandFgFlipFields": sorted(BRAND_FG_FLIP_FIELDS),
+		"fgPoleLightShade": 300,
+		"fgPoleDarkShade": 800,
 		"curatedShades": list(CURATED_SHADES),
 		"colorFields": COLOR_FIELDS,
 		"shadeScaleFields": SHADE_SCALE_FIELDS,
