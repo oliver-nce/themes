@@ -256,7 +256,14 @@ def _emit_var_block(g, lines, selector=":root", include_custom_css=True):
             lines.append(f"\t--nce-{var}-{shade_num}: {shade_hex};")
             if shade_num in CURATED_SHADES:
                 lines.append(f"\t--nce-{var}-{shade_num}-fg: {pick_fg_mono(shade_hex)};")
-                lines.append(f"\t--nce-{var}-{shade_num}-fg-tonal: {pick_fg_tonal(shade_hex)};")
+                # Cross-brand tonal: primary shades → secondary text, secondary shades → primary text.
+                if f == "primary_color":
+                    shade_tonal = _role_base_hex(g, "secondary_color") or pick_fg_tonal(shade_hex)
+                elif f == "secondary_color":
+                    shade_tonal = _role_base_hex(g, "primary_color") or pick_fg_tonal(shade_hex)
+                else:
+                    shade_tonal = pick_fg_tonal(shade_hex)
+                lines.append(f"\t--nce-{var}-{shade_num}-fg-tonal: {shade_tonal};")
     lines.append(f"\t--nce-font-family: {_font_stack(g('font_family'))};")
     lines.append(f"\t--nce-font-heading: {_font_stack(g('heading_font_family'))};")
     lines.append(f"\t--nce-font-size: {g('font_size') or '14px'};")

@@ -904,7 +904,14 @@ function computeCSSVariables(): Record<string, string> {
 			vars[`--${varPrefix}-${s.shade}`] = s.hex
 			if (CURATED_SHADES.includes(s.shade as (typeof CURATED_SHADES)[number])) {
 				vars[`--nce-${varPrefix}-${s.shade}-fg`] = pickFgMono(s.hex)
-				vars[`--nce-${varPrefix}-${s.shade}-fg-tonal`] = pickFgTonal(s.hex)
+				// Cross-brand tonal: primary shades → secondary text, secondary shades → primary text.
+				if (field === "primary_color" && form.secondary_color) {
+					vars[`--nce-${varPrefix}-${s.shade}-fg-tonal`] = form.secondary_color
+				} else if (field === "secondary_color" && form.primary_color) {
+					vars[`--nce-${varPrefix}-${s.shade}-fg-tonal`] = form.primary_color
+				} else {
+					vars[`--nce-${varPrefix}-${s.shade}-fg-tonal`] = pickFgTonal(s.hex)
+				}
 			}
 		}
 	}
