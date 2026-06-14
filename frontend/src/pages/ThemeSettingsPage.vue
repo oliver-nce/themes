@@ -206,13 +206,11 @@
 				</EditorSection>
 
 				<EditorSection title="Neutral" hint="Greyscale for structural surfaces, dividers, and body content that should not carry brand meaning.">
-					<div class="max-w-md">
 					<NeutralColorPicker
 						label="Neutral"
 						:warmth="form.neutral_color_warmth"
 						@update:warmth="form.neutral_color_warmth = $event"
 					/>
-					</div>
 				</EditorSection>
 
 				<EditorSection

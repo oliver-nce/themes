@@ -16,13 +16,13 @@
 		</button>
 
 		<template v-if="showShades">
-			<div v-if="currentShades.length" class="flex gap-px mt-1.5 rounded overflow-hidden">
+			<div v-if="currentShades.length" class="color-shade-strip flex gap-px mt-1.5 rounded overflow-hidden">
 				<div
 					v-for="s in currentShades"
 					:key="s.shade"
 					class="flex-1 group relative"
 				>
-					<div class="h-5" :style="{ backgroundColor: s.hex }" />
+					<div class="color-shade-swatch" :style="{ backgroundColor: s.hex }" />
 					<div class="text-center mt-0.5 text-[8px] text-gray-400">{{ s.shade }}</div>
 					<div class="absolute -top-6 left-1/2 -translate-x-1/2 bg-gray-900 text-white text-[10px] px-1.5 py-0.5 rounded opacity-0 group-hover:opacity-100 pointer-events-none whitespace-nowrap transition-opacity z-10">{{ s.hex }}</div>
 				</div>
@@ -439,6 +439,13 @@ function applyHue() {
 </script>
 
 <style scoped>
+.color-shade-strip {
+	width: 75%;
+}
+.color-shade-swatch {
+	height: 2.5rem;
+}
+
 .picker-panel {
 	position: fixed;
 	z-index: 50;

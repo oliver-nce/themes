@@ -3,9 +3,9 @@
 		<label class="block text-sm font-medium text-gray-700 mb-2">{{ label }}</label>
 
 		<!-- Swatch strip -->
-		<div class="flex gap-px rounded overflow-hidden mb-3">
+		<div class="color-shade-strip flex gap-px rounded overflow-hidden mb-3">
 			<div v-for="s in shades" :key="s.shade" class="flex-1 group relative">
-				<div class="h-6" :style="{ backgroundColor: s.hex }" />
+				<div class="color-shade-swatch" :style="{ backgroundColor: s.hex }" />
 				<div class="text-center mt-0.5 text-[8px] text-gray-400 leading-none">{{ s.shade }}</div>
 				<div class="absolute -top-7 left-1/2 -translate-x-1/2 bg-gray-900 text-white text-[10px] px-1.5 py-0.5 rounded opacity-0 group-hover:opacity-100 pointer-events-none whitespace-nowrap transition-opacity z-10">
 					{{ s.hex }}
@@ -71,6 +71,13 @@ function onWarmthInput(e: Event) {
 </script>
 
 <style scoped>
+.color-shade-strip {
+	width: 75%;
+}
+.color-shade-swatch {
+	height: 2.5rem;
+}
+
 .warmth-slider {
 	height: 8px;
 	border-radius: 4px;
