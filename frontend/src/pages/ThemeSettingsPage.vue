@@ -180,6 +180,8 @@
 					</template>
 					<BrandColorPicker
 						label="Primary"
+						v-model:fg-preview-mode="primaryFgPreviewMode"
+						:show-pole-markers="secondaryFgPreviewMode === 'tonal'"
 						:model-value="form.primary_color"
 						:gamma="form.primary_color_gamma"
 						:saturation="form.primary_color_saturation"
@@ -205,6 +207,8 @@
 				<EditorSection title="Secondary">
 					<BrandColorPicker
 						label="Secondary"
+						v-model:fg-preview-mode="secondaryFgPreviewMode"
+						:show-pole-markers="primaryFgPreviewMode === 'tonal'"
 						:model-value="form.secondary_color"
 						:gamma="form.secondary_color_gamma"
 						:saturation="form.secondary_color_saturation"
@@ -767,7 +771,7 @@ import { useThemeEditor, type ThemeAvailabilityStatus } from "@/composables/useT
 import { generateShades, generateNeutralShades, neutral600Hex, effectiveRoleHex, pickFgMono, pickFgTonal, brandShadeForeground, resolveNeutralIntoPayload, isDark, type ColorShade } from "@/utils/color-shades"
 import { STATUS_COLOR_DEFAULTS, STATUS_COLOR_KEYS } from "@/composables/useThemeDefaults"
 import EditorSection from "@/components/EditorSection.vue"
-import BrandColorPicker, { type BrandPaletteMode } from "@/components/BrandColorPicker.vue"
+import BrandColorPicker, { type BrandPaletteMode, type FgPreviewMode } from "@/components/BrandColorPicker.vue"
 import NeutralColorPicker from "@/components/NeutralColorPicker.vue"
 import SelectField from "@/components/SelectField.vue"
 import FontSelectField from "@/components/FontSelectField.vue"
@@ -990,6 +994,9 @@ onUnmounted(() => {
 // ─── AGENT:form-state ─── form reactive, DEFAULTS, ALL_FIELDS, tabs, activeTab
 
 const activeTab = ref("colors")
+
+const primaryFgPreviewMode = ref<FgPreviewMode>("mono")
+const secondaryFgPreviewMode = ref<FgPreviewMode>("mono")
 
 const tabs = [
 	{ id: "colors", label: "Colours" },

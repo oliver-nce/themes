@@ -19,100 +19,31 @@
 			<div v-if="currentShades.length" class="shade-strip-row mt-1.5">
 				<div class="shade-strip-wrap">
 					<div
-						class="flip-controls-grid"
-						:style="{ gridTemplateColumns: `repeat(${currentShades.length}, minmax(0, 1fr))` }"
+						ref="flipTrack"
+						class="flip-marker-track"
+						:class="{ 'marker-track--dragging': dragTarget != null }"
+						@pointermove="onMarkerPointerMove"
+						@pointerup="onMarkerPointerUp"
+						@pointercancel="onMarkerPointerUp"
 					>
 						<div
-							v-for="s in currentShades"
-							:key="'flip-' + s.shade"
-							class="flip-cell"
+							class="flip-marker-grid"
+							:style="{ gridTemplateColumns: `repeat(${currentShades.length}, minmax(0, 1fr))` }"
 						>
 							<div
-								v-if="fgPreviewMode === 'mono' && s.shade === effectiveFlipShade"
-								class="flip-arrows"
+								v-for="(s, i) in currentShades"
+								:key="'flip-' + s.shade"
+								class="flip-marker-cell"
 							>
 								<button
+									v-if="flipDisplayIndex === i"
 									type="button"
-									class="flip-arrow-btn"
-									:disabled="!canNudgeMonoFlip(-1)"
-									title="Move flip point lighter"
-									@click="nudgeMonoFlip(-1)"
-								>&#9664;</button>
-								<button
-									type="button"
-									class="flip-arrow-btn"
-									:disabled="!canNudgeMonoFlip(1)"
-									title="Move flip point darker"
-									@click="nudgeMonoFlip(1)"
-								>&#9654;</button>
-							</div>
-							<div
-								v-else-if="fgPreviewMode === 'tonal' && s.shade === effectiveTonalFlipShade"
-								class="flip-arrows"
-							>
-								<button
-									type="button"
-									class="flip-arrow-btn"
-									:disabled="!canNudgeTonalFlip(-1)"
-									title="Move flip point lighter"
-									@click="nudgeTonalFlip(-1)"
-								>&#9664;</button>
-								<button
-									type="button"
-									class="flip-arrow-btn"
-									:disabled="!canNudgeTonalFlip(1)"
-									title="Move flip point darker"
-									@click="nudgeTonalFlip(1)"
-								>&#9654;</button>
-							</div>
-						</div>
-					</div>
-					<div
-						v-if="fgPreviewMode === 'tonal'"
-						class="pole-controls-grid"
-						:style="{ gridTemplateColumns: `repeat(${currentShades.length}, minmax(0, 1fr))` }"
-					>
-						<div
-							v-for="s in currentShades"
-							:key="'pole-' + s.shade"
-							class="flip-cell"
-						>
-							<div
-								v-if="s.shade === effectiveTonalPoleDark"
-								class="pole-arrows pole-arrows--dark"
-							>
-								<button
-									type="button"
-									class="flip-arrow-btn"
-									:disabled="!canNudgeTonalPole('dark', -1)"
-									title="Dark text pole — move to lighter opposite-brand stop"
-									@click="nudgeTonalPole('dark', -1)"
-								>&#9650;</button>
-								<button
-									type="button"
-									class="flip-arrow-btn"
-									:disabled="!canNudgeTonalPole('dark', 1)"
-									title="Dark text pole — move to darker opposite-brand stop"
-									@click="nudgeTonalPole('dark', 1)"
-								>&#9660;</button>
-							</div>
-							<div
-								v-if="s.shade === effectiveTonalPoleLight"
-								class="pole-arrows pole-arrows--light"
-							>
-								<button
-									type="button"
-									class="flip-arrow-btn"
-									:disabled="!canNudgeTonalPole('light', -1)"
-									title="Light text pole — move to lighter opposite-brand stop"
-									@click="nudgeTonalPole('light', -1)"
-								>&#9650;</button>
-								<button
-									type="button"
-									class="flip-arrow-btn"
-									:disabled="!canNudgeTonalPole('light', 1)"
-									title="Light text pole — move to darker opposite-brand stop"
-									@click="nudgeTonalPole('light', 1)"
+									class="flip-marker"
+									:class="{ 'flip-marker--active': dragTarget === 'flip' }"
+									:title="fgPreviewMode === 'mono'
+										? 'Text flip — drag to shade stop'
+										: 'Tonal flip — drag to shade stop'"
+									@pointerdown="onMarkerPointerDown('flip', $event)"
 								>&#9660;</button>
 							</div>
 						</div>
@@ -126,11 +57,9 @@
 							<div
 								class="color-shade-swatch flex items-center justify-center"
 								:class="{
-									'swatch-flip-halo': fgPreviewMode === 'mono'
-										? s.shade === effectiveFlipShade
-										: s.shade === effectiveTonalFlipShade,
-									'swatch-pole-halo--dark': fgPreviewMode === 'tonal' && s.shade === effectiveTonalPoleDark,
-									'swatch-pole-halo--light': fgPreviewMode === 'tonal' && s.shade === effectiveTonalPoleLight,
+									'swatch-flip-halo': s.shade === displayFlipShade,
+									'swatch-pole-halo--dark': poleMarkersVisible && s.shade === displayTonalPoleDark,
+									'swatch-pole-halo--light': poleMarkersVisible && s.shade === displayTonalPoleLight,
 								}"
 								:style="{ backgroundColor: s.hex }"
 							>
@@ -146,6 +75,43 @@
 							</div>
 							<div class="text-center mt-0.5 text-[8px] text-gray-400">{{ s.shade }}</div>
 							<div class="absolute -top-6 left-1/2 -translate-x-1/2 bg-gray-900 text-white text-[10px] px-1.5 py-0.5 rounded opacity-0 group-hover:opacity-100 pointer-events-none whitespace-nowrap transition-opacity z-10">{{ s.hex }}</div>
+						</div>
+					</div>
+					<div
+						v-if="poleMarkersVisible"
+						ref="markerTrack"
+						class="pole-marker-track"
+						:class="{ 'marker-track--dragging': dragTarget != null }"
+						@pointermove="onMarkerPointerMove"
+						@pointerup="onMarkerPointerUp"
+						@pointercancel="onMarkerPointerUp"
+					>
+						<div
+							class="pole-marker-grid"
+							:style="{ gridTemplateColumns: `repeat(${currentShades.length}, minmax(0, 1fr))` }"
+						>
+							<div
+								v-for="(s, i) in currentShades"
+								:key="'marker-' + s.shade"
+								class="pole-marker-cell"
+							>
+								<button
+									v-if="markerDarkDisplayIndex === i"
+									type="button"
+									class="pole-marker pole-marker--dark"
+									:class="{ 'pole-marker--active': dragTarget === 'dark' }"
+									title="Dark text pole — drag to opposite-brand stop"
+									@pointerdown="onMarkerPointerDown('dark', $event)"
+								>&#9650;</button>
+								<button
+									v-if="markerLightDisplayIndex === i"
+									type="button"
+									class="pole-marker pole-marker--light"
+									:class="{ 'pole-marker--active': dragTarget === 'light' }"
+									title="Light text pole — drag to opposite-brand stop"
+									@pointerdown="onMarkerPointerDown('light', $event)"
+								>&#9650;</button>
+							</div>
 						</div>
 					</div>
 					<button
@@ -278,7 +244,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch, nextTick } from "vue"
+import { ref, computed, watch, nextTick, onUnmounted } from "vue"
 import {
 	color600FromParams,
 	generateShades,
@@ -315,6 +281,8 @@ const props = withDefaults(defineProps<{
 	flipTonal?: number | null
 	poleTonalDark?: number | null
 	poleTonalLight?: number | null
+	/** When true, show draggable pole markers (set when opposite brand picker is in tonal). */
+	showPoleMarkers?: boolean
 }>(), {
 	gamma: 0,
 	saturation: 100,
@@ -327,9 +295,10 @@ const props = withDefaults(defineProps<{
 	flipTonal: null,
 	poleTonalDark: null,
 	poleTonalLight: null,
+	showPoleMarkers: false,
 })
 
-const fgPreviewMode = ref<FgPreviewMode>("mono")
+const fgPreviewMode = defineModel<FgPreviewMode>("fgPreviewMode", { default: "mono" })
 
 const emit = defineEmits<{
 	"update:modelValue": [value: string]
@@ -436,6 +405,10 @@ const oppositeShades = computed((): ColorShade[] => {
 	})
 })
 
+const poleMarkersVisible = computed(
+	() => props.showPoleMarkers && oppositeShades.value.length > 0,
+)
+
 const effectiveFlipShade = computed(() =>
 	resolveFgFlipShade(props.flipMono, currentShades.value),
 )
@@ -477,26 +450,101 @@ const tonalPoleLightIndex = computed(() =>
 	currentShades.value.findIndex((s) => s.shade === effectiveTonalPoleLight.value),
 )
 
-function canNudgeMonoFlip(delta: number): boolean {
-	const idx = monoFlipIndex.value
-	if (idx < 0) return false
-	const next = idx + delta
-	return next >= 0 && next < currentShades.value.length
+const activeFlipIndex = computed(() =>
+	fgPreviewMode.value === "mono" ? monoFlipIndex.value : tonalFlipIndex.value,
+)
+
+type MarkerDragTarget = "flip" | "dark" | "light"
+const flipTrack = ref<HTMLElement | null>(null)
+const markerTrack = ref<HTMLElement | null>(null)
+const dragTarget = ref<MarkerDragTarget | null>(null)
+const dragHoverIndex = ref<number | null>(null)
+
+const flipDisplayIndex = computed(() =>
+	dragTarget.value === "flip" && dragHoverIndex.value != null
+		? dragHoverIndex.value
+		: activeFlipIndex.value,
+)
+
+const displayFlipShade = computed(
+	() => currentShades.value[flipDisplayIndex.value]?.shade
+		?? (fgPreviewMode.value === "mono" ? effectiveFlipShade.value : effectiveTonalFlipShade.value),
+)
+
+const markerDarkDisplayIndex = computed(() =>
+	dragTarget.value === "dark" && dragHoverIndex.value != null
+		? dragHoverIndex.value
+		: tonalPoleDarkIndex.value,
+)
+
+const markerLightDisplayIndex = computed(() =>
+	dragTarget.value === "light" && dragHoverIndex.value != null
+		? dragHoverIndex.value
+		: tonalPoleLightIndex.value,
+)
+
+const displayTonalPoleDark = computed(
+	() => currentShades.value[markerDarkDisplayIndex.value]?.shade ?? effectiveTonalPoleDark.value,
+)
+
+const displayTonalPoleLight = computed(
+	() => currentShades.value[markerLightDisplayIndex.value]?.shade ?? effectiveTonalPoleLight.value,
+)
+
+function shadeIndexFromClientX(clientX: number): number {
+	const el = dragTarget.value === "flip" ? flipTrack.value : markerTrack.value
+	const shades = currentShades.value
+	if (!el || !shades.length) return -1
+	const rect = el.getBoundingClientRect()
+	const x = Math.max(0, Math.min(rect.width, clientX - rect.left))
+	const idx = Math.floor((x / rect.width) * shades.length)
+	return Math.max(0, Math.min(shades.length - 1, idx))
 }
 
-function canNudgeTonalFlip(delta: number): boolean {
-	const idx = tonalFlipIndex.value
-	if (idx < 0) return false
-	const next = idx + delta
-	return next >= 0 && next < currentShades.value.length
+function onMarkerPointerDown(which: MarkerDragTarget, e: PointerEvent) {
+	dragTarget.value = which
+	if (which === "flip") {
+		dragHoverIndex.value = activeFlipIndex.value
+	} else if (which === "dark") {
+		dragHoverIndex.value = tonalPoleDarkIndex.value
+	} else {
+		dragHoverIndex.value = tonalPoleLightIndex.value
+	}
+	;(e.currentTarget as HTMLElement).setPointerCapture(e.pointerId)
+	e.preventDefault()
 }
 
-function canNudgeTonalPole(which: "dark" | "light", delta: number): boolean {
-	const idx = which === "dark" ? tonalPoleDarkIndex.value : tonalPoleLightIndex.value
-	if (idx < 0) return false
-	const next = idx + delta
-	return next >= 0 && next < currentShades.value.length
+function onMarkerPointerMove(e: PointerEvent) {
+	if (!dragTarget.value) return
+	dragHoverIndex.value = shadeIndexFromClientX(e.clientX)
 }
+
+function commitMarkerDrag(clientX: number) {
+	if (!dragTarget.value) return
+	const idx = shadeIndexFromClientX(clientX)
+	const shade = currentShades.value[idx]?.shade
+	if (shade == null) return
+	if (dragTarget.value === "flip") {
+		if (fgPreviewMode.value === "mono") emit("update:flipMono", shade)
+		else emit("update:flipTonal", shade)
+	} else if (dragTarget.value === "dark") {
+		emit("update:poleTonalDark", shade)
+	} else {
+		emit("update:poleTonalLight", shade)
+	}
+}
+
+function onMarkerPointerUp(e: PointerEvent) {
+	if (!dragTarget.value) return
+	commitMarkerDrag(e.clientX)
+	dragTarget.value = null
+	dragHoverIndex.value = null
+}
+
+onUnmounted(() => {
+	dragTarget.value = null
+	dragHoverIndex.value = null
+})
 
 function fgColorForShade(s: ColorShade): string {
 	if (fgPreviewMode.value === "mono") {
@@ -523,36 +571,6 @@ function fgColorForShade(s: ColorShade): string {
 
 function isLowContrast(s: ColorShade): boolean {
 	return isLowContrastFg(s.hex, fgColorForShade(s))
-}
-
-function nudgeMonoFlip(delta: number) {
-	const shades = currentShades.value
-	const idx = monoFlipIndex.value
-	if (idx < 0) return
-	const next = Math.max(0, Math.min(shades.length - 1, idx + delta))
-	const nextShade = shades[next]?.shade
-	if (nextShade == null) return
-	emit("update:flipMono", nextShade)
-}
-
-function nudgeTonalFlip(delta: number) {
-	const shades = currentShades.value
-	const idx = tonalFlipIndex.value
-	if (idx < 0) return
-	const next = Math.max(0, Math.min(shades.length - 1, idx + delta))
-	const nextShade = shades[next]?.shade
-	if (nextShade == null) return
-	emit("update:flipTonal", nextShade)
-}
-
-function nudgeTonalPole(which: "dark" | "light", delta: number) {
-	const shades = currentShades.value
-	const idx = which === "dark" ? tonalPoleDarkIndex.value : tonalPoleLightIndex.value
-	if (idx < 0) return
-	const next = Math.max(0, Math.min(shades.length - 1, idx + delta))
-	const nextShade = shades[next]?.shade
-	if (nextShade == null) return
-	emit(which === "dark" ? "update:poleTonalDark" : "update:poleTonalLight", nextShade)
 }
 
 function resetFlip() {
@@ -759,40 +777,84 @@ function applyHue() {
 	width: 75%;
 	flex-shrink: 0;
 }
-.flip-controls-grid {
+.flip-marker-track,
+.pole-marker-track {
+	width: 100%;
+	touch-action: none;
+	user-select: none;
+}
+.flip-marker-track {
+	margin-bottom: 2px;
+}
+.pole-marker-track {
+	margin-top: 2px;
+}
+.marker-track--dragging {
+	cursor: grabbing;
+}
+.flip-marker-grid,
+.pole-marker-grid {
 	display: grid;
 	width: 100%;
-	margin-bottom: 2px;
-	min-height: 1.25rem;
+	min-height: 1.1rem;
 }
-.flip-cell {
+.flip-marker-cell,
+.pole-marker-cell {
 	display: flex;
-	justify-content: center;
-	align-items: flex-end;
+	flex-direction: column;
+	align-items: center;
+	justify-content: flex-end;
+	gap: 1px;
+	min-height: 1.1rem;
 }
-.flip-arrows {
-	display: flex;
-	gap: 2px;
+.pole-marker-cell {
+	justify-content: flex-start;
 }
-.flip-arrow-btn {
+.flip-marker {
 	width: 1.1rem;
-	height: 1.1rem;
+	height: 1rem;
 	padding: 0;
 	border: 1px solid #ccc;
 	border-radius: 3px;
 	background: #fafafa;
-	color: #333;
-	font-size: 9px;
+	color: #111;
+	font-size: 10px;
 	line-height: 1;
-	cursor: pointer;
+	cursor: grab;
 }
-.flip-arrow-btn:hover:not(:disabled) {
+.flip-marker--active {
+	cursor: grabbing;
+}
+.flip-marker:hover {
 	background: #eee;
 	border-color: #999;
 }
-.flip-arrow-btn:disabled {
-	opacity: 0.35;
-	cursor: default;
+.pole-marker {
+	width: 1.1rem;
+	height: 1rem;
+	padding: 0;
+	border: 1px solid transparent;
+	border-radius: 3px;
+	background: transparent;
+	font-size: 10px;
+	line-height: 1;
+	cursor: grab;
+}
+.pole-marker--active {
+	cursor: grabbing;
+}
+.pole-marker--dark {
+	color: #d97706;
+	border-color: #fcd34d;
+	background: #fffbeb;
+}
+.pole-marker--light {
+	color: #2563eb;
+	border-color: #93c5fd;
+	background: #eff6ff;
+}
+.pole-marker:hover {
+	filter: brightness(0.95);
 }
 .color-shade-strip {
 	width: 100%;
@@ -812,25 +874,6 @@ function applyHue() {
 .swatch-pole-halo--light {
 	box-shadow: 0 0 0 2px #fff, 0 0 0 3px #2563eb;
 	z-index: 1;
-}
-.pole-controls-grid {
-	display: grid;
-	width: 100%;
-	margin-bottom: 2px;
-	min-height: 1.35rem;
-}
-.pole-arrows {
-	display: flex;
-	flex-direction: column;
-	gap: 1px;
-}
-.pole-arrows--dark .flip-arrow-btn {
-	border-color: #d97706;
-	color: #92400e;
-}
-.pole-arrows--light .flip-arrow-btn {
-	border-color: #2563eb;
-	color: #1d4ed8;
 }
 .contrast-warn {
 	position: absolute;
