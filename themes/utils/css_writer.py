@@ -223,6 +223,15 @@ def _fg_flip_mono(g, field):
     return None
 
 
+def _fg_flip_tonal(g, field):
+    """Single tonal flip with fallback from dual-field themes."""
+    for key in (f"{field}_fg_flip_tonal", f"{field}_fg_flip_tonal_2", f"{field}_fg_flip_tonal_1"):
+        val = g(key)
+        if val is not None and val != "":
+            return val
+    return None
+
+
 def _emit_var_block(g, lines, selector=":root", include_custom_css=True):
     """Emit a `selector { --nce-* }` variable block and optional custom_css.
 
@@ -255,10 +264,13 @@ def _emit_var_block(g, lines, selector=":root", include_custom_css=True):
             opp_field = OPPOSITE_BRAND_FIELD[f]
             opp_shades = _get_role_shades(g, opp_field) if _role_is_configured(g, opp_field) else []
             flip_mono = _fg_flip_mono(g, f)
-            flip_tonal_1 = g(f"{f}_fg_flip_tonal_1")
-            flip_tonal_2 = g(f"{f}_fg_flip_tonal_2")
+            flip_tonal = _fg_flip_tonal(g, f)
+            pole_dark = g(f"{f}_fg_pole_tonal_dark")
+            pole_light = g(f"{f}_fg_pole_tonal_light")
             fg_mono = brand_shade_foreground(600, role_shades, "mono", flip_mono, None, opp_shades)
-            fg_tonal = brand_shade_foreground(600, role_shades, "tonal", flip_tonal_1, flip_tonal_2, opp_shades)
+            fg_tonal = brand_shade_foreground(
+                600, role_shades, "tonal", flip_tonal, None, opp_shades, pole_dark, pole_light,
+            )
             lines.append(f"\t--nce-{var}-fg: {fg_mono};")
             lines.append(f"\t--nce-{var}-fg-tonal: {fg_tonal};")
         else:
@@ -270,15 +282,15 @@ def _emit_var_block(g, lines, selector=":root", include_custom_css=True):
             continue
         role_shades = _get_role_shades(g, f)
         opp_shades: list[tuple[int, str]] = []
-        flip_mono_1 = flip_mono_2 = flip_tonal_1 = flip_tonal_2 = None
-        flip_mono = None
+        flip_mono = flip_tonal = pole_dark = pole_light = None
         if f in BRAND_COLOR_FIELDS:
             opp_field = OPPOSITE_BRAND_FIELD[f]
             if _role_is_configured(g, opp_field):
                 opp_shades = _get_role_shades(g, opp_field)
             flip_mono = _fg_flip_mono(g, f)
-            flip_tonal_1 = g(f"{f}_fg_flip_tonal_1")
-            flip_tonal_2 = g(f"{f}_fg_flip_tonal_2")
+            flip_tonal = _fg_flip_tonal(g, f)
+            pole_dark = g(f"{f}_fg_pole_tonal_dark")
+            pole_light = g(f"{f}_fg_pole_tonal_light")
         for shade_num, shade_hex in role_shades:
             lines.append(f"\t--nce-{var}-{shade_num}: {shade_hex};")
             if shade_num in CURATED_SHADES:
@@ -287,7 +299,8 @@ def _emit_var_block(g, lines, selector=":root", include_custom_css=True):
                         shade_num, role_shades, "mono", flip_mono, None, opp_shades,
                     )
                     fg_tonal = brand_shade_foreground(
-                        shade_num, role_shades, "tonal", flip_tonal_1, flip_tonal_2, opp_shades,
+                        shade_num, role_shades, "tonal", flip_tonal, None, opp_shades,
+                        pole_dark, pole_light,
                     )
                     lines.append(f"\t--nce-{var}-{shade_num}-fg: {fg_mono};")
                     lines.append(f"\t--nce-{var}-{shade_num}-fg-tonal: {fg_tonal};")

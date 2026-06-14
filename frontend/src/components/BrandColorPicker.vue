@@ -47,41 +47,73 @@
 								>&#9654;</button>
 							</div>
 							<div
-								v-else-if="fgPreviewMode === 'tonal' && (s.shade === effectiveFlip1 || s.shade === effectiveFlip2)"
+								v-else-if="fgPreviewMode === 'tonal' && s.shade === effectiveTonalFlipShade"
 								class="flip-arrows"
 							>
-								<template v-if="s.shade === effectiveFlip1">
-									<button
-										type="button"
-										class="flip-arrow-btn"
-										:disabled="!canNudgeFlip(1, -1)"
-										title="Move first flip point lighter"
-										@click="nudgeFlip(1, -1)"
-									>&#9664;</button>
-									<button
-										type="button"
-										class="flip-arrow-btn"
-										:disabled="!canNudgeFlip(1, 1)"
-										title="Move first flip point darker"
-										@click="nudgeFlip(1, 1)"
-									>&#9654;</button>
-								</template>
-								<template v-if="s.shade === effectiveFlip2">
-									<button
-										type="button"
-										class="flip-arrow-btn"
-										:disabled="!canNudgeFlip(2, -1)"
-										title="Move second flip point lighter"
-										@click="nudgeFlip(2, -1)"
-									>&#9664;</button>
-									<button
-										type="button"
-										class="flip-arrow-btn"
-										:disabled="!canNudgeFlip(2, 1)"
-										title="Move second flip point darker"
-										@click="nudgeFlip(2, 1)"
-									>&#9654;</button>
-								</template>
+								<button
+									type="button"
+									class="flip-arrow-btn"
+									:disabled="!canNudgeTonalFlip(-1)"
+									title="Move flip point lighter"
+									@click="nudgeTonalFlip(-1)"
+								>&#9664;</button>
+								<button
+									type="button"
+									class="flip-arrow-btn"
+									:disabled="!canNudgeTonalFlip(1)"
+									title="Move flip point darker"
+									@click="nudgeTonalFlip(1)"
+								>&#9654;</button>
+							</div>
+						</div>
+					</div>
+					<div
+						v-if="fgPreviewMode === 'tonal'"
+						class="pole-controls-grid"
+						:style="{ gridTemplateColumns: `repeat(${currentShades.length}, minmax(0, 1fr))` }"
+					>
+						<div
+							v-for="s in currentShades"
+							:key="'pole-' + s.shade"
+							class="flip-cell"
+						>
+							<div
+								v-if="s.shade === effectiveTonalPoleDark"
+								class="pole-arrows pole-arrows--dark"
+							>
+								<button
+									type="button"
+									class="flip-arrow-btn"
+									:disabled="!canNudgeTonalPole('dark', -1)"
+									title="Dark text pole — move to lighter opposite-brand stop"
+									@click="nudgeTonalPole('dark', -1)"
+								>&#9650;</button>
+								<button
+									type="button"
+									class="flip-arrow-btn"
+									:disabled="!canNudgeTonalPole('dark', 1)"
+									title="Dark text pole — move to darker opposite-brand stop"
+									@click="nudgeTonalPole('dark', 1)"
+								>&#9660;</button>
+							</div>
+							<div
+								v-if="s.shade === effectiveTonalPoleLight"
+								class="pole-arrows pole-arrows--light"
+							>
+								<button
+									type="button"
+									class="flip-arrow-btn"
+									:disabled="!canNudgeTonalPole('light', -1)"
+									title="Light text pole — move to lighter opposite-brand stop"
+									@click="nudgeTonalPole('light', -1)"
+								>&#9650;</button>
+								<button
+									type="button"
+									class="flip-arrow-btn"
+									:disabled="!canNudgeTonalPole('light', 1)"
+									title="Light text pole — move to darker opposite-brand stop"
+									@click="nudgeTonalPole('light', 1)"
+								>&#9660;</button>
 							</div>
 						</div>
 					</div>
@@ -96,9 +128,9 @@
 								:class="{
 									'swatch-flip-halo': fgPreviewMode === 'mono'
 										? s.shade === effectiveFlipShade
-										: s.shade === effectiveFlip1 || s.shade === effectiveFlip2,
-									'swatch-flip-halo--first': fgPreviewMode === 'tonal' && s.shade === effectiveFlip1,
-									'swatch-flip-halo--second': fgPreviewMode === 'tonal' && s.shade === effectiveFlip2,
+										: s.shade === effectiveTonalFlipShade,
+									'swatch-pole-halo--dark': fgPreviewMode === 'tonal' && s.shade === effectiveTonalPoleDark,
+									'swatch-pole-halo--light': fgPreviewMode === 'tonal' && s.shade === effectiveTonalPoleLight,
 								}"
 								:style="{ backgroundColor: s.hex }"
 							>
@@ -122,7 +154,7 @@
 						class="flip-reset-btn"
 						@click="resetFlip"
 					>
-						{{ fgPreviewMode === 'mono' ? 'Reset flip to auto' : 'Reset flip to 300 / 600' }}
+						{{ fgPreviewMode === 'mono' ? 'Reset flip to auto' : 'Reset tonal to auto / 900 / 200' }}
 					</button>
 				</div>
 				<fieldset class="fg-mode-picker">
@@ -257,9 +289,9 @@ import {
 	brandShadeForeground,
 	isLowContrastFg,
 	resolveFgFlipShade,
-	resolveFgFlipPair,
-	DEFAULT_FG_FLIP_1,
-	DEFAULT_FG_FLIP_2,
+	resolveTonalPoleShade,
+	DEFAULT_TONAL_POLE_DARK,
+	DEFAULT_TONAL_POLE_LIGHT,
 	type ColorShade,
 	type OklchColorParams,
 } from "@/utils/color-shades"
@@ -280,8 +312,9 @@ const props = withDefaults(defineProps<{
 	oppositeBrandSaturation?: number
 	/** Shade stop where mono text flips light; null = auto. */
 	flipMono?: number | null
-	flipTonal1?: number | null
-	flipTonal2?: number | null
+	flipTonal?: number | null
+	poleTonalDark?: number | null
+	poleTonalLight?: number | null
 }>(), {
 	gamma: 0,
 	saturation: 100,
@@ -291,8 +324,9 @@ const props = withDefaults(defineProps<{
 	oppositeBrandGamma: 0,
 	oppositeBrandSaturation: 100,
 	flipMono: null,
-	flipTonal1: null,
-	flipTonal2: null,
+	flipTonal: null,
+	poleTonalDark: null,
+	poleTonalLight: null,
 })
 
 const fgPreviewMode = ref<FgPreviewMode>("mono")
@@ -302,8 +336,9 @@ const emit = defineEmits<{
 	"update:gamma": [value: number]
 	"update:saturation": [value: number]
 	"update:flipMono": [value: number | null]
-	"update:flipTonal1": [value: number | null]
-	"update:flipTonal2": [value: number | null]
+	"update:flipTonal": [value: number | null]
+	"update:poleTonalDark": [value: number | null]
+	"update:poleTonalLight": [value: number | null]
 }>()
 
 const HUE_SQUARE_COUNT = 36
@@ -405,25 +440,41 @@ const effectiveFlipShade = computed(() =>
 	resolveFgFlipShade(props.flipMono, currentShades.value),
 )
 
-const effectiveFlipPair = computed(() =>
-	resolveFgFlipPair(props.flipTonal1, props.flipTonal2, currentShades.value),
+const effectiveTonalFlipShade = computed(() =>
+	resolveFgFlipShade(props.flipTonal, currentShades.value),
 )
-const effectiveFlip1 = computed(() => effectiveFlipPair.value[0])
-const effectiveFlip2 = computed(() => effectiveFlipPair.value[1])
+
+const effectiveTonalPoleDark = computed(() =>
+	resolveTonalPoleShade(props.poleTonalDark, DEFAULT_TONAL_POLE_DARK, currentShades.value),
+)
+
+const effectiveTonalPoleLight = computed(() =>
+	resolveTonalPoleShade(props.poleTonalLight, DEFAULT_TONAL_POLE_LIGHT, currentShades.value),
+)
 
 const hasFlipOverride = computed(() => {
 	if (fgPreviewMode.value === "mono") return props.flipMono != null
-	const [f1, f2] = effectiveFlipPair.value
 	return (
-		f1 !== DEFAULT_FG_FLIP_1 ||
-		f2 !== DEFAULT_FG_FLIP_2 ||
-		props.flipTonal1 != null ||
-		props.flipTonal2 != null
+		props.flipTonal != null ||
+		props.poleTonalDark != null ||
+		props.poleTonalLight != null
 	)
 })
 
 const monoFlipIndex = computed(() =>
 	currentShades.value.findIndex((s) => s.shade === effectiveFlipShade.value),
+)
+
+const tonalFlipIndex = computed(() =>
+	currentShades.value.findIndex((s) => s.shade === effectiveTonalFlipShade.value),
+)
+
+const tonalPoleDarkIndex = computed(() =>
+	currentShades.value.findIndex((s) => s.shade === effectiveTonalPoleDark.value),
+)
+
+const tonalPoleLightIndex = computed(() =>
+	currentShades.value.findIndex((s) => s.shade === effectiveTonalPoleLight.value),
 )
 
 function canNudgeMonoFlip(delta: number): boolean {
@@ -433,20 +484,18 @@ function canNudgeMonoFlip(delta: number): boolean {
 	return next >= 0 && next < currentShades.value.length
 }
 
-function flipIndex(which: 1 | 2): number {
-	const shade = which === 1 ? effectiveFlip1.value : effectiveFlip2.value
-	return currentShades.value.findIndex((s) => s.shade === shade)
-}
-
-function canNudgeFlip(which: 1 | 2, delta: number): boolean {
-	const shades = currentShades.value
-	const idx = flipIndex(which)
+function canNudgeTonalFlip(delta: number): boolean {
+	const idx = tonalFlipIndex.value
 	if (idx < 0) return false
 	const next = idx + delta
-	if (next < 0 || next >= shades.length) return false
-	if (which === 1 && next >= flipIndex(2)) return false
-	if (which === 2 && next <= flipIndex(1)) return false
-	return true
+	return next >= 0 && next < currentShades.value.length
+}
+
+function canNudgeTonalPole(which: "dark" | "light", delta: number): boolean {
+	const idx = which === "dark" ? tonalPoleDarkIndex.value : tonalPoleLightIndex.value
+	if (idx < 0) return false
+	const next = idx + delta
+	return next >= 0 && next < currentShades.value.length
 }
 
 function fgColorForShade(s: ColorShade): string {
@@ -464,9 +513,11 @@ function fgColorForShade(s: ColorShade): string {
 		s.shade,
 		currentShades.value,
 		"tonal",
-		props.flipTonal1,
-		props.flipTonal2,
+		props.flipTonal,
+		null,
 		oppositeShades.value,
+		props.poleTonalDark,
+		props.poleTonalLight,
 	)
 }
 
@@ -484,24 +535,33 @@ function nudgeMonoFlip(delta: number) {
 	emit("update:flipMono", nextShade)
 }
 
-function nudgeFlip(which: 1 | 2, delta: number) {
+function nudgeTonalFlip(delta: number) {
 	const shades = currentShades.value
-	const idx = flipIndex(which)
+	const idx = tonalFlipIndex.value
 	if (idx < 0) return
 	const next = Math.max(0, Math.min(shades.length - 1, idx + delta))
-	if (which === 1 && next >= flipIndex(2)) return
-	if (which === 2 && next <= flipIndex(1)) return
 	const nextShade = shades[next]?.shade
 	if (nextShade == null) return
-	emit(which === 1 ? "update:flipTonal1" : "update:flipTonal2", nextShade)
+	emit("update:flipTonal", nextShade)
+}
+
+function nudgeTonalPole(which: "dark" | "light", delta: number) {
+	const shades = currentShades.value
+	const idx = which === "dark" ? tonalPoleDarkIndex.value : tonalPoleLightIndex.value
+	if (idx < 0) return
+	const next = Math.max(0, Math.min(shades.length - 1, idx + delta))
+	const nextShade = shades[next]?.shade
+	if (nextShade == null) return
+	emit(which === "dark" ? "update:poleTonalDark" : "update:poleTonalLight", nextShade)
 }
 
 function resetFlip() {
 	if (fgPreviewMode.value === "mono") {
 		emit("update:flipMono", null)
 	} else {
-		emit("update:flipTonal1", DEFAULT_FG_FLIP_1)
-		emit("update:flipTonal2", DEFAULT_FG_FLIP_2)
+		emit("update:flipTonal", null)
+		emit("update:poleTonalDark", null)
+		emit("update:poleTonalLight", null)
 	}
 }
 
@@ -745,8 +805,32 @@ function applyHue() {
 	box-shadow: 0 0 0 2px #fff, 0 0 0 3px #111;
 	z-index: 1;
 }
-.swatch-flip-halo--second {
+.swatch-pole-halo--dark {
+	box-shadow: 0 0 0 2px #fff, 0 0 0 3px #d97706;
+	z-index: 1;
+}
+.swatch-pole-halo--light {
 	box-shadow: 0 0 0 2px #fff, 0 0 0 3px #2563eb;
+	z-index: 1;
+}
+.pole-controls-grid {
+	display: grid;
+	width: 100%;
+	margin-bottom: 2px;
+	min-height: 1.35rem;
+}
+.pole-arrows {
+	display: flex;
+	flex-direction: column;
+	gap: 1px;
+}
+.pole-arrows--dark .flip-arrow-btn {
+	border-color: #d97706;
+	color: #92400e;
+}
+.pole-arrows--light .flip-arrow-btn {
+	border-color: #2563eb;
+	color: #1d4ed8;
 }
 .contrast-warn {
 	position: absolute;

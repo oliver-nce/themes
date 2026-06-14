@@ -57,11 +57,13 @@ GAMMA_SAT_ROLE_FIELDS = frozenset({"primary_color", "secondary_color"})
 BRAND_FG_FLIP_FIELDS = frozenset(
 	{
 		"primary_color_fg_flip_mono",
-		"primary_color_fg_flip_tonal_1",
-		"primary_color_fg_flip_tonal_2",
+		"primary_color_fg_flip_tonal",
+		"primary_color_fg_pole_tonal_dark",
+		"primary_color_fg_pole_tonal_light",
 		"secondary_color_fg_flip_mono",
-		"secondary_color_fg_flip_tonal_1",
-		"secondary_color_fg_flip_tonal_2",
+		"secondary_color_fg_flip_tonal",
+		"secondary_color_fg_pole_tonal_dark",
+		"secondary_color_fg_pole_tonal_light",
 	}
 )
 
@@ -181,11 +183,13 @@ TOKEN_FIELDS = MIGRATED_FIELDS + [
 	"neutral_color_shades",
 	"brand_palette_mode",
 	"primary_color_fg_flip_mono",
-	"primary_color_fg_flip_tonal_1",
-	"primary_color_fg_flip_tonal_2",
+	"primary_color_fg_flip_tonal",
+	"primary_color_fg_pole_tonal_dark",
+	"primary_color_fg_pole_tonal_light",
 	"secondary_color_fg_flip_mono",
-	"secondary_color_fg_flip_tonal_1",
-	"secondary_color_fg_flip_tonal_2",
+	"secondary_color_fg_flip_tonal",
+	"secondary_color_fg_pole_tonal_dark",
+	"secondary_color_fg_pole_tonal_light",
 ]
 
 
@@ -214,9 +218,8 @@ def export_token_contract() -> dict:
 		},
 		"gammaSatRoleFields": sorted(GAMMA_SAT_ROLE_FIELDS),
 		"brandFgFlipFields": sorted(BRAND_FG_FLIP_FIELDS),
-		"fgPoleShades": [200, 500, 900],
-		"defaultFgFlip1": 300,
-		"defaultFgFlip2": 600,
+		"defaultTonalPoleDark": 900,
+		"defaultTonalPoleLight": 200,
 		"curatedShades": list(CURATED_SHADES),
 		"colorFields": COLOR_FIELDS,
 		"shadeScaleFields": SHADE_SCALE_FIELDS,

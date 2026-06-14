@@ -188,14 +188,16 @@
 						:opposite-brand-gamma="secondaryShadeAdjust.gamma"
 						:opposite-brand-saturation="secondaryShadeAdjust.saturation"
 						:flip-mono="form.primary_color_fg_flip_mono"
-						:flip-tonal1="form.primary_color_fg_flip_tonal_1"
-						:flip-tonal2="form.primary_color_fg_flip_tonal_2"
+						:flip-tonal="form.primary_color_fg_flip_tonal"
+						:pole-tonal-dark="form.primary_color_fg_pole_tonal_dark"
+						:pole-tonal-light="form.primary_color_fg_pole_tonal_light"
 						@update:model-value="form.primary_color = $event"
 						@update:gamma="form.primary_color_gamma = $event"
 						@update:saturation="form.primary_color_saturation = $event"
 						@update:flip-mono="form.primary_color_fg_flip_mono = $event"
-						@update:flip-tonal1="form.primary_color_fg_flip_tonal_1 = $event"
-						@update:flip-tonal2="form.primary_color_fg_flip_tonal_2 = $event"
+						@update:flip-tonal="form.primary_color_fg_flip_tonal = $event"
+						@update:pole-tonal-dark="form.primary_color_fg_pole_tonal_dark = $event"
+						@update:pole-tonal-light="form.primary_color_fg_pole_tonal_light = $event"
 						show-shades
 					/>
 				</EditorSection>
@@ -211,14 +213,16 @@
 						:opposite-brand-gamma="primaryShadeAdjust.gamma"
 						:opposite-brand-saturation="primaryShadeAdjust.saturation"
 						:flip-mono="form.secondary_color_fg_flip_mono"
-						:flip-tonal1="form.secondary_color_fg_flip_tonal_1"
-						:flip-tonal2="form.secondary_color_fg_flip_tonal_2"
+						:flip-tonal="form.secondary_color_fg_flip_tonal"
+						:pole-tonal-dark="form.secondary_color_fg_pole_tonal_dark"
+						:pole-tonal-light="form.secondary_color_fg_pole_tonal_light"
 						@update:model-value="form.secondary_color = $event"
 						@update:gamma="form.secondary_color_gamma = $event"
 						@update:saturation="form.secondary_color_saturation = $event"
 						@update:flip-mono="form.secondary_color_fg_flip_mono = $event"
-						@update:flip-tonal1="form.secondary_color_fg_flip_tonal_1 = $event"
-						@update:flip-tonal2="form.secondary_color_fg_flip_tonal_2 = $event"
+						@update:flip-tonal="form.secondary_color_fg_flip_tonal = $event"
+						@update:pole-tonal-dark="form.secondary_color_fg_pole_tonal_dark = $event"
+						@update:pole-tonal-light="form.secondary_color_fg_pole_tonal_light = $event"
 						show-shades
 					/>
 				</EditorSection>
@@ -927,13 +931,14 @@ function computeCSSVariables(): Record<string, string> {
 		}
 		if (isBrand) {
 			const flipMono = form[`${field}_fg_flip_mono` as FormKey] as number | null
-			const flipTonal1 = form[`${field}_fg_flip_tonal_1` as FormKey] as number | null
-			const flipTonal2 = form[`${field}_fg_flip_tonal_2` as FormKey] as number | null
+			const flipTonal = form[`${field}_fg_flip_tonal` as FormKey] as number | null
+			const poleDark = form[`${field}_fg_pole_tonal_dark` as FormKey] as number | null
+			const poleLight = form[`${field}_fg_pole_tonal_light` as FormKey] as number | null
 			vars[`--nce-${varPrefix}-fg`] = brandShadeForeground(
 				600, shades, "mono", flipMono, null, oppShades,
 			)
 			vars[`--nce-${varPrefix}-fg-tonal`] = brandShadeForeground(
-				600, shades, "tonal", flipTonal1, flipTonal2, oppShades,
+				600, shades, "tonal", flipTonal, null, oppShades, poleDark, poleLight,
 			)
 		} else {
 			vars[`--nce-${varPrefix}-fg`] = pickFgMono(roleHex)
@@ -945,13 +950,14 @@ function computeCSSVariables(): Record<string, string> {
 			if (CURATED_SHADES.includes(s.shade as (typeof CURATED_SHADES)[number])) {
 				if (isBrand) {
 					const flipMono = form[`${field}_fg_flip_mono` as FormKey] as number | null
-					const flipTonal1 = form[`${field}_fg_flip_tonal_1` as FormKey] as number | null
-					const flipTonal2 = form[`${field}_fg_flip_tonal_2` as FormKey] as number | null
+					const flipTonal = form[`${field}_fg_flip_tonal` as FormKey] as number | null
+					const poleDark = form[`${field}_fg_pole_tonal_dark` as FormKey] as number | null
+					const poleLight = form[`${field}_fg_pole_tonal_light` as FormKey] as number | null
 					vars[`--nce-${varPrefix}-${s.shade}-fg`] = brandShadeForeground(
 						s.shade, shades, "mono", flipMono, null, oppShades,
 					)
 					vars[`--nce-${varPrefix}-${s.shade}-fg-tonal`] = brandShadeForeground(
-						s.shade, shades, "tonal", flipTonal1, flipTonal2, oppShades,
+						s.shade, shades, "tonal", flipTonal, null, oppShades, poleDark, poleLight,
 					)
 				} else {
 					vars[`--nce-${varPrefix}-${s.shade}-fg`] = pickFgMono(s.hex)
@@ -1002,11 +1008,13 @@ const ALL_FIELDS = [
 	"secondary_color_gamma",
 	"secondary_color_saturation",
 	"primary_color_fg_flip_mono",
-	"primary_color_fg_flip_tonal_1",
-	"primary_color_fg_flip_tonal_2",
+	"primary_color_fg_flip_tonal",
+	"primary_color_fg_pole_tonal_dark",
+	"primary_color_fg_pole_tonal_light",
 	"secondary_color_fg_flip_mono",
-	"secondary_color_fg_flip_tonal_1",
-	"secondary_color_fg_flip_tonal_2",
+	"secondary_color_fg_flip_tonal",
+	"secondary_color_fg_pole_tonal_dark",
+	"secondary_color_fg_pole_tonal_light",
 	"brand_palette_mode",
 	"neutral_color_warmth",
 	"accent_color",
@@ -1062,11 +1070,13 @@ const DEFAULTS: Record<FormKey, any> = {
 	secondary_color_gamma: 0,
 	secondary_color_saturation: 100,
 	primary_color_fg_flip_mono: null,
-	primary_color_fg_flip_tonal_1: 300,
-	primary_color_fg_flip_tonal_2: 600,
+	primary_color_fg_flip_tonal: null,
+	primary_color_fg_pole_tonal_dark: null,
+	primary_color_fg_pole_tonal_light: null,
 	secondary_color_fg_flip_mono: null,
-	secondary_color_fg_flip_tonal_1: 300,
-	secondary_color_fg_flip_tonal_2: 600,
+	secondary_color_fg_flip_tonal: null,
+	secondary_color_fg_pole_tonal_dark: null,
+	secondary_color_fg_pole_tonal_light: null,
 	brand_palette_mode: "corporate",
 	neutral_color_warmth: 0,
 	...STATUS_COLOR_DEFAULTS,
@@ -1381,8 +1391,9 @@ function canonicalPayload(source: Record<string, any>): Record<string, any> {
 			payload[key] = normalizeBrandPaletteMode(val ?? DEFAULTS.brand_palette_mode)
 		} else if (
 			key.endsWith("_fg_flip_mono") ||
-			key.endsWith("_fg_flip_tonal_1") ||
-			key.endsWith("_fg_flip_tonal_2")
+			key.endsWith("_fg_flip_tonal") ||
+			key.endsWith("_fg_pole_tonal_dark") ||
+			key.endsWith("_fg_pole_tonal_light")
 		) {
 			if (val === null || val === undefined || val === "") {
 				payload[key] = null
@@ -1423,8 +1434,9 @@ function applyPayloadToForm(payload: Record<string, any>) {
 			form[key] = clampShadowDirection(val ?? DEFAULTS.shadow_direction)
 		} else if (
 			key.endsWith("_fg_flip_mono") ||
-			key.endsWith("_fg_flip_tonal_1") ||
-			key.endsWith("_fg_flip_tonal_2")
+			key.endsWith("_fg_flip_tonal") ||
+			key.endsWith("_fg_pole_tonal_dark") ||
+			key.endsWith("_fg_pole_tonal_light")
 		) {
 			if (val === null || val === undefined || val === "") {
 				form[key] = null
@@ -1475,12 +1487,29 @@ function migrateFgFlipFields(payload: Record<string, any>) {
 			}
 		}
 
-		const tonalLegacyKey = `${role}_fg_flip_tonal`
-		const tonalLegacy = parseFlipShade(payload[tonalLegacyKey])
-		const t1Key = `${role}_fg_flip_tonal_1` as FormKey
-		const t2Key = `${role}_fg_flip_tonal_2` as FormKey
-		if (tonalLegacy != null && form[t1Key] === DEFAULTS[t1Key] && form[t2Key] === DEFAULTS[t2Key]) {
-			form[t2Key] = tonalLegacy
+		const tonalKey = `${role}_fg_flip_tonal` as FormKey
+		if (form[tonalKey] == null) {
+			const direct = parseFlipShade(payload[tonalKey])
+			if (direct != null) {
+				form[tonalKey] = direct
+			} else {
+				const dual2 = parseFlipShade(payload[`${role}_fg_flip_tonal_2`])
+				const dual1 = parseFlipShade(payload[`${role}_fg_flip_tonal_1`])
+				const migrated = dual2 ?? dual1
+				if (migrated != null) form[tonalKey] = migrated
+			}
+		}
+
+		const darkKey = `${role}_fg_pole_tonal_dark` as FormKey
+		if (form[darkKey] == null) {
+			const v = parseFlipShade(payload[darkKey])
+			if (v != null) form[darkKey] = v
+		}
+
+		const lightKey = `${role}_fg_pole_tonal_light` as FormKey
+		if (form[lightKey] == null) {
+			const v = parseFlipShade(payload[lightKey])
+			if (v != null) form[lightKey] = v
 		}
 	}
 }

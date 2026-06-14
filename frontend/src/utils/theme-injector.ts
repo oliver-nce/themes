@@ -46,10 +46,18 @@ function monoFlipOverride(settings: Record<string, unknown>, role: string): numb
 	return parseFlipShade(settings[`${role}_fg_flip_mono_1`])
 }
 
-function tonalFlipOverrides(settings: Record<string, unknown>, role: string) {
+function tonalFlipOverride(settings: Record<string, unknown>, role: string): number | null {
+	const direct = parseFlipShade(settings[`${role}_fg_flip_tonal`])
+	if (direct != null) return direct
+	const dual2 = parseFlipShade(settings[`${role}_fg_flip_tonal_2`])
+	if (dual2 != null) return dual2
+	return parseFlipShade(settings[`${role}_fg_flip_tonal_1`])
+}
+
+function tonalPoleOverrides(settings: Record<string, unknown>, role: string) {
 	return {
-		flip1: parseFlipShade(settings[`${role}_fg_flip_tonal_1`]),
-		flip2: parseFlipShade(settings[`${role}_fg_flip_tonal_2`]),
+		dark: parseFlipShade(settings[`${role}_fg_pole_tonal_dark`]),
+		light: parseFlipShade(settings[`${role}_fg_pole_tonal_light`]),
 	}
 }
 
@@ -117,7 +125,8 @@ export function injectCSSVars(settings: Record<string, any>) {
 
 		if (BRAND_ROLES.has(role)) {
 			const flipMono = monoFlipOverride(settings, role)
-			const tonal = tonalFlipOverrides(settings, role)
+			const flipTonal = tonalFlipOverride(settings, role)
+			const poles = tonalPoleOverrides(settings, role)
 			const fgMono = brandShadeForeground(
 				600,
 				shades,
@@ -130,9 +139,11 @@ export function injectCSSVars(settings: Record<string, any>) {
 				600,
 				shades,
 				"tonal",
-				tonal.flip1,
-				tonal.flip2,
+				flipTonal,
+				null,
 				oppShades,
+				poles.dark,
+				poles.light,
 			)
 			root.style.setProperty(`--nce-${v}-fg`, fgMono)
 			root.style.setProperty(`--nce-${v}-fg-tonal`, fgTonal)
@@ -147,7 +158,8 @@ export function injectCSSVars(settings: Record<string, any>) {
 			root.style.setProperty(`--nce-${v}-${s.shade}`, s.hex)
 			if (BRAND_ROLES.has(role)) {
 				const flipMono = monoFlipOverride(settings, role)
-				const tonal = tonalFlipOverrides(settings, role)
+				const flipTonal = tonalFlipOverride(settings, role)
+				const poles = tonalPoleOverrides(settings, role)
 				root.style.setProperty(
 					`--nce-${v}-${s.shade}-fg`,
 					brandShadeForeground(
@@ -165,9 +177,11 @@ export function injectCSSVars(settings: Record<string, any>) {
 						s.shade,
 						shades,
 						"tonal",
-						tonal.flip1,
-						tonal.flip2,
+						flipTonal,
+						null,
 						oppShades,
+						poles.dark,
+						poles.light,
 					),
 				)
 			} else {

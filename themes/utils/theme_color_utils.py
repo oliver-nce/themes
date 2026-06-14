@@ -134,8 +134,8 @@ def pick_fg_tonal_cross_brand(bg_hex: str, brand_hex: str) -> str:
 
 
 FG_POLE_SHADES = (200, 500, 900)
-DEFAULT_FG_FLIP_1 = 300
-DEFAULT_FG_FLIP_2 = 600
+DEFAULT_TONAL_POLE_DARK = 900
+DEFAULT_TONAL_POLE_LIGHT = 200
 MONO_POLE_200 = "#0A0A0A"
 MONO_POLE_500 = "#4B5563"
 MONO_POLE_900 = "#FFFFFF"
@@ -168,6 +168,13 @@ def resolve_fg_flip_shade(flip_override, shades: list[tuple[int, str]]) -> int:
 	return compute_auto_fg_flip_shade(shades)
 
 
+def _shade_index(shades: list[tuple[int, str]], shade_num: int) -> int:
+	for i, (sn, _) in enumerate(shades):
+		if sn == shade_num:
+			return i
+	return -1
+
+
 def fg_color_for_flip_shade(
 	shade_num: int,
 	flip_shade: int,
@@ -182,106 +189,33 @@ def fg_color_for_flip_shade(
 	return light_pole if idx >= flip_idx else dark_pole
 
 
-def compute_auto_fg_flip_pair(shades: list[tuple[int, str]]) -> tuple[int, int]:
-	flip1 = DEFAULT_FG_FLIP_1
-	flip2 = DEFAULT_FG_FLIP_2
-	for shade_num, shade_hex in shades:
-		L, _, _ = _hex_to_oklch(shade_hex)
-		if L <= 0.72 and flip1 == DEFAULT_FG_FLIP_1:
-			flip1 = shade_num
-		if L <= FG_FLIP_AUTO_THRESHOLD:
-			flip2 = shade_num
-			break
-	return normalize_fg_flip_pair(flip1, flip2, shades)
-
-
-def normalize_fg_flip_pair(
-	flip1: int, flip2: int, shades: list[tuple[int, str]],
-) -> tuple[int, int]:
+def resolve_tonal_pole_shade(pole_override, default_shade, shades: list[tuple[int, str]]) -> int:
+	if pole_override is not None:
+		try:
+			n = int(pole_override)
+			if any(sn == n for sn, _ in shades):
+				return n
+		except (TypeError, ValueError):
+			pass
 	shade_nums = [sn for sn, _ in shades]
-	a = flip1 if flip1 in shade_nums else DEFAULT_FG_FLIP_1
-	b = flip2 if flip2 in shade_nums else DEFAULT_FG_FLIP_2
-	i1 = _shade_index(shades, a)
-	i2 = _shade_index(shades, b)
-	if i1 < 0:
-		a = shades[0][0] if shades else DEFAULT_FG_FLIP_1
-		i1 = 0
-	if i2 < 0:
-		a_last = shades[-1][0] if shades else DEFAULT_FG_FLIP_2
-		b = a_last
-		i2 = len(shades) - 1
-	if i1 >= i2 and len(shades) > 1:
-		i2 = min(i1 + 1, len(shades) - 1)
-		b = shades[i2][0]
-	return a, b
+	if default_shade in shade_nums:
+		return default_shade
+	return shades[-1][0] if shades else default_shade
 
 
-def resolve_fg_flip_pair(flip1_override, flip2_override, shades: list[tuple[int, str]]) -> tuple[int, int]:
-	if flip1_override is None and flip2_override is None:
-		return DEFAULT_FG_FLIP_1, DEFAULT_FG_FLIP_2
-	if flip1_override is None or flip2_override is None:
-		auto = compute_auto_fg_flip_pair(shades)
-		return normalize_fg_flip_pair(
-			flip1_override if flip1_override is not None else auto[0],
-			flip2_override if flip2_override is not None else auto[1],
-			shades,
-		)
-	try:
-		return normalize_fg_flip_pair(int(flip1_override), int(flip2_override), shades)
-	except (TypeError, ValueError):
-		return DEFAULT_FG_FLIP_1, DEFAULT_FG_FLIP_2
-
-
-def _shade_index(shades: list[tuple[int, str]], shade_num: int) -> int:
-	for i, (sn, _) in enumerate(shades):
-		if sn == shade_num:
-			return i
-	return -1
-
-
-def poles_from_opposite_shades(opposite_shades: list[tuple[int, str]]) -> tuple[str, str, str]:
+def tonal_poles_from_opposite_shades(
+	opposite_shades: list[tuple[int, str]],
+	dark_shade: int,
+	light_shade: int,
+) -> tuple[str, str]:
 	by_shade = dict(opposite_shades)
-	pole200 = by_shade.get(FG_POLE_SHADES[0]) or (
-		opposite_shades[0][1] if opposite_shades else MONO_POLE_200
+	dark = by_shade.get(dark_shade) or (
+		opposite_shades[-1][1] if opposite_shades else MONO_POLE_DARK
 	)
-	pole500 = by_shade.get(FG_POLE_SHADES[1]) or (
-		opposite_shades[len(opposite_shades) // 2][1] if opposite_shades else MONO_POLE_500
+	light = by_shade.get(light_shade) or (
+		opposite_shades[0][1] if opposite_shades else MONO_POLE_LIGHT
 	)
-	pole900 = by_shade.get(FG_POLE_SHADES[2]) or (
-		opposite_shades[-1][1] if opposite_shades else MONO_POLE_900
-	)
-	return pole200, pole500, pole900
-
-
-def brand_fg_poles_triple(mode: str, opposite_shades: list[tuple[int, str]]) -> tuple[str, str, str]:
-	if mode == "mono":
-		return MONO_POLE_200, MONO_POLE_500, MONO_POLE_900
-	if opposite_shades:
-		return poles_from_opposite_shades(opposite_shades)
-	return MONO_POLE_200, MONO_POLE_500, MONO_POLE_900
-
-
-def fg_color_for_dual_flip(
-	shade_num: int,
-	flip1: int,
-	flip2: int,
-	shades: list[tuple[int, str]],
-	pole200: str,
-	pole500: str,
-	pole900: str,
-) -> str:
-	idx = _shade_index(shades, shade_num)
-	i1 = _shade_index(shades, flip1)
-	i2 = _shade_index(shades, flip2)
-	if idx < 0:
-		return pole200
-	if i1 < 0 or i2 < 0:
-		return pole200
-	if idx < i1:
-		return pole200
-	if idx < i2:
-		return pole500
-	return pole900
+	return dark, light
 
 
 def brand_shade_foreground(
@@ -291,6 +225,8 @@ def brand_shade_foreground(
 	flip1_override,
 	flip2_override,
 	opposite_shades: list[tuple[int, str]],
+	tonal_pole_dark=None,
+	tonal_pole_light=None,
 ) -> str:
 	if mode == "mono":
 		flip_override = flip1_override if flip1_override is not None else flip2_override
@@ -298,9 +234,19 @@ def brand_shade_foreground(
 		return fg_color_for_flip_shade(
 			shade_num, flip, shades, MONO_POLE_DARK, MONO_POLE_LIGHT,
 		)
-	flip1, flip2 = resolve_fg_flip_pair(flip1_override, flip2_override, shades)
-	pole200, pole500, pole900 = brand_fg_poles_triple("tonal", opposite_shades)
-	return fg_color_for_dual_flip(shade_num, flip1, flip2, shades, pole900, pole500, pole200)
+	flip_override = flip1_override if flip1_override is not None else flip2_override
+	flip = resolve_fg_flip_shade(flip_override, shades)
+	pole_shades = opposite_shades if opposite_shades else shades
+	dark_shade = resolve_tonal_pole_shade(
+		tonal_pole_dark, DEFAULT_TONAL_POLE_DARK, pole_shades,
+	)
+	light_shade = resolve_tonal_pole_shade(
+		tonal_pole_light, DEFAULT_TONAL_POLE_LIGHT, pole_shades,
+	)
+	dark_pole, light_pole = tonal_poles_from_opposite_shades(
+		opposite_shades, dark_shade, light_shade,
+	)
+	return fg_color_for_flip_shade(shade_num, flip, shades, dark_pole, light_pole)
 
 
 def _max_chroma_in_gamut(L, h, upper):
