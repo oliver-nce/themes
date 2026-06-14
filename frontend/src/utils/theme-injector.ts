@@ -76,7 +76,16 @@ export function injectCSSVars(settings: Record<string, any>) {
 			root.style.setProperty(`--nce-${v}`, roleHex)
 		}
 		root.style.setProperty(`--nce-${v}-fg`, pickFgMono(roleHex))
-		root.style.setProperty(`--nce-${v}-fg-tonal`, pickFgTonal(roleHex))
+		// Cross-brand tonal: primary bg → secondary text, secondary bg → primary text
+		let tonalHex: string
+		if (role === "primary_color" && settings.secondary_color) {
+			tonalHex = String(settings.secondary_color)
+		} else if (role === "secondary_color" && settings.primary_color) {
+			tonalHex = String(settings.primary_color)
+		} else {
+			tonalHex = pickFgTonal(roleHex)
+		}
+		root.style.setProperty(`--nce-${v}-fg-tonal`, tonalHex)
 		const shades = generateShades(hex, adj && "saturation" in adj ? adj : undefined)
 		for (const s of shades) {
 			if (!CURATED_SHADES.includes(s.shade as (typeof CURATED_SHADES)[number]))

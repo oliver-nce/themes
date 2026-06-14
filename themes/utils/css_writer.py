@@ -240,7 +240,14 @@ def _emit_var_block(g, lines, selector=":root", include_custom_css=True):
         if not fg_hex:
             continue
         lines.append(f"\t--nce-{var}-fg: {pick_fg_mono(fg_hex)};")
-        lines.append(f"\t--nce-{var}-fg-tonal: {pick_fg_tonal(fg_hex)};")
+        # Cross-brand tonal pairing: primary bg → secondary text, secondary bg → primary text.
+        if f == "primary_color":
+            tonal = _role_base_hex(g, "secondary_color") or pick_fg_tonal(fg_hex)
+        elif f == "secondary_color":
+            tonal = _role_base_hex(g, "primary_color") or pick_fg_tonal(fg_hex)
+        else:
+            tonal = pick_fg_tonal(fg_hex)
+        lines.append(f"\t--nce-{var}-fg-tonal: {tonal};")
     lines += ["", "\t/* ── Shade scales (50–950) ── */"]
     for f, var in SHADE_SCALE_FIELDS.items():
         if not _role_is_configured(g, f):

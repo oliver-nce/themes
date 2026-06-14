@@ -890,7 +890,14 @@ function computeCSSVariables(): Record<string, string> {
 				? effectiveRoleHex(hex, gamma, saturation)
 				: hex
 		vars[`--nce-${varPrefix}-fg`] = pickFgMono(roleHex)
-		vars[`--nce-${varPrefix}-fg-tonal`] = pickFgTonal(roleHex)
+		// Cross-brand tonal: primary bg → secondary text, secondary bg → primary text
+		if (field === "primary_color") {
+			vars[`--nce-${varPrefix}-fg-tonal`] = form.secondary_color || pickFgTonal(roleHex)
+		} else if (field === "secondary_color") {
+			vars[`--nce-${varPrefix}-fg-tonal`] = form.primary_color || pickFgTonal(roleHex)
+		} else {
+			vars[`--nce-${varPrefix}-fg-tonal`] = pickFgTonal(roleHex)
+		}
 		const shades = generateShades(hex, hasAdjust ? { gamma, saturation } : undefined)
 		for (const s of shades) {
 			vars[`--nce-${varPrefix}-${s.shade}`] = s.hex
