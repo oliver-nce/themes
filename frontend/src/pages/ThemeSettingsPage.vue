@@ -187,15 +187,13 @@
 						:opposite-brand-color="form.secondary_color"
 						:opposite-brand-gamma="secondaryShadeAdjust.gamma"
 						:opposite-brand-saturation="secondaryShadeAdjust.saturation"
-						:flip-mono1="form.primary_color_fg_flip_mono_1"
-						:flip-mono2="form.primary_color_fg_flip_mono_2"
+						:flip-mono="form.primary_color_fg_flip_mono"
 						:flip-tonal1="form.primary_color_fg_flip_tonal_1"
 						:flip-tonal2="form.primary_color_fg_flip_tonal_2"
 						@update:model-value="form.primary_color = $event"
 						@update:gamma="form.primary_color_gamma = $event"
 						@update:saturation="form.primary_color_saturation = $event"
-						@update:flip-mono1="form.primary_color_fg_flip_mono_1 = $event"
-						@update:flip-mono2="form.primary_color_fg_flip_mono_2 = $event"
+						@update:flip-mono="form.primary_color_fg_flip_mono = $event"
 						@update:flip-tonal1="form.primary_color_fg_flip_tonal_1 = $event"
 						@update:flip-tonal2="form.primary_color_fg_flip_tonal_2 = $event"
 						show-shades
@@ -212,15 +210,13 @@
 						:opposite-brand-color="form.primary_color"
 						:opposite-brand-gamma="primaryShadeAdjust.gamma"
 						:opposite-brand-saturation="primaryShadeAdjust.saturation"
-						:flip-mono1="form.secondary_color_fg_flip_mono_1"
-						:flip-mono2="form.secondary_color_fg_flip_mono_2"
+						:flip-mono="form.secondary_color_fg_flip_mono"
 						:flip-tonal1="form.secondary_color_fg_flip_tonal_1"
 						:flip-tonal2="form.secondary_color_fg_flip_tonal_2"
 						@update:model-value="form.secondary_color = $event"
 						@update:gamma="form.secondary_color_gamma = $event"
 						@update:saturation="form.secondary_color_saturation = $event"
-						@update:flip-mono1="form.secondary_color_fg_flip_mono_1 = $event"
-						@update:flip-mono2="form.secondary_color_fg_flip_mono_2 = $event"
+						@update:flip-mono="form.secondary_color_fg_flip_mono = $event"
 						@update:flip-tonal1="form.secondary_color_fg_flip_tonal_1 = $event"
 						@update:flip-tonal2="form.secondary_color_fg_flip_tonal_2 = $event"
 						show-shades
@@ -930,12 +926,11 @@ function computeCSSVariables(): Record<string, string> {
 			oppShades = generateShades(form.primary_color, oppAdj)
 		}
 		if (isBrand) {
-			const flipMono1 = form[`${field}_fg_flip_mono_1` as FormKey] as number | null
-			const flipMono2 = form[`${field}_fg_flip_mono_2` as FormKey] as number | null
+			const flipMono = form[`${field}_fg_flip_mono` as FormKey] as number | null
 			const flipTonal1 = form[`${field}_fg_flip_tonal_1` as FormKey] as number | null
 			const flipTonal2 = form[`${field}_fg_flip_tonal_2` as FormKey] as number | null
 			vars[`--nce-${varPrefix}-fg`] = brandShadeForeground(
-				600, shades, "mono", flipMono1, flipMono2, oppShades,
+				600, shades, "mono", flipMono, null, oppShades,
 			)
 			vars[`--nce-${varPrefix}-fg-tonal`] = brandShadeForeground(
 				600, shades, "tonal", flipTonal1, flipTonal2, oppShades,
@@ -949,12 +944,11 @@ function computeCSSVariables(): Record<string, string> {
 			vars[`--${varPrefix}-${s.shade}`] = s.hex
 			if (CURATED_SHADES.includes(s.shade as (typeof CURATED_SHADES)[number])) {
 				if (isBrand) {
-					const flipMono1 = form[`${field}_fg_flip_mono_1` as FormKey] as number | null
-					const flipMono2 = form[`${field}_fg_flip_mono_2` as FormKey] as number | null
+					const flipMono = form[`${field}_fg_flip_mono` as FormKey] as number | null
 					const flipTonal1 = form[`${field}_fg_flip_tonal_1` as FormKey] as number | null
 					const flipTonal2 = form[`${field}_fg_flip_tonal_2` as FormKey] as number | null
 					vars[`--nce-${varPrefix}-${s.shade}-fg`] = brandShadeForeground(
-						s.shade, shades, "mono", flipMono1, flipMono2, oppShades,
+						s.shade, shades, "mono", flipMono, null, oppShades,
 					)
 					vars[`--nce-${varPrefix}-${s.shade}-fg-tonal`] = brandShadeForeground(
 						s.shade, shades, "tonal", flipTonal1, flipTonal2, oppShades,
@@ -1007,12 +1001,10 @@ const ALL_FIELDS = [
 	"secondary_color",
 	"secondary_color_gamma",
 	"secondary_color_saturation",
-	"primary_color_fg_flip_mono_1",
-	"primary_color_fg_flip_mono_2",
+	"primary_color_fg_flip_mono",
 	"primary_color_fg_flip_tonal_1",
 	"primary_color_fg_flip_tonal_2",
-	"secondary_color_fg_flip_mono_1",
-	"secondary_color_fg_flip_mono_2",
+	"secondary_color_fg_flip_mono",
 	"secondary_color_fg_flip_tonal_1",
 	"secondary_color_fg_flip_tonal_2",
 	"brand_palette_mode",
@@ -1069,12 +1061,10 @@ const DEFAULTS: Record<FormKey, any> = {
 	secondary_color: "#10B981",
 	secondary_color_gamma: 0,
 	secondary_color_saturation: 100,
-	primary_color_fg_flip_mono_1: 300,
-	primary_color_fg_flip_mono_2: 600,
+	primary_color_fg_flip_mono: null,
 	primary_color_fg_flip_tonal_1: 300,
 	primary_color_fg_flip_tonal_2: 600,
-	secondary_color_fg_flip_mono_1: 300,
-	secondary_color_fg_flip_mono_2: 600,
+	secondary_color_fg_flip_mono: null,
 	secondary_color_fg_flip_tonal_1: 300,
 	secondary_color_fg_flip_tonal_2: 600,
 	brand_palette_mode: "corporate",
@@ -1389,7 +1379,11 @@ function canonicalPayload(source: Record<string, any>): Record<string, any> {
 			payload[key] = clampShadowDirection(val ?? DEFAULTS.shadow_direction)
 		} else if (key === "brand_palette_mode") {
 			payload[key] = normalizeBrandPaletteMode(val ?? DEFAULTS.brand_palette_mode)
-		} else if (key.endsWith("_fg_flip_mono_1") || key.endsWith("_fg_flip_mono_2") || key.endsWith("_fg_flip_tonal_1") || key.endsWith("_fg_flip_tonal_2")) {
+		} else if (
+			key.endsWith("_fg_flip_mono") ||
+			key.endsWith("_fg_flip_tonal_1") ||
+			key.endsWith("_fg_flip_tonal_2")
+		) {
 			if (val === null || val === undefined || val === "") {
 				payload[key] = null
 			} else {
@@ -1428,8 +1422,7 @@ function applyPayloadToForm(payload: Record<string, any>) {
 		} else if (key === "shadow_direction") {
 			form[key] = clampShadowDirection(val ?? DEFAULTS.shadow_direction)
 		} else if (
-			key.endsWith("_fg_flip_mono_1") ||
-			key.endsWith("_fg_flip_mono_2") ||
+			key.endsWith("_fg_flip_mono") ||
 			key.endsWith("_fg_flip_tonal_1") ||
 			key.endsWith("_fg_flip_tonal_2")
 		) {
@@ -1458,23 +1451,36 @@ function applyPayloadToForm(payload: Record<string, any>) {
 		}
 	}
 	form.brand_palette_mode = normalizeBrandPaletteMode(form.brand_palette_mode)
-	migrateLegacyFgFlipFields(payload)
+	migrateFgFlipFields(payload)
 }
 
-function migrateLegacyFgFlipFields(payload: Record<string, any>) {
+function parseFlipShade(raw: unknown): number | null {
+	if (raw === null || raw === undefined || raw === "") return null
+	const n = Number(raw)
+	return Number.isFinite(n) ? Math.round(n) : null
+}
+
+function migrateFgFlipFields(payload: Record<string, any>) {
 	for (const role of ["primary_color", "secondary_color"] as const) {
-		for (const mode of ["mono", "tonal"] as const) {
-			const legacyKey = `${role}_fg_flip_${mode}`
-			const legacy = payload[legacyKey]
-			if (legacy == null || legacy === "") continue
-			const n = Number(legacy)
-			if (!Number.isFinite(n)) continue
-			const k1 = `${legacyKey}_1` as FormKey
-			const k2 = `${legacyKey}_2` as FormKey
-			if (payload[k1] == null && payload[k2] == null) {
-				form[k1] = DEFAULTS[k1]
-				form[k2] = Math.round(n)
+		const monoKey = `${role}_fg_flip_mono` as FormKey
+		if (form[monoKey] == null) {
+			const direct = parseFlipShade(payload[monoKey])
+			if (direct != null) {
+				form[monoKey] = direct
+			} else {
+				const dual2 = parseFlipShade(payload[`${role}_fg_flip_mono_2`])
+				const dual1 = parseFlipShade(payload[`${role}_fg_flip_mono_1`])
+				const migrated = dual2 ?? dual1
+				if (migrated != null) form[monoKey] = migrated
 			}
+		}
+
+		const tonalLegacyKey = `${role}_fg_flip_tonal`
+		const tonalLegacy = parseFlipShade(payload[tonalLegacyKey])
+		const t1Key = `${role}_fg_flip_tonal_1` as FormKey
+		const t2Key = `${role}_fg_flip_tonal_2` as FormKey
+		if (tonalLegacy != null && form[t1Key] === DEFAULTS[t1Key] && form[t2Key] === DEFAULTS[t2Key]) {
+			form[t2Key] = tonalLegacy
 		}
 	}
 }

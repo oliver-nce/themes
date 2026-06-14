@@ -32,21 +32,25 @@ function roleAdjustments(role: string, settings: Record<string, unknown>) {
 	}
 }
 
-function flipOverrides(settings: Record<string, unknown>, role: string, mode: "mono" | "tonal") {
-	const raw1 = settings[`${role}_fg_flip_${mode}_1`]
-	const raw2 = settings[`${role}_fg_flip_${mode}_2`]
-	const parse = (raw: unknown): number | null => {
-		if (raw === null || raw === undefined || raw === "") return null
-		const n = Number(raw)
-		return Number.isFinite(n) ? n : null
+function parseFlipShade(raw: unknown): number | null {
+	if (raw === null || raw === undefined || raw === "") return null
+	const n = Number(raw)
+	return Number.isFinite(n) ? n : null
+}
+
+function monoFlipOverride(settings: Record<string, unknown>, role: string): number | null {
+	const direct = parseFlipShade(settings[`${role}_fg_flip_mono`])
+	if (direct != null) return direct
+	const dual2 = parseFlipShade(settings[`${role}_fg_flip_mono_2`])
+	if (dual2 != null) return dual2
+	return parseFlipShade(settings[`${role}_fg_flip_mono_1`])
+}
+
+function tonalFlipOverrides(settings: Record<string, unknown>, role: string) {
+	return {
+		flip1: parseFlipShade(settings[`${role}_fg_flip_tonal_1`]),
+		flip2: parseFlipShade(settings[`${role}_fg_flip_tonal_2`]),
 	}
-	// Legacy single-flip field → second boundary
-	const legacy = settings[`${role}_fg_flip_${mode}`]
-	const legacyN = legacy != null && legacy !== "" ? Number(legacy) : NaN
-	if (Number.isFinite(legacyN) && raw1 === undefined && raw2 === undefined) {
-		return { flip1: null, flip2: legacyN }
-	}
-	return { flip1: parse(raw1), flip2: parse(raw2) }
 }
 
 function oppositeShades(settings: Record<string, unknown>, role: string): ColorShade[] {
@@ -112,14 +116,14 @@ export function injectCSSVars(settings: Record<string, any>) {
 		const oppShades = BRAND_ROLES.has(role) ? oppositeShades(settings, role) : []
 
 		if (BRAND_ROLES.has(role)) {
-			const mono = flipOverrides(settings, role, "mono")
-			const tonal = flipOverrides(settings, role, "tonal")
+			const flipMono = monoFlipOverride(settings, role)
+			const tonal = tonalFlipOverrides(settings, role)
 			const fgMono = brandShadeForeground(
 				600,
 				shades,
 				"mono",
-				mono.flip1,
-				mono.flip2,
+				flipMono,
+				null,
 				oppShades,
 			)
 			const fgTonal = brandShadeForeground(
@@ -142,16 +146,16 @@ export function injectCSSVars(settings: Record<string, any>) {
 				continue
 			root.style.setProperty(`--nce-${v}-${s.shade}`, s.hex)
 			if (BRAND_ROLES.has(role)) {
-				const mono = flipOverrides(settings, role, "mono")
-				const tonal = flipOverrides(settings, role, "tonal")
+				const flipMono = monoFlipOverride(settings, role)
+				const tonal = tonalFlipOverrides(settings, role)
 				root.style.setProperty(
 					`--nce-${v}-${s.shade}-fg`,
 					brandShadeForeground(
 						s.shade,
 						shades,
 						"mono",
-						mono.flip1,
-						mono.flip2,
+						flipMono,
+						null,
 						oppShades,
 					),
 				)

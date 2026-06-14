@@ -139,12 +139,47 @@ DEFAULT_FG_FLIP_2 = 600
 MONO_POLE_200 = "#0A0A0A"
 MONO_POLE_500 = "#4B5563"
 MONO_POLE_900 = "#FFFFFF"
+MONO_POLE_DARK = MONO_POLE_200
+MONO_POLE_LIGHT = MONO_POLE_900
 FG_FLIP_AUTO_THRESHOLD = 0.62
 BRAND_COLOR_FIELDS = frozenset({"primary_color", "secondary_color"})
 OPPOSITE_BRAND_FIELD = {
 	"primary_color": "secondary_color",
 	"secondary_color": "primary_color",
 }
+
+
+def compute_auto_fg_flip_shade(shades: list[tuple[int, str]]) -> int:
+	for shade_num, shade_hex in shades:
+		L, _, _ = _hex_to_oklch(shade_hex)
+		if L <= FG_FLIP_AUTO_THRESHOLD:
+			return shade_num
+	return shades[-1][0] if shades else 950
+
+
+def resolve_fg_flip_shade(flip_override, shades: list[tuple[int, str]]) -> int:
+	if flip_override is not None:
+		try:
+			n = int(flip_override)
+			if any(sn == n for sn, _ in shades):
+				return n
+		except (TypeError, ValueError):
+			pass
+	return compute_auto_fg_flip_shade(shades)
+
+
+def fg_color_for_flip_shade(
+	shade_num: int,
+	flip_shade: int,
+	shades: list[tuple[int, str]],
+	dark_pole: str,
+	light_pole: str,
+) -> str:
+	flip_idx = _shade_index(shades, flip_shade)
+	idx = _shade_index(shades, shade_num)
+	if flip_idx < 0 or idx < 0:
+		return dark_pole
+	return light_pole if idx >= flip_idx else dark_pole
 
 
 def compute_auto_fg_flip_pair(shades: list[tuple[int, str]]) -> tuple[int, int]:
@@ -257,9 +292,15 @@ def brand_shade_foreground(
 	flip2_override,
 	opposite_shades: list[tuple[int, str]],
 ) -> str:
+	if mode == "mono":
+		flip_override = flip1_override if flip1_override is not None else flip2_override
+		flip = resolve_fg_flip_shade(flip_override, shades)
+		return fg_color_for_flip_shade(
+			shade_num, flip, shades, MONO_POLE_DARK, MONO_POLE_LIGHT,
+		)
 	flip1, flip2 = resolve_fg_flip_pair(flip1_override, flip2_override, shades)
-	pole200, pole500, pole900 = brand_fg_poles_triple(mode, opposite_shades)
-	return fg_color_for_dual_flip(shade_num, flip1, flip2, shades, pole200, pole500, pole900)
+	pole200, pole500, pole900 = brand_fg_poles_triple("tonal", opposite_shades)
+	return fg_color_for_dual_flip(shade_num, flip1, flip2, shades, pole900, pole500, pole200)
 
 
 def _max_chroma_in_gamut(L, h, upper):

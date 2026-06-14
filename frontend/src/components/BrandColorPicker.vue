@@ -27,7 +27,29 @@
 							:key="'flip-' + s.shade"
 							class="flip-cell"
 						>
-							<div v-if="s.shade === effectiveFlip1 || s.shade === effectiveFlip2" class="flip-arrows">
+							<div
+								v-if="fgPreviewMode === 'mono' && s.shade === effectiveFlipShade"
+								class="flip-arrows"
+							>
+								<button
+									type="button"
+									class="flip-arrow-btn"
+									:disabled="!canNudgeMonoFlip(-1)"
+									title="Move flip point lighter"
+									@click="nudgeMonoFlip(-1)"
+								>&#9664;</button>
+								<button
+									type="button"
+									class="flip-arrow-btn"
+									:disabled="!canNudgeMonoFlip(1)"
+									title="Move flip point darker"
+									@click="nudgeMonoFlip(1)"
+								>&#9654;</button>
+							</div>
+							<div
+								v-else-if="fgPreviewMode === 'tonal' && (s.shade === effectiveFlip1 || s.shade === effectiveFlip2)"
+								class="flip-arrows"
+							>
 								<template v-if="s.shade === effectiveFlip1">
 									<button
 										type="button"
@@ -72,9 +94,11 @@
 							<div
 								class="color-shade-swatch flex items-center justify-center"
 								:class="{
-									'swatch-flip-halo': s.shade === effectiveFlip1 || s.shade === effectiveFlip2,
-									'swatch-flip-halo--first': s.shade === effectiveFlip1,
-									'swatch-flip-halo--second': s.shade === effectiveFlip2,
+									'swatch-flip-halo': fgPreviewMode === 'mono'
+										? s.shade === effectiveFlipShade
+										: s.shade === effectiveFlip1 || s.shade === effectiveFlip2,
+									'swatch-flip-halo--first': fgPreviewMode === 'tonal' && s.shade === effectiveFlip1,
+									'swatch-flip-halo--second': fgPreviewMode === 'tonal' && s.shade === effectiveFlip2,
 								}"
 								:style="{ backgroundColor: s.hex }"
 							>
@@ -98,7 +122,7 @@
 						class="flip-reset-btn"
 						@click="resetFlip"
 					>
-						Reset flip to 300 / 600
+						{{ fgPreviewMode === 'mono' ? 'Reset flip to auto' : 'Reset flip to 300 / 600' }}
 					</button>
 				</div>
 				<fieldset class="fg-mode-picker">
@@ -232,6 +256,7 @@ import {
 	parseHexInput,
 	brandShadeForeground,
 	isLowContrastFg,
+	resolveFgFlipShade,
 	resolveFgFlipPair,
 	DEFAULT_FG_FLIP_1,
 	DEFAULT_FG_FLIP_2,
@@ -253,9 +278,8 @@ const props = withDefaults(defineProps<{
 	oppositeBrandColor?: string
 	oppositeBrandGamma?: number
 	oppositeBrandSaturation?: number
-	/** First / second flip boundaries; null uses defaults (300 / 600). */
-	flipMono1?: number | null
-	flipMono2?: number | null
+	/** Shade stop where mono text flips light; null = auto. */
+	flipMono?: number | null
 	flipTonal1?: number | null
 	flipTonal2?: number | null
 }>(), {
@@ -266,8 +290,7 @@ const props = withDefaults(defineProps<{
 	oppositeBrandColor: "",
 	oppositeBrandGamma: 0,
 	oppositeBrandSaturation: 100,
-	flipMono1: null,
-	flipMono2: null,
+	flipMono: null,
 	flipTonal1: null,
 	flipTonal2: null,
 })
@@ -278,8 +301,7 @@ const emit = defineEmits<{
 	"update:modelValue": [value: string]
 	"update:gamma": [value: number]
 	"update:saturation": [value: number]
-	"update:flipMono1": [value: number | null]
-	"update:flipMono2": [value: number | null]
+	"update:flipMono": [value: number | null]
 	"update:flipTonal1": [value: number | null]
 	"update:flipTonal2": [value: number | null]
 }>()
@@ -379,28 +401,37 @@ const oppositeShades = computed((): ColorShade[] => {
 	})
 })
 
-const activeFlip1 = computed(() =>
-	fgPreviewMode.value === "mono" ? props.flipMono1 : props.flipTonal1,
-)
-const activeFlip2 = computed(() =>
-	fgPreviewMode.value === "mono" ? props.flipMono2 : props.flipTonal2,
+const effectiveFlipShade = computed(() =>
+	resolveFgFlipShade(props.flipMono, currentShades.value),
 )
 
 const effectiveFlipPair = computed(() =>
-	resolveFgFlipPair(activeFlip1.value, activeFlip2.value, currentShades.value),
+	resolveFgFlipPair(props.flipTonal1, props.flipTonal2, currentShades.value),
 )
 const effectiveFlip1 = computed(() => effectiveFlipPair.value[0])
 const effectiveFlip2 = computed(() => effectiveFlipPair.value[1])
 
 const hasFlipOverride = computed(() => {
+	if (fgPreviewMode.value === "mono") return props.flipMono != null
 	const [f1, f2] = effectiveFlipPair.value
 	return (
 		f1 !== DEFAULT_FG_FLIP_1 ||
 		f2 !== DEFAULT_FG_FLIP_2 ||
-		activeFlip1.value != null ||
-		activeFlip2.value != null
+		props.flipTonal1 != null ||
+		props.flipTonal2 != null
 	)
 })
+
+const monoFlipIndex = computed(() =>
+	currentShades.value.findIndex((s) => s.shade === effectiveFlipShade.value),
+)
+
+function canNudgeMonoFlip(delta: number): boolean {
+	const idx = monoFlipIndex.value
+	if (idx < 0) return false
+	const next = idx + delta
+	return next >= 0 && next < currentShades.value.length
+}
 
 function flipIndex(which: 1 | 2): number {
 	const shade = which === 1 ? effectiveFlip1.value : effectiveFlip2.value
@@ -419,18 +450,38 @@ function canNudgeFlip(which: 1 | 2, delta: number): boolean {
 }
 
 function fgColorForShade(s: ColorShade): string {
+	if (fgPreviewMode.value === "mono") {
+		return brandShadeForeground(
+			s.shade,
+			currentShades.value,
+			"mono",
+			props.flipMono,
+			null,
+			oppositeShades.value,
+		)
+	}
 	return brandShadeForeground(
 		s.shade,
 		currentShades.value,
-		fgPreviewMode.value,
-		activeFlip1.value,
-		activeFlip2.value,
+		"tonal",
+		props.flipTonal1,
+		props.flipTonal2,
 		oppositeShades.value,
 	)
 }
 
 function isLowContrast(s: ColorShade): boolean {
 	return isLowContrastFg(s.hex, fgColorForShade(s))
+}
+
+function nudgeMonoFlip(delta: number) {
+	const shades = currentShades.value
+	const idx = monoFlipIndex.value
+	if (idx < 0) return
+	const next = Math.max(0, Math.min(shades.length - 1, idx + delta))
+	const nextShade = shades[next]?.shade
+	if (nextShade == null) return
+	emit("update:flipMono", nextShade)
 }
 
 function nudgeFlip(which: 1 | 2, delta: number) {
@@ -442,17 +493,12 @@ function nudgeFlip(which: 1 | 2, delta: number) {
 	if (which === 2 && next <= flipIndex(1)) return
 	const nextShade = shades[next]?.shade
 	if (nextShade == null) return
-	if (fgPreviewMode.value === "mono") {
-		emit(which === 1 ? "update:flipMono1" : "update:flipMono2", nextShade)
-	} else {
-		emit(which === 1 ? "update:flipTonal1" : "update:flipTonal2", nextShade)
-	}
+	emit(which === 1 ? "update:flipTonal1" : "update:flipTonal2", nextShade)
 }
 
 function resetFlip() {
 	if (fgPreviewMode.value === "mono") {
-		emit("update:flipMono1", DEFAULT_FG_FLIP_1)
-		emit("update:flipMono2", DEFAULT_FG_FLIP_2)
+		emit("update:flipMono", null)
 	} else {
 		emit("update:flipTonal1", DEFAULT_FG_FLIP_1)
 		emit("update:flipTonal2", DEFAULT_FG_FLIP_2)

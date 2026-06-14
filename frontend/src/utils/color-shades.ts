@@ -353,6 +353,8 @@ export const DEFAULT_FG_FLIP_2 = 600;
 export const MONO_POLE_200 = "#0A0A0A";
 export const MONO_POLE_500 = "#4B5563";
 export const MONO_POLE_900 = "#FFFFFF";
+export const MONO_POLE_DARK = MONO_POLE_200;
+export const MONO_POLE_LIGHT = MONO_POLE_900;
 export const FG_FLIP_AUTO_THRESHOLD = 0.62;
 
 export type FgFlipMode = "mono" | "tonal";
@@ -361,6 +363,38 @@ export type FgFlipPair = readonly [number, number];
 
 function shadeIndex(shades: readonly ColorShade[], shadeNum: number): number {
   return shades.findIndex((s) => s.shade === shadeNum);
+}
+
+export function computeAutoFgFlipShade(shades: readonly ColorShade[]): number {
+  for (const s of shades) {
+    const { L } = hexToOklch(s.hex);
+    if (L <= FG_FLIP_AUTO_THRESHOLD) return s.shade;
+  }
+  return shades[shades.length - 1]?.shade ?? 950;
+}
+
+export function resolveFgFlipShade(
+  flipOverride: number | null | undefined,
+  shades: readonly ColorShade[],
+): number {
+  if (flipOverride != null && Number.isFinite(flipOverride)) {
+    const n = Math.round(flipOverride);
+    if (shades.some((s) => s.shade === n)) return n;
+  }
+  return computeAutoFgFlipShade(shades);
+}
+
+export function fgColorForFlipShade(
+  shadeNum: number,
+  flipShade: number,
+  shades: readonly ColorShade[],
+  darkPole: string,
+  lightPole: string,
+): string {
+  const flipIdx = shadeIndex(shades, flipShade);
+  const idx = shadeIndex(shades, shadeNum);
+  if (flipIdx < 0 || idx < 0) return darkPole;
+  return idx >= flipIdx ? lightPole : darkPole;
 }
 
 export function computeAutoFgFlipPair(shades: readonly ColorShade[]): FgFlipPair {
@@ -464,17 +498,21 @@ export function brandShadeForeground(
   flip2Override: number | null | undefined,
   oppositeShades: readonly ColorShade[],
 ): string {
+  if (mode === "mono") {
+    const flip = resolveFgFlipShade(flip1Override ?? flip2Override, shades);
+    return fgColorForFlipShade(
+      shadeNum,
+      flip,
+      shades,
+      MONO_POLE_DARK,
+      MONO_POLE_LIGHT,
+    );
+  }
   const [flip1, flip2] = resolveFgFlipPair(flip1Override, flip2Override, shades);
-  const [pole200, pole500, pole900] = brandFgPolesTriple(mode, oppositeShades);
-  return fgColorForDualFlip(shadeNum, flip1, flip2, shades, pole200, pole500, pole900);
-}
-
-/** @deprecated Use resolveFgFlipPair — kept for callers migrating from single-flip API. */
-export function resolveFgFlipShade(
-  flipOverride: number | null | undefined,
-  shades: readonly ColorShade[],
-): number {
-  return resolveFgFlipPair(flipOverride, null, shades)[1];
+  const [pole200, pole500, pole900] = brandFgPolesTriple("tonal", oppositeShades);
+  // Tonal stops 200/500/900 are sampled from the opposite ramp; assign darkest→lightest
+  // bg regions so light panels get dark text and dark panels get light text.
+  return fgColorForDualFlip(shadeNum, flip1, flip2, shades, pole900, pole500, pole200);
 }
 
 /** True when bg and text OKLCH lightness are too close to read comfortably. */

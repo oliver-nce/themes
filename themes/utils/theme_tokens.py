@@ -56,12 +56,10 @@ TRANSITION_MAP = {
 GAMMA_SAT_ROLE_FIELDS = frozenset({"primary_color", "secondary_color"})
 BRAND_FG_FLIP_FIELDS = frozenset(
 	{
-		"primary_color_fg_flip_mono_1",
-		"primary_color_fg_flip_mono_2",
+		"primary_color_fg_flip_mono",
 		"primary_color_fg_flip_tonal_1",
 		"primary_color_fg_flip_tonal_2",
-		"secondary_color_fg_flip_mono_1",
-		"secondary_color_fg_flip_mono_2",
+		"secondary_color_fg_flip_mono",
 		"secondary_color_fg_flip_tonal_1",
 		"secondary_color_fg_flip_tonal_2",
 	}
@@ -182,12 +180,10 @@ TOKEN_FIELDS = MIGRATED_FIELDS + [
 	"neutral_color_warmth",
 	"neutral_color_shades",
 	"brand_palette_mode",
-	"primary_color_fg_flip_mono_1",
-	"primary_color_fg_flip_mono_2",
+	"primary_color_fg_flip_mono",
 	"primary_color_fg_flip_tonal_1",
 	"primary_color_fg_flip_tonal_2",
-	"secondary_color_fg_flip_mono_1",
-	"secondary_color_fg_flip_mono_2",
+	"secondary_color_fg_flip_mono",
 	"secondary_color_fg_flip_tonal_1",
 	"secondary_color_fg_flip_tonal_2",
 ]
