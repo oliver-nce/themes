@@ -514,16 +514,9 @@ function onMarkerPointerDown(which: MarkerDragTarget, e: PointerEvent) {
 	e.preventDefault()
 }
 
-function onMarkerPointerMove(e: PointerEvent) {
-	if (!dragTarget.value) return
-	dragHoverIndex.value = shadeIndexFromClientX(e.clientX)
-}
-
-function commitMarkerDrag(clientX: number) {
-	if (!dragTarget.value) return
-	const idx = shadeIndexFromClientX(clientX)
+function applyMarkerAtIndex(idx: number) {
 	const shade = currentShades.value[idx]?.shade
-	if (shade == null) return
+	if (shade == null || !dragTarget.value) return
 	if (dragTarget.value === "flip") {
 		if (fgPreviewMode.value === "mono") emit("update:flipMono", shade)
 		else emit("update:flipTonal", shade)
@@ -532,6 +525,24 @@ function commitMarkerDrag(clientX: number) {
 	} else {
 		emit("update:poleTonalLight", shade)
 	}
+}
+
+function onMarkerPointerMove(e: PointerEvent) {
+	if (!dragTarget.value) return
+	const idx = shadeIndexFromClientX(e.clientX)
+	if (idx < 0) return
+	if (idx !== dragHoverIndex.value) {
+		dragHoverIndex.value = idx
+		applyMarkerAtIndex(idx)
+	}
+}
+
+function commitMarkerDrag(clientX: number) {
+	if (!dragTarget.value) return
+	const idx = shadeIndexFromClientX(clientX)
+	if (idx < 0) return
+	dragHoverIndex.value = idx
+	applyMarkerAtIndex(idx)
 }
 
 function onMarkerPointerUp(e: PointerEvent) {
@@ -547,7 +558,8 @@ onUnmounted(() => {
 })
 
 function fgColorForShade(s: ColorShade): string {
-	if (fgPreviewMode.value === "mono") {
+	const previewTonal = fgPreviewMode.value === "tonal" || poleMarkersVisible.value
+	if (!previewTonal) {
 		return brandShadeForeground(
 			s.shade,
 			currentShades.value,
@@ -557,15 +569,27 @@ function fgColorForShade(s: ColorShade): string {
 			oppositeShades.value,
 		)
 	}
+	const flipOverride =
+		dragTarget.value === "flip"
+			? displayFlipShade.value
+			: props.flipTonal ?? props.flipMono
+	const poleDark =
+		dragTarget.value === "dark" || poleMarkersVisible.value
+			? displayTonalPoleDark.value
+			: props.poleTonalDark
+	const poleLight =
+		dragTarget.value === "light" || poleMarkersVisible.value
+			? displayTonalPoleLight.value
+			: props.poleTonalLight
 	return brandShadeForeground(
 		s.shade,
 		currentShades.value,
 		"tonal",
-		props.flipTonal,
+		flipOverride,
 		null,
 		oppositeShades.value,
-		props.poleTonalDark,
-		props.poleTonalLight,
+		poleDark,
+		poleLight,
 	)
 }
 
