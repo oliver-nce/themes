@@ -245,10 +245,12 @@ def _emit_var_block(g, lines, selector=":root", include_custom_css=True):
             role_shades = _get_role_shades(g, f)
             opp_field = OPPOSITE_BRAND_FIELD[f]
             opp_shades = _get_role_shades(g, opp_field) if _role_is_configured(g, opp_field) else []
-            flip_mono = g(f"{f}_fg_flip_mono")
-            flip_tonal = g(f"{f}_fg_flip_tonal")
-            fg_mono = brand_shade_foreground(600, role_shades, "mono", flip_mono, opp_shades)
-            fg_tonal = brand_shade_foreground(600, role_shades, "tonal", flip_tonal, opp_shades)
+            flip_mono_1 = g(f"{f}_fg_flip_mono_1")
+            flip_mono_2 = g(f"{f}_fg_flip_mono_2")
+            flip_tonal_1 = g(f"{f}_fg_flip_tonal_1")
+            flip_tonal_2 = g(f"{f}_fg_flip_tonal_2")
+            fg_mono = brand_shade_foreground(600, role_shades, "mono", flip_mono_1, flip_mono_2, opp_shades)
+            fg_tonal = brand_shade_foreground(600, role_shades, "tonal", flip_tonal_1, flip_tonal_2, opp_shades)
             lines.append(f"\t--nce-{var}-fg: {fg_mono};")
             lines.append(f"\t--nce-{var}-fg-tonal: {fg_tonal};")
         else:
@@ -260,22 +262,24 @@ def _emit_var_block(g, lines, selector=":root", include_custom_css=True):
             continue
         role_shades = _get_role_shades(g, f)
         opp_shades: list[tuple[int, str]] = []
-        flip_mono = flip_tonal = None
+        flip_mono_1 = flip_mono_2 = flip_tonal_1 = flip_tonal_2 = None
         if f in BRAND_COLOR_FIELDS:
             opp_field = OPPOSITE_BRAND_FIELD[f]
             if _role_is_configured(g, opp_field):
                 opp_shades = _get_role_shades(g, opp_field)
-            flip_mono = g(f"{f}_fg_flip_mono")
-            flip_tonal = g(f"{f}_fg_flip_tonal")
+            flip_mono_1 = g(f"{f}_fg_flip_mono_1")
+            flip_mono_2 = g(f"{f}_fg_flip_mono_2")
+            flip_tonal_1 = g(f"{f}_fg_flip_tonal_1")
+            flip_tonal_2 = g(f"{f}_fg_flip_tonal_2")
         for shade_num, shade_hex in role_shades:
             lines.append(f"\t--nce-{var}-{shade_num}: {shade_hex};")
             if shade_num in CURATED_SHADES:
                 if f in BRAND_COLOR_FIELDS:
                     fg_mono = brand_shade_foreground(
-                        shade_num, role_shades, "mono", flip_mono, opp_shades,
+                        shade_num, role_shades, "mono", flip_mono_1, flip_mono_2, opp_shades,
                     )
                     fg_tonal = brand_shade_foreground(
-                        shade_num, role_shades, "tonal", flip_tonal, opp_shades,
+                        shade_num, role_shades, "tonal", flip_tonal_1, flip_tonal_2, opp_shades,
                     )
                     lines.append(f"\t--nce-{var}-{shade_num}-fg: {fg_mono};")
                     lines.append(f"\t--nce-{var}-{shade_num}-fg-tonal: {fg_tonal};")
