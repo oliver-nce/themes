@@ -25,6 +25,26 @@ export const DESK_VAR_MAP: Record<string, string> = {
 	g_header_background: "--g-header-background",
 	g_row_color: "--g-row-color",
 	g_today_highlight: "--g-today-highlight",
+	// Typography — font_size and font_weight_body are direct values
+	font_size: "--font-size-base",
+	font_weight_body: "--nce-font-weight",
+	// font_family is handled separately (needs CSS stack conversion)
+}
+
+const DESK_FONT_GENERIC: Record<string, string> = {
+	Inter: "sans-serif",
+	"Source Sans 3": "sans-serif",
+	"Public Sans": "sans-serif",
+	"Open Sans": "sans-serif",
+	Roboto: "sans-serif",
+	Nunito: "sans-serif",
+	"Source Serif 4": "serif",
+	"JetBrains Mono": "monospace",
+}
+
+export function deskFontStack(name: string): string {
+	if (!name || name === "System Default") return ""
+	return `'${name}', ${DESK_FONT_GENERIC[name] || "sans-serif"}`
 }
 
 const themeLoaded = ref(false)
@@ -37,6 +57,10 @@ export function deskPayloadToCssVars(payload: Record<string, unknown>): Record<s
 			vars[cssVar] = String(value)
 		}
 	}
+	// Font family requires CSS stack conversion
+	const fontName = String(payload.font_family || "").trim()
+	const stack = deskFontStack(fontName)
+	if (stack) vars["--font-stack"] = stack
 	return vars
 }
 

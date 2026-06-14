@@ -230,7 +230,63 @@
 				</EditorSection>
 			</div>
 
-			<div v-show="activeTab === 'gantt'" class="editor-tab">
+			<div v-show="activeTab === 'typography'" class="editor-tab">
+			<EditorSection title="Fonts">
+				<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+					<FontSelectField
+						label="Body Font"
+						:options="fontOptions"
+						v-model="form.font_family"
+					/>
+				</div>
+				<div class="mt-4 rounded-lg border border-gray-200 p-5 bg-white">
+					<p
+						class="text-base text-gray-600"
+						:style="{
+							fontFamily: fontCSS(form.font_family),
+							fontSize: form.font_size || '13px',
+							fontWeight: form.font_weight_body || '400',
+						}"
+					>
+						Pack my box with five dozen liquor jugs. How vexingly quick daft zebras jump!
+						The five boxing wizards jump quickly.
+					</p>
+				</div>
+			</EditorSection>
+
+			<EditorSection title="Size &amp; Weight">
+				<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+					<SelectField
+						label="Base Font Size"
+						:options="sizeOptions"
+						v-model="form.font_size"
+					/>
+					<div>
+						<label class="block text-sm font-medium text-gray-700 mb-1.5">
+							Body Weight
+							<span class="font-normal text-gray-500">({{ bodyWeightDisplay }})</span>
+						</label>
+						<input
+							type="range"
+							class="w-full accent-blue-600"
+							min="100"
+							max="900"
+							step="1"
+							:value="bodyWeightNumber"
+							@input="onBodyWeightInput"
+						/>
+						<div class="flex justify-between text-xs text-gray-400 mt-1 px-0.5">
+							<span>100</span>
+							<span>400</span>
+							<span>700</span>
+							<span>900</span>
+						</div>
+					</div>
+				</div>
+			</EditorSection>
+		</div>
+
+		<div v-show="activeTab === 'gantt'" class="editor-tab">
 				<EditorSection title="Gantt chart">
 					<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
 						<SwatchPicker
@@ -350,9 +406,11 @@
 import { ref, reactive, watch, computed, onUnmounted, onMounted } from "vue"
 import { useRoute } from "vue-router"
 import EditorSection from "@/components/EditorSection.vue"
+import FontSelectField from "@/components/FontSelectField.vue"
 import PasswordField from "@/components/PasswordField.vue"
+import SelectField from "@/components/SelectField.vue"
 import SwatchPicker from "@/components/SwatchPicker.vue"
-import { applyDeskThemeVars, deskPayloadToCssVars } from "@/composables/useDeskTheme"
+import { applyDeskThemeVars, deskPayloadToCssVars, deskFontStack } from "@/composables/useDeskTheme"
 import { useThemeEditor, type ThemeAvailabilityStatus } from "@/composables/useThemeEditor"
 
 const ALL_FIELDS = [
@@ -380,6 +438,10 @@ const ALL_FIELDS = [
 	"g_header_background",
 	"g_row_color",
 	"g_today_highlight",
+	// Typography
+	"font_family",
+	"font_size",
+	"font_weight_body",
 ] as const
 
 const PAYLOAD_FIELDS = ALL_FIELDS.filter((k) => k !== "theme_name")
@@ -410,6 +472,10 @@ const DEFAULTS: Record<FormKey, string> = {
 	g_header_background: "#f3f3f3",
 	g_row_color: "#f8f8f8",
 	g_today_highlight: "#edf6fd",
+	// Typography
+	font_family: "System Default",
+	font_size: "13px",
+	font_weight_body: "400",
 }
 
 const COLOR_FIELDS = new Set(
@@ -423,10 +489,43 @@ const activeTab = ref("colors")
 const tabs = [
 	{ id: "colors", label: "Colours" },
 	{ id: "shape", label: "Shape" },
+	{ id: "typography", label: "Typography" },
 	{ id: "gantt", label: "Gantt" },
 	{ id: "advanced", label: "Advanced" },
 	{ id: "system", label: "System" },
 ]
+
+const FONT_OPTIONS = ["Inter", "Source Sans 3", "Public Sans", "Open Sans", "Roboto", "Nunito", "Source Serif 4", "JetBrains Mono", "System Default"]
+const fontOptions = FONT_OPTIONS
+const sizeOptions = ["12px", "13px", "14px", "15px", "16px", "18px"]
+
+const BODY_WEIGHT_MIN = 100
+const BODY_WEIGHT_MAX = 900
+
+function clampBodyWeight(raw: unknown): number {
+	const n = Number.parseInt(String(raw ?? "400"), 10)
+	if (!Number.isFinite(n)) return 400
+	return Math.min(BODY_WEIGHT_MAX, Math.max(BODY_WEIGHT_MIN, n))
+}
+
+const bodyWeightNumber = computed(() => clampBodyWeight(form.font_weight_body))
+
+const bodyWeightDisplay = computed(() => {
+	const n = bodyWeightNumber.value
+	if (n <= 350) return `${n} — Light`
+	if (n <= 450) return `${n} — Regular`
+	if (n <= 550) return `${n} — Medium`
+	if (n <= 650) return `${n} — Semi-bold`
+	return `${n} — Bold`
+})
+
+function onBodyWeightInput(e: Event) {
+	form.font_weight_body = String((e.target as HTMLInputElement).value)
+}
+
+function fontCSS(name: string): string {
+	return deskFontStack(name) || "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif"
+}
 
 const brandColors = [
 	{ key: "primary_color" as FormKey, label: "Primary" },
