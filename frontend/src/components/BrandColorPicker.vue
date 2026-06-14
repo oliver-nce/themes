@@ -16,16 +16,37 @@
 		</button>
 
 		<template v-if="showShades">
-			<div v-if="currentShades.length" class="color-shade-strip flex gap-px mt-1.5 rounded overflow-hidden">
-				<div
-					v-for="s in currentShades"
-					:key="s.shade"
-					class="flex-1 group relative"
-				>
-					<div class="color-shade-swatch" :style="{ backgroundColor: s.hex }" />
-					<div class="text-center mt-0.5 text-[8px] text-gray-400">{{ s.shade }}</div>
-					<div class="absolute -top-6 left-1/2 -translate-x-1/2 bg-gray-900 text-white text-[10px] px-1.5 py-0.5 rounded opacity-0 group-hover:opacity-100 pointer-events-none whitespace-nowrap transition-opacity z-10">{{ s.hex }}</div>
+			<div v-if="currentShades.length" class="shade-strip-row mt-1.5">
+				<div class="color-shade-strip flex gap-px rounded overflow-hidden">
+					<div
+						v-for="s in currentShades"
+						:key="s.shade"
+						class="flex-1 group relative"
+					>
+						<div
+							class="color-shade-swatch flex items-center justify-center"
+							:style="{ backgroundColor: s.hex }"
+						>
+							<span
+								class="shade-text-sample"
+								:style="{ color: fgColorForShade(s.hex) }"
+							>Text</span>
+						</div>
+						<div class="text-center mt-0.5 text-[8px] text-gray-400">{{ s.shade }}</div>
+						<div class="absolute -top-6 left-1/2 -translate-x-1/2 bg-gray-900 text-white text-[10px] px-1.5 py-0.5 rounded opacity-0 group-hover:opacity-100 pointer-events-none whitespace-nowrap transition-opacity z-10">{{ s.hex }}</div>
+					</div>
 				</div>
+				<fieldset class="fg-mode-picker">
+					<legend class="sr-only">Foreground preview</legend>
+					<label class="fg-mode-option">
+						<input v-model="fgPreviewMode" type="radio" value="mono" />
+						Mono
+					</label>
+					<label class="fg-mode-option">
+						<input v-model="fgPreviewMode" type="radio" value="tonal" />
+						Tonal
+					</label>
+				</fieldset>
 			</div>
 
 			<div v-if="showAdjustSliders" class="adjust-sliders mt-2">
@@ -143,10 +164,13 @@ import {
 	hexToOklch,
 	paramsFromHex,
 	parseHexInput,
+	pickFgMono,
+	pickFgTonal,
 	type OklchColorParams,
 } from "@/utils/color-shades"
 
 export type BrandPaletteMode = "corporate" | "flexible"
+export type FgPreviewMode = "mono" | "tonal"
 
 const props = withDefaults(defineProps<{
 	label: string
@@ -155,12 +179,17 @@ const props = withDefaults(defineProps<{
 	saturation?: number
 	showShades?: boolean
 	paletteMode?: BrandPaletteMode
+	/** Opposite brand colour for cross-brand tonal preview (secondary on primary, primary on secondary). */
+	oppositeBrandColor?: string
 }>(), {
 	gamma: 0,
 	saturation: 100,
 	showShades: false,
 	paletteMode: "flexible",
+	oppositeBrandColor: "",
 })
+
+const fgPreviewMode = ref<FgPreviewMode>("mono")
 
 const emit = defineEmits<{
 	"update:modelValue": [value: string]
@@ -253,6 +282,13 @@ const currentShades = computed(() => {
 const canReset = computed(
 	() => !isCorporate.value && (gamma.value !== 0 || saturation.value !== 100),
 )
+
+function fgColorForShade(shadeHex: string): string {
+	if (fgPreviewMode.value === "mono") return pickFgMono(shadeHex)
+	const opposite = (props.oppositeBrandColor || "").trim()
+	if (opposite) return opposite
+	return pickFgTonal(shadeHex)
+}
 
 const previewHex = computed(() => {
 	if (pinned600Hex.value) return pinned600Hex.value
@@ -439,11 +475,58 @@ function applyHue() {
 </script>
 
 <style scoped>
+.shade-strip-row {
+	display: flex;
+	align-items: flex-start;
+	gap: 1rem;
+}
 .color-shade-strip {
 	width: 75%;
+	flex-shrink: 0;
 }
 .color-shade-swatch {
 	height: 2.5rem;
+}
+.shade-text-sample {
+	font-size: 9px;
+	font-weight: 600;
+	line-height: 1;
+	pointer-events: none;
+	user-select: none;
+}
+.fg-mode-picker {
+	margin: 0;
+	padding: 0;
+	border: none;
+	display: flex;
+	flex-direction: column;
+	gap: 0.35rem;
+	flex-shrink: 0;
+}
+.fg-mode-option {
+	display: flex;
+	align-items: center;
+	gap: 0.35rem;
+	font-size: 11px;
+	font-weight: 500;
+	color: #444;
+	cursor: pointer;
+	white-space: nowrap;
+}
+.fg-mode-option input {
+	margin: 0;
+	cursor: pointer;
+}
+.sr-only {
+	position: absolute;
+	width: 1px;
+	height: 1px;
+	padding: 0;
+	margin: -1px;
+	overflow: hidden;
+	clip: rect(0, 0, 0, 0);
+	white-space: nowrap;
+	border: 0;
 }
 
 .picker-panel {
