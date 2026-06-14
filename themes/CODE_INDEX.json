@@ -112,6 +112,18 @@
             "summary": "nce_theme.css in git must be regenerated after emitter changes or pulls serve stale class names",
             "symptom": "grep -c theme-bg- on served CSS returns 0 → transparent panel fills",
             "fix": "bench execute themes.api.regenerate_theme_css; verify theme-bg- count > 0; commit updated css if tracked"
+        },
+        "cross_brand_tonal_pairing": {
+            "summary": "Primary backgrounds use secondary hex as tonal text; secondary backgrounds use primary hex. Applies to role-level AND all curated shade levels (100–900).",
+            "how_it_works": "css_writer.py shade loop checks f=='primary_color' → tonal=secondary_hex, f=='secondary_color' → tonal=primary_hex, else pick_fg_tonal(shade_hex). ThemeSettingsPage.vue computeCSSVariables() mirrors same logic for live preview. theme-injector.ts mirrors for runtime Active theme injection.",
+            "fallback": "If the opposite brand color is not configured, falls back to pick_fg_tonal(role_hex).",
+            "to_see_in_desk": "After deploying, re-save the active NCE Theme from the Themes editor to regenerate nce_theme.css with new shade tonals. ThemeSwatchPicker will then show secondary-colored text on primary swatches.",
+            "files": [
+                "themes/utils/css_writer.py — shade loop (grep 'Cross-brand tonal')",
+                "frontend/src/pages/ThemeSettingsPage.vue — computeCSSVariables shade loop (grep 'Cross-brand tonal')",
+                "frontend/src/utils/theme-injector.ts — injectCSSVars (grep 'Cross-brand tonal')",
+                "docs/theme-system/05-foreground-pairing.md — design rationale"
+            ]
         }
     },
     "file_anchors": {
@@ -145,7 +157,7 @@
             },
             "utils": {
                 "utils/theme_color_utils.py": "Color math helpers: OKLCH shade generation, neutral warmth, _effective_role_hex, shadow building. Keep in sync with frontend/src/utils/color-shades.ts",
-                "utils/css_writer.py": "Web CSS generation and publish: generate_css(), generate_site_css(), publish_theme(). Emits theme-bg-* classes and theme-border-{thin,normal,strong}. Paired with desk_css_writer.py.",
+                "utils/css_writer.py": "Web CSS generation and publish: generate_css(), generate_site_css(), publish_theme(). Emits theme-bg-* classes and theme-border-{thin,normal,strong}. Cross-brand tonal pairing: primary shades → secondary text, secondary shades → primary text (see concern_lookup.cross_brand_tonal_pairing). Paired with desk_css_writer.py.",
                 "utils/desk_css_writer.py": "Desk CSS generation and publish: generate_desk_css(), publish_desk_theme(), DESK_TOKEN_FIELDS. Paired with css_writer.py.",
                 "utils/bundle_base_theme.py": "bundle_base_theme_to_app() — write base_theme.json + default_theme.py for new installs",
                 "utils/bundle_base_desk_theme.py": "bundle_base_desk_theme_to_app() — write base_desk_theme.json + default_desk_theme.py for new installs",
@@ -226,7 +238,7 @@
                 "vite.widget.config.js": "Vite library build → themes/public/dist/"
             },
             "utilities": {
-                "src/utils/theme-injector.ts": "CSS variable injection utility",
+                "src/utils/theme-injector.ts": "CSS variable injection utility — injectCSSVars() applies all --nce-* vars to :root for Active themes at runtime. Includes cross-brand tonal pairing (primary ↔ secondary) mirroring css_writer.py logic.",
                 "src/utils/color-shades.ts": "OKLCH shade generation (11-stop scale) — keep in sync with theme_color_utils.py",
                 "tailwind.config.js": "Maps Tailwind utilities to --nce-* CSS tokens (editor SPA internal build only)"
             }

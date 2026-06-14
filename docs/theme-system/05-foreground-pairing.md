@@ -7,7 +7,7 @@ The system computes a readable foreground (text) color for every background, aut
 | Mode | What it does | When to use |
 |---|---|---|
 | **Mono** (`theme-text-{role}-fg`) | Picks black or white by OKLCH lightness threshold | Default. Maximum contrast. |
-| **Tonal** (`theme-text-{role}-fg-tonal`) | Same hue, flipped lightness, reduced chroma | When you want a tinted, "designed" look instead of harsh black/white. |
+| **Tonal** (`theme-text-{role}-fg-tonal`) | Cross-brand for primary/secondary (see below); same-hue OKLCH for all other roles | When you want a tinted, "designed" look instead of harsh black/white. |
 | **Fixed** (`text-white` or `text-black` on parent) | One color across all children regardless of bg | Rows of mixed-color buttons that must share text color. |
 
 ## The math
@@ -18,7 +18,7 @@ L, _, _ = oklch(hex)
 return "#0A0A0A" if L > 0.62 else "#FFFFFF"
 ```
 
-**Tonal** (Python `pick_fg_tonal`, TS `pickFgTonal`):
+**Tonal — default (all roles except primary/secondary)** (Python `pick_fg_tonal`, TS `pickFgTonal`):
 ```
 L, C, h = oklch(hex)
 target_L = clamp(1 - L, 0.05, 0.95)
@@ -26,11 +26,23 @@ target_C = C * 0.35      # reduce chroma so it doesn't vibrate
 return oklch_to_hex(target_L, target_C, h)
 ```
 
+**Tonal — cross-brand pairing (primary ↔ secondary)**
+
+For the primary and secondary roles, tonal uses the opposite brand color instead of same-hue OKLCH:
+
+- **Primary** backgrounds (all shades 100–900 + base) → **secondary hex** as tonal text
+- **Secondary** backgrounds (all shades 100–900 + base) → **primary hex** as tonal text
+- All other roles → standard `pick_fg_tonal` above
+
+This creates a deliberate cross-brand relationship: wherever you use `theme-text-primary-fg-tonal`, you see the secondary color as text, and vice versa. The same secondary/primary hex is used across all shade levels — contrast may be reduced on extreme shades (100 / 900) but the visual pairing is consistent.
+
+Falls back to `pick_fg_tonal(role_hex)` if the opposite brand color is not configured.
+
 ## Where it runs
 
-- At **publish time** in `themes/utils/css_writer.py` → writes `--nce-color-{role}-fg` and `--nce-color-{role}-fg-tonal` into `nce_theme.css`.
-- For **every curated shade** too — `--nce-color-{role}-{N}-fg` etc.
-- At **runtime** in `frontend/src/utils/theme-injector.ts` → mirrors the same math live for the SPA preview.
+- At **publish time** in `themes/utils/css_writer.py` → writes `--nce-color-{role}-fg`, `--nce-color-{role}-fg-tonal`, and per-shade variants into `nce_theme.css`. Cross-brand logic is applied for `primary_color` and `secondary_color` at both role-level and all curated shade levels.
+- At **runtime** in `frontend/src/utils/theme-injector.ts` → mirrors the same cross-brand logic live (called when an Active theme loads its CSS vars into `:root`).
+- In **live editor preview** in `frontend/src/pages/ThemeSettingsPage.vue` → `computeCSSVariables()` applies cross-brand tonal to both role-level and per-shade vars; pushed to the preview popup via `postMessage`.
 
 ## Auto-pairing
 
