@@ -160,9 +160,9 @@
 				</button>
 			</nav>
 
-			<!-- AGENT:TAB colours — brand, neutral warmth, status, text, surface pickers -->
+			<!-- AGENT:TAB colours — brand (primary/secondary panels), neutral warmth, status, surface pickers -->
 			<div v-show="activeTab === 'colors'" class="editor-tab">
-				<EditorSection title="Primary and Secondary Colors">
+				<EditorSection title="Primary">
 					<template #actions>
 						<label
 							class="flex items-center gap-2 cursor-pointer text-sm font-medium text-gray-700 shrink-0"
@@ -178,21 +178,31 @@
 							These are from a Brand Palette
 						</label>
 					</template>
-					<div class="grid grid-cols-1 md:grid-cols-2 gap-6 brand-color-panel-grid">
-						<BrandColorPicker
-							v-for="c in brandColors"
-							:key="c.key"
-							:label="c.label"
-							:model-value="form[c.key]"
-							:gamma="form[c.gammaKey]"
-							:saturation="form[c.satKey]"
-							:palette-mode="brandPaletteMode"
-							@update:model-value="form[c.key] = $event"
-							@update:gamma="form[c.gammaKey] = $event"
-							@update:saturation="form[c.satKey] = $event"
-							show-shades
-						/>
-					</div>
+					<BrandColorPicker
+						label="Primary"
+						:model-value="form.primary_color"
+						:gamma="form.primary_color_gamma"
+						:saturation="form.primary_color_saturation"
+						:palette-mode="brandPaletteMode"
+						@update:model-value="form.primary_color = $event"
+						@update:gamma="form.primary_color_gamma = $event"
+						@update:saturation="form.primary_color_saturation = $event"
+						show-shades
+					/>
+				</EditorSection>
+
+				<EditorSection title="Secondary">
+					<BrandColorPicker
+						label="Secondary"
+						:model-value="form.secondary_color"
+						:gamma="form.secondary_color_gamma"
+						:saturation="form.secondary_color_saturation"
+						:palette-mode="brandPaletteMode"
+						@update:model-value="form.secondary_color = $event"
+						@update:gamma="form.secondary_color_gamma = $event"
+						@update:saturation="form.secondary_color_saturation = $event"
+						show-shades
+					/>
 				</EditorSection>
 
 				<EditorSection title="Neutral" hint="Greyscale for structural surfaces, dividers, and body content that should not carry brand meaning.">
@@ -238,25 +248,6 @@
 					</div>
 				</EditorSection>
 
-				<EditorSection title="Text Colours">
-					<div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-						<SwatchPicker
-							v-for="c in textColors"
-							:key="c.key"
-							:label="c.label"
-							:model-value="form[c.key]"
-							:default-value="DEFAULTS[c.key]"
-							@update:model-value="form[c.key] = $event"
-							:primary-color="form.primary_color"
-							:secondary-color="form.secondary_color"
-							:primary-gamma="primaryShadeAdjust.gamma"
-							:primary-saturation="primaryShadeAdjust.saturation"
-							:secondary-gamma="secondaryShadeAdjust.gamma"
-							:secondary-saturation="secondaryShadeAdjust.saturation"
-						/>
-					</div>
-				</EditorSection>
-
 				<EditorSection title="Surfaces">
 					<div class="grid grid-cols-1 md:grid-cols-3 gap-6">
 						<SwatchPicker
@@ -277,7 +268,7 @@
 				</EditorSection>
 			</div>
 
-			<!-- AGENT:TAB typography — fonts, sizes, line height, body weight -->
+			<!-- AGENT:TAB typography — fonts, text colours, sizes, line height, body weight -->
 			<div v-show="activeTab === 'typography'" class="editor-tab">
 				<EditorSection title="Fonts">
 					<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -312,6 +303,25 @@
 							Pack my box with five dozen liquor jugs. How vexingly quick
 							daft zebras jump! The five boxing wizards jump quickly.
 						</p>
+					</div>
+				</EditorSection>
+
+				<EditorSection title="Text Colours">
+					<div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+						<SwatchPicker
+							v-for="c in textColors"
+							:key="c.key"
+							:label="c.label"
+							:model-value="form[c.key]"
+							:default-value="DEFAULTS[c.key]"
+							@update:model-value="form[c.key] = $event"
+							:primary-color="form.primary_color"
+							:secondary-color="form.secondary_color"
+							:primary-gamma="primaryShadeAdjust.gamma"
+							:primary-saturation="primaryShadeAdjust.saturation"
+							:secondary-gamma="secondaryShadeAdjust.gamma"
+							:secondary-saturation="secondaryShadeAdjust.saturation"
+						/>
 					</div>
 				</EditorSection>
 
@@ -1062,22 +1072,7 @@ function onBrandPaletteModeChange(event: Event) {
 	}
 }
 
-// ─── AGENT:colour-fields ─── brandColors, statusColors, textColors, surfaceColors (Colours tab)
-
-const brandColors = [
-	{
-		key: "primary_color",
-		gammaKey: "primary_color_gamma",
-		satKey: "primary_color_saturation",
-		label: "Primary",
-	},
-	{
-		key: "secondary_color",
-		gammaKey: "secondary_color_gamma",
-		satKey: "secondary_color_saturation",
-		label: "Secondary",
-	},
-]
+// ─── AGENT:colour-fields ─── statusColors, textColors (typography tab), surfaceColors (Colours tab)
 
 const statusColors = [
 	{ key: "accent_color", label: "Accent" },
