@@ -120,6 +120,19 @@ def pick_fg_tonal(hex_color: str) -> str:
 	return _oklch_to_hex(target_L, target_C, h)
 
 
+def pick_fg_tonal_cross_brand(bg_hex: str, brand_hex: str) -> str:
+	"""Cross-brand tonal: opposite brand hue/chroma, lightness flipped per background shade."""
+	if not bg_hex or len(bg_hex) < 7:
+		return pick_fg_tonal(brand_hex or bg_hex)
+	if not brand_hex or len(brand_hex) < 7:
+		return pick_fg_tonal(bg_hex)
+	bg_L, _, _ = _hex_to_oklch(bg_hex)
+	_, C, h = _hex_to_oklch(brand_hex)
+	target_L = max(0.05, min(0.95, 1.0 - bg_L))
+	target_C = C * 0.35
+	return _oklch_to_hex(target_L, target_C, h)
+
+
 def _max_chroma_in_gamut(L, h, upper):
 	"""Largest chroma at (L, h) inside sRGB. Matches frontend color-shades.ts."""
 	h_rad = math.radians(h)

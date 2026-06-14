@@ -1,6 +1,7 @@
 import {
 	pickFgMono,
 	pickFgTonal,
+	pickFgTonalCrossBrand,
 	generateShades,
 	generateNeutralShades,
 	neutral600Hex,
@@ -76,12 +77,12 @@ export function injectCSSVars(settings: Record<string, any>) {
 			root.style.setProperty(`--nce-${v}`, roleHex)
 		}
 		root.style.setProperty(`--nce-${v}-fg`, pickFgMono(roleHex))
-		// Cross-brand tonal: primary bg → secondary text, secondary bg → primary text
+		// Cross-brand tonal: opposite brand hue/chroma, lightness flipped per shade.
 		let tonalHex: string
 		if (role === "primary_color" && settings.secondary_color) {
-			tonalHex = String(settings.secondary_color)
+			tonalHex = pickFgTonalCrossBrand(roleHex, String(settings.secondary_color))
 		} else if (role === "secondary_color" && settings.primary_color) {
-			tonalHex = String(settings.primary_color)
+			tonalHex = pickFgTonalCrossBrand(roleHex, String(settings.primary_color))
 		} else {
 			tonalHex = pickFgTonal(roleHex)
 		}
@@ -92,7 +93,15 @@ export function injectCSSVars(settings: Record<string, any>) {
 				continue
 			root.style.setProperty(`--nce-${v}-${s.shade}`, s.hex)
 			root.style.setProperty(`--nce-${v}-${s.shade}-fg`, pickFgMono(s.hex))
-			root.style.setProperty(`--nce-${v}-${s.shade}-fg-tonal`, pickFgTonal(s.hex))
+			let shadeTonal: string
+			if (role === "primary_color" && settings.secondary_color) {
+				shadeTonal = pickFgTonalCrossBrand(s.hex, String(settings.secondary_color))
+			} else if (role === "secondary_color" && settings.primary_color) {
+				shadeTonal = pickFgTonalCrossBrand(s.hex, String(settings.primary_color))
+			} else {
+				shadeTonal = pickFgTonal(s.hex)
+			}
+			root.style.setProperty(`--nce-${v}-${s.shade}-fg-tonal`, shadeTonal)
 		}
 	}
 	const neutralShades = settings.neutral_color_shades as Record<string, string> | undefined

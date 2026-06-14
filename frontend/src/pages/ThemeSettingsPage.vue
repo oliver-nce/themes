@@ -744,7 +744,7 @@
 import { ref, reactive, watch, computed, onUnmounted, onMounted, nextTick } from "vue"
 import { useRoute } from "vue-router"
 import { useThemeEditor, type ThemeAvailabilityStatus } from "@/composables/useThemeEditor"
-import { generateShades, generateNeutralShades, neutral600Hex, effectiveRoleHex, pickFgMono, pickFgTonal, resolveNeutralIntoPayload, isDark, type ColorShade } from "@/utils/color-shades"
+import { generateShades, generateNeutralShades, neutral600Hex, effectiveRoleHex, pickFgMono, pickFgTonal, pickFgTonalCrossBrand, resolveNeutralIntoPayload, isDark, type ColorShade } from "@/utils/color-shades"
 import { STATUS_COLOR_DEFAULTS, STATUS_COLOR_KEYS } from "@/composables/useThemeDefaults"
 import EditorSection from "@/components/EditorSection.vue"
 import BrandColorPicker, { type BrandPaletteMode } from "@/components/BrandColorPicker.vue"
@@ -900,11 +900,15 @@ function computeCSSVariables(): Record<string, string> {
 				? effectiveRoleHex(hex, gamma, saturation)
 				: hex
 		vars[`--nce-${varPrefix}-fg`] = pickFgMono(roleHex)
-		// Cross-brand tonal: primary bg → secondary text, secondary bg → primary text
+		// Cross-brand tonal: opposite brand hue/chroma, lightness flipped per shade.
 		if (field === "primary_color") {
-			vars[`--nce-${varPrefix}-fg-tonal`] = form.secondary_color || pickFgTonal(roleHex)
+			vars[`--nce-${varPrefix}-fg-tonal`] = form.secondary_color
+				? pickFgTonalCrossBrand(roleHex, form.secondary_color)
+				: pickFgTonal(roleHex)
 		} else if (field === "secondary_color") {
-			vars[`--nce-${varPrefix}-fg-tonal`] = form.primary_color || pickFgTonal(roleHex)
+			vars[`--nce-${varPrefix}-fg-tonal`] = form.primary_color
+				? pickFgTonalCrossBrand(roleHex, form.primary_color)
+				: pickFgTonal(roleHex)
 		} else {
 			vars[`--nce-${varPrefix}-fg-tonal`] = pickFgTonal(roleHex)
 		}
@@ -914,11 +918,17 @@ function computeCSSVariables(): Record<string, string> {
 			vars[`--${varPrefix}-${s.shade}`] = s.hex
 			if (CURATED_SHADES.includes(s.shade as (typeof CURATED_SHADES)[number])) {
 				vars[`--nce-${varPrefix}-${s.shade}-fg`] = pickFgMono(s.hex)
-				// Cross-brand tonal: primary shades → secondary text, secondary shades → primary text.
+				// Cross-brand tonal: per-shade lightness, opposite brand hue/chroma.
 				if (field === "primary_color" && form.secondary_color) {
-					vars[`--nce-${varPrefix}-${s.shade}-fg-tonal`] = form.secondary_color
+					vars[`--nce-${varPrefix}-${s.shade}-fg-tonal`] = pickFgTonalCrossBrand(
+						s.hex,
+						form.secondary_color,
+					)
 				} else if (field === "secondary_color" && form.primary_color) {
-					vars[`--nce-${varPrefix}-${s.shade}-fg-tonal`] = form.primary_color
+					vars[`--nce-${varPrefix}-${s.shade}-fg-tonal`] = pickFgTonalCrossBrand(
+						s.hex,
+						form.primary_color,
+					)
 				} else {
 					vars[`--nce-${varPrefix}-${s.shade}-fg-tonal`] = pickFgTonal(s.hex)
 				}

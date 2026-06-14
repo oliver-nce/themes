@@ -22,7 +22,7 @@ from themes.utils.css_publish import write_published_css
 from themes.utils.theme_color_utils import (
     _build_shadow, _generate_shades, generate_neutral_shades,
     _effective_role_hex,
-    pick_fg_mono, pick_fg_tonal,
+    pick_fg_mono, pick_fg_tonal, pick_fg_tonal_cross_brand,
 )
 from themes.utils.theme_tokens import (
     BORDER_RADIUS_MAP, BORDER_WIDTH_MAP, SPACING_SCALE_MAP, LINE_HEIGHT_MAP, TRANSITION_MAP,
@@ -240,11 +240,13 @@ def _emit_var_block(g, lines, selector=":root", include_custom_css=True):
         if not fg_hex:
             continue
         lines.append(f"\t--nce-{var}-fg: {pick_fg_mono(fg_hex)};")
-        # Cross-brand tonal pairing: primary bg → secondary text, secondary bg → primary text.
+        # Cross-brand tonal: primary bg → secondary hue, secondary bg → primary hue.
         if f == "primary_color":
-            tonal = _role_base_hex(g, "secondary_color") or pick_fg_tonal(fg_hex)
+            opp = _role_base_hex(g, "secondary_color")
+            tonal = pick_fg_tonal_cross_brand(fg_hex, opp) if opp else pick_fg_tonal(fg_hex)
         elif f == "secondary_color":
-            tonal = _role_base_hex(g, "primary_color") or pick_fg_tonal(fg_hex)
+            opp = _role_base_hex(g, "primary_color")
+            tonal = pick_fg_tonal_cross_brand(fg_hex, opp) if opp else pick_fg_tonal(fg_hex)
         else:
             tonal = pick_fg_tonal(fg_hex)
         lines.append(f"\t--nce-{var}-fg-tonal: {tonal};")
@@ -256,11 +258,13 @@ def _emit_var_block(g, lines, selector=":root", include_custom_css=True):
             lines.append(f"\t--nce-{var}-{shade_num}: {shade_hex};")
             if shade_num in CURATED_SHADES:
                 lines.append(f"\t--nce-{var}-{shade_num}-fg: {pick_fg_mono(shade_hex)};")
-                # Cross-brand tonal: primary shades → secondary text, secondary shades → primary text.
+                # Cross-brand tonal: per-shade lightness, opposite brand hue/chroma.
                 if f == "primary_color":
-                    shade_tonal = _role_base_hex(g, "secondary_color") or pick_fg_tonal(shade_hex)
+                    opp = _role_base_hex(g, "secondary_color")
+                    shade_tonal = pick_fg_tonal_cross_brand(shade_hex, opp) if opp else pick_fg_tonal(shade_hex)
                 elif f == "secondary_color":
-                    shade_tonal = _role_base_hex(g, "primary_color") or pick_fg_tonal(shade_hex)
+                    opp = _role_base_hex(g, "primary_color")
+                    shade_tonal = pick_fg_tonal_cross_brand(shade_hex, opp) if opp else pick_fg_tonal(shade_hex)
                 else:
                     shade_tonal = pick_fg_tonal(shade_hex)
                 lines.append(f"\t--nce-{var}-{shade_num}-fg-tonal: {shade_tonal};")

@@ -166,6 +166,7 @@ import {
 	parseHexInput,
 	pickFgMono,
 	pickFgTonal,
+	pickFgTonalCrossBrand,
 	type OklchColorParams,
 } from "@/utils/color-shades"
 
@@ -286,7 +287,7 @@ const canReset = computed(
 function fgColorForShade(shadeHex: string): string {
 	if (fgPreviewMode.value === "mono") return pickFgMono(shadeHex)
 	const opposite = (props.oppositeBrandColor || "").trim()
-	if (opposite) return opposite
+	if (opposite) return pickFgTonalCrossBrand(shadeHex, opposite)
 	return pickFgTonal(shadeHex)
 }
 

@@ -335,6 +335,17 @@ export function pickFgTonal(hex: string): string {
   return oklchToHex(targetL, targetC, h);
 }
 
+/** Cross-brand tonal: opposite brand hue/chroma, lightness flipped per background shade. */
+export function pickFgTonalCrossBrand(bgHex: string, brandHex: string): string {
+  if (!bgHex || bgHex.length < 7) return pickFgTonal(brandHex || bgHex);
+  if (!brandHex || brandHex.length < 7) return pickFgTonal(bgHex);
+  const { L: bgL } = hexToOklch(bgHex);
+  const { C, h } = hexToOklch(brandHex);
+  const targetL = Math.max(0.05, Math.min(0.95, 1 - bgL));
+  const targetC = C * 0.35;
+  return oklchToHex(targetL, targetC, h);
+}
+
 // ── Neutral (greyscale) shade generation ────────────────────────────────────
 
 export const NEUTRAL_SHADE_TARGETS: Array<{ shade: number; l: number }> = [
