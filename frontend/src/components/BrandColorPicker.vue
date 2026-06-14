@@ -236,6 +236,8 @@
 						<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m2 22 1-1h3l9-9"/><path d="M3 21v-3l9-9"/><path d="m15 6 3.4-3.4a2.1 2.1 0 1 1 3 3L18 9l.4.4a2.1 2.1 0 1 1-3 3l-3.8-3.8a2.1 2.1 0 1 1 3-3l.4.4"/></svg>
 					</button>
 				</div>
+
+				<button class="apply-btn" @click="applyHue">Apply</button>
 			</div>
 		</Teleport>
 	</div>
@@ -700,7 +702,6 @@ function setDialogHue(hue: number) {
 		gamma: 0,
 		saturation: 100,
 	})
-	commitDialogColor()
 }
 
 function selectHueSquare(hue: number) {
@@ -720,30 +721,6 @@ function onDialogHexInput() {
 	dialogHue.value = hexToOklch(parsed).h
 	fineCenter.value = dialogHue.value
 	dialogHex.value = parsed
-	commitDialogColor()
-}
-
-function commitDialogColor() {
-	let hex: string | null = pinned600Hex.value
-	if (!hex) {
-		if (isCorporate.value) {
-			hex = parseHexInput(dialogHex.value)
-		} else {
-			hex = color600FromParams({
-				hue: normalizeHue(dialogHue.value),
-				gamma: 0,
-				saturation: 100,
-			})
-		}
-	}
-	if (!hex) return
-	const upper = hex.toUpperCase()
-	if (upper === (props.modelValue || "").toUpperCase()) return
-	emit("update:modelValue", upper)
-	if (!isCorporate.value) {
-		emit("update:gamma", 0)
-		emit("update:saturation", 100)
-	}
 }
 
 function emitAll(params: OklchColorParams) {
@@ -792,8 +769,25 @@ async function useEyeDropper() {
 		dialogHue.value = hexToOklch(parsed).h
 		fineCenter.value = dialogHue.value
 		dialogHex.value = parsed
-		commitDialogColor()
 	} catch { /* cancelled */ }
+}
+
+function applyHue() {
+	const parsed = parseHexInput(dialogHex.value)
+	const hex =
+		pinned600Hex.value ??
+		parsed ??
+		(isCorporate.value
+			? props.modelValue || "#3B82F6"
+			: color600FromParams({
+					hue: normalizeHue(dialogHue.value),
+					gamma: 0,
+					saturation: 100,
+				}))
+	emit("update:modelValue", hex)
+	emit("update:gamma", 0)
+	emit("update:saturation", 100)
+	open.value = false
 }
 </script>
 
@@ -1144,5 +1138,21 @@ async function useEyeDropper() {
 	font-size: 10px;
 	color: #10b981;
 	white-space: nowrap;
+}
+
+.apply-btn {
+	width: 100%;
+	padding: 7px 0;
+	background: #111;
+	color: white;
+	border: none;
+	border-radius: 6px;
+	font-size: 12px;
+	font-weight: 600;
+	cursor: pointer;
+	transition: background 0.15s;
+}
+.apply-btn:hover {
+	background: #333;
 }
 </style>
