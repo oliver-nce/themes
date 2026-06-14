@@ -54,3 +54,6 @@ themes/public/css/fonts.css
 .cursor/
 Frappe Context
 .rules
+
+# Agent-local code index (Cursor context only — not for GitHub)
+themes/CODE_INDEX.json
