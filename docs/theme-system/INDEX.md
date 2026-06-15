@@ -9,7 +9,8 @@ This folder explains HOW the theme system works. For the catalog of available cl
 | Question | File |
 |---|---|
 | How does the editor change classes' values? Architecture overview. | `01-architecture.md` |
-| How do multi-theme scoped palettes work? `data-nce-theme`? base vs Active? | `01-architecture.md` |
+| How do multi-theme scoped palettes work? `data-nce-theme`? Default vs Active? | `01-architecture.md` |
+| What is the Base Theme vs the Default Theme? (repo seed vs live `:root`) | `01-architecture.md`, `.cursor/rules/themes-glossary.mdc` |
 | What's the naming convention for tokens and classes? | `02-token-naming.md` |
 | What border/line width classes exist? Thin vs normal vs strong? | `02-token-naming.md`, `THEME_CLASS_CONTRACT.json` → `border_and_focus` |
 | How do I style table row dividers or tab underlines? | `07-using-in-vue.md` (directional CSS with width vars) |
@@ -58,7 +59,7 @@ Reusable picker that writes a single `theme-{kind}-{role}-{shade}` class string 
 | "how do themes work in this app" | `01-architecture.md` |
 | "I want to add a brand color" | `08-extending.md` |
 | "how do I give a panel its own colour palette" / "data-nce-theme" | `01-architecture.md` |
-| "what is base theme" / "what is Active vs Inactive" | `01-architecture.md` |
+| "what is Base Theme vs Default theme" / "what is Active vs Inactive" | `01-architecture.md` |
 
 ## Source of Truth
 

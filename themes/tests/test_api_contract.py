@@ -179,11 +179,21 @@ class TestApiContract(unittest.TestCase):
             "is_default": 1,
             "status": "Active",
         }
-        row["is_default_theme"] = bool(row["is_default"]) or row["theme_name"] == "Default"
+        row["is_default_theme"] = bool(row["is_default"])
         row["is_base_theme"] = row["is_default_theme"]
         row["is_active"] = row["is_default_theme"]
         self.assertTrue(row["is_default_theme"])
         self.assertEqual(row["is_active"], row["is_default_theme"])
+
+    def test_web_list_row_renamed_default_not_by_name(self):
+        row = {
+            "name": "Default",
+            "theme_name": "Corporate",
+            "is_default": 1,
+            "status": "Active",
+        }
+        row["is_default_theme"] = bool(row["is_default"])
+        self.assertTrue(row["is_default_theme"])
 
     def test_desk_list_row_active_semantics(self):
         row = {
@@ -192,8 +202,7 @@ class TestApiContract(unittest.TestCase):
             "is_default": 0,
             "status": "Active",
         }
-        default = "Default"
-        row["is_default_theme"] = row["name"] == default
+        row["is_default_theme"] = bool(row["is_default"])
         row["is_active"] = row["status"] == "Active"
         self.assertFalse(row["is_default_theme"])
         self.assertTrue(row["is_active"])

@@ -102,19 +102,29 @@
 							Save as new theme
 						</Button>
 						<Button
-							v-if="showRenameDeleteActions"
+							v-if="canSetAsDefaultTheme"
 							variant="solid"
 							class="theme-btn theme-btn-quiet bg-primary-100 text-primary-100-fg border border-border hover:bg-row-alt"
-							:disabled="!canRenameOrDelete"
+							:loading="setDefaultBusy"
+							:disabled="!canSetAsDefaultTheme"
+							@click="requestSetAsDefaultTheme"
+						>
+							Set as Default theme
+						</Button>
+						<Button
+							v-if="showRenameButton"
+							variant="solid"
+							class="theme-btn theme-btn-quiet bg-primary-100 text-primary-100-fg border border-border hover:bg-row-alt"
+							:disabled="!canRenameTheme"
 							@click="openRenameDialog"
 						>
 							Rename
 						</Button>
 						<Button
-							v-if="showRenameDeleteActions"
+							v-if="showDeleteButton"
 							variant="solid"
 							class="theme-btn theme-btn-quiet bg-primary-100 text-primary-100-fg border border-border hover:bg-row-alt"
-							:disabled="!canRenameOrDelete"
+							:disabled="!canDeleteTheme"
 							@click="openDeleteDialog"
 						>
 							Delete
@@ -775,6 +785,7 @@
 <script setup lang="ts">
 import { ref, reactive, watch, computed, onUnmounted, onMounted, nextTick } from "vue"
 import { useRoute } from "vue-router"
+import { createResource } from "frappe-ui"
 import { useThemeEditor, type ThemeAvailabilityStatus } from "@/composables/useThemeEditor"
 import { generateShades, generateNeutralShades, neutral600Hex, effectiveRoleHex, pickFgMono, pickFgTonal, brandShadeForeground, resolveNeutralIntoPayload, isDark, type ColorShade } from "@/utils/color-shades"
 import { STATUS_COLOR_DEFAULTS, STATUS_COLOR_KEYS } from "@/composables/useThemeDefaults"
@@ -1621,16 +1632,53 @@ const canChangeStatus = computed(
 		!isDirty.value,
 )
 
-const canRenameOrDelete = computed(
+const canRenameTheme = computed(
+	() =>
+		canChangeStatus.value &&
+		(editorMeta.is_default_theme || savedThemeStatus.value === "Inactive"),
+)
+
+const canDeleteTheme = computed(
 	() =>
 		canChangeStatus.value &&
 		savedThemeStatus.value === "Inactive" &&
 		!editorMeta.is_default_theme,
 )
 
-const showRenameDeleteActions = computed(
+const showRenameButton = computed(() => editorLoaded.value)
+
+const showDeleteButton = computed(
 	() => editorLoaded.value && !editorMeta.is_default_theme,
 )
+
+const canSetAsDefaultTheme = computed(
+	() => canChangeStatus.value && !editorMeta.is_default_theme,
+)
+
+const setDefaultBusy = ref(false)
+
+const setDefaultThemeResource = createResource({
+	url: "themes.api.set_base_theme",
+	auto: false,
+})
+
+async function requestSetAsDefaultTheme() {
+	if (!canSetAsDefaultTheme.value || !editingTheme.value) return
+	setDefaultBusy.value = true
+	switchError.value = ""
+	try {
+		const data = await setDefaultThemeResource.submit({ theme: editingTheme.value })
+		siteBaseTheme.value = data?.theme || editingTheme.value
+		editorMeta.is_default_theme = true
+		if (data?.css_hash) editorMeta.css_hash = data.css_hash
+		themesList.reload()
+		await loadTheme(editingTheme.value)
+	} catch (err: any) {
+		switchError.value = err?.message || "Could not set Default theme."
+	} finally {
+		setDefaultBusy.value = false
+	}
+}
 
 const canSaveAsDefaultTheme = computed(
 	() => editorLoaded.value && editorMeta.is_default_theme && !loadingTheme.value,

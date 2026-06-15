@@ -102,7 +102,7 @@ def create_theme(theme_name: str, payload):
 
 @frappe.whitelist()
 def set_base_theme(theme: str):
-    """Set Site Theme Config.base_theme and regenerate nce_theme.css."""
+    """Promote theme to Default (is_default + Site Theme Config.base_theme) and regenerate nce_theme.css."""
     _require_system_manager()
     result = svc.set_base(WEB_FAMILY, theme)
     return {"status": "ok", "theme": theme, **result}
@@ -232,7 +232,7 @@ def create_desk_theme(theme_name: str, payload):
 
 @frappe.whitelist()
 def set_base_desk_theme(theme: str):
-    """Set Site Theme Config.base_desk_theme and regenerate nce_desk_theme.css."""
+    """Promote desk theme to Default (is_default + Site Theme Config.base_desk_theme) and regenerate nce_desk_theme.css."""
     _require_system_manager()
     result = svc.set_base(DESK_FAMILY, theme)
     return {"status": "ok", "theme": theme, **result}

@@ -23,9 +23,9 @@ from themes.utils.theme_family import DESK_FAMILY, ThemeFamily, WEB_FAMILY
 # ─── AGENT:internals ─── Default theme detection, legacy API flags, is_active semantics
 
 
-def _is_default_theme_record(*, is_default: int | bool | None, theme_name: str) -> bool:
-    """True when this row is the product Default theme (site :root fallback). Always exactly one per family."""
-    return bool(is_default) or theme_name == "Default"
+def _is_default_theme_record(*, is_default: int | bool | None) -> bool:
+    """True when this row is the Default theme (site :root fallback). Keyed on is_default only."""
+    return bool(is_default)
 
 
 def _default_theme_name(family: ThemeFamily) -> Optional[str]:
@@ -36,15 +36,19 @@ def _default_theme_name(family: ThemeFamily) -> Optional[str]:
         pluck="name",
         limit=1,
     )
-    if names:
-        return names[0]
-    names = frappe.get_all(
-        family.doctype,
-        filters={"theme_name": "Default"},
-        pluck="name",
-        limit=1,
-    )
     return names[0] if names else None
+
+
+def _promote_to_default(family: ThemeFamily, theme: str) -> None:
+    """Move is_default to theme and sync Site Theme Config pointer. Exactly one Default per family."""
+    if not frappe.db.exists(family.doctype, theme):
+        frappe.throw(_(family.theme_exists_label).format(theme))
+    current = _default_theme_name(family)
+    if current and current != theme:
+        frappe.db.set_value(family.doctype, current, "is_default", 0, update_modified=False)
+    frappe.db.set_value(family.doctype, theme, "is_default", 1, update_modified=False)
+    family.set_base_theme_name(theme)
+    frappe.clear_cache(doctype=family.doctype)
 
 
 def _legacy_editor_flags(
@@ -100,10 +104,7 @@ def get_editor_response(family: ThemeFamily, theme_name: str) -> dict:
     if not frappe.db.exists(family.doctype, theme_name):
         frappe.throw(_(family.theme_exists_label).format(theme_name))
     theme = frappe.get_doc(family.doctype, theme_name)
-    is_default = _is_default_theme_record(
-        is_default=theme.is_default,
-        theme_name=theme.theme_name,
-    )
+    is_default = _is_default_theme_record(is_default=theme.is_default)
     result = {
         "theme": theme.name,
         "theme_name": theme.theme_name,
@@ -173,10 +174,7 @@ def save(
         doc.status = status
     doc.flags.ignore_permissions = True
     doc.save()
-    is_default = _is_default_theme_record(
-        is_default=doc.is_default,
-        theme_name=doc.theme_name,
-    )
+    is_default = _is_default_theme_record(is_default=doc.is_default)
     result = {
         "status": "ok",
         "theme": theme,
@@ -213,10 +211,10 @@ def create(family: ThemeFamily, theme_name: str, payload) -> dict:
 
 
 def set_base(family: ThemeFamily, theme: str) -> dict:
-    if not frappe.db.exists(family.doctype, theme):
-        frappe.throw(_(family.theme_exists_label).format(theme))
-    family.set_base_theme_name(theme)
-    return family.publish(theme)
+    """Promote theme to Default (:root driver) and republish CSS."""
+    _promote_to_default(family, theme)
+    result = family.publish(theme)
+    return {"status": "ok", "theme": theme, "is_default_theme": True, **result}
 
 
 def save_as_base(family: ThemeFamily, theme: str, password: str) -> dict:
@@ -256,10 +254,7 @@ def list_themes(family: ThemeFamily) -> list[dict]:
         order_by="theme_name asc",
     )
     for row in rows:
-        is_default = _is_default_theme_record(
-            is_default=row.get("is_default"),
-            theme_name=row["theme_name"],
-        )
+        is_default = _is_default_theme_record(is_default=row.get("is_default"))
         row["is_default_theme"] = is_default
         row["is_base_theme"] = is_default  # deprecated alias
         row["is_active"] = _is_active(
@@ -270,15 +265,21 @@ def list_themes(family: ThemeFamily) -> list[dict]:
     return rows
 
 
-# ─── AGENT:maintain ─── rename/delete (Inactive non-Default only), regenerate_css
+# ─── AGENT:maintain ─── rename/delete; Default may be renamed, not deleted
 
 
-def _assert_theme_manageable(family: ThemeFamily, theme: str):
-    default_name = _default_theme_name(family)
-    if default_name and theme == default_name:
-        frappe.throw(_("The Default theme cannot be renamed or deleted."))
+def _assert_theme_deletable(family: ThemeFamily, theme: str):
     doc = frappe.get_doc(family.doctype, theme)
+    if bool(doc.is_default):
+        frappe.throw(_("The Default theme cannot be deleted."))
     if doc.status == "Active":
+        frappe.throw(_(family.active_manage_error))
+    return doc
+
+
+def _assert_theme_renameable(family: ThemeFamily, theme: str):
+    doc = frappe.get_doc(family.doctype, theme)
+    if doc.status == "Active" and not bool(doc.is_default):
         frappe.throw(_(family.active_manage_error))
     return doc
 
@@ -287,7 +288,7 @@ def rename(family: ThemeFamily, theme: str, theme_name: str) -> dict:
     theme_name = (theme_name or "").strip()
     if not theme_name:
         frappe.throw(_("Theme name is required"))
-    doc = _assert_theme_manageable(family, theme)
+    doc = _assert_theme_renameable(family, theme)
     if theme_name == doc.theme_name:
         return {"status": "ok", "theme": doc.name, "theme_name": doc.theme_name}
     if frappe.db.exists(family.doctype, {"theme_name": theme_name}):
@@ -308,7 +309,7 @@ def rename(family: ThemeFamily, theme: str, theme_name: str) -> dict:
 
 
 def delete(family: ThemeFamily, theme: str) -> dict:
-    _assert_theme_manageable(family, theme)
+    _assert_theme_deletable(family, theme)
     frappe.delete_doc(family.doctype, theme, ignore_permissions=True)
     return {"status": "ok", "deleted": theme}
 

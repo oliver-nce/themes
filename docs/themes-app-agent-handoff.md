@@ -38,16 +38,18 @@ Supporting references:
 
 ### Phase 6 — Multi-theme scoped palettes (shipped)
 
+> **Terminology:** *Base Theme* = the repo seed/safety net (`themes/data/base_theme.json`, never rendered directly). *Default Theme* = the live `:root` fallback clients render. The `Site Theme Config.base_theme` field is **misnamed** — it holds the Default Theme. See `.cursor/rules/themes-glossary.mdc`.
+
 - **`nce_theme.css` two-layer output:**
-  - `:root { --nce-* }` — site-wide base from `Site Theme Config.base_theme`
+  - `:root { --nce-* }` — site-wide **Default theme** (from the `Site Theme Config.base_theme` field — legacy name)
   - `[data-nce-theme="<slug>"] { --nce-* }` — one block per `status = Active` theme
-  - Utility classes (`theme-bg-primary`, etc.) emitted **once** from base; they read vars in scope
+  - Utility classes (`theme-bg-primary`, etc.) emitted **once** from the Default theme; they read vars in scope
 - **`publish_theme()`** always rebuilds the whole file from DB state (no partial publish)
-- **`base_theme`** replaces `active_theme` on Site Theme Config (migration patch `rename_base_theme_and_status`)
+- **`base_theme`** field replaces `active_theme` on Site Theme Config (migration patch `rename_base_theme_and_status`); semantically it is the **Default theme** pointer
 - **Status model:** `Active` = published as scoped palette; `Inactive` = stored only, no CSS output
-- **New themes** seed `theme_json` from current base theme on insert
-- **Editor:** Rename / Delete for Inactive non-base themes; Set as base on System tab; login gate on SPA (`themes/www/themes.py`)
-- **API:** `set_base_theme`, `save_as_base_theme`, `get_base_theme_editor` (+ legacy aliases for `active_theme` names)
+- **New themes** seed `theme_json` from the current **Default theme** on insert
+- **Editor:** Rename / Delete for Inactive non-Default themes; "Set as base" on System tab (legacy label → makes a theme the Default); login gate on SPA (`themes/www/themes.py`)
+- **API:** `set_base_theme`, `save_as_base_theme`, `get_base_theme_editor` (code names use "base" but operate on the Default theme; + legacy aliases for `active_theme` names)
 - **Frontend:** Vite hashed chunk filenames (cache-safe deploys)
 - **Helpers:** `utils/site_theme_config_helpers.py` reads `base_theme` / legacy `active_theme` during migration window
 
@@ -74,10 +76,10 @@ See `THEME_CLASS_CONTRACT.json` → `border_and_focus` and `themes/CODE_INDEX.js
 ```
 NCE Theme (theme_name, slug, theme_json, status: Active|Inactive)
        ↓
-Site Theme Config (base_theme, css_hash)
+Site Theme Config (base_theme = Default theme pointer, css_hash)
        ↓
 publish_theme() → generate_site_css()
-       → :root { --nce-* }                    (base_theme)
+       → :root { --nce-* }                    (Default theme)
        → [data-nce-theme="slug"] { --nce-* }  (each Active theme)
        → .theme-bg-primary, …                 (utility layer, once)
        → nce_theme.css
@@ -87,9 +89,9 @@ Vue Theme Editor (/themes/theme-settings)
 
 **User workflow:**
 
-1. Create **NCE Theme** → seeds from base theme's `theme_json`
-2. **Theme Editor** → edit tokens → **Save Changes** (republish if Active or base)
-3. **Set as base** → becomes `:root` fallback site-wide
+1. Create **NCE Theme** → seeds from the Default theme's `theme_json`
+2. **Theme Editor** → edit tokens → **Save Changes** (republish if Active or the Default)
+3. **Set as base** (legacy label) → makes this theme the **Default** → `:root` fallback site-wide
 4. **Active** → included in next publish as `[data-nce-theme]` block (multiple Active themes allowed)
 5. **Inactive** → safe to edit/rename/delete without affecting live CSS
 
@@ -145,7 +147,7 @@ Hard-refresh browser after deploy.
 | **Architecture spec** | `docs/theme-system/01-architecture.md` |
 | Editor API | `themes/api.py` |
 | CSS publish | `themes/utils/css_writer.py` (`generate_site_css`, `publish_theme`) |
-| Base theme helpers | `themes/utils/site_theme_config_helpers.py` |
+| Default theme helpers (the `base_theme` field — legacy name) | `themes/utils/site_theme_config_helpers.py` |
 | NCE Theme | `themes/themes/doctype/nce_theme/` |
 | Site config | `themes/themes/doctype/site_theme_config/` |
 | Vue editor | `frontend/src/pages/ThemeSettingsPage.vue` |

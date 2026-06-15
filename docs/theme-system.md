@@ -22,7 +22,7 @@ The separation is intentional:
 - Generated at runtime by `css_writer.publish_theme()`
 - Loaded via `app_include_css` in `themes/hooks.py` (with `?v=<hash>` cache-buster)
 - Contains:
-  - `:root { --nce-* }` — base theme tokens (site-wide fallback)
+  - `:root { --nce-* }` — Default theme tokens (site-wide fallback)
   - `[data-nce-theme="slug"] { --nce-* }` — one block per Active theme (panel-scoped overrides)
   - `.theme-bg-primary`, `.theme-text-muted`, … — utility class layer (derived from base, emitted once)
 - Regenerated whenever a theme is saved/published via the editor
@@ -39,7 +39,7 @@ The separation is intentional:
 Wrap any Vue panel in `data-nce-theme="<slug>"` to switch it to a different palette:
 
 ```html
-<!-- Uses base theme (:root) — default -->
+<!-- Uses Default theme (:root) — site-wide fallback -->
 <div class="theme-bg-surface">…</div>
 
 <!-- Uses "ocean" palette if that theme is Active -->

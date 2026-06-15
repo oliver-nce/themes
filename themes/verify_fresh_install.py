@@ -27,25 +27,41 @@ def _check_site_theme_config_exists():
 
 
 def _check_default_theme():
-    if not frappe.db.exists("NCE Theme", "Default"):
-        raise Exception("NCE Theme 'Default' not found")
-    theme = frappe.get_doc("NCE Theme", "Default")
+    default_name = frappe.get_all(
+        "NCE Theme",
+        filters={"is_default": 1},
+        pluck="name",
+        limit=1,
+    )
+    if not default_name:
+        raise Exception("No NCE Theme marked is_default=1")
+    theme = frappe.get_doc("NCE Theme", default_name[0])
     if not theme.is_default:
-        raise Exception("NCE Theme 'Default' is not marked is_default")
+        raise Exception(f"NCE Theme {default_name[0]!r} is not marked is_default")
     if theme.theme_json is None:
-        raise Exception("NCE Theme 'Default' has no theme_json field")
-    print("PASS: NCE Theme Default exists with theme_json")
+        raise Exception(f"NCE Theme {default_name[0]!r} has no theme_json field")
+    print(f"PASS: Default NCE Theme {default_name[0]!r} exists with theme_json")
 
 
 def _check_base_theme():
     from themes.utils.site_theme_config_helpers import get_site_base_theme_name
 
     base = get_site_base_theme_name()
-    if base != "Default":
+    default_name = frappe.get_all(
+        "NCE Theme",
+        filters={"is_default": 1},
+        pluck="name",
+        limit=1,
+    )
+    if not base:
+        raise Exception("Site Theme Config.base_theme is not set")
+    if not default_name:
+        raise Exception("No NCE Theme marked is_default=1")
+    if base != default_name[0]:
         raise Exception(
-            f"Expected base_theme='Default', got {base!r}"
+            f"base_theme {base!r} does not match is_default theme {default_name[0]!r}"
         )
-    print("PASS: base_theme is Default")
+    print(f"PASS: base_theme matches Default theme ({base!r})")
 
 
 def _check_css_file():

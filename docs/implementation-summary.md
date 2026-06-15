@@ -12,9 +12,9 @@ Themes is a Frappe custom app that stores colour, typography, and layout tokens 
 
 | Layer | Source | Purpose |
 |-------|--------|---------|
-| `:root { --nce-* }` | `Site Theme Config.base_theme` | Site-wide default palette |
+| `:root { --nce-* }` | **Default theme** (`Site Theme Config.base_theme` — legacy field name) | Site-wide default palette |
 | `[data-nce-theme="<slug>"] { --nce-* }` | Each **NCE Theme** with `status = Active` | Per-panel palette override |
-| `.theme-bg-primary`, `.theme-text-muted`, … | Emitted **once** from base payload | Stable class API; reads vars in scope |
+| `.theme-bg-primary`, `.theme-text-muted`, … | Emitted **once** from the Default theme payload | Stable class API; reads vars in scope |
 
 Downstream apps (e.g. NCE Events) opt into a palette by setting `data-nce-theme="<slug>"` on a panel root. Omit the attribute → inherits `:root`. **Per-panel theming is shipped on the Themes side.**
 
@@ -30,13 +30,15 @@ Downstream apps (e.g. NCE Events) opt into a palette by setting `data-nce-theme=
 | `status` | `Active` = published as scoped block; `Inactive` = stored only |
 | `theme_json` | Full token payload (JSON) |
 
-New themes seed `theme_json` from the current **base theme** on insert.
+New themes seed `theme_json` from the current **Default theme** on insert.
+
+> **Base Theme vs Default Theme:** *Base Theme* = the repo seed/safety net (`themes/data/base_theme.json`), never rendered directly. *Default Theme* = the live `:root` fallback clients render. The `base_theme` field below holds the **Default Theme** (legacy name). See `.cursor/rules/themes-glossary.mdc`.
 
 ### Site Theme Config (Single)
 
 | Field | Role |
 |-------|------|
-| `base_theme` | Link → NCE Theme driving `:root` |
+| `base_theme` | **Legacy name** — Link → the NCE Theme that is the **Default theme** (drives `:root`). Rename to `default_theme` pending. |
 | `css_hash` | Cache-buster for `nce_theme.css` |
 
 Legacy field `active_theme` is migrated to `base_theme` via patch `rename_base_theme_and_status`.

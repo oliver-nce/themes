@@ -15,7 +15,7 @@
     Reads EVERY NCE Theme with status="Active" from the DB.
     Reads Site Theme Config.base_theme for the :root block.
     Calls generate_site_css(base_payload, active_themes):
-        → :root { --nce-* }                           (base theme — site-wide fallback)
+        → :root { --nce-* }                           (Default theme — site-wide fallback)
         → [data-nce-theme="ocean"] { --nce-* }        (each Active theme — panel-scoped)
         → .theme-bg-primary, .theme-text-muted, …     (utility class layer, once, from base)
     Writes themes/public/css/nce_theme.css
@@ -62,6 +62,15 @@ Utility classes (`.theme-bg-primary`, etc.) are **not repeated** per palette —
 read from whichever `--nce-*` var is in scope. Wrapping a panel in
 `data-nce-theme="ocean"` overrides the vars; the same utility classes produce the ocean colours.
 
+## Base Theme vs Default Theme (do not confuse)
+
+Two **different** concepts (full definitions: `.cursor/rules/themes-glossary.mdc`):
+
+- **Base Theme** — the known-good theme shipped **in the repo** (`themes/data/base_theme.json`), installed with the app. A **seed** (new installs, "Restore to Base Theme") and a **safety net** (the user can never end up with zero usable themes). **Client-side apps never render the Base Theme directly.** Updated via System tab → "Save as Base Theme".
+- **Default Theme** — the **live** DB theme that drives the site `:root` fallback — what clients actually render when no theme is assigned.
+
+> ⚠️ The field `Site Theme Config.base_theme` is **misnamed**: it holds the **Default Theme**, not the Base Theme. Rename to `default_theme` tracked in `plans/rename-base-theme-field-to-default.md`.
+
 ## NCE Theme — the data model
 
 | Field | Role |
@@ -71,13 +80,13 @@ read from whichever `--nce-*` var is in scope. Wrapping a panel in
 | `slug` | URL-safe identifier used as the `data-nce-theme` attribute value |
 | `status` | `Active` = published as a scoped palette block; `Inactive` = stored, not published |
 | `theme_json` | Full token payload (JSON) |
-| `is_default` | Legacy — prefer `base_theme` on Site Theme Config |
+| `is_default` | Marks the **Default Theme** (live `:root` driver) |
 
 ## Site Theme Config — Single doctype
 
 | Field | Role |
 |---|---|
-| `base_theme` | Link to the NCE Theme that drives `:root` (site-wide fallback) |
+| `base_theme` | **Legacy name** — Link to the NCE Theme that is the **Default Theme** (drives `:root`, the site-wide fallback). Rename to `default_theme` pending. |
 | `css_hash` | SHA1 of last-published CSS, written to `nce_theme.css.hash` for cache-busting |
 
 ## Theme lifecycle
@@ -86,8 +95,8 @@ read from whichever `--nce-*` var is in scope. Wrapping a panel in
 Create → status defaults to Active (scoped palette enabled)
 Edit tokens → Save Changes → tokens persisted, CSS republished
 Rename → editor Rename button; updates theme_name + slug only; name (PK) unchanged
-Delete → editor Delete button; must be Inactive and not the base theme
-Set as base → System tab in editor; becomes :root fallback for entire site
+Delete → editor Delete button; must be Inactive and not the Default theme
+Set as base → System tab in editor (legacy label; makes the theme the Default — :root fallback for entire site)
 Inactive → still stored, dropped from next CSS publish
 Active → included in next publish as [data-nce-theme="slug"] block
 ```
