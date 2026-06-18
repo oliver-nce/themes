@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Oliver Reid. All rights reserved. Copying prohibited — see README.
 """Read/write Site Theme Config.base_theme across rename from active_theme."""
 
 from __future__ import annotations

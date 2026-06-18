@@ -1,3 +1,4 @@
+// Copyright (c) 2026 Oliver Reid. All rights reserved. Copying prohibited — see README.
 /**
  * Parse nce_theme.css from disk to build the System tab class catalog.
  *

@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Oliver Reid. All rights reserved. Copying prohibited — see README.
 """Web theme CSS generation and publish (nce_theme.css → --nce-* tokens).
 
 AGENT NAVIGATION — key emitters:

@@ -1,3 +1,4 @@
+// Copyright (c) 2026 Oliver Reid. All rights reserved. Copying prohibited — see README.
 import { SHADOW_DEFS, type ShadowLayer } from "@/domain/theme-tokens"
 
 /** Normalize hex for rgba() — accepts #RRGGBB or RRGGBB. */

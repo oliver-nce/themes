@@ -1,3 +1,4 @@
+// Copyright (c) 2026 Oliver Reid. All rights reserved. Copying prohibited — see README.
 <script setup lang="ts">
 /**
  * Agent note — Vue save path: pass :set-field and :get-field bound to the host's

@@ -1,3 +1,4 @@
+// Copyright (c) 2026 Oliver Reid. All rights reserved. Copying prohibited — see README.
 <template>
 	<div class="max-w-6xl mx-auto px-6 py-4">
 		<!-- Header -->

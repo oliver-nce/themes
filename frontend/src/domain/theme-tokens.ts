@@ -1,3 +1,4 @@
+// Copyright (c) 2026 Oliver Reid. All rights reserved. Copying prohibited — see README.
 /**
  * GENERATED from themes/utils/theme_tokens.py — do not edit by hand.
  * Regenerate: npm run export:tokens  (or python3 scripts/export_theme_tokens.py)

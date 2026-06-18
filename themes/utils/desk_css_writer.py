@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Oliver Reid. All rights reserved. Copying prohibited — see README.
 """Desk theme CSS generation and publish (nce_desk_theme.css → Frappe Desk vars).
 
 Paired module: themes.utils.css_writer (Web site tokens → --nce-* classes and vars).

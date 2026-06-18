@@ -1,3 +1,4 @@
+// Copyright (c) 2026 Oliver Reid. All rights reserved. Copying prohibited — see README.
 import { reactive } from 'vue'
 
 // Default theme values for NCE Theme.theme_json

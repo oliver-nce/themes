@@ -1,3 +1,4 @@
+// Copyright (c) 2026 Oliver Reid. All rights reserved. Copying prohibited — see README.
 <template>
 	<div>
 		<label class="block text-sm font-medium text-gray-700 mb-2">{{ label }}</label>

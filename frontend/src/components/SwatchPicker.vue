@@ -1,3 +1,4 @@
+// Copyright (c) 2026 Oliver Reid. All rights reserved. Copying prohibited — see README.
 <template>
 	<div class="relative" ref="wrapper">
 		<label class="block text-sm font-medium text-gray-700 mb-1">{{ label }}</label>

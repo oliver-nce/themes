@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Oliver Reid. All rights reserved. Copying prohibited — see README.
 """Whitelisted Frappe API — thin wrappers over theme_service (WEB_FAMILY / DESK_FAMILY).
 
 AGENT NAVIGATION — grep "AGENT:" in this file

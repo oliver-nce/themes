@@ -1,3 +1,4 @@
+// Copyright (c) 2026 Oliver Reid. All rights reserved. Copying prohibited — see README.
 <template>
 	<div class="border rounded-lg overflow-hidden">
 		<div class="px-4 py-3 bg-gray-100 dark:bg-gray-800 border-b">

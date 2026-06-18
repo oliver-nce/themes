@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Oliver Reid. All rights reserved. Copying prohibited — see README.
 """Single source of truth for Web theme token tables and editor field contracts.
 
 Keep in sync with frontend/src/widget/constants.ts and inline maps in

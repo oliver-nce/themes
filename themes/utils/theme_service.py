@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Oliver Reid. All rights reserved. Copying prohibited — see README.
 """Family-parameterized theme CRUD — single implementation for Web and Desk.
 
 AGENT NAVIGATION — grep "AGENT:" in this file

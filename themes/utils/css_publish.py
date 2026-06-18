@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Oliver Reid. All rights reserved. Copying prohibited — see README.
 """Shared CSS publish plumbing for Web and Desk theme writers.
 
 Extracted from css_writer.py / desk_css_writer.py (Stage 2 #3) to remove duplicated

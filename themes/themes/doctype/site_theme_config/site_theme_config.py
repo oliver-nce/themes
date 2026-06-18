@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Oliver Reid. All rights reserved. Copying prohibited — see README.
 import frappe
 from frappe import _
 from frappe.model.document import Document
