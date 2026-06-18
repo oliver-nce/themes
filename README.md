@@ -130,8 +130,6 @@ These are available on every page once a theme has been saved:
 
 Always include a fallback: `var(--nce-color-primary, #126bc4)` — the token is undefined on a fresh install until a theme has been saved.
 
-> **Note on the `--nce-` prefix.** `nce` is the internal namespace used by this specific installation. It is a fixed prefix baked into the app — all theme tokens and the generated `nce_theme.css` use it. When building your own Vue components, you consume the `--nce-*` variables as-is, but your own internal component variables should use your own prefix (e.g. `--my-app-*`) to keep them clearly distinct.
-
 ---
 
 ## Using the theme in Vue components
