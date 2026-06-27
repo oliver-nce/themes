@@ -23,6 +23,25 @@ def get_site_base_theme_name() -> Optional[str]:
     return by_field.get("base_theme") or by_field.get("active_theme")
 
 
+def get_site_default_theme_name() -> Optional[str]:
+    """Return the designated Default NCE Theme (is_default=1).
+
+    Drives :root at publish. Falls back to Site Theme Config.base_theme only when
+    no row is flagged (legacy / mid-migrate sites).
+    """
+    if not frappe.db.exists("DocType", "NCE Theme"):
+        return get_site_base_theme_name()
+    flagged = frappe.get_all(
+        "NCE Theme",
+        filters={"is_default": 1},
+        pluck="name",
+        limit=1,
+    )
+    if flagged:
+        return flagged[0]
+    return get_site_base_theme_name()
+
+
 def set_site_base_theme_name(theme_name: str) -> None:
     """Persist base theme on the Single (new and legacy field rows during migration)."""
     meta = frappe.get_meta("Site Theme Config")

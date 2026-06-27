@@ -588,10 +588,16 @@ def _write_fonts_css() -> str:
 
 
 def publish_theme(theme_name: str) -> dict:
-    """Rebuild nce_theme.css from current DB state (default :root + all Active scoped palettes)."""
-    from themes.utils.site_theme_config_helpers import get_site_base_theme_name
+    """Rebuild nce_theme.css from current DB state (Default theme → :root + Active scoped palettes)."""
+    from themes.utils.site_theme_config_helpers import (
+        get_site_base_theme_name,
+        get_site_default_theme_name,
+        set_site_base_theme_name,
+    )
 
-    default_name = get_site_base_theme_name()
+    default_name = get_site_default_theme_name()
+    if default_name and get_site_base_theme_name() != default_name:
+        set_site_base_theme_name(default_name)
     if default_name and frappe.db.exists("NCE Theme", default_name):
         default_payload = json.loads(
             frappe.db.get_value("NCE Theme", default_name, "theme_json") or "{}"
