@@ -309,6 +309,53 @@
 						/>
 					</div>
 				</EditorSection>
+
+				<EditorSection
+					title="Tables"
+					hint="Row striping and cell dividers. Use class theme-table on a &lt;table&gt; for the full bundle, or individual theme-bg-row / theme-bg-row-alt tokens."
+				>
+					<div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+						<SwatchPicker
+							v-for="c in tableColors"
+							:key="c.key"
+							:label="c.label"
+							:model-value="form[c.key]"
+							:default-value="DEFAULTS[c.key]"
+							@update:model-value="form[c.key] = $event"
+							:primary-color="form.primary_color"
+							:secondary-color="form.secondary_color"
+							:primary-gamma="primaryShadeAdjust.gamma"
+							:primary-saturation="primaryShadeAdjust.saturation"
+							:secondary-gamma="secondaryShadeAdjust.gamma"
+							:secondary-saturation="secondaryShadeAdjust.saturation"
+						/>
+						<SelectField
+							v-for="w in tableWidths"
+							:key="w.key"
+							:label="w.label"
+							:options="borderWidthOptions"
+							v-model="form[w.key]"
+						/>
+					</div>
+					<div class="mt-4 overflow-hidden rounded-lg border border-gray-200">
+						<table class="theme-table nce-editor-table-preview w-full text-sm">
+							<thead>
+								<tr>
+									<th class="px-3 py-2 text-left font-semibold theme-bg-secondary-600 theme-text-secondary-600-fg">ID</th>
+									<th class="px-3 py-2 text-left font-semibold theme-bg-secondary-600 theme-text-secondary-600-fg">Name</th>
+									<th class="px-3 py-2 text-left font-semibold theme-bg-secondary-600 theme-text-secondary-600-fg">Status</th>
+								</tr>
+							</thead>
+							<tbody>
+								<tr v-for="row in tablePreviewRows" :key="row.id">
+									<td class="px-3 py-2">{{ row.id }}</td>
+									<td class="px-3 py-2">{{ row.name }}</td>
+									<td class="px-3 py-2">{{ row.status }}</td>
+								</tr>
+							</tbody>
+						</table>
+					</div>
+				</EditorSection>
 			</div>
 
 			<!-- AGENT:TAB typography — fonts, text colours, sizes, line height, body weight -->
@@ -881,6 +928,24 @@ function roleShadeAdjustments(field: string) {
 	}
 }
 
+function applyTableCssVars(vars: Record<string, string>) {
+	const row = (form.row_color as string) || (form.surface_color as string)
+	if (row) vars["--nce-color-row"] = row
+	if (form.row_alt_color) vars["--nce-color-row-alt"] = form.row_alt_color as string
+	const rowDiv =
+		(form.table_row_divider_color as string) || (form.border_color as string)
+	if (rowDiv) vars["--nce-color-table-row-divider"] = rowDiv
+	const colDiv =
+		(form.table_col_divider_color as string) || (form.border_color as string)
+	if (colDiv) vars["--nce-color-table-col-divider"] = colDiv
+	const rowW =
+		(form.table_row_divider_width as string) || (form.border_width_thin as string) || "0.5px"
+	vars["--nce-border-width-table-row"] = BORDER_WIDTH_MAP[rowW] || rowW
+	const colW =
+		(form.table_col_divider_width as string) || (form.border_width_thin as string) || "0.5px"
+	vars["--nce-border-width-table-col"] = BORDER_WIDTH_MAP[colW] || colW
+}
+
 function computeCSSVariables(): Record<string, string> {
 	const vars: Record<string, string> = {}
 	const corporateBrand = isCorporateBrandPaletteMode(form.brand_palette_mode)
@@ -931,6 +996,7 @@ function computeCSSVariables(): Record<string, string> {
 	if (form.container_max_width) {
 		vars["--nce-container-max-width"] = form.container_max_width === "full" ? "100%" : form.container_max_width
 	}
+	applyTableCssVars(vars)
 	// Shade scales for brand/status colors (live preview)
 	for (const [field, varPrefix] of SHADE_PREVIEW_FIELDS) {
 		const hex = form[field as FormKey]
@@ -1057,7 +1123,12 @@ const ALL_FIELDS = [
 	"background_color",
 	"surface_color",
 	"border_color",
+	"row_color",
 	"row_alt_color",
+	"table_row_divider_color",
+	"table_col_divider_color",
+	"table_row_divider_width",
+	"table_col_divider_width",
 	"font_family",
 	"heading_font_family",
 	"font_size",
@@ -1115,7 +1186,12 @@ const DEFAULTS: Record<FormKey, any> = {
 	background_color: "#FFFFFF",
 	surface_color: "#F9FAFB",
 	border_color: "#E5E7EB",
+	row_color: "#F9FAFB",
 	row_alt_color: "#F3F4F6",
+	table_row_divider_color: "#E5E7EB",
+	table_col_divider_color: "#E5E7EB",
+	table_row_divider_width: "0.5px",
+	table_col_divider_width: "0.5px",
 	font_family: "Inter",
 	heading_font_family: "Inter",
 	font_size: "14px",
@@ -1184,7 +1260,25 @@ const surfaceColors = [
 	{ key: "background_color", label: "Page Background" },
 	{ key: "surface_color", label: "Card / Panel" },
 	{ key: "border_color", label: "Borders" },
-	{ key: "row_alt_color", label: "Alternate Row" },
+]
+
+const tableColors = [
+	{ key: "row_color", label: "Row (main / even)" },
+	{ key: "row_alt_color", label: "Row (alternate / odd)" },
+	{ key: "table_row_divider_color", label: "Horizontal line" },
+	{ key: "table_col_divider_color", label: "Vertical line" },
+]
+
+const tableWidths = [
+	{ key: "table_row_divider_width", label: "Horizontal thickness" },
+	{ key: "table_col_divider_width", label: "Vertical thickness" },
+]
+
+const tablePreviewRows = [
+	{ id: "101", name: "Alpha", status: "Active" },
+	{ id: "102", name: "Beta", status: "Pending" },
+	{ id: "103", name: "Gamma", status: "Active" },
+	{ id: "104", name: "Delta", status: "Closed" },
 ]
 
 // ─── AGENT:select-options ─── fontOptions, radiusOptions, normalizeFontChoice, body weight
@@ -2150,5 +2244,31 @@ onMounted(() => {
 	accent-color: var(--nce-color-primary, #3b82f6);
 	height: 0.375rem;
 	cursor: pointer;
+}
+:deep(.nce-editor-table-preview.theme-table) {
+	border-collapse: collapse;
+	width: 100%;
+}
+:deep(.nce-editor-table-preview.theme-table tbody tr:nth-child(even)) {
+	background-color: var(--nce-color-row, var(--nce-color-surface));
+}
+:deep(.nce-editor-table-preview.theme-table tbody tr:nth-child(odd)) {
+	background-color: var(--nce-color-row-alt, #f3f4f6);
+}
+:deep(.nce-editor-table-preview.theme-table td) {
+	border-bottom: var(--nce-border-width-table-row, 0.5px) solid
+		var(--nce-color-table-row-divider, var(--nce-color-border));
+	border-right: var(--nce-border-width-table-col, 0.5px) solid
+		var(--nce-color-table-col-divider, var(--nce-color-border));
+}
+:deep(.nce-editor-table-preview.theme-table td:last-child) {
+	border-right: none;
+}
+:deep(.nce-editor-table-preview.theme-table th) {
+	border-right: var(--nce-border-width-table-col, 0.5px) solid
+		var(--nce-color-table-col-divider, var(--nce-color-border));
+}
+:deep(.nce-editor-table-preview.theme-table th:last-child) {
+	border-right: none;
 }
 </style>

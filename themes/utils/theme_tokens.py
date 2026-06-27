@@ -137,7 +137,28 @@ COLOR_FIELDS = {
 	"background_color": "color-bg",
 	"surface_color": "color-surface",
 	"border_color": "color-border",
+	"row_color": "color-row",
 	"row_alt_color": "color-row-alt",
+	"table_row_divider_color": "color-table-row-divider",
+	"table_col_divider_color": "color-table-col-divider",
+}
+
+# theme_json width keys → --nce-* suffix (values map through BORDER_WIDTH_MAP at publish)
+TABLE_WIDTH_FIELDS = {
+	"table_row_divider_width": "border-width-table-row",
+	"table_col_divider_width": "border-width-table-col",
+}
+
+# When a table colour field is empty at publish, inherit from this sibling field.
+TABLE_COLOR_FALLBACKS = {
+	"row_color": "surface_color",
+	"table_row_divider_color": "border_color",
+	"table_col_divider_color": "border_color",
+}
+
+TABLE_WIDTH_FALLBACKS = {
+	"table_row_divider_width": "border_width_thin",
+	"table_col_divider_width": "border_width_thin",
 }
 
 SHADE_SCALE_FIELDS = {
@@ -161,6 +182,8 @@ MIGRATED_FIELDS = list(COLOR_FIELDS.keys()) + [
 	"border_width_thin",
 	"border_width",
 	"border_width_strong",
+	"table_row_divider_width",
+	"table_col_divider_width",
 	"spacing_scale",
 	"shadow",
 	"shadow_color",
@@ -223,6 +246,9 @@ def export_token_contract() -> dict:
 		"defaultTonalPoleLight": 200,
 		"curatedShades": list(CURATED_SHADES),
 		"colorFields": COLOR_FIELDS,
+		"tableWidthFields": TABLE_WIDTH_FIELDS,
+		"tableColorFallbacks": TABLE_COLOR_FALLBACKS,
+		"tableWidthFallbacks": TABLE_WIDTH_FALLBACKS,
 		"shadeScaleFields": SHADE_SCALE_FIELDS,
 		"fgRoles": list(FG_ROLES),
 		"fgShadeRoles": fg_shade_roles,

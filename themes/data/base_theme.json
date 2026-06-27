@@ -35,7 +35,12 @@
     "950": "#000000"
   },
   "primary_color": "#3B82F6",
+  "row_color": "#F9FAFB",
   "row_alt_color": "#F3F4F6",
+  "table_row_divider_color": "#E5E7EB",
+  "table_col_divider_color": "#E5E7EB",
+  "table_row_divider_width": "0.5px",
+  "table_col_divider_width": "0.5px",
   "secondary_color": "#10B981",
   "shadow": "md",
   "shadow_color": "#000000",

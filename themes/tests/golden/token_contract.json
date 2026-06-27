@@ -13,6 +13,16 @@
     "2px": "2px",
     "3px": "3px"
   },
+  "brandFgFlipFields": [
+    "primary_color_fg_flip_mono",
+    "primary_color_fg_flip_tonal",
+    "primary_color_fg_pole_tonal_dark",
+    "primary_color_fg_pole_tonal_light",
+    "secondary_color_fg_flip_mono",
+    "secondary_color_fg_flip_tonal",
+    "secondary_color_fg_pole_tonal_dark",
+    "secondary_color_fg_pole_tonal_light"
+  ],
   "colorFields": {
     "accent_color": "color-accent",
     "background_color": "color-bg",
@@ -26,9 +36,12 @@
     "neutral_color": "color-neutral",
     "primary_color": "color-primary",
     "row_alt_color": "color-row-alt",
+    "row_color": "color-row",
     "secondary_color": "color-secondary",
     "success_color": "color-success",
     "surface_color": "color-surface",
+    "table_col_divider_color": "color-table-col-divider",
+    "table_row_divider_color": "color-table-row-divider",
     "text_color": "color-text",
     "warning_color": "color-warning"
   },
@@ -45,9 +58,12 @@
     "neutral_color": "--nce-color-neutral",
     "primary_color": "--nce-color-primary",
     "row_alt_color": "--nce-color-row-alt",
+    "row_color": "--nce-color-row",
     "secondary_color": "--nce-color-secondary",
     "success_color": "--nce-color-success",
     "surface_color": "--nce-color-surface",
+    "table_col_divider_color": "--nce-color-table-col-divider",
+    "table_row_divider_color": "--nce-color-table-row-divider",
     "text_color": "--nce-color-text",
     "warning_color": "--nce-color-warning"
   },
@@ -64,6 +80,8 @@
     900,
     950
   ],
+  "defaultTonalPoleDark": 900,
+  "defaultTonalPoleLight": 200,
   "fgRoles": [
     "primary_color",
     "secondary_color",
@@ -292,6 +310,19 @@
     "relaxed": "1.5rem",
     "tight": "0.75rem"
   },
+  "tableColorFallbacks": {
+    "row_color": "surface_color",
+    "table_col_divider_color": "border_color",
+    "table_row_divider_color": "border_color"
+  },
+  "tableWidthFallbacks": {
+    "table_col_divider_width": "border_width_thin",
+    "table_row_divider_width": "border_width_thin"
+  },
+  "tableWidthFields": {
+    "table_col_divider_width": "border-width-table-col",
+    "table_row_divider_width": "border-width-table-row"
+  },
   "tokenFields": [
     "primary_color",
     "secondary_color",
@@ -309,7 +340,10 @@
     "background_color",
     "surface_color",
     "border_color",
+    "row_color",
     "row_alt_color",
+    "table_row_divider_color",
+    "table_col_divider_color",
     "font_family",
     "heading_font_family",
     "font_size",
@@ -319,9 +353,13 @@
     "border_width_thin",
     "border_width",
     "border_width_strong",
+    "table_row_divider_width",
+    "table_col_divider_width",
     "spacing_scale",
     "shadow",
     "shadow_color",
+    "shadow_opacity",
+    "shadow_direction",
     "transition_speed",
     "sidebar_width",
     "container_max_width",
@@ -334,7 +372,15 @@
     "secondary_color_saturation",
     "neutral_color_warmth",
     "neutral_color_shades",
-    "brand_palette_mode"
+    "brand_palette_mode",
+    "primary_color_fg_flip_mono",
+    "primary_color_fg_flip_tonal",
+    "primary_color_fg_pole_tonal_dark",
+    "primary_color_fg_pole_tonal_light",
+    "secondary_color_fg_flip_mono",
+    "secondary_color_fg_flip_tonal",
+    "secondary_color_fg_pole_tonal_dark",
+    "secondary_color_fg_pole_tonal_light"
   ],
   "transitionMap": {
     "fast": "150ms",

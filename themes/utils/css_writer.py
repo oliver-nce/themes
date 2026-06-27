@@ -32,6 +32,7 @@ from themes.utils.theme_tokens import (
     FONT_REGISTRY, FONT_SUBSETS, FONT_BASE_URL, RETIRED_FONT_ALIASES,
     CURATED_SHADES, FG_ROLES, COLOR_FIELDS, SHADE_SCALE_FIELDS,
     GAMMA_SAT_ROLE_FIELDS, MIGRATED_FIELDS, TOKEN_FIELDS,
+    TABLE_WIDTH_FIELDS, TABLE_COLOR_FALLBACKS, TABLE_WIDTH_FALLBACKS,
 )
 
 # Re-export token contract symbols for backward compatibility (api.py, patches, tests).
@@ -233,6 +234,26 @@ def _fg_flip_tonal(g, field):
     return None
 
 
+def _resolve_flat_color(g, field):
+    """Scalar colour token with optional TABLE_COLOR_FALLBACKS inherit."""
+    v = g(field)
+    if not v:
+        fallback = TABLE_COLOR_FALLBACKS.get(field)
+        if fallback:
+            v = g(fallback)
+    return v
+
+
+def _resolve_table_width(g, field):
+    raw = g(field) or g(TABLE_WIDTH_FALLBACKS.get(field, "")) or "0.5px"
+    return BORDER_WIDTH_MAP.get(raw, raw)
+
+
+def _emit_table_width_vars(g, lines):
+    lines.append(f"\t--nce-border-width-table-row: {_resolve_table_width(g, 'table_row_divider_width')};")
+    lines.append(f"\t--nce-border-width-table-col: {_resolve_table_width(g, 'table_col_divider_width')};")
+
+
 def _emit_var_block(g, lines, selector=":root", include_custom_css=True):
     """Emit a `selector { --nce-* }` variable block and optional custom_css.
 
@@ -245,7 +266,7 @@ def _emit_var_block(g, lines, selector=":root", include_custom_css=True):
         if f in SHADE_SCALE_FIELDS:
             v = _role_base_hex(g, f)
         else:
-            v = g(f)
+            v = _resolve_flat_color(g, f) if f in TABLE_COLOR_FALLBACKS else g(f)
             if not v:
                 continue
             if f in GAMMA_SAT_ROLE_FIELDS and _brand_palette_mode(g) == "flexible":
@@ -317,6 +338,7 @@ def _emit_var_block(g, lines, selector=":root", include_custom_css=True):
     lines.append(f"\t--nce-border-width-thin: {BORDER_WIDTH_MAP.get(g('border_width_thin') or '0.5px', '0.5px')};")
     lines.append(f"\t--nce-border-width: {BORDER_WIDTH_MAP.get(g('border_width') or '1px', '1px')};")
     lines.append(f"\t--nce-border-width-strong: {BORDER_WIDTH_MAP.get(g('border_width_strong') or '2px', '2px')};")
+    _emit_table_width_vars(g, lines)
     lines.append(f"\t--nce-spacing-base: {SPACING_SCALE_MAP.get(g('spacing_scale') or 'normal', '1rem')};")
     sc = g("shadow_color") or "#000000"
     lines.append(f"\t--nce-shadow-color: {sc};")
@@ -411,6 +433,10 @@ def _emit_neutral_classes(g, lines):
         _emit_prefixed_rule(
             lines, "theme-bg-card", "bg-card", "background-color: var(--nce-color-surface);"
         )
+    if _resolve_flat_color(g, "row_color"):
+        _emit_prefixed_rule(
+            lines, "theme-bg-row", "bg-row", "background-color: var(--nce-color-row);"
+        )
     if g("row_alt_color"):
         _emit_prefixed_rule(
             lines,
@@ -466,6 +492,25 @@ def _emit_neutral_classes(g, lines):
             "border-input-focus",
             "border-color: var(--nce-color-focus);",
         )
+
+
+def _emit_table_classes(lines):
+    """Bundled table chrome — zebra rows + cell dividers from table tokens."""
+    lines.append("/* ── Table bundle (theme-table) ── */")
+    lines.append(".theme-table { border-collapse: collapse; }")
+    lines.append(".theme-table tbody tr:nth-child(even) { background-color: var(--nce-color-row); }")
+    lines.append(".theme-table tbody tr:nth-child(odd) { background-color: var(--nce-color-row-alt); }")
+    lines.append(
+        ".theme-table td {"
+        " border-bottom: var(--nce-border-width-table-row) solid var(--nce-color-table-row-divider);"
+        " border-right: var(--nce-border-width-table-col) solid var(--nce-color-table-col-divider); }"
+    )
+    lines.append(".theme-table td:last-child { border-right: none; }")
+    lines.append(
+        ".theme-table th {"
+        " border-right: var(--nce-border-width-table-col) solid var(--nce-color-table-col-divider); }"
+    )
+    lines.append(".theme-table th:last-child { border-right: none; }")
     lines.append("")
 
 
@@ -544,6 +589,7 @@ def generate_css(payload: dict) -> str:
     _emit_role_text_border_classes(g, lines)
     _emit_role_shade_classes(g, lines)
     _emit_neutral_classes(g, lines)
+    _emit_table_classes(lines)
     _emit_shape_classes(lines)
     _emit_typography_classes(g, lines)
     _emit_spacing_classes(lines)
@@ -562,6 +608,7 @@ def generate_site_css(default_payload: dict, active_themes: list[tuple[str, dict
     _emit_role_text_border_classes(g, lines)
     _emit_role_shade_classes(g, lines)
     _emit_neutral_classes(g, lines)
+    _emit_table_classes(lines)
     _emit_shape_classes(lines)
     _emit_typography_classes(g, lines)
     _emit_spacing_classes(lines)

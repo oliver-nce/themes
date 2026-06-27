@@ -104,7 +104,8 @@
     "page_background": { "class": "theme-bg-bg-page", "var": "--nce-color-bg", "purpose": "Page-level background. Default body color.", "status": "shipping" },
     "surface":         { "class": "theme-bg-surface", "var": "--nce-color-surface", "purpose": "Card/panel/modal background — one elevation above the page.", "status": "shipping" },
     "card_alias":      { "class": "theme-bg-card", "var": "--nce-color-surface", "purpose": "Alias of theme-bg-surface for semantic clarity in card components.", "status": "shipping" },
-    "row_alt":         { "class": "theme-bg-row-alt", "var": "--nce-color-row-alt", "purpose": "Alternating table row background (zebra striping).", "status": "shipping" },
+    "row":           { "class": "theme-bg-row", "var": "--nce-color-row", "purpose": "Main (even) table row background.", "status": "shipping" },
+    "row_alt":         { "class": "theme-bg-row-alt", "var": "--nce-color-row-alt", "purpose": "Alternate (odd) table row background (zebra striping).", "status": "shipping" },
     "header_bg":       { "class": "theme-bg-header", "var": "--nce-color-primary", "purpose": "Top-bar/header strip background (paired with primary foreground).", "status": "shipping" },
     "header_text":     { "class": "theme-text-text-header", "var": "--nce-color-primary-fg", "purpose": "Foreground for header strip.", "status": "shipping" }
   },
@@ -133,6 +134,25 @@
     "border_width_thin_var":   { "class": "(var-only)", "var": "--nce-border-width-thin", "purpose": "Raw CSS var for thin border width. Use in directional CSS: border-bottom: var(--nce-border-width-thin) solid var(--nce-color-border)", "status": "var-only" },
     "border_width_var":        { "class": "(var-only)", "var": "--nce-border-width", "purpose": "Raw CSS var for normal border width.", "status": "var-only" },
     "border_width_strong_var": { "class": "(var-only)", "var": "--nce-border-width-strong", "purpose": "Raw CSS var for strong border width. Use for table headers, active tabs.", "status": "var-only" }
+  },
+  "table_roles": {
+    "table_bundle": {
+      "class": "theme-table",
+      "purpose": "Bundled table chrome: even/odd row backgrounds plus horizontal and vertical cell dividers from table tokens.",
+      "status": "shipping",
+      "tokens": {
+        "row_even": "--nce-color-row",
+        "row_odd": "--nce-color-row-alt",
+        "row_divider_color": "--nce-color-table-row-divider",
+        "col_divider_color": "--nce-color-table-col-divider",
+        "row_divider_width": "--nce-border-width-table-row",
+        "col_divider_width": "--nce-border-width-table-col"
+      }
+    },
+    "row_divider_color": { "class": "(var-only)", "var": "--nce-color-table-row-divider", "purpose": "Horizontal cell divider colour.", "status": "var-only" },
+    "col_divider_color": { "class": "(var-only)", "var": "--nce-color-table-col-divider", "purpose": "Vertical cell divider colour.", "status": "var-only" },
+    "row_divider_width": { "class": "(var-only)", "var": "--nce-border-width-table-row", "purpose": "Horizontal cell divider thickness.", "status": "var-only" },
+    "col_divider_width": { "class": "(var-only)", "var": "--nce-border-width-table-col", "purpose": "Vertical cell divider thickness.", "status": "var-only" }
   },
   "typography": {
     "font_body":    { "class": "theme-font-sans", "var": "--nce-font-family", "purpose": "Body font.", "status": "shipping" },

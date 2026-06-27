@@ -17,11 +17,14 @@
 	--nce-color-bg: #FFFFFF;
 	--nce-color-surface: #F9FAFB;
 	--nce-color-border: #E5E7EB;
+	--nce-color-row: #F9FAFB;
 	--nce-color-row-alt: #F3F4F6;
+	--nce-color-table-row-divider: #E5E7EB;
+	--nce-color-table-col-divider: #E5E7EB;
 	--nce-color-primary-fg: #0A0A0A;
-	--nce-color-primary-fg-tonal: #2c4264;
+	--nce-color-primary-fg-tonal: #00311f;
 	--nce-color-secondary-fg: #0A0A0A;
-	--nce-color-secondary-fg-tonal: #113727;
+	--nce-color-secondary-fg-tonal: #002056;
 	--nce-color-accent-fg: #FFFFFF;
 	--nce-color-accent-fg-tonal: #483e6c;
 	--nce-color-success-fg: #0A0A0A;
@@ -38,70 +41,70 @@
 	/* ── Shade scales (50–950) ── */
 	--nce-color-primary-50: #f4f5f6;
 	--nce-color-primary-50-fg: #0A0A0A;
-	--nce-color-primary-50-fg-tonal: #000000;
+	--nce-color-primary-50-fg-tonal: #00311f;
 	--nce-color-primary-100: #e6ecf5;
 	--nce-color-primary-100-fg: #0A0A0A;
-	--nce-color-primary-100-fg-tonal: #000101;
+	--nce-color-primary-100-fg-tonal: #00311f;
 	--nce-color-primary-200: #cbdfff;
 	--nce-color-primary-200-fg: #0A0A0A;
-	--nce-color-primary-200-fg-tonal: #020308;
+	--nce-color-primary-200-fg-tonal: #00311f;
 	--nce-color-primary-300: #aacbff;
 	--nce-color-primary-300-fg: #0A0A0A;
-	--nce-color-primary-300-fg-tonal: #070e1a;
+	--nce-color-primary-300-fg-tonal: #00311f;
 	--nce-color-primary-400: #85b3ff;
 	--nce-color-primary-400-fg: #0A0A0A;
-	--nce-color-primary-400-fg-tonal: #121e32;
+	--nce-color-primary-400-fg-tonal: #00311f;
 	--nce-color-primary-500: #5a98ff;
 	--nce-color-primary-500-fg: #0A0A0A;
-	--nce-color-primary-500-fg-tonal: #1f314e;
+	--nce-color-primary-500-fg-tonal: #00311f;
 	--nce-color-primary-600: #3B82F6;
 	--nce-color-primary-600-fg: #0A0A0A;
-	--nce-color-primary-600-fg-tonal: #2c4264;
+	--nce-color-primary-600-fg-tonal: #00311f;
 	--nce-color-primary-700: #0e59c9;
 	--nce-color-primary-700-fg: #FFFFFF;
-	--nce-color-primary-700-fg-tonal: #4f668b;
+	--nce-color-primary-700-fg-tonal: #99fbcc;
 	--nce-color-primary-800: #003a90;
 	--nce-color-primary-800-fg: #FFFFFF;
-	--nce-color-primary-800-fg-tonal: #7588a8;
+	--nce-color-primary-800-fg-tonal: #99fbcc;
 	--nce-color-primary-900: #002056;
 	--nce-color-primary-900-fg: #FFFFFF;
-	--nce-color-primary-900-fg-tonal: #9dabc2;
+	--nce-color-primary-900-fg-tonal: #99fbcc;
 	--nce-color-primary-950: #050d1b;
 	--nce-color-primary-950-fg: #FFFFFF;
-	--nce-color-primary-950-fg-tonal: #c6cbd2;
+	--nce-color-primary-950-fg-tonal: #99fbcc;
 	--nce-color-secondary-50: #f1f7f4;
 	--nce-color-secondary-50-fg: #0A0A0A;
-	--nce-color-secondary-50-fg-tonal: #000000;
+	--nce-color-secondary-50-fg-tonal: #002056;
 	--nce-color-secondary-100: #dbf5e7;
 	--nce-color-secondary-100-fg: #0A0A0A;
-	--nce-color-secondary-100-fg-tonal: #000100;
+	--nce-color-secondary-100-fg-tonal: #002056;
 	--nce-color-secondary-200: #99fbcc;
 	--nce-color-secondary-200-fg: #0A0A0A;
-	--nce-color-secondary-200-fg-tonal: #000401;
+	--nce-color-secondary-200-fg-tonal: #002056;
 	--nce-color-secondary-300: #64f0b5;
 	--nce-color-secondary-300-fg: #0A0A0A;
-	--nce-color-secondary-300-fg-tonal: #000e04;
+	--nce-color-secondary-300-fg-tonal: #002056;
 	--nce-color-secondary-400: #4edea3;
 	--nce-color-secondary-400-fg: #0A0A0A;
-	--nce-color-secondary-400-fg-tonal: #001b0d;
+	--nce-color-secondary-400-fg-tonal: #002056;
 	--nce-color-secondary-500: #33c990;
 	--nce-color-secondary-500-fg: #0A0A0A;
-	--nce-color-secondary-500-fg-tonal: #032a1b;
+	--nce-color-secondary-500-fg-tonal: #002056;
 	--nce-color-secondary-600: #10B981;
 	--nce-color-secondary-600-fg: #0A0A0A;
-	--nce-color-secondary-600-fg-tonal: #113727;
+	--nce-color-secondary-600-fg-tonal: #002056;
 	--nce-color-secondary-700: #00855b;
 	--nce-color-secondary-700-fg: #FFFFFF;
-	--nce-color-secondary-700-fg-tonal: #415e50;
+	--nce-color-secondary-700-fg-tonal: #cbdfff;
 	--nce-color-secondary-800: #00593c;
 	--nce-color-secondary-800-fg: #FFFFFF;
-	--nce-color-secondary-800-fg-tonal: #6d8378;
+	--nce-color-secondary-800-fg-tonal: #cbdfff;
 	--nce-color-secondary-900: #00311f;
 	--nce-color-secondary-900-fg: #FFFFFF;
-	--nce-color-secondary-900-fg-tonal: #9aaaa2;
+	--nce-color-secondary-900-fg-tonal: #cbdfff;
 	--nce-color-secondary-950: #07100b;
 	--nce-color-secondary-950-fg: #FFFFFF;
-	--nce-color-secondary-950-fg-tonal: #c7cbc8;
+	--nce-color-secondary-950-fg-tonal: #cbdfff;
 	--nce-color-accent-50: #f5f5f6;
 	--nce-color-accent-50-fg: #0A0A0A;
 	--nce-color-accent-50-fg-tonal: #000000;
@@ -309,9 +312,11 @@
 	--nce-border-width-thin: 0.5px;
 	--nce-border-width: 1px;
 	--nce-border-width-strong: 2px;
+	--nce-border-width-table-row: 0.5px;
+	--nce-border-width-table-col: 0.5px;
 	--nce-spacing-base: 1rem;
 	--nce-shadow-color: #000000;
-	--nce-shadow: 0px 4px 8px -1px rgba(0, 0, 0, 0.15), 0px 2px 4px -2px rgba(0, 0, 0, 0.1);
+	--nce-shadow: 0px 4px 8px -1px rgba(0, 0, 0, 1.0), 0px 2px 4px -2px rgba(0, 0, 0, 1.0);
 	--nce-transition-speed: 200ms;
 	--nce-sidebar-width: 240px;
 	--nce-container-max-width: 1200px;
@@ -807,6 +812,7 @@
 .theme-bg-bg-page, .bg-bg-page { background-color: var(--nce-color-bg); }
 .theme-bg-surface, .bg-surface { background-color: var(--nce-color-surface); }
 .theme-bg-card, .bg-card { background-color: var(--nce-color-surface); }
+.theme-bg-row, .bg-row { background-color: var(--nce-color-row); }
 .theme-bg-row-alt, .bg-row-alt { background-color: var(--nce-color-row-alt); }
 .theme-bg-header, .bg-header { background-color: var(--nce-color-primary); color: var(--nce-color-primary-fg); }
 .theme-text-text-header, .text-text-header { color: var(--nce-color-primary-fg); }
@@ -818,6 +824,14 @@
 .theme-border-strong, .border-strong { border-width: var(--nce-border-width-strong); border-style: solid; border-color: var(--nce-color-border); }
 .theme-border-input-border, .border-input-border { border-color: var(--nce-color-border); }
 .theme-border-input-focus, .border-input-focus { border-color: var(--nce-color-focus); }
+/* ── Table bundle (theme-table) ── */
+.theme-table { border-collapse: collapse; }
+.theme-table tbody tr:nth-child(even) { background-color: var(--nce-color-row); }
+.theme-table tbody tr:nth-child(odd) { background-color: var(--nce-color-row-alt); }
+.theme-table td { border-bottom: var(--nce-border-width-table-row) solid var(--nce-color-table-row-divider); border-right: var(--nce-border-width-table-col) solid var(--nce-color-table-col-divider); }
+.theme-table td:last-child { border-right: none; }
+.theme-table th { border-right: var(--nce-border-width-table-col) solid var(--nce-color-table-col-divider); }
+.theme-table th:last-child { border-right: none; }
 
 /* ── Shape + motion classes ── */
 .theme-rounded { border-radius: var(--nce-border-radius); }
