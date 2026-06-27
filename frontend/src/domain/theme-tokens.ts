@@ -76,6 +76,7 @@ export const COLOR_FIELDS: Record<string, string> = {
 "border_color": "color-border",
 "row_color": "color-row",
 "row_alt_color": "color-row-alt",
+"table_header_bg_color": "color-table-header",
 "table_row_divider_color": "color-table-row-divider",
 "table_col_divider_color": "color-table-col-divider",
 }
@@ -108,6 +109,7 @@ export const COLOR_VAR_MAP: Record<string, string> = {
 "border_color": "--nce-color-border",
 "row_color": "--nce-color-row",
 "row_alt_color": "--nce-color-row-alt",
+"table_header_bg_color": "--nce-color-table-header",
 "table_row_divider_color": "--nce-color-table-row-divider",
 "table_col_divider_color": "--nce-color-table-col-divider",
 }
@@ -129,5 +131,5 @@ export const RETIRED_FONT_ALIASES: Record<string, string> = {
 "DM Sans": "Public Sans",
 }
 export const FONT_OPTIONS: readonly string[] = ["Inter", "Source Sans 3", "Public Sans", "Open Sans", "Roboto", "Nunito", "Source Serif 4", "JetBrains Mono", "System Default"] as const
-export const TOKEN_FIELDS: readonly string[] = ["primary_color", "secondary_color", "accent_color", "success_color", "info_color", "warning_color", "danger_color", "neutral_color", "text_color", "heading_color", "muted_color", "link_color", "focus_color", "background_color", "surface_color", "border_color", "row_color", "row_alt_color", "table_row_divider_color", "table_col_divider_color", "font_family", "heading_font_family", "font_size", "line_height", "font_weight_body", "border_radius", "border_width_thin", "border_width", "border_width_strong", "table_row_divider_width", "table_col_divider_width", "spacing_scale", "shadow", "shadow_color", "shadow_opacity", "shadow_direction", "transition_speed", "sidebar_width", "container_max_width", "tailwind_overrides", "custom_css", "dark_mode", "primary_color_gamma", "primary_color_saturation", "secondary_color_gamma", "secondary_color_saturation", "neutral_color_warmth", "neutral_color_shades", "brand_palette_mode", "primary_color_fg_flip_mono", "primary_color_fg_flip_tonal", "primary_color_fg_pole_tonal_dark", "primary_color_fg_pole_tonal_light", "secondary_color_fg_flip_mono", "secondary_color_fg_flip_tonal", "secondary_color_fg_pole_tonal_dark", "secondary_color_fg_pole_tonal_light"] as const
+export const TOKEN_FIELDS: readonly string[] = ["primary_color", "secondary_color", "accent_color", "success_color", "info_color", "warning_color", "danger_color", "neutral_color", "text_color", "heading_color", "muted_color", "link_color", "focus_color", "background_color", "surface_color", "border_color", "row_color", "row_alt_color", "table_header_bg_color", "table_row_divider_color", "table_col_divider_color", "font_family", "heading_font_family", "font_size", "line_height", "font_weight_body", "border_radius", "border_width_thin", "border_width", "border_width_strong", "table_row_divider_width", "table_col_divider_width", "spacing_scale", "shadow", "shadow_color", "shadow_opacity", "shadow_direction", "transition_speed", "sidebar_width", "container_max_width", "tailwind_overrides", "custom_css", "dark_mode", "primary_color_gamma", "primary_color_saturation", "secondary_color_gamma", "secondary_color_saturation", "neutral_color_warmth", "neutral_color_shades", "brand_palette_mode", "primary_color_fg_flip_mono", "primary_color_fg_flip_tonal", "primary_color_fg_pole_tonal_dark", "primary_color_fg_pole_tonal_light", "secondary_color_fg_flip_mono", "secondary_color_fg_flip_tonal", "secondary_color_fg_pole_tonal_dark", "secondary_color_fg_pole_tonal_light"] as const
 

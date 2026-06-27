@@ -41,6 +41,7 @@
     "success_color": "color-success",
     "surface_color": "color-surface",
     "table_col_divider_color": "color-table-col-divider",
+    "table_header_bg_color": "color-table-header",
     "table_row_divider_color": "color-table-row-divider",
     "text_color": "color-text",
     "warning_color": "color-warning"
@@ -63,6 +64,7 @@
     "success_color": "--nce-color-success",
     "surface_color": "--nce-color-surface",
     "table_col_divider_color": "--nce-color-table-col-divider",
+    "table_header_bg_color": "--nce-color-table-header",
     "table_row_divider_color": "--nce-color-table-row-divider",
     "text_color": "--nce-color-text",
     "warning_color": "--nce-color-warning"
@@ -313,11 +315,12 @@
   "tableColorFallbacks": {
     "row_color": "surface_color",
     "table_col_divider_color": "border_color",
+    "table_header_bg_color": "secondary_color",
     "table_row_divider_color": "border_color"
   },
   "tableWidthFallbacks": {
-    "table_col_divider_width": "border_width_thin",
-    "table_row_divider_width": "border_width_thin"
+    "table_col_divider_width": "thin",
+    "table_row_divider_width": "thin"
   },
   "tableWidthFields": {
     "table_col_divider_width": "border-width-table-col",
@@ -342,6 +345,7 @@
     "border_color",
     "row_color",
     "row_alt_color",
+    "table_header_bg_color",
     "table_row_divider_color",
     "table_col_divider_color",
     "font_family",

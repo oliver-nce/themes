@@ -309,53 +309,6 @@
 						/>
 					</div>
 				</EditorSection>
-
-				<EditorSection
-					title="Tables"
-					hint="Row striping and cell dividers. Use class theme-table on a &lt;table&gt; for the full bundle, or individual theme-bg-row / theme-bg-row-alt tokens."
-				>
-					<div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-						<SwatchPicker
-							v-for="c in tableColors"
-							:key="c.key"
-							:label="c.label"
-							:model-value="form[c.key]"
-							:default-value="DEFAULTS[c.key]"
-							@update:model-value="form[c.key] = $event"
-							:primary-color="form.primary_color"
-							:secondary-color="form.secondary_color"
-							:primary-gamma="primaryShadeAdjust.gamma"
-							:primary-saturation="primaryShadeAdjust.saturation"
-							:secondary-gamma="secondaryShadeAdjust.gamma"
-							:secondary-saturation="secondaryShadeAdjust.saturation"
-						/>
-						<SelectField
-							v-for="w in tableWidths"
-							:key="w.key"
-							:label="w.label"
-							:options="borderWidthOptions"
-							v-model="form[w.key]"
-						/>
-					</div>
-					<div class="mt-4 overflow-hidden rounded-lg border border-gray-200">
-						<table class="theme-table nce-editor-table-preview w-full text-sm">
-							<thead>
-								<tr>
-									<th class="px-3 py-2 text-left font-semibold theme-bg-secondary-600 theme-text-secondary-600-fg">ID</th>
-									<th class="px-3 py-2 text-left font-semibold theme-bg-secondary-600 theme-text-secondary-600-fg">Name</th>
-									<th class="px-3 py-2 text-left font-semibold theme-bg-secondary-600 theme-text-secondary-600-fg">Status</th>
-								</tr>
-							</thead>
-							<tbody>
-								<tr v-for="row in tablePreviewRows" :key="row.id">
-									<td class="px-3 py-2">{{ row.id }}</td>
-									<td class="px-3 py-2">{{ row.name }}</td>
-									<td class="px-3 py-2">{{ row.status }}</td>
-								</tr>
-							</tbody>
-						</table>
-					</div>
-				</EditorSection>
 			</div>
 
 			<!-- AGENT:TAB typography — fonts, text colours, sizes, line height, body weight -->
@@ -486,6 +439,53 @@
 							:options="borderWidthOptions"
 							v-model="form.border_width_strong"
 						/>
+					</div>
+				</EditorSection>
+
+				<EditorSection
+					title="Tables"
+					hint="Row striping, header, and cell dividers. Class theme-table on a &lt;table&gt; applies the full bundle. Line thickness uses Thin / Normal / Strong — the same tiers as Line Widths above."
+				>
+					<div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+						<SwatchPicker
+							v-for="c in tableColors"
+							:key="c.key"
+							:label="c.label"
+							:model-value="form[c.key]"
+							:default-value="DEFAULTS[c.key]"
+							@update:model-value="form[c.key] = $event"
+							:primary-color="form.primary_color"
+							:secondary-color="form.secondary_color"
+							:primary-gamma="primaryShadeAdjust.gamma"
+							:primary-saturation="primaryShadeAdjust.saturation"
+							:secondary-gamma="secondaryShadeAdjust.gamma"
+							:secondary-saturation="secondaryShadeAdjust.saturation"
+						/>
+						<SelectField
+							v-for="w in tableWidths"
+							:key="w.key"
+							:label="w.label"
+							:options="borderWidthTierOptions"
+							v-model="form[w.key]"
+						/>
+					</div>
+					<div class="mt-4 overflow-hidden rounded-lg border border-gray-200">
+						<table class="theme-table nce-editor-table-preview w-full text-sm">
+							<thead>
+								<tr>
+									<th class="px-3 py-2 text-left font-semibold">ID</th>
+									<th class="px-3 py-2 text-left font-semibold">Name</th>
+									<th class="px-3 py-2 text-left font-semibold">Status</th>
+								</tr>
+							</thead>
+							<tbody>
+								<tr v-for="row in tablePreviewRows" :key="row.id">
+									<td class="px-3 py-2">{{ row.id }}</td>
+									<td class="px-3 py-2">{{ row.name }}</td>
+									<td class="px-3 py-2">{{ row.status }}</td>
+								</tr>
+							</tbody>
+						</table>
 					</div>
 				</EditorSection>
 
@@ -932,18 +932,43 @@ function applyTableCssVars(vars: Record<string, string>) {
 	const row = (form.row_color as string) || (form.surface_color as string)
 	if (row) vars["--nce-color-row"] = row
 	if (form.row_alt_color) vars["--nce-color-row-alt"] = form.row_alt_color as string
+	const header =
+		(form.table_header_bg_color as string) || (form.secondary_color as string)
+	if (header) {
+		vars["--nce-color-table-header"] = header
+		vars["--nce-color-table-header-fg"] = pickFgMono(header)
+	}
 	const rowDiv =
 		(form.table_row_divider_color as string) || (form.border_color as string)
 	if (rowDiv) vars["--nce-color-table-row-divider"] = rowDiv
 	const colDiv =
 		(form.table_col_divider_color as string) || (form.border_color as string)
 	if (colDiv) vars["--nce-color-table-col-divider"] = colDiv
-	const rowW =
-		(form.table_row_divider_width as string) || (form.border_width_thin as string) || "0.5px"
-	vars["--nce-border-width-table-row"] = BORDER_WIDTH_MAP[rowW] || rowW
-	const colW =
-		(form.table_col_divider_width as string) || (form.border_width_thin as string) || "0.5px"
-	vars["--nce-border-width-table-col"] = BORDER_WIDTH_MAP[colW] || colW
+	vars["--nce-border-width-table-row"] = tableWidthTierCssVar(
+		form.table_row_divider_width as string
+	)
+	vars["--nce-border-width-table-col"] = tableWidthTierCssVar(
+		form.table_col_divider_width as string
+	)
+}
+
+function normalizeTableWidthTier(raw: unknown): "thin" | "normal" | "strong" {
+	const legacy: Record<string, "thin" | "normal" | "strong"> = {
+		"0.5px": "thin",
+		"1px": "normal",
+		"2px": "strong",
+		"3px": "strong",
+	}
+	const s = String(raw || "thin").trim().toLowerCase()
+	if (s === "normal" || s === "strong" || s === "thin") return s
+	return legacy[s] || "thin"
+}
+
+function tableWidthTierCssVar(raw: unknown): string {
+	const tier = normalizeTableWidthTier(raw)
+	if (tier === "strong") return "var(--nce-border-width-strong)"
+	if (tier === "normal") return "var(--nce-border-width)"
+	return "var(--nce-border-width-thin)"
 }
 
 function computeCSSVariables(): Record<string, string> {
@@ -1125,6 +1150,7 @@ const ALL_FIELDS = [
 	"border_color",
 	"row_color",
 	"row_alt_color",
+	"table_header_bg_color",
 	"table_row_divider_color",
 	"table_col_divider_color",
 	"table_row_divider_width",
@@ -1188,10 +1214,11 @@ const DEFAULTS: Record<FormKey, any> = {
 	border_color: "#E5E7EB",
 	row_color: "#F9FAFB",
 	row_alt_color: "#F3F4F6",
+	table_header_bg_color: "#10B981",
 	table_row_divider_color: "#E5E7EB",
 	table_col_divider_color: "#E5E7EB",
-	table_row_divider_width: "0.5px",
-	table_col_divider_width: "0.5px",
+	table_row_divider_width: "thin",
+	table_col_divider_width: "thin",
 	font_family: "Inter",
 	heading_font_family: "Inter",
 	font_size: "14px",
@@ -1263,6 +1290,7 @@ const surfaceColors = [
 ]
 
 const tableColors = [
+	{ key: "table_header_bg_color", label: "Header row" },
 	{ key: "row_color", label: "Row (main / even)" },
 	{ key: "row_alt_color", label: "Row (alternate / odd)" },
 	{ key: "table_row_divider_color", label: "Horizontal line" },
@@ -1272,6 +1300,12 @@ const tableColors = [
 const tableWidths = [
 	{ key: "table_row_divider_width", label: "Horizontal thickness" },
 	{ key: "table_col_divider_width", label: "Vertical thickness" },
+]
+
+const borderWidthTierOptions = [
+	{ value: "thin", label: "Thin" },
+	{ value: "normal", label: "Normal" },
+	{ value: "strong", label: "Strong" },
 ]
 
 const tablePreviewRows = [
@@ -1553,6 +1587,8 @@ function applyPayloadToForm(payload: Record<string, any>) {
 			form[key] = clampShadowOpacity(val ?? DEFAULTS.shadow_opacity)
 		} else if (key === "shadow_direction") {
 			form[key] = clampShadowDirection(val ?? DEFAULTS.shadow_direction)
+		} else if (key === "table_row_divider_width" || key === "table_col_divider_width") {
+			form[key] = normalizeTableWidthTier(val ?? DEFAULTS[key])
 		} else if (
 			key.endsWith("_fg_flip_mono") ||
 			key.endsWith("_fg_flip_tonal") ||
@@ -2256,19 +2292,21 @@ onMounted(() => {
 	background-color: var(--nce-color-row-alt, #f3f4f6);
 }
 :deep(.nce-editor-table-preview.theme-table td) {
-	border-bottom: var(--nce-border-width-table-row, 0.5px) solid
+	border-bottom: var(--nce-border-width-table-row, var(--nce-border-width-thin)) solid
 		var(--nce-color-table-row-divider, var(--nce-color-border));
-	border-right: var(--nce-border-width-table-col, 0.5px) solid
+	border-right: var(--nce-border-width-table-col, var(--nce-border-width-thin)) solid
 		var(--nce-color-table-col-divider, var(--nce-color-border));
 }
 :deep(.nce-editor-table-preview.theme-table td:last-child) {
 	border-right: none;
 }
-:deep(.nce-editor-table-preview.theme-table th) {
-	border-right: var(--nce-border-width-table-col, 0.5px) solid
+:deep(.nce-editor-table-preview.theme-table thead th) {
+	background-color: var(--nce-color-table-header, var(--nce-color-secondary));
+	color: var(--nce-color-table-header-fg, var(--nce-color-text));
+	border-right: var(--nce-border-width-table-col, var(--nce-border-width-thin)) solid
 		var(--nce-color-table-col-divider, var(--nce-color-border));
 }
-:deep(.nce-editor-table-preview.theme-table th:last-child) {
+:deep(.nce-editor-table-preview.theme-table thead th:last-child) {
 	border-right: none;
 }
 </style>

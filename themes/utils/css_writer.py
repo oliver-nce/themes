@@ -33,6 +33,7 @@ from themes.utils.theme_tokens import (
     CURATED_SHADES, FG_ROLES, COLOR_FIELDS, SHADE_SCALE_FIELDS,
     GAMMA_SAT_ROLE_FIELDS, MIGRATED_FIELDS, TOKEN_FIELDS,
     TABLE_WIDTH_FIELDS, TABLE_COLOR_FALLBACKS, TABLE_WIDTH_FALLBACKS,
+    TABLE_WIDTH_TIER_VARS, TABLE_WIDTH_LEGACY_PX_TIER,
 )
 
 # Re-export token contract symbols for backward compatibility (api.py, patches, tests).
@@ -244,14 +245,21 @@ def _resolve_flat_color(g, field):
     return v
 
 
-def _resolve_table_width(g, field):
-    raw = g(field) or g(TABLE_WIDTH_FALLBACKS.get(field, "")) or "0.5px"
-    return BORDER_WIDTH_MAP.get(raw, raw)
+def _normalize_table_width_tier(g, field):
+    raw = (g(field) or TABLE_WIDTH_FALLBACKS.get(field) or "thin").strip().lower()
+    if raw in TABLE_WIDTH_LEGACY_PX_TIER:
+        raw = TABLE_WIDTH_LEGACY_PX_TIER[raw]
+    return raw if raw in TABLE_WIDTH_TIER_VARS else "thin"
+
+
+def _resolve_table_width_var(g, field):
+    tier = _normalize_table_width_tier(g, field)
+    return f"var({TABLE_WIDTH_TIER_VARS[tier]})"
 
 
 def _emit_table_width_vars(g, lines):
-    lines.append(f"\t--nce-border-width-table-row: {_resolve_table_width(g, 'table_row_divider_width')};")
-    lines.append(f"\t--nce-border-width-table-col: {_resolve_table_width(g, 'table_col_divider_width')};")
+    lines.append(f"\t--nce-border-width-table-row: {_resolve_table_width_var(g, 'table_row_divider_width')};")
+    lines.append(f"\t--nce-border-width-table-col: {_resolve_table_width_var(g, 'table_col_divider_width')};")
 
 
 def _emit_var_block(g, lines, selector=":root", include_custom_css=True):
@@ -275,6 +283,9 @@ def _emit_var_block(g, lines, selector=":root", include_custom_css=True):
         if not v:
             continue
         lines.append(f"\t--nce-{var}: {v};")
+    header_bg = _resolve_flat_color(g, "table_header_bg_color")
+    if header_bg:
+        lines.append(f"\t--nce-color-table-header-fg: {pick_fg_mono(header_bg)};")
     for f, var in COLOR_FIELDS.items():
         if f not in FG_ROLES:
             continue
@@ -437,6 +448,13 @@ def _emit_neutral_classes(g, lines):
         _emit_prefixed_rule(
             lines, "theme-bg-row", "bg-row", "background-color: var(--nce-color-row);"
         )
+    if _resolve_flat_color(g, "table_header_bg_color"):
+        _emit_prefixed_rule(
+            lines,
+            "theme-bg-table-header",
+            "bg-table-header",
+            "background-color: var(--nce-color-table-header); color: var(--nce-color-table-header-fg);",
+        )
     if g("row_alt_color"):
         _emit_prefixed_rule(
             lines,
@@ -498,6 +516,9 @@ def _emit_table_classes(lines):
     """Bundled table chrome — zebra rows + cell dividers from table tokens."""
     lines.append("/* ── Table bundle (theme-table) ── */")
     lines.append(".theme-table { border-collapse: collapse; }")
+    lines.append(
+        ".theme-table thead th { background-color: var(--nce-color-table-header); color: var(--nce-color-table-header-fg, var(--nce-color-text)); }"
+    )
     lines.append(".theme-table tbody tr:nth-child(even) { background-color: var(--nce-color-row); }")
     lines.append(".theme-table tbody tr:nth-child(odd) { background-color: var(--nce-color-row-alt); }")
     lines.append(

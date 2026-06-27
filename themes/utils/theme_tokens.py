@@ -139,11 +139,12 @@ COLOR_FIELDS = {
 	"border_color": "color-border",
 	"row_color": "color-row",
 	"row_alt_color": "color-row-alt",
+	"table_header_bg_color": "color-table-header",
 	"table_row_divider_color": "color-table-row-divider",
 	"table_col_divider_color": "color-table-col-divider",
 }
 
-# theme_json width keys → --nce-* suffix (values map through BORDER_WIDTH_MAP at publish)
+# theme_json width keys → --nce-* suffix (values: thin | normal | strong → Line Widths vars)
 TABLE_WIDTH_FIELDS = {
 	"table_row_divider_width": "border-width-table-row",
 	"table_col_divider_width": "border-width-table-col",
@@ -152,13 +153,29 @@ TABLE_WIDTH_FIELDS = {
 # When a table colour field is empty at publish, inherit from this sibling field.
 TABLE_COLOR_FALLBACKS = {
 	"row_color": "surface_color",
+	"table_header_bg_color": "secondary_color",
 	"table_row_divider_color": "border_color",
 	"table_col_divider_color": "border_color",
 }
 
 TABLE_WIDTH_FALLBACKS = {
-	"table_row_divider_width": "border_width_thin",
-	"table_col_divider_width": "border_width_thin",
+	"table_row_divider_width": "thin",
+	"table_col_divider_width": "thin",
+}
+
+# Semantic tier → global --nce-border-width-* token (follows Layout → Line Widths).
+TABLE_WIDTH_TIER_VARS = {
+	"thin": "--nce-border-width-thin",
+	"normal": "--nce-border-width",
+	"strong": "--nce-border-width-strong",
+}
+
+# Legacy themes stored raw px in table width fields before tier keys.
+TABLE_WIDTH_LEGACY_PX_TIER = {
+	"0.5px": "thin",
+	"1px": "normal",
+	"2px": "strong",
+	"3px": "strong",
 }
 
 SHADE_SCALE_FIELDS = {

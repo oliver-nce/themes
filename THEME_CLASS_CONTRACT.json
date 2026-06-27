@@ -141,18 +141,28 @@
       "purpose": "Bundled table chrome: even/odd row backgrounds plus horizontal and vertical cell dividers from table tokens.",
       "status": "shipping",
       "tokens": {
+        "header_bg": "--nce-color-table-header",
+        "header_fg": "--nce-color-table-header-fg",
         "row_even": "--nce-color-row",
         "row_odd": "--nce-color-row-alt",
         "row_divider_color": "--nce-color-table-row-divider",
         "col_divider_color": "--nce-color-table-col-divider",
         "row_divider_width": "--nce-border-width-table-row",
         "col_divider_width": "--nce-border-width-table-col"
-      }
+      },
+      "width_tiers": "thin | normal | strong — resolves to --nce-border-width-thin | --nce-border-width | --nce-border-width-strong (same as Layout → Line Widths)."
+    },
+    "table_header_bg": {
+      "class": "theme-bg-table-header",
+      "var": "--nce-color-table-header",
+      "fg_var": "--nce-color-table-header-fg",
+      "purpose": "Table header row background and foreground.",
+      "status": "shipping"
     },
     "row_divider_color": { "class": "(var-only)", "var": "--nce-color-table-row-divider", "purpose": "Horizontal cell divider colour.", "status": "var-only" },
     "col_divider_color": { "class": "(var-only)", "var": "--nce-color-table-col-divider", "purpose": "Vertical cell divider colour.", "status": "var-only" },
-    "row_divider_width": { "class": "(var-only)", "var": "--nce-border-width-table-row", "purpose": "Horizontal cell divider thickness.", "status": "var-only" },
-    "col_divider_width": { "class": "(var-only)", "var": "--nce-border-width-table-col", "purpose": "Vertical cell divider thickness.", "status": "var-only" }
+    "row_divider_width": { "class": "(var-only)", "var": "--nce-border-width-table-row", "purpose": "Horizontal cell divider thickness (thin | normal | strong tier → Line Widths vars).", "status": "var-only" },
+    "col_divider_width": { "class": "(var-only)", "var": "--nce-border-width-table-col", "purpose": "Vertical cell divider thickness (thin | normal | strong tier → Line Widths vars).", "status": "var-only" }
   },
   "typography": {
     "font_body":    { "class": "theme-font-sans", "var": "--nce-font-family", "purpose": "Body font.", "status": "shipping" },
