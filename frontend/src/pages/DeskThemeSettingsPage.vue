@@ -255,7 +255,7 @@
 
 				<EditorSection
 					title="Buttons &amp; Hover"
-					hint="Primary button colour, workspace widget buttons, and autocomplete hover highlight. Most toolbar buttons on list pages are controlled by Controls & Toolbar Buttons above."
+					hint="Primary button colour, workspace widget buttons, and autocomplete hover highlight. Most toolbar buttons on list pages are controlled by Input Fields, Controls &amp; Toolbar Buttons above."
 					:panel-help="deskPanelHelp.buttonsHover"
 				>
 					<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -647,7 +647,7 @@ const deskPanelHelp = {
 			"Frappe's flat design removes borders from individual input fields — the Border tokens affect structural lines around sections and pages, not field edges.",
 		items: [
 			{
-				label: "Controls & Toolbar Buttons",
+				label: "Input Fields, Controls & Toolbar Buttons",
 				affects:
 					"Text inputs, dropdowns, and the neutral toolbar buttons you see on every list page — List View, Filter, Resize Columns, and similar controls throughout Desk.",
 			},
@@ -737,7 +737,7 @@ const textColors = [
 ]
 
 const inputBorderColors = [
-	{ key: "control_bg" as FormKey, label: "Controls & Toolbar Buttons" },
+	{ key: "control_bg" as FormKey, label: "Input Fields, Controls & Toolbar Buttons" },
 	{ key: "control_bg_on_gray" as FormKey, label: "Sidebar Filter Inputs" },
 	{ key: "border_color" as FormKey, label: "Border" },
 	{ key: "dark_border_color" as FormKey, label: "Strong Border" },
