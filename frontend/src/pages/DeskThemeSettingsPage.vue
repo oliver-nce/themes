@@ -196,10 +196,13 @@
 					</div>
 				</EditorSection>
 
-				<EditorSection title="Surfaces &amp; Text">
-					<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+				<EditorSection
+					title="Page &amp; Form"
+					hint="The large background areas visible behind and around forms."
+				>
+					<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
 						<SwatchPicker
-							v-for="c in surfaceColors"
+							v-for="c in pageFormColors"
 							:key="c.key"
 							:label="c.label"
 							:model-value="form[c.key]"
@@ -211,10 +214,46 @@
 					</div>
 				</EditorSection>
 
-				<EditorSection title="Controls &amp; Borders">
+				<EditorSection title="Text" hint="Colour of labels, body copy, and helper text.">
 					<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
 						<SwatchPicker
-							v-for="c in controlColors"
+							v-for="c in textColors"
+							:key="c.key"
+							:label="c.label"
+							:model-value="form[c.key]"
+							:default-value="DEFAULTS[c.key]"
+							:primary-color="form.primary_color"
+							:secondary-color="form.brand_color"
+							@update:model-value="form[c.key] = $event"
+						/>
+					</div>
+				</EditorSection>
+
+				<EditorSection
+					title="Inputs &amp; Borders"
+					hint="Field fills and the lines that define form structure and layout."
+				>
+					<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6">
+						<SwatchPicker
+							v-for="c in inputBorderColors"
+							:key="c.key"
+							:label="c.label"
+							:model-value="form[c.key]"
+							:default-value="DEFAULTS[c.key]"
+							:primary-color="form.primary_color"
+							:secondary-color="form.brand_color"
+							@update:model-value="form[c.key] = $event"
+						/>
+					</div>
+				</EditorSection>
+
+				<EditorSection
+					title="Buttons &amp; Hover"
+					hint="Default (non-primary) button fill and search typeahead row highlight."
+				>
+					<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+						<SwatchPicker
+							v-for="c in buttonColors"
 							:key="c.key"
 							:label="c.label"
 							:model-value="form[c.key]"
@@ -536,19 +575,25 @@ const brandColors = [
 	{ key: "brand_color" as FormKey, label: "Brand" },
 ]
 
-const surfaceColors = [
+const pageFormColors = [
 	{ key: "bg_color" as FormKey, label: "Page Background" },
-	{ key: "fg_color" as FormKey, label: "Foreground" },
-	{ key: "text_color" as FormKey, label: "Text" },
+	{ key: "fg_color" as FormKey, label: "Card / Form Surface" },
+]
+
+const textColors = [
+	{ key: "text_color" as FormKey, label: "Body Text" },
 	{ key: "text_muted" as FormKey, label: "Muted Text" },
 	{ key: "text_light" as FormKey, label: "Light Text" },
 ]
 
-const controlColors = [
+const inputBorderColors = [
+	{ key: "control_bg" as FormKey, label: "Input Fill" },
+	{ key: "control_bg_on_gray" as FormKey, label: "Input Fill on Grey" },
 	{ key: "border_color" as FormKey, label: "Border" },
-	{ key: "dark_border_color" as FormKey, label: "Dark Border" },
-	{ key: "control_bg" as FormKey, label: "Control Background" },
-	{ key: "control_bg_on_gray" as FormKey, label: "Control on Gray" },
+	{ key: "dark_border_color" as FormKey, label: "Strong Border" },
+]
+
+const buttonColors = [
 	{ key: "btn_default_bg" as FormKey, label: "Default Button" },
 	{ key: "awesomplete_hover_bg" as FormKey, label: "Search Hover" },
 ]
