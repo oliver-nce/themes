@@ -255,10 +255,10 @@
 
 				<EditorSection
 					title="Buttons &amp; Hover"
-					hint="Default (non-primary) button fill and search typeahead row highlight."
+					hint="Primary and default button fills, plus search typeahead row highlight."
 					:panel-help="deskPanelHelp.buttonsHover"
 				>
-					<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+					<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
 						<SwatchPicker
 							v-for="c in buttonColors"
 							:key="c.key"
@@ -483,6 +483,7 @@ const ALL_FIELDS = [
 	"dark_border_color",
 	"control_bg",
 	"control_bg_on_gray",
+	"btn_primary",
 	"btn_default_bg",
 	"awesomplete_hover_bg",
 	"btn_height",
@@ -516,6 +517,7 @@ const DEFAULTS: Record<FormKey, string> = {
 	dark_border_color: "#8d99a6",
 	control_bg: "#f7fafc",
 	control_bg_on_gray: "#ffffff",
+	btn_primary: "#2490EF",
 	btn_default_bg: "#f7fafc",
 	awesomplete_hover_bg: "#f0f4f7",
 	btn_height: "28px",
@@ -534,7 +536,15 @@ const DEFAULTS: Record<FormKey, string> = {
 }
 
 const COLOR_FIELDS = new Set(
-	PAYLOAD_FIELDS.filter((k) => k.endsWith("_color") || k.includes("_bg") || k.includes("text_") || k.includes("border") || k.startsWith("g_")),
+	PAYLOAD_FIELDS.filter(
+		(k) =>
+			k.endsWith("_color") ||
+			k.includes("_bg") ||
+			k === "btn_primary" ||
+			k.includes("text_") ||
+			k.includes("border") ||
+			k.startsWith("g_"),
+	),
 )
 
 const route = useRoute()
@@ -595,7 +605,7 @@ const deskPanelHelp = {
 		items: [
 			{
 				label: "Primary",
-				affects: "Primary buttons, links, and active states on Desk (`--primary-color`).",
+				affects: "Desk accent colour for links and highlights (`--primary-color`). Save/Submit buttons use Primary Button below.",
 			},
 			{
 				label: "Brand",
@@ -657,7 +667,13 @@ const deskPanelHelp = {
 		],
 	},
 	buttonsHover: {
+		note:
+			"If Primary Button is left at its default, it matches Brand → Primary. Change it here to override Save/Submit independently.",
 		items: [
+			{
+				label: "Primary Button",
+				affects: "Save, Submit, and other `.btn-primary` action buttons (`--btn-primary`).",
+			},
 			{
 				label: "Default Button",
 				affects: "Non-primary (default/secondary) button background (`--btn-default-bg`).",
@@ -726,6 +742,7 @@ const inputBorderColors = [
 ]
 
 const buttonColors = [
+	{ key: "btn_primary" as FormKey, label: "Primary Button" },
 	{ key: "btn_default_bg" as FormKey, label: "Default Button" },
 	{ key: "awesomplete_hover_bg" as FormKey, label: "Search Hover" },
 ]

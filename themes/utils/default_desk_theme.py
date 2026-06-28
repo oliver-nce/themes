@@ -15,6 +15,7 @@ _FALLBACK_PAYLOAD = {
     "dark_border_color": "#8d99a6",
     "control_bg": "#f7fafc",
     "control_bg_on_gray": "#ffffff",
+    "btn_primary": "#2490EF",
     "btn_default_bg": "#f7fafc",
     "awesomplete_hover_bg": "#f0f4f7",
     "btn_height": "28px",

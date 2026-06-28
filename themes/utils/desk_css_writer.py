@@ -31,6 +31,7 @@ DESK_CSS_VARS = (
     ("dark_border_color", "--dark-border-color"),
     ("control_bg", "--control-bg"),
     ("control_bg_on_gray", "--control-bg-on-gray"),
+    ("btn_primary", "--btn-primary"),
     ("btn_default_bg", "--btn-default-bg"),
     ("awesomplete_hover_bg", "--awesomplete-hover-bg"),
     ("btn_height", "--btn-height"),
@@ -102,11 +103,23 @@ def _load_desk_payload(theme_name: str) -> dict:
     return json.loads(frappe.db.get_value("NCE Desk Theme", theme_name, "theme_json") or "{}")
 
 
+def _resolve_desk_token_value(payload: dict, key: str) -> str | None:
+    """Return a token value, with btn_primary falling back to primary_color when unset."""
+    value = payload.get(key)
+    if value is not None and str(value).strip():
+        return str(value).strip()
+    if key == "btn_primary":
+        primary = payload.get("primary_color")
+        if primary is not None and str(primary).strip():
+            return str(primary).strip()
+    return None
+
+
 def _emit_desk_var_block(payload: dict, selector: str = ":root") -> list[str]:
     lines = [f"{selector} {{"]
     for key, css_var in DESK_CSS_VARS:
-        value = payload.get(key)
-        if value is not None and str(value).strip():
+        value = _resolve_desk_token_value(payload, key)
+        if value:
             lines.append(f"\t{css_var}: {value};")
     lines.append("}")
     return lines

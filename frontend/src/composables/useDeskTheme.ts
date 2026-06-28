@@ -14,6 +14,7 @@ export const DESK_VAR_MAP: Record<string, string> = {
 	dark_border_color: "--dark-border-color",
 	control_bg: "--control-bg",
 	control_bg_on_gray: "--control-bg-on-gray",
+	btn_primary: "--btn-primary",
 	btn_default_bg: "--btn-default-bg",
 	awesomplete_hover_bg: "--awesomplete-hover-bg",
 	btn_height: "--btn-height",
@@ -53,7 +54,13 @@ const themeLoaded = ref(false)
 export function deskPayloadToCssVars(payload: Record<string, unknown>): Record<string, string> {
 	const vars: Record<string, string> = {}
 	for (const [key, cssVar] of Object.entries(DESK_VAR_MAP)) {
-		const value = payload[key]
+		let value = payload[key]
+		if (
+			key === "btn_primary" &&
+			(value === undefined || value === null || !String(value).trim())
+		) {
+			value = payload.primary_color
+		}
 		if (value !== undefined && value !== null && String(value).trim()) {
 			vars[cssVar] = String(value)
 		}
