@@ -236,7 +236,7 @@
 
 				<EditorSection
 					title="Inputs &amp; Borders"
-					hint="Field fills and the lines that define form structure and layout."
+					hint="Controls the colour of inputs, toolbar buttons, and the lines that structure forms and pages."
 					:panel-help="deskPanelHelp.inputsBorders"
 				>
 					<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6">
@@ -255,7 +255,7 @@
 
 				<EditorSection
 					title="Buttons &amp; Hover"
-					hint="Primary and default button fills, plus search typeahead row highlight."
+					hint="Primary button colour, workspace widget buttons, and autocomplete hover highlight. Most toolbar buttons on list pages are controlled by Controls & Toolbar Buttons above."
 					:panel-help="deskPanelHelp.buttonsHover"
 				>
 					<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -644,43 +644,45 @@ const deskPanelHelp = {
 	},
 	inputsBorders: {
 		note:
-			"Frappe Espresso removes borders from individual inputs — the Border token affects structural lines, not field outlines.",
+			"Frappe's flat design removes borders from individual input fields — the Border tokens affect structural lines around sections and pages, not field edges.",
 		items: [
 			{
-				label: "Input Fill",
+				label: "Controls & Toolbar Buttons",
 				affects:
-					"Live document form input backgrounds; Form Builder only on selected or hovered fields, not normal patches (`--control-bg`).",
+					"Text inputs, dropdowns, and the neutral toolbar buttons you see on every list page — List View, Filter, Resize Columns, and similar controls throughout Desk.",
 			},
 			{
-				label: "Input Fill on Grey",
-				affects: "Input fill when sitting on grey striped or list-row backgrounds (`--control-bg-on-gray`).",
+				label: "Sidebar Filter Inputs",
+				affects:
+					"The small text boxes in the list sidebar — the filter inputs under \"Filter By\" and the \"Filter Name\" box under \"Save Filter\". Has no effect outside the sidebar.",
 			},
 			{
 				label: "Border",
 				affects:
-					"Section dividers, form page outer edge, tabs, and sidebar rules (`--border-color`).",
+					"Section dividers, the outer edge of form pages, tab underlines, and sidebar separator lines.",
 			},
 			{
 				label: "Strong Border",
-				affects: "Emphasis borders, table headers, and stronger dividers (`--dark-border-color`).",
+				affects: "Heavier dividing lines — table header edges and emphasis separators.",
 			},
 		],
 	},
 	buttonsHover: {
 		note:
-			"If Primary Button is left at its default, it matches Brand → Primary. Change it here to override Save/Submit independently.",
+			"Primary Button defaults to the same colour as Brand → Primary. Set it here to give Save and Submit their own colour independently.",
 		items: [
 			{
 				label: "Primary Button",
-				affects: "Save, Submit, and other `.btn-primary` action buttons (`--btn-primary`).",
+				affects: "Save, Submit, and other main action buttons — the prominent coloured button at the top right of forms.",
 			},
 			{
-				label: "Default Button",
-				affects: "Non-primary (default/secondary) button background (`--btn-default-bg`).",
+				label: "Workspace Quick List Buttons",
+				affects:
+					"The Refresh, Filter, Add New, and See All controls inside Quick List widgets on your Desk Home workspace. Has no effect on standard list or form pages.",
 			},
 			{
-				label: "Search Hover",
-				affects: "Awesomplete and search typeahead row highlight (`--awesomplete-hover-bg`).",
+				label: "Autocomplete Row Highlight",
+				affects: "The background that appears behind a row when you hover over a suggestion in a search typeahead or Link field dropdown.",
 			},
 		],
 	},
@@ -735,16 +737,16 @@ const textColors = [
 ]
 
 const inputBorderColors = [
-	{ key: "control_bg" as FormKey, label: "Input Fill" },
-	{ key: "control_bg_on_gray" as FormKey, label: "Input Fill on Grey" },
+	{ key: "control_bg" as FormKey, label: "Controls & Toolbar Buttons" },
+	{ key: "control_bg_on_gray" as FormKey, label: "Sidebar Filter Inputs" },
 	{ key: "border_color" as FormKey, label: "Border" },
 	{ key: "dark_border_color" as FormKey, label: "Strong Border" },
 ]
 
 const buttonColors = [
 	{ key: "btn_primary" as FormKey, label: "Primary Button" },
-	{ key: "btn_default_bg" as FormKey, label: "Default Button" },
-	{ key: "awesomplete_hover_bg" as FormKey, label: "Search Hover" },
+	{ key: "btn_default_bg" as FormKey, label: "Workspace Quick List Buttons" },
+	{ key: "awesomplete_hover_bg" as FormKey, label: "Autocomplete Row Highlight" },
 ]
 
 const shapeFields = [
