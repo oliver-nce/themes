@@ -181,7 +181,7 @@
 			</nav>
 
 			<div v-show="activeTab === 'colors'" class="editor-tab">
-				<EditorSection title="Brand">
+				<EditorSection title="Brand" :panel-help="deskPanelHelp.brand">
 					<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
 						<SwatchPicker
 							v-for="c in brandColors"
@@ -199,6 +199,7 @@
 				<EditorSection
 					title="Page &amp; Form"
 					hint="The large background areas visible behind and around forms."
+					:panel-help="deskPanelHelp.pageForm"
 				>
 					<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
 						<SwatchPicker
@@ -214,7 +215,11 @@
 					</div>
 				</EditorSection>
 
-				<EditorSection title="Text" hint="Colour of labels, body copy, and helper text.">
+				<EditorSection
+					title="Text"
+					hint="Colour of labels, body copy, and helper text."
+					:panel-help="deskPanelHelp.text"
+				>
 					<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
 						<SwatchPicker
 							v-for="c in textColors"
@@ -232,6 +237,7 @@
 				<EditorSection
 					title="Inputs &amp; Borders"
 					hint="Field fills and the lines that define form structure and layout."
+					:panel-help="deskPanelHelp.inputsBorders"
 				>
 					<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6">
 						<SwatchPicker
@@ -250,6 +256,7 @@
 				<EditorSection
 					title="Buttons &amp; Hover"
 					hint="Default (non-primary) button fill and search typeahead row highlight."
+					:panel-help="deskPanelHelp.buttonsHover"
 				>
 					<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
 						<SwatchPicker
@@ -267,7 +274,11 @@
 			</div>
 
 			<div v-show="activeTab === 'shape'" class="editor-tab">
-				<EditorSection title="Shape" hint="Frappe Desk layout tokens (--btn-height, --border-radius*).">
+				<EditorSection
+					title="Shape"
+					hint="Frappe Desk layout tokens (--btn-height, --border-radius*)."
+					:panel-help="deskPanelHelp.shape"
+				>
 					<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
 						<div v-for="field in shapeFields" :key="field.key">
 							<label class="block text-sm font-medium text-gray-700 mb-1">{{ field.label }}</label>
@@ -283,7 +294,7 @@
 			</div>
 
 			<div v-show="activeTab === 'typography'" class="editor-tab">
-			<EditorSection title="Fonts">
+			<EditorSection title="Fonts" :panel-help="deskPanelHelp.fonts">
 				<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
 					<FontSelectField
 						label="Body Font"
@@ -305,7 +316,7 @@
 				</div>
 			</EditorSection>
 
-			<EditorSection title="Weight">
+			<EditorSection title="Weight" :panel-help="deskPanelHelp.weight">
 				<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
 					<div>
 						<label class="block text-sm font-medium text-gray-700 mb-1.5">
@@ -333,7 +344,7 @@
 		</div>
 
 		<div v-show="activeTab === 'gantt'" class="editor-tab">
-				<EditorSection title="Gantt chart">
+				<EditorSection title="Gantt chart" :panel-help="deskPanelHelp.gantt">
 					<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
 						<SwatchPicker
 							v-for="c in ganttColors"
@@ -452,7 +463,7 @@
 import { ref, reactive, watch, computed, onUnmounted, onMounted } from "vue"
 import { useRoute } from "vue-router"
 import { createResource } from "frappe-ui"
-import EditorSection from "@/components/EditorSection.vue"
+import EditorSection, { type PanelHelpContent } from "@/components/EditorSection.vue"
 import FontSelectField from "@/components/FontSelectField.vue"
 import PasswordField from "@/components/PasswordField.vue"
 import SwatchPicker from "@/components/SwatchPicker.vue"
@@ -574,6 +585,127 @@ const brandColors = [
 	{ key: "primary_color" as FormKey, label: "Primary" },
 	{ key: "brand_color" as FormKey, label: "Brand" },
 ]
+
+const deskPanelHelp = {
+	brand: {
+		intro:
+			"Primary and Brand also publish Desk accent CSS variables, but in this editor their main job is to seed the shade grids shown in every other colour picker below.",
+		note:
+			"Changing Brand colours does not recolour every panel directly — it changes the palette of swatches available in the remaining panels.",
+		items: [
+			{
+				label: "Primary",
+				affects: "Primary buttons, links, and active states on Desk (`--primary-color`).",
+			},
+			{
+				label: "Brand",
+				affects: "Brand accent highlights on Desk (`--brand-color`).",
+			},
+		],
+	},
+	pageForm: {
+		items: [
+			{
+				label: "Page Background",
+				affects: "Desk page backdrop behind lists and forms (`--bg-color`).",
+			},
+			{
+				label: "Card / Form Surface",
+				affects:
+					"Form card/sheet fill, dropdown menus, and Form Builder editable field patches in normal view (`--fg-color` / `--card-bg`).",
+			},
+		],
+	},
+	text: {
+		items: [
+			{
+				label: "Body Text",
+				affects: "Field labels, body copy, and standard headings (`--text-color`).",
+			},
+			{
+				label: "Muted Text",
+				affects: "Secondary labels, helper text, and timestamps (`--text-muted`).",
+			},
+			{
+				label: "Light Text",
+				affects: "De-emphasised text on tinted or dark surfaces (`--text-light`).",
+			},
+		],
+	},
+	inputsBorders: {
+		note:
+			"Frappe Espresso removes borders from individual inputs — the Border token affects structural lines, not field outlines.",
+		items: [
+			{
+				label: "Input Fill",
+				affects:
+					"Live document form input backgrounds; Form Builder only on selected or hovered fields, not normal patches (`--control-bg`).",
+			},
+			{
+				label: "Input Fill on Grey",
+				affects: "Input fill when sitting on grey striped or list-row backgrounds (`--control-bg-on-gray`).",
+			},
+			{
+				label: "Border",
+				affects:
+					"Section dividers, form page outer edge, tabs, and sidebar rules (`--border-color`).",
+			},
+			{
+				label: "Strong Border",
+				affects: "Emphasis borders, table headers, and stronger dividers (`--dark-border-color`).",
+			},
+		],
+	},
+	buttonsHover: {
+		items: [
+			{
+				label: "Default Button",
+				affects: "Non-primary (default/secondary) button background (`--btn-default-bg`).",
+			},
+			{
+				label: "Search Hover",
+				affects: "Awesomplete and search typeahead row highlight (`--awesomplete-hover-bg`).",
+			},
+		],
+	},
+	shape: {
+		items: [
+			{ label: "Button Height", affects: "Default button control height (`--btn-height`)." },
+			{ label: "Border Radius", affects: "Standard corner radius on buttons, inputs, and cards (`--border-radius`)." },
+			{
+				label: "Large Border Radius",
+				affects: "Larger radius variant for modals and prominent cards (`--border-radius-lg`).",
+			},
+			{ label: "Full Border Radius", affects: "Pill and circular controls (`--border-radius-full`)." },
+		],
+	},
+	fonts: {
+		items: [
+			{
+				label: "Body Font",
+				affects: "Desk typeface stack for body text and UI copy (`--font-stack`).",
+			},
+		],
+	},
+	weight: {
+		items: [
+			{
+				label: "Body Weight",
+				affects: "Regular body text weight across Desk (`--weight-regular`).",
+			},
+		],
+	},
+	gantt: {
+		items: [
+			{ label: "Bar", affects: "Gantt task bar fill (`--g-bar-color`)." },
+			{ label: "Bar Border", affects: "Gantt task bar outline (`--g-bar-border`)." },
+			{ label: "Progress", affects: "Completed portion of a Gantt bar (`--g-progress-color`)." },
+			{ label: "Header Background", affects: "Gantt timeline header row (`--g-header-background`)." },
+			{ label: "Row", affects: "Alternating Gantt grid row background (`--g-row-color`)." },
+			{ label: "Today Highlight", affects: "Vertical marker for the current date (`--g-today-highlight`)." },
+		],
+	},
+} satisfies Record<string, PanelHelpContent>
 
 const pageFormColors = [
 	{ key: "bg_color" as FormKey, label: "Page Background" },
