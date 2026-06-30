@@ -215,9 +215,9 @@
 			<section>
 				<h2 class="section-label">Data Table</h2>
 				<div class="preview-surface rounded-xl overflow-hidden">
-					<table class="w-full text-sm">
+					<table class="theme-table w-full text-sm">
 						<thead>
-							<tr class="table-header">
+							<tr>
 								<th class="text-left px-4 py-3 font-semibold">Name</th>
 								<th class="text-left px-4 py-3 font-semibold">Email</th>
 								<th class="text-left px-4 py-3 font-semibold">Role</th>
@@ -226,12 +226,7 @@
 							</tr>
 						</thead>
 						<tbody>
-							<tr
-								v-for="(row, i) in tableRows"
-								:key="i"
-								class="table-row"
-								:class="i % 2 === 0 ? 'table-row-even' : 'table-row-odd'"
-							>
+							<tr v-for="(row, i) in tableRows" :key="i">
 								<td class="px-4 py-3 font-medium preview-text">{{ row.name }}</td>
 								<td class="px-4 py-3 preview-muted">{{ row.email }}</td>
 								<td class="px-4 py-3 preview-text">{{ row.role }}</td>
@@ -655,25 +650,13 @@ onUnmounted(() => window.removeEventListener("message", handleMessage))
 	color: var(--nce-color-text);
 }
 
-/* ── Table ── */
+/* ── Table (theme-table bundle from nce_theme.css; hover only) ── */
 
-.table-header {
-	background-color: var(--nce-color-surface, #f9fafb);
-	color: var(--nce-color-heading, #111827);
-	border-bottom: var(--nce-border-width-strong, 2px) solid var(--nce-color-border, #e5e7eb);
-}
-.table-row {
-	border-bottom: var(--nce-border-width, 1px) solid var(--nce-color-border, #e5e7eb);
+:deep(.theme-table tbody tr) {
 	transition: background-color var(--nce-transition-speed, 200ms) ease;
 }
-.table-row:hover {
+:deep(.theme-table tbody tr:hover) {
 	background-color: color-mix(in srgb, var(--nce-color-primary) 5%, transparent);
-}
-.table-row-even {
-	background-color: var(--nce-color-bg, #ffffff);
-}
-.table-row-odd {
-	background-color: var(--nce-color-row-alt, #f3f4f6);
 }
 
 /* ── Cards ── */

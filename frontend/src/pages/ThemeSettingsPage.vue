@@ -2101,7 +2101,9 @@ async function confirmSaveAsBaseTheme() {
 	}
 }
 
-// Push live theme vars to the page + preview window (debounced preview)
+// Push live theme vars to the page + preview window (debounced preview push)
+let pushTimer: ReturnType<typeof setTimeout> | null = null
+
 function applyLiveThemeVars() {
 	if (!editorLoaded.value) return
 	const vars = computeCSSVariables()
@@ -2109,15 +2111,14 @@ function applyLiveThemeVars() {
 	for (const [key, value] of Object.entries(vars)) {
 		if (value) root.style.setProperty(key, value)
 	}
-}
-
-// ─── AGENT:form-watch ─── deep watch form → applyLiveThemeVars + debounced preview push
-
-let pushTimer: ReturnType<typeof setTimeout> | null = null
-watch(form, () => {
-	applyLiveThemeVars()
 	if (pushTimer) clearTimeout(pushTimer)
 	pushTimer = setTimeout(pushToPreview, 80)
+}
+
+// ─── AGENT:form-watch ─── deep watch form → applyLiveThemeVars (includes preview sync)
+
+watch(form, () => {
+	applyLiveThemeVars()
 }, { deep: true })
 
 onMounted(() => {
