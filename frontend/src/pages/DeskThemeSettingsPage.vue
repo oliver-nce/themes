@@ -1091,7 +1091,7 @@ async function submitSaveAs() {
 }
 
 function openRenameDialog() {
-	if (!canRenameOrDelete.value) return
+	if (!canRenameTheme.value) return
 	renameDialog.name = editorMeta.theme_name || ""
 	renameDialog.error = ""
 	renameDialog.open = true
@@ -1122,7 +1122,7 @@ async function submitRename() {
 }
 
 function openDeleteDialog() {
-	if (!canRenameOrDelete.value) return
+	if (!canDeleteTheme.value) return
 	deleteDialog.error = ""
 	deleteDialog.open = true
 }

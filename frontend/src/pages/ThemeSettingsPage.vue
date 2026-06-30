@@ -1741,7 +1741,7 @@ const {
 	},
 )
 
-// ─── AGENT:permissions ─── canChangeStatus, canRenameOrDelete, canSaveAsDefaultTheme
+// ─── AGENT:permissions ─── canChangeStatus, canRenameTheme, canDeleteTheme, canSaveAsDefaultTheme
 
 const siteBaseThemeName = computed(() => {
 	const row = themesList.data?.find((t: any) => t.name === siteBaseTheme.value)
@@ -1947,7 +1947,7 @@ async function submitSaveAs() {
 }
 
 function openRenameDialog() {
-	if (!canRenameOrDelete.value) return
+	if (!canRenameTheme.value) return
 	renameDialog.name = editorMeta.theme_name || ""
 	renameDialog.error = ""
 	renameDialog.open = true
@@ -1986,7 +1986,7 @@ async function submitRename() {
 }
 
 function openDeleteDialog() {
-	if (!canRenameOrDelete.value) return
+	if (!canDeleteTheme.value) return
 	deleteDialog.error = ""
 	deleteDialog.open = true
 }
