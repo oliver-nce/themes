@@ -1,3 +1,17 @@
+<!--
+Neutral shade strip controlled by a warmth slider, showing the 600 hex and a reset.
+
+code-index:begin
+{
+ "purpose": "Neutral shade strip controlled by a warmth slider, showing the 600 hex and a reset.",
+ "read_when": "When changing how neutral warmth maps to the shade strip or the 600 swatch.",
+ "gotchas": [],
+ "keywords": ["warmth", "generateNeutralShades", "neutral600Hex", "Reset", "shade", "cool"],
+ "format": 1
+}
+code-index:end
+-->
+
 // Copyright (c) 2026 Oliver Reid. All rights reserved. Copying prohibited — see README.
 <template>
 	<div>

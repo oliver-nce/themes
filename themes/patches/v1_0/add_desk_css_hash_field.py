@@ -1,3 +1,16 @@
+"""Backfills Site Theme Config.desk_css_hash from the published desk CSS sidecar.
+
+code-index:begin
+{
+ "purpose": "Backfills Site Theme Config.desk_css_hash from the published desk CSS sidecar.",
+ "read_when": "When desk theme CSS is published but desk_css_hash on Site Theme Config is empty.",
+ "gotchas": [],
+ "keywords": ["desk_css_hash", "Site Theme Config", "_read_desk_css_hash", "publish_desk_theme", "css_hash"],
+ "format": 1
+}
+code-index:end
+"""
+
 import frappe
 
 from themes.utils.desk_css_writer import _read_desk_css_hash, publish_desk_theme

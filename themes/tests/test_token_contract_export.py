@@ -1,4 +1,15 @@
-"""Tests for export_token_contract() stability."""
+"""Tests for export_token_contract() stability.
+
+code-index:begin
+{
+ "purpose": "Checks that export_token_contract stays identical to the checked-in token_contract.json golden file.",
+ "read_when": "When changing the web token contract exported for the frontend build.",
+ "gotchas": [],
+ "keywords": ["export_token_contract", "token_contract.json", "UPDATE_GOLDEN", "GOLDEN_PATH", "sort_keys", "matches_golden"],
+ "format": 1
+}
+code-index:end
+"""
 from __future__ import annotations
 
 import json

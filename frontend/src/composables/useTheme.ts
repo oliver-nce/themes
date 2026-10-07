@@ -1,4 +1,14 @@
 // Copyright (c) 2026 Oliver Reid. All rights reserved. Copying prohibited — see README.
+//
+// code-index:begin
+// {
+//  "purpose": "Loads the active theme editor payload and sets primary color and font CSS variables.",
+//  "read_when": "When the standalone app should apply the saved theme onto the document root.",
+//  "gotchas": [],
+//  "keywords": ["useTheme", "get_active_theme_editor", "primary_color", "font_family", "nce-color-primary", "themeLoaded"],
+//  "format": 1
+// }
+// code-index:end
 import { ref } from "vue"
 import { createResource } from "frappe-ui"
 

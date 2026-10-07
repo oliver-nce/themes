@@ -1,4 +1,15 @@
-"""Minimal frappe stub for unit tests outside a Frappe bench."""
+"""Minimal frappe stub for unit tests outside a Frappe bench.
+
+code-index:begin
+{
+ "purpose": "Installs a minimal frappe module mock so unit tests can run outside a bench.",
+ "read_when": "When a test imports frappe and fails because no bench is running.",
+ "gotchas": [],
+ "keywords": ["install_frappe_stub", "MagicMock", "frappe.utils.password", "check_password", "sys.modules"],
+ "format": 1
+}
+code-index:end
+"""
 from __future__ import annotations
 
 import sys

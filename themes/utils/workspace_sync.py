@@ -1,4 +1,17 @@
-"""Sync Themes workspace JSON and remove orphaned Theme Version shortcuts."""
+"""Sync Themes workspace JSON and remove orphaned Theme Version shortcuts.
+
+code-index:begin
+{
+ "purpose": "Scrubs leftover Theme Version workspace rows and force-imports the Themes workspace JSON.",
+ "read_when": "When the Themes workspace still shows Theme Version shortcuts after that DocType was removed.",
+ "gotchas": [
+  "scrub_theme_version_workspace_rows deletes child rows directly to bypass Desk Link validation."
+ ],
+ "keywords": ["sync_themes_workspace", "Theme Version", "Workspace Shortcut", "import_file_by_path", "themes.json", "LEGACY_LINK_TARGETS"],
+ "format": 1
+}
+code-index:end
+"""
 
 import json
 import os

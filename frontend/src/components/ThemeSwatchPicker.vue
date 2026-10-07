@@ -1,3 +1,20 @@
+<!--
+Headless Vue control that opens the theme swatch picker and writes class fields on the form.
+
+code-index:begin
+{
+ "purpose": "Headless Vue control that opens the theme swatch picker and writes class fields on the form.",
+ "read_when": "When wiring the Vue theme swatch picker to host form get and set callbacks.",
+ "gotchas": [
+  "Without setField, writes may miss the save payload and dirty tracking.",
+  "Desk uses frappe.ui.themeSwatchPicker.open({ frm }); that path uses frm.set_value."
+ ],
+ "keywords": ["setField", "getField", "themeField", "valueField", "fgTypeField", "nceForm", "headless"],
+ "format": 1
+}
+code-index:end
+-->
+
 // Copyright (c) 2026 Oliver Reid. All rights reserved. Copying prohibited — see README.
 <script setup lang="ts">
 /**

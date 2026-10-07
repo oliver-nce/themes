@@ -1,3 +1,15 @@
+// Vite library build that emits the theme swatch picker as ES and UMD bundles.
+//
+// code-index:begin
+// {
+//  "purpose": "Vite library build that emits the theme swatch picker as ES and UMD bundles.",
+//  "read_when": "When the embeddable swatch picker bundle path or format needs to change.",
+//  "gotchas": [],
+//  "keywords": ["themeSwatchPicker", "theme-swatch-picker", "widget", "umd", "public/dist", "library build"],
+//  "format": 1
+// }
+// code-index:end
+
 import path from "node:path"
 import { defineConfig } from "vite"
 

@@ -1,6 +1,18 @@
 """Fresh-install verification for Task 13 step 6.
 
 Run: bench --site <site> execute themes.verify_fresh_install.run
+
+code-index:begin
+{
+ "purpose": "Bench check that a fresh install has a Default NCE Theme, a matching base_theme pointer, and non-empty nce_theme.css.",
+ "read_when": "When confirming after_install left Site Theme Config, the Default theme, and published CSS in place.",
+ "gotchas": [
+  "The check fails unless Site Theme Config.base_theme matches the NCE Theme marked is_default."
+ ],
+ "keywords": ["is_default", "base_theme", "nce_theme.css", "css_hash", "Site Theme Config", "theme_json"],
+ "format": 1
+}
+code-index:end
 """
 
 import os

@@ -1,4 +1,17 @@
-"""API response shape tests for editor helpers (mocked — no Frappe bench required)."""
+"""API response shape tests for editor helpers (mocked — no Frappe bench required).
+
+code-index:begin
+{
+ "purpose": "Mocked tests of web and desk editor response shapes, including is_active versus the Default flag.",
+ "read_when": "When changing editor response keys or desk is_active semantics.",
+ "gotchas": [
+  "A Default desk theme can be Inactive; is_active must follow status, not the Default flag."
+ ],
+ "keywords": ["WEB_EDITOR_KEYS", "DESK_EDITOR_KEYS", "is_default_theme", "is_base_theme", "is_active", "css_hash", "site_active_theme", "frappe_stub"],
+ "format": 1
+}
+code-index:end
+"""
 from __future__ import annotations
 
 import unittest

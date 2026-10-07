@@ -1,3 +1,17 @@
+<!--
+Theme editor shell with sidebar links for web and desk theme pages.
+
+code-index:begin
+{
+ "purpose": "Theme editor shell with sidebar links for web and desk theme pages.",
+ "read_when": "When the standalone frontend navigation or full-page preview layout changes.",
+ "gotchas": [],
+ "keywords": ["router-view", "isStandalone", "Theme Editor", "Desk Themes", "navSections", "sidebar"],
+ "format": 1
+}
+code-index:end
+-->
+
 <template>
 	<!-- Standalone pages (e.g. preview) render without the shell -->
 	<router-view v-if="isStandalone" />

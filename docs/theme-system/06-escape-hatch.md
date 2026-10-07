@@ -1,3 +1,23 @@
+<!--
+Documents theme-bg-themed, which computes black or white text from a runtime --bg color.
+
+code-index:begin
+{
+ "purpose": "Documents theme-bg-themed, which computes black or white text from a runtime --bg color.",
+ "read_when": "When a shade is chosen at runtime for charts, pickers, or data-driven backgrounds.",
+ "gotchas": [
+  "The computed foreground is always pure black or pure white.",
+  "Do not put theme-text-* on the same element unless you mean to override the computed color.",
+  "Only mono foreground ships; a tonal theme-bg-themed variant is not currently shipped.",
+  "Typos in --bg pass silently because there is no autocomplete.",
+  "Relative oklch() needs Chromium 119+, Safari 16.4+, or Firefox 128+; older browsers need an inline color."
+ ],
+ "keywords": ["theme-bg-themed", "oklch", "--bg", "0.62", "Chromium", "Firefox", "mono", "shade"],
+ "format": 1
+}
+code-index:end
+-->
+
 # 06 — Dynamic Shade Escape Hatch
 
 For cases where the shade isn't known at author time (color picker previews, chart fills, data-driven backgrounds).

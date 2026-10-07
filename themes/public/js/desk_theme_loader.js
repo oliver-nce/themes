@@ -2,6 +2,18 @@
  * Load nce_desk_theme.css using frappe.boot.desk_theme_css_url so saves apply
  * without bench restart. hooks.app_include_css URLs are fixed at worker import;
  * bootinfo is rebuilt per Desk session with the latest publish hash.
+ *
+ * code-index:begin
+ * {
+ *  "purpose": "Injects the published desk theme stylesheet from the boot CSS URL each Desk session.",
+ *  "read_when": "When a saved desk theme does not show up until the bench is restarted.",
+ *  "gotchas": [
+ *   "hooks.app_include_css URLs are fixed at worker import; this loader reads bootinfo instead."
+ *  ],
+ *  "keywords": ["desk_theme_css_url", "nce_desk_theme.css", "syncDeskThemeCss", "whenDeskReady", "bench restart"],
+ *  "format": 1
+ * }
+ * code-index:end
  */
 (function () {
 	function syncDeskThemeCss() {

@@ -1,3 +1,17 @@
+<!--
+Labelled hex colour input with a native colour picker and an optional generated shade strip.
+
+code-index:begin
+{
+ "purpose": "Labelled hex colour input with a native colour picker and an optional generated shade strip.",
+ "read_when": "When changing the single-colour field or its optional shade strip.",
+ "gotchas": [],
+ "keywords": ["generateShades", "showShades", "modelValue", "type color", "shade", "hex"],
+ "format": 1
+}
+code-index:end
+-->
+
 <template>
 	<div>
 		<label class="block text-sm font-medium text-gray-700 mb-1.5">{{ label }}</label>

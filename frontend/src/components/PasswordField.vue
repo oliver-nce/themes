@@ -1,3 +1,17 @@
+<!--
+Password input with a show-hide toggle that emits the value and an enter key.
+
+code-index:begin
+{
+ "purpose": "Password input with a show-hide toggle that emits the value and an enter key.",
+ "read_when": "When changing the password visibility toggle or the enter key emit.",
+ "gotchas": [],
+ "keywords": ["password", "showPassword", "current-password", "Hide password", "Show password", "update:modelValue"],
+ "format": 1
+}
+code-index:end
+-->
+
 <template>
 	<div class="relative w-full max-w-sm mb-2">
 		<input

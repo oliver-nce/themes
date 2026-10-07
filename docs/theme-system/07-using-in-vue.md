@@ -1,3 +1,24 @@
+<!--
+Decision tree for theme- classes, CSS variables, or theme-bg-themed in Vue components.
+
+code-index:begin
+{
+ "purpose": "Decision tree for theme- classes, CSS variables, or theme-bg-themed in Vue components.",
+ "read_when": "When authoring a Vue component that needs theme color, spacing, borders, or buttons.",
+ "gotchas": [
+  "Raw hex literals are never allowed; they break the theming chain.",
+  "A bare bg-primary is not safe on Desk; always use the theme- form so Desk and Bootstrap do not win.",
+  "No theme-border-b class exists; use scoped CSS with the border-width variables for row lines.",
+  "Do not write color: white in a scoped style as a default; it fights light backgrounds.",
+  "Do not drop the theme- prefix, and do not prefix vanilla utilities such as w-full.",
+  "The editor SPA Tailwind build is not the downstream contract."
+ ],
+ "keywords": ["THEME_CLASS_CONTRACT", "theme-bg-primary", "theme-bg-themed", "theme-border", "Frappe Desk", "theme-border-b", "color: white", "button_hierarchy"],
+ "format": 1
+}
+code-index:end
+-->
+
 # 07 — Using Theme Classes in Vue
 
 Decision tree and concrete examples for component authors.

@@ -1,3 +1,24 @@
+<!--
+System prompt for a Themes agent to finish diagnosis in one response and not invent class names.
+
+code-index:begin
+{
+ "purpose": "System prompt for a Themes agent to finish diagnosis in one response and not invent class names.",
+ "read_when": "When setting agent rules for diagnosis, Frappe Context routing, or theme-class recommendations.",
+ "gotchas": [
+  "Finish all research and the complete diagnosis in one response; do not stop after reading some files.",
+  "Never invent a class name; it must be in THEME_CLASS_CONTRACT.json with status shipping, using the theme- prefix.",
+  "Never recommend text-white or text-black as the default for a theme background class.",
+  "Never hardcode hex literals in component recommendations; use a theme- class or var(--nce-).",
+  "Do not bulk-load the Frappe Context directory or the docs/theme-system folder.",
+  "Do not write code unless the user explicitly asks."
+ ],
+ "keywords": ["THEME_CLASS_CONTRACT", "fc_route", "theme-bg-primary", "Diagnosis", "Frappe Context", "shipping", "hex literals", "text-white"],
+ "format": 1
+}
+code-index:end
+-->
+
 # Agent System Prompt — Themes Project
 
 Paste this into the agent's system instructions (Cursor `.rules`, Claude Code project rules, etc.).

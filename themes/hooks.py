@@ -1,3 +1,19 @@
+"""Frappe app hooks that include published theme CSS, register the theme editor routes, and call after_install.
+
+code-index:begin
+{
+ "purpose": "Frappe app hooks that include published theme CSS, register the theme editor routes, and call after_install.",
+ "read_when": "When changing included stylesheets, theme editor routes, or the install hook.",
+ "gotchas": [
+  "The CSS hash is read at hooks import time, so it must be DB-free and never raise; problems fall back to the bare path.",
+  "Never monkey-patch frappe.get_hooks; a previous approach broke boot."
+ ],
+ "keywords": ["app_include_css", "website_route_rules", "after_install", "nce_theme.css", "cache-buster", "desk_theme_loader", "theme-editor", "frappe.get_hooks"],
+ "format": 1
+}
+code-index:end
+"""
+
 app_name = "themes"
 app_title = "Themes"
 app_publisher = "Oliver Reid"

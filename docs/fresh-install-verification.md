@@ -1,3 +1,19 @@
+<!--
+Staging checklist that a fresh Themes install creates Site Theme Config, Default, and nce_theme.css.
+
+code-index:begin
+{
+ "purpose": "Staging checklist that a fresh Themes install creates Site Theme Config, Default, and nce_theme.css.",
+ "read_when": "When verifying after_install on a throwaway site on the staging bench.",
+ "gotchas": [
+  "Phase 5 note: Theme Version and Theme Settings DocTypes are removed."
+ ],
+ "keywords": ["after_install", "Site Theme Config", "nce_theme.css", "verify_fresh_install", "themes-fresh-test", "NCE Theme", "active_theme", "bench"],
+ "format": 1
+}
+code-index:end
+-->
+
 # Fresh Install Verification (Task 13, Step 6)
 
 Run on the **staging bench** (`manager.ncesoccer.com` server). There is no local bench.

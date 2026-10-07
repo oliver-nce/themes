@@ -1,3 +1,23 @@
+<!--
+How the editor publishes a :root palette and Active data-nce-theme blocks into nce_theme.css.
+
+code-index:begin
+{
+ "purpose": "How the editor publishes a :root palette and Active data-nce-theme blocks into nce_theme.css.",
+ "read_when": "When you need the publish pipeline, Base versus Default theme, or Active scoped palettes.",
+ "gotchas": [
+  "Do not confuse Base Theme (repo seed, never rendered directly) with Default Theme (the live :root fallback).",
+  "Site Theme Config.base_theme is misnamed: it holds the Default Theme, not the Base Theme.",
+  "NCE Theme name is set from theme_name at creation and never changes after.",
+  "publish_theme() always rebuilds the full CSS; utility classes are not repeated per palette.",
+  "Delete requires the theme to be Inactive and not the Default theme."
+ ],
+ "keywords": ["publish_theme", "data-nce-theme", "base_theme", "theme_json", "css_writer", "nce_theme.css", "Inactive", "Default Theme"],
+ "format": 1
+}
+code-index:end
+-->
+
 # 01 — Architecture
 
 ## The pipeline

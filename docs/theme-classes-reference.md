@@ -1,3 +1,24 @@
+<!--
+Copy-paste catalog of shipped theme- classes for color, type, borders, spacing, and buttons.
+
+code-index:begin
+{
+ "purpose": "Copy-paste catalog of shipped theme- classes for color, type, borders, spacing, and buttons.",
+ "read_when": "When choosing a theme class name or pasting a lookup block into an agent prompt.",
+ "gotchas": [
+  "If this file disagrees with THEME_CLASS_CONTRACT.json, the JSON wins.",
+  "Emitted classes use a theme- prefix so they never collide with Frappe Desk, Bootstrap, or Tailwind.",
+  "Never hardcode hex literals in components.",
+  "Panel CTA is theme-bg-primary; Cancel is theme-bg-primary-100 theme-border, never variant=outline with page bg fill.",
+  "Never hardcode color: white as a class default.",
+  "Do not drop the theme- prefix, and do not add it to vanilla utilities such as flex or font-bold."
+ ],
+ "keywords": ["theme-bg-primary", "theme-text-muted", "THEME_CLASS_CONTRACT", "theme-bg-themed", "theme-border-strong", "fg-tonal", "button_hierarchy", "shipping"],
+ "format": 1
+}
+code-index:end
+-->
+
 # Theme Class Reference
 
 Copy-paste table of every theme-aware class this app ships. Drop the relevant section into an agent prompt as a quick lookup.

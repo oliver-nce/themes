@@ -1,5 +1,18 @@
 #!/usr/bin/env python3
-"""Generate frontend/src/domain/theme-tokens.ts from themes.utils.theme_tokens."""
+"""Generate frontend/src/domain/theme-tokens.ts from themes.utils.theme_tokens.
+
+code-index:begin
+{
+ "purpose": "Generates frontend/src/domain/theme-tokens.ts from themes.utils.theme_tokens.",
+ "read_when": "Changing the token contract that the frontend imports from theme-tokens.ts.",
+ "gotchas": [
+  "The generated theme-tokens.ts file says do not edit by hand; regenerate with npm run export:tokens or this script."
+ ],
+ "keywords": ["theme-tokens.ts", "export_token_contract", "render_ts", "do not edit by hand", "CURATED_SHADES", "npm run export:tokens", "theme_tokens.py"],
+ "format": 1
+}
+code-index:end
+"""
 from __future__ import annotations
 
 import json

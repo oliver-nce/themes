@@ -1,3 +1,17 @@
+/*
+ * Checked-in expected CSS snapshot used by tests for web CSS with a warmer neutral color.
+ *
+ * code-index:begin
+ * {
+ *  "purpose": "Checked-in expected CSS snapshot used by tests for web CSS with a warmer neutral color.",
+ *  "read_when": "When a CSS snapshot test fails on the neutral warmth web theme output.",
+ *  "gotchas": [],
+ *  "keywords": ["--nce-color-neutral", "#9d9792", "canonical variables", "--nce-color-primary", "--nce-color-neutral-fg", "--nce-color-table-header"],
+ *  "format": 1
+ * }
+ * code-index:end
+ */
+
 :root {
 
 	/* ── Theme: canonical variables ── */

@@ -1,4 +1,17 @@
-"""Write the bundled base desk theme into app source files (for git commit + new installs)."""
+"""Write the bundled base desk theme into app source files (for git commit + new installs).
+
+code-index:begin
+{
+ "purpose": "Writes the bundled Base desk theme into base_desk_theme.json and refreshes the default_desk_theme.py install fallback.",
+ "read_when": "When changing how the desk repo seed is saved for git commit and new installs.",
+ "gotchas": [
+  "This overwrites themes/utils/default_desk_theme.py, including its embedded fallback payload."
+ ],
+ "keywords": ["bundle_base_desk_theme_to_app", "base_desk_theme.json", "default_desk_theme.py", "load_bundled_base_desk_theme_payload", "git commit", "_FALLBACK_PAYLOAD"],
+ "format": 1
+}
+code-index:end
+"""
 
 import json
 import os

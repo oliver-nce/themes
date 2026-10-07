@@ -1,3 +1,16 @@
+"""Reads the installed Frappe major version and whether it is v16 or later.
+
+code-index:begin
+{
+ "purpose": "Reads the installed Frappe major version and whether it is v16 or later.",
+ "read_when": "When theme code must branch between Frappe 15 and 16 behaviour.",
+ "gotchas": [],
+ "keywords": ["get_frappe_major_version", "is_v16_or_later", "frappe.__version__", "major version"],
+ "format": 1
+}
+code-index:end
+"""
+
 import frappe
 
 

@@ -1,4 +1,17 @@
-"""Write the bundled base theme into app source files (for git commit + new installs)."""
+"""Write the bundled base theme into app source files (for git commit + new installs).
+
+code-index:begin
+{
+ "purpose": "Writes the repo Base Theme seed into base_theme.json and refreshes the default_theme.py install fallback.",
+ "read_when": "When changing how the web Base Theme seed is saved for git commit and new installs.",
+ "gotchas": [
+  "This overwrites themes/utils/default_theme.py, including its embedded fallback payload."
+ ],
+ "keywords": ["bundle_base_theme_to_app", "base_theme.json", "default_theme.py", "load_bundled_base_theme_payload", "git commit", "_FALLBACK_PAYLOAD"],
+ "format": 1
+}
+code-index:end
+"""
 
 import json
 import os

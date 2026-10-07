@@ -1,3 +1,24 @@
+<!--
+Phase 2 task prompts that move Theme Settings into NCE Theme, Site Theme Config, and a switcher.
+
+code-index:begin
+{
+ "purpose": "Phase 2 task prompts that move Theme Settings into NCE Theme, Site Theme Config, and a switcher.",
+ "read_when": "When following the sequential restructure tasks from color utilities through fresh-install checks.",
+ "gotchas": [
+  "Do not import frappe in theme_color_utils.py; only json and math are needed.",
+  "Do not delete theme_settings.py helpers in Task 1; that happens in Task 3.",
+  "Do not publish during install or migrate; the patch calls publish_version explicitly.",
+  "If a step fails, migrate --skip-failing is not the answer; capture the traceback and stop.",
+  "The migration patch is idempotent and short-circuits when NCE Theme Default already exists.",
+  "Per-page theming is postponed; this plan drives one global nce_theme.css."
+ ],
+ "keywords": ["Site Theme Config", "theme_color_utils", "css_writer", "after_install", "nce_theme.css", "Theme Settings", "generate_css", "Theme Version"],
+ "format": 1
+}
+code-index:end
+-->
+
 # Themes App Restructure — Phase 2 Coding Plan
 
 Scoped to the three user-approved deliverables:

@@ -1,3 +1,19 @@
+<!--
+Font family dropdown that previews each option in its own CSS font stack.
+
+code-index:begin
+{
+ "purpose": "Font family dropdown that previews each option in its own CSS font stack.",
+ "read_when": "When changing how font families are listed, previewed, or selected.",
+ "gotchas": [
+  "Generic fallback per curated family mirrors FONT_REGISTRY in css_writer.py."
+ ],
+ "keywords": ["font-select", "fontStack", "FONT_GENERIC", "System Default", "FONT_REGISTRY", "listbox"],
+ "format": 1
+}
+code-index:end
+-->
+
 <template>
 	<div ref="rootEl" class="font-select">
 		<label class="block text-sm font-medium text-gray-700 mb-1.5">{{ label }}</label>

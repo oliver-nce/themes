@@ -1,3 +1,19 @@
+"""NCE Theme controller that keeps a single Default theme and republishes web CSS on update or trash.
+
+code-index:begin
+{
+ "purpose": "NCE Theme controller that keeps a single Default theme and republishes web CSS on update or trash.",
+ "read_when": "When changing web theme validation or when nce_theme.css is republished from the document.",
+ "gotchas": [
+  "Throws if another theme is already marked default.",
+  "on_update and on_trash skip publishing during install or migrate."
+ ],
+ "keywords": ["NCETheme", "is_default", "publish_theme", "theme_json", "get_site_base_theme_name", "already marked default", "in_migrate"],
+ "format": 1
+}
+code-index:end
+"""
+
 # Copyright (c) 2026 Oliver Reid. All rights reserved. Copying prohibited — see README.
 import re
 import json

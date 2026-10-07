@@ -1,3 +1,17 @@
+// Dialog shown when the theme swatch picker is blocked for a missing or unavailable theme.
+//
+// code-index:begin
+// {
+//  "purpose": "Dialog shown when the theme swatch picker is blocked for a missing or unavailable theme.",
+//  "read_when": "When changing blocked-picker messages or how the reason is chosen from the theme link.",
+//  "gotchas": [
+//   "A blank theme link is no_theme_selected; any non-blank link is theme_not_available."
+//  ],
+//  "keywords": ["themePickerBlockReason", "no_theme_selected", "theme_not_available", "msgprint", "Theme required", "Active"],
+//  "format": 1
+// }
+// code-index:end
+
 export type ThemePickerBlockReason = "no_theme_selected" | "theme_not_available"
 
 const MESSAGES: Record<ThemePickerBlockReason, { title: string; body: string }> = {

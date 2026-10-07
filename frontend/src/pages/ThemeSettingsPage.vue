@@ -1,3 +1,24 @@
+<!--
+Site Theme Editor for colours, typography, layout, live CSS variables, and base theme publishing.
+
+code-index:begin
+{
+ "purpose": "Site Theme Editor for colours, typography, layout, live CSS variables, and base theme publishing.",
+ "read_when": "Changing theme editor tabs, live CSS variables, save and restore, or Save as base theme.",
+ "gotchas": [
+  "Neutral: always emit from warmth alone.",
+  "Retired picker options map to Public Sans when loading saved themes.",
+  "Skip the confirm dialog: save any current changes first, then load the app base into the editor. If the save fails, abort so edits aren't lost.",
+  "Save or revert changes before changing availability.",
+  "Rare release action: sets the site base theme, rebuilds CSS, and writes bundled files into the app for new installs. Commit and push after running.",
+  "Unsaved-changes confirm when switching themes (not restore)."
+ ],
+ "keywords": ["Theme Editor", "nce-theme-update", "neutral_color_warmth", "brand_palette_mode", "base_theme.json", "Public Sans", "AGENT:TAB", "nce_theme.css"],
+ "format": 1
+}
+code-index:end
+-->
+
 // Copyright (c) 2026 Oliver Reid. All rights reserved. Copying prohibited — see README.
 <template>
 	<div class="max-w-6xl mx-auto px-6 py-4">

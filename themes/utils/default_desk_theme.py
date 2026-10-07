@@ -1,4 +1,17 @@
-"""Default Desk chrome CSS variable payload for new NCE Desk Theme installs."""
+"""Default Desk chrome CSS variable payload for new NCE Desk Theme installs.
+
+code-index:begin
+{
+ "purpose": "Loads the bundled Base desk theme JSON, or the embedded fallback, as the payload for new desk theme installs.",
+ "read_when": "When checking the desk seed copied onto a new Default NCE Desk Theme.",
+ "gotchas": [
+  "If base_desk_theme.json is missing or invalid, the embedded _FALLBACK_PAYLOAD is returned."
+ ],
+ "keywords": ["load_bundled_base_desk_theme_payload", "base_desk_theme.json", "DESK_THEME_DEFAULT_PAYLOAD", "primary_color", "btn_primary", "_FALLBACK_PAYLOAD"],
+ "format": 1
+}
+code-index:end
+"""
 
 import json
 import os

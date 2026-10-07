@@ -1,3 +1,24 @@
+<!--
+Desk Theme Editor for NCE Desk Theme colours, shape, typography, Gantt, and live preview.
+
+code-index:begin
+{
+ "purpose": "Desk Theme Editor for NCE Desk Theme colours, shape, typography, Gantt, and live preview.",
+ "read_when": "Changing desk theme fields, save and restore, availability, or the preview postMessage.",
+ "gotchas": [
+  "Changing Brand colours does not recolour every panel directly — it changes the palette of swatches available in the remaining panels.",
+  "Frappe's flat design removes borders from individual input fields — the Border tokens affect structural lines around sections and pages, not field edges.",
+  "Primary Button defaults to the same colour as Brand → Primary. Set it here to give Save and Submit their own colour independently.",
+  "Sidebar Filter Inputs have no effect outside the sidebar.",
+  "Workspace Quick List Buttons have no effect on standard list or form pages.",
+  "Save or revert changes before changing availability."
+ ],
+ "keywords": ["Desk Theme Editor", "NCE Desk Theme", "nce-desk-theme-update", "Restore to Base Desk Theme", "deskPayloadToCssVars", "font_weight_body", "Gantt", "Set as Default desk theme"],
+ "format": 1
+}
+code-index:end
+-->
+
 // Copyright (c) 2026 Oliver Reid. All rights reserved. Copying prohibited — see README.
 <template>
 	<div class="max-w-6xl mx-auto px-6 py-4">

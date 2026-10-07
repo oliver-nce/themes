@@ -1,3 +1,16 @@
+"""Copies Theme Version JSON onto NCE Theme and clears the active_version pointer.
+
+code-index:begin
+{
+ "purpose": "Copies Theme Version JSON onto NCE Theme and clears the active_version pointer.",
+ "read_when": "When theme payloads still live on Theme Version instead of NCE Theme.theme_json.",
+ "gotchas": [],
+ "keywords": ["Theme Version", "theme_json", "active_version", "publish_theme", "parent_theme", "published"],
+ "format": 1
+}
+code-index:end
+"""
+
 import frappe
 from themes.utils.css_writer import publish_theme
 

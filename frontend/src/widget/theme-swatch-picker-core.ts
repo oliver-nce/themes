@@ -1,4 +1,18 @@
 // Copyright (c) 2026 Oliver Reid. All rights reserved. Copying prohibited — see README.
+//
+// code-index:begin
+// {
+//  "purpose": "Modal that picks a theme class, injects picker CSS, and saves the class on confirm.",
+//  "read_when": "When changing picker open and close, lockKind, foreground type, or injected CSS.",
+//  "gotchas": [
+//   "When lockKind is set, Kind radios are hidden and the picker always emits theme-{lockKind}-* classes.",
+//   "An empty theme slug cancels open and shows the no_theme_selected dialog.",
+//   "If theme-bg-primary-500 has no background, nce_theme.css may not be loaded and swatches may not paint."
+//  ],
+//  "keywords": ["lockKind", "theme slug", "nce_theme.css", "data-nce-theme", "composeThemeClass", "Foreground Type", "injectStyles"],
+//  "format": 1
+// }
+// code-index:end
 import {
 	CURATED_SHADES,
 	KINDS,

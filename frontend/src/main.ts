@@ -1,3 +1,15 @@
+// Vue app entry that mounts the theme editor with Frappe UI, the router, and resources.
+//
+// code-index:begin
+// {
+//  "purpose": "Vue app entry that mounts the theme editor with Frappe UI, the router, and resources.",
+//  "read_when": "When the standalone frontend fails to boot or Frappe UI plugins are missing.",
+//  "gotchas": [],
+//  "keywords": ["createApp", "frappe-ui", "router", "resourceFetcher", "pageMetaPlugin", "resourcesPlugin", "app entry"],
+//  "format": 1
+// }
+// code-index:end
+
 import { createApp } from "vue"
 import {
 	Button,

@@ -1,3 +1,22 @@
+<!--
+Summary of how NCE Theme records compile into site-wide nce_theme.css and theme- utility classes.
+
+code-index:begin
+{
+ "purpose": "Summary of how NCE Theme records compile into site-wide nce_theme.css and theme- utility classes.",
+ "read_when": "When you need the data model, publish flow, CSS variable list, or install commands.",
+ "gotchas": [
+  "NCE Theme name is the primary key from theme_name at creation and never changes.",
+  "Base Theme is the repo seed and is never rendered directly; Default Theme is the live :root fallback.",
+  "Site Theme Config.base_theme is a legacy field name that holds the Default Theme.",
+  "publish_theme() always rebuilds the entire nce_theme.css file; there is no partial publish."
+ ],
+ "keywords": ["nce_theme.css", "theme_json", "data-nce-theme", "publish_theme", "Site Theme Config", "css_writer", "OKLCH", "theme-bg-primary"],
+ "format": 1
+}
+code-index:end
+-->
+
 # Themes — Implementation Summary
 
 ## Architecture

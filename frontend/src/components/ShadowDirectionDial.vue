@@ -1,3 +1,19 @@
+<!--
+Circular slider that sets shadow offset direction in degrees by pointer, touch, or keys.
+
+code-index:begin
+{
+ "purpose": "Circular slider that sets shadow offset direction in degrees by pointer, touch, or keys.",
+ "read_when": "When changing how shadow direction is dragged, touched, or stepped from the keyboard.",
+ "gotchas": [
+  "180° = down. Drag the handle to set offset direction."
+ ],
+ "keywords": ["Shadow Direction", "angleFromPointer", "dialHandlePosition", "displayAngle", "ArrowLeft", "shadow-direction"],
+ "format": 1
+}
+code-index:end
+-->
+
 <template>
 	<div class="shadow-direction">
 		<label class="block text-sm font-medium text-gray-700 mb-1.5">

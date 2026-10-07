@@ -1,4 +1,17 @@
-"""Tests for movable is_default flag and promote-to-default behavior."""
+"""Tests for movable is_default flag and promote-to-default behavior.
+
+code-index:begin
+{
+ "purpose": "Tests that is_default alone marks the Default theme and that promote moves the flag and the config pointer.",
+ "read_when": "When changing promotion to Default or whether the Default theme can be renamed.",
+ "gotchas": [
+  "Rename is allowed for the Default theme even when its status is Active."
+ ],
+ "keywords": ["is_default", "_promote_to_default", "WEB_FAMILY", "set_base_theme_name", "theme_name", "frappe_stub"],
+ "format": 1
+}
+code-index:end
+"""
 from __future__ import annotations
 
 import unittest

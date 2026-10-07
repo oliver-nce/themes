@@ -1,3 +1,19 @@
+/*
+ * Layout and colour styles for the theme swatch picker modal, radios, and swatches.
+ *
+ * code-index:begin
+ * {
+ *  "purpose": "Layout and colour styles for the theme swatch picker modal, radios, and swatches.",
+ *  "read_when": "When changing the theme swatch picker modal layout, z-index, or swatch appearance.",
+ *  "gotchas": [
+ *   "The backdrop is a full-viewport layer that blocks clicks on the host form, including the Theme field, while open."
+ *  ],
+ *  "keywords": ["nce-theme-swatch-picker", "tsp-modal-bg", "backdrop", "swatch-strip", "chrome-pick", "z-index"],
+ *  "format": 1
+ * }
+ * code-index:end
+ */
+
 .nce-theme-swatch-picker {
 	--tsp-modal-bg: var(--nce-color-surface, #fff);
 	--tsp-modal-border: var(--nce-color-border, #e5e7eb);

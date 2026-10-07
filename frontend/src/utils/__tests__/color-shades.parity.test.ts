@@ -1,3 +1,17 @@
+// Vitest parity checks that color-shades matches the Python color math golden file.
+//
+// code-index:begin
+// {
+//  "purpose": "Vitest parity checks that color-shades matches the Python color math golden file.",
+//  "read_when": "Changing generateShades, neutral shades, foreground picks, or the Python golden JSON.",
+//  "gotchas": [
+//   "Python golden uses lowercase; TS oklchToHex returns uppercase."
+//  ],
+//  "keywords": ["color-shades parity", "generateShades", "generateNeutralShades", "effectiveRoleHex", "pickFgMono", "pickFgTonal", "color_math_parity.json", "oklchToHex"],
+//  "format": 1
+// }
+// code-index:end
+
 import { readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";

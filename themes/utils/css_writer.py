@@ -15,6 +15,19 @@ generation differs (OKLCH shade classes vs flat Desk var blocks).
 
 Token tables live in theme_tokens.py; color math in theme_color_utils.py. Keep in sync with
 frontend/src/utils/color-shades.ts and src/widget/constants.ts.
+
+code-index:begin
+{
+ "purpose": "Builds and publishes web nce_theme.css so the Default theme drives :root and Active themes are scoped.",
+ "read_when": "When changing web CSS variables, utility classes, or how the Default theme is published.",
+ "gotchas": [
+  "Utility classes are gated by fields present in the default payload; the default defines all standard roles.",
+  "Unregistered font names, including System Default, emit no @font-face rules."
+ ],
+ "keywords": ["generate_site_css", "publish_theme", "data-nce-theme", "FONT_REGISTRY", "Default theme", "OKLCH", "theme-bg", "nce_theme.css"],
+ "format": 1
+}
+code-index:end
 """
 import json
 import os

@@ -1,5 +1,20 @@
 # Copyright (c) 2026 Oliver Reid. All rights reserved. Copying prohibited — see README.
-"""Read/write Site Theme Config.base_theme across rename from active_theme."""
+"""Read/write Site Theme Config.base_theme across rename from active_theme.
+
+code-index:begin
+{
+ "purpose": "Reads the Default Theme (is_default) that drives :root, and reads or writes the Site Theme Config link fields.",
+ "read_when": "When changing how the live Default Theme or the config theme links are stored.",
+ "gotchas": [
+  "get_site_default_theme_name drives :root from is_default and falls back to base_theme only when no row is flagged.",
+  "get_site_base_theme_name still reads the pre-migrate active_theme field.",
+  "set_site_base_theme_name writes both base_theme and active_theme during migration."
+ ],
+ "keywords": ["get_site_default_theme_name", "get_site_base_theme_name", "base_desk_theme", "active_theme", "is_default", "tabSingles"],
+ "format": 1
+}
+code-index:end
+"""
 
 from __future__ import annotations
 

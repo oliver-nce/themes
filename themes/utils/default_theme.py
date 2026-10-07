@@ -1,4 +1,17 @@
-"""Default token payload for new NCE Theme installs."""
+"""Default token payload for new NCE Theme installs.
+
+code-index:begin
+{
+ "purpose": "Loads the repo Base Theme seed from base_theme.json, or the embedded fallback, for new Default Theme installs.",
+ "read_when": "When checking the token seed copied onto a new Default NCE Theme.",
+ "gotchas": [
+  "If base_theme.json is missing or invalid, the embedded _FALLBACK_PAYLOAD is returned."
+ ],
+ "keywords": ["load_bundled_base_theme_payload", "base_theme.json", "DEFAULT_THEME_PAYLOAD", "brand_palette_mode", "neutral_color_warmth", "primary_color"],
+ "format": 1
+}
+code-index:end
+"""
 
 import json
 import os

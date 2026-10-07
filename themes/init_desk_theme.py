@@ -1,4 +1,17 @@
-"""Initialize NCE Desk Theme Default and generate nce_desk_theme.css."""
+"""Initialize NCE Desk Theme Default and generate nce_desk_theme.css.
+
+code-index:begin
+{
+ "purpose": "Ensures the Default NCE Desk Theme exists, sets base_desk_theme when missing, and publishes nce_desk_theme.css.",
+ "read_when": "When re-running desk theme setup or checking how the Default desk theme is published.",
+ "gotchas": [
+  "An existing Site Theme Config.base_desk_theme link is kept; only a missing or broken link is replaced."
+ ],
+ "keywords": ["initialize_desk_theme", "base_desk_theme", "nce_desk_theme.css", "publish_desk_theme", "Site Theme Config", "NCE Desk Theme"],
+ "format": 1
+}
+code-index:end
+"""
 
 import json
 import os

@@ -1,3 +1,17 @@
+<!--
+Labelled select that accepts plain strings or value and label option objects.
+
+code-index:begin
+{
+ "purpose": "Labelled select that accepts plain strings or value and label option objects.",
+ "read_when": "When changing the shared select used for string or labelled options.",
+ "gotchas": [],
+ "keywords": ["SelectOption", "modelValue", "options", "opt.value", "opt.label", "update:modelValue"],
+ "format": 1
+}
+code-index:end
+-->
+
 <template>
 	<div>
 		<label class="block text-sm font-medium text-gray-700 mb-1.5">{{ label }}</label>

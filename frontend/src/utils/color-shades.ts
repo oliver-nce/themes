@@ -1,4 +1,20 @@
 // Copyright (c) 2026 Oliver Reid. All rights reserved. Copying prohibited — see README.
+//
+// code-index:begin
+// {
+//  "purpose": "OKLCH shade scales, foreground colour picks, and neutral warmth for the theme editor.",
+//  "read_when": "Changing shade generation, foreground flip, or neutral warmth so it stays aligned with Python.",
+//  "gotchas": [
+//   "Pin the exact hex at 600 and derive lighter and darker stops from its actual OKLCH lightness so adjacent shades never cliff.",
+//   "Without gamma or saturation options, generateShades derives chroma from the base hex (legacy behaviour).",
+//   "Legacy themes may omit gamma/sat when building params from a saved 600 hex.",
+//   "The 600-stop hex after gamma and saturation matches Python _effective_role_hex and the publish emit.",
+//   "Generate the neutral 11-stop scale from warmth alone — no base hex."
+//  ],
+//  "keywords": ["generateAnchoredShades", "generateNeutralShades", "effectiveRoleHex", "oklchToHex", "neutral_color_warmth", "brandShadeForeground", "OKLCH", "legacy behaviour"],
+//  "format": 1
+// }
+// code-index:end
 export interface ColorShade {
   shade: number;
   hex: string;

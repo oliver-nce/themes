@@ -1,3 +1,22 @@
+<!--
+Implementation plan for a Finder-style multi-pane Desk hierarchy explorer on Frappe v15 and v16.
+
+code-index:begin
+{
+ "purpose": "Implementation plan for a Finder-style multi-pane Desk hierarchy explorer on Frappe v15 and v16.",
+ "read_when": "When building or reviewing the multi-pane hierarchy explorer Desk page.",
+ "gotchas": [
+  "Implementation rule: all ordering is explicit (order_by always set).",
+  "JS modules never rely on implicit global variables.",
+  "No hardcoded /app routes; use Frappe route helpers and frappe.router.",
+  "Server API respects Frappe permissions by default; no bypass."
+ ],
+ "keywords": ["order_by", "get_children", "export_rows", "frappe.provide", "report_links", "Desk Page", "hierarchy", "v16"],
+ "format": 1
+}
+code-index:end
+-->
+
 # **Cursor-Ready Implementation Plan — Multi-Pane Hierarchy Explorer (Frappe v15 + v16)**
 
 

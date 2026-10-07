@@ -1,3 +1,17 @@
+<!--
+Landing page that links to the Desk Theme Editor and the live Desk Theme Preview.
+
+code-index:begin
+{
+ "purpose": "Landing page that links to the Desk Theme Editor and the live Desk Theme Preview.",
+ "read_when": "Changing the Desk Themes home cards or their routes to the editor and preview.",
+ "gotchas": [],
+ "keywords": ["Desk Themes", "Desk Theme Editor", "Desk Theme Preview", "nce_desk_theme.css", "Frappe Desk", "navbar", "Gantt"],
+ "format": 1
+}
+code-index:end
+-->
+
 <template>
 	<div class="home-page">
 		<h1 class="home-title">Desk Themes</h1>

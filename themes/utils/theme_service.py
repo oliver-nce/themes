@@ -7,6 +7,21 @@ AGENT NAVIGATION — grep "AGENT:" in this file
   AGENT:write           — save, create, set_base, save_as_base, set_active
   AGENT:maintain        — list_themes, rename, delete, regenerate_css
   AGENT:auth            — _require_password (wrong password → ValidationError, not logout)
+
+code-index:begin
+{
+ "purpose": "Shared Web and Desk CRUD that promotes the Default Theme, publishes CSS, and can bundle the repo Base Theme.",
+ "read_when": "When changing save, promote-to-Default, Active status, rename, or delete rules.",
+ "gotchas": [
+  "A wrong save_as_base password must not raise AuthenticationError; it is reported as a validation error.",
+  "is_base_theme is deprecated and copies is_default_theme; do not use it in new code.",
+  "The Default theme may be renamed but cannot be deleted.",
+  "set_base promotes a theme to the Default :root driver; save_as_base also bundles that payload into app source."
+ ],
+ "keywords": ["set_base", "save_as_base", "is_default_theme", "is_base_theme", "get_restore_base_payload", "AuthenticationError", "_promote_to_default", "regenerate_css"],
+ "format": 1
+}
+code-index:end
 """
 from __future__ import annotations
 

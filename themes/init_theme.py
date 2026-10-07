@@ -1,4 +1,17 @@
-"""Initialize NCE Theme Default and generate nce_theme.css."""
+"""Initialize NCE Theme Default and generate nce_theme.css.
+
+code-index:begin
+{
+ "purpose": "Seeds NCE Theme Default from the bundled Base Theme payload, points the site link at it, and publishes nce_theme.css.",
+ "read_when": "When re-running web theme setup or seeing how the Default theme is seeded from the bundled payload.",
+ "gotchas": [
+  "If NCE Theme Default already exists, this republishes CSS and does not replace its theme_json."
+ ],
+ "keywords": ["initialize_theme", "load_bundled_base_theme_payload", "is_default", "nce_theme.css", "publish_theme", "Site Theme Config"],
+ "format": 1
+}
+code-index:end
+"""
 
 import json
 import os

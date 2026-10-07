@@ -1,3 +1,15 @@
+// Tailwind theme that maps NCE color, type, radius, shadow, and spacing CSS variables.
+//
+// code-index:begin
+// {
+//  "purpose": "Tailwind theme that maps NCE color, type, radius, shadow, and spacing CSS variables.",
+//  "read_when": "When a Tailwind color, font, radius, or shadow class does not match theme tokens.",
+//  "gotchas": [],
+//  "keywords": ["tailwind", "safelist", "buildColorMap", "nce-color", "darkMode", "fontFamily", "borderRadius", "boxShadow", "design tokens"],
+//  "format": 1
+// }
+// code-index:end
+
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import forms from "@tailwindcss/forms";

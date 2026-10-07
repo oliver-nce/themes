@@ -1,3 +1,19 @@
+<!--
+Explains the 11-stop OKLCH shade scale, with the picked color pinned at stop 600.
+
+code-index:begin
+{
+ "purpose": "Explains the 11-stop OKLCH shade scale, with the picked color pinned at stop 600.",
+ "read_when": "When choosing a shade stop or tuning gamma, saturation, or neutral warmth.",
+ "gotchas": [
+  "The user's picked color always lands at stop 600; other stops are computed in OKLCH and gamut-clipped."
+ ],
+ "keywords": ["OKLCH", "stop 600", "gamma", "saturation", "warmth", "theme-bg-primary-300", "neutral", "gamut"],
+ "format": 1
+}
+code-index:end
+-->
+
 # 04 — Shade Scale
 
 Every brand/state role generates an 11-stop OKLCH shade scale, matching the Tailwind convention.

@@ -1,3 +1,16 @@
+"""Seeds the Default NCE Desk Theme and points Site Theme Config.base_desk_theme at it.
+
+code-index:begin
+{
+ "purpose": "Seeds the Default NCE Desk Theme and points Site Theme Config.base_desk_theme at it.",
+ "read_when": "When a site is missing the default desk theme or the base_desk_theme pointer.",
+ "gotchas": [],
+ "keywords": ["base_desk_theme", "NCE Desk Theme", "theme_json", "publish_desk_theme", "is_default", "Default"],
+ "format": 1
+}
+code-index:end
+"""
+
 import json
 
 import frappe

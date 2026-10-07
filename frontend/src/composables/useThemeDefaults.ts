@@ -1,4 +1,16 @@
 // Copyright (c) 2026 Oliver Reid. All rights reserved. Copying prohibited — see README.
+//
+// code-index:begin
+// {
+//  "purpose": "Default NCE theme colours and settings, mapped to --nce-color CSS variables on the document root.",
+//  "read_when": "When changing fallback theme colours, shade CSS variable names, or apply-to-root behaviour.",
+//  "gotchas": [
+//   "Falls back to default values if no theme is loaded."
+//  ],
+//  "keywords": ["defaultTheme", "cssVariableMap", "STATUS_COLOR_DEFAULTS", "applyToRoot", "getCSSVariables", "SHADE_STEPS"],
+//  "format": 1
+// }
+// code-index:end
 import { reactive } from 'vue'
 
 // Default theme values for NCE Theme.theme_json

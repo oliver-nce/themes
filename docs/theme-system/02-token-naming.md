@@ -1,3 +1,20 @@
+<!--
+Naming rules for --nce- CSS variables and the theme- classes emitted from them.
+
+code-index:begin
+{
+ "purpose": "Naming rules for --nce- CSS variables and the theme- classes emitted from them.",
+ "read_when": "When adding a token, shade, or modifier, or checking whether a class name is valid.",
+ "gotchas": [
+  "Never invent a new prefix. Use --nce- always.",
+  "There is no directional theme-border-b class; use the width variable in scoped CSS."
+ ],
+ "keywords": ["--nce-", "theme-bg-primary", "fg-tonal", "theme-border-thin", "Tailwind", "theme_json", "shade", "prefix"],
+ "format": 1
+}
+code-index:end
+-->
+
 # 02 — Token Naming
 
 All CSS variables use the `--nce-` prefix to avoid collisions with Frappe/Tailwind/other apps.

@@ -1,3 +1,18 @@
+"""after_install creates Default web and desk themes from the bundled Base Theme payloads, publishes CSS, and syncs the workspace.
+
+code-index:begin
+{
+ "purpose": "after_install creates Default web and desk themes from the bundled Base Theme payloads, publishes CSS, and syncs the workspace.",
+ "read_when": "When changing what a fresh install creates for themes, CSS, or the workspace.",
+ "gotchas": [
+  "after_install returns immediately when the Site Theme Config DocType does not exist."
+ ],
+ "keywords": ["after_install", "load_bundled_base_theme_payload", "load_bundled_base_desk_theme_payload", "is_default", "publish_desk_theme", "sync_themes_workspace"],
+ "format": 1
+}
+code-index:end
+"""
+
 import json
 
 import frappe

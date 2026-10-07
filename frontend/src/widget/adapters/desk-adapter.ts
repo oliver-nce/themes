@@ -1,4 +1,18 @@
 // Copyright (c) 2026 Oliver Reid. All rights reserved. Copying prohibited — see README.
+//
+// code-index:begin
+// {
+//  "purpose": "Desk adapter that resolves an NCE Theme link to an Active slug and opens the swatch picker.",
+//  "read_when": "When changing Desk theme-link slug lookup, blocked open, or frm.set_value writes.",
+//  "gotchas": [
+//   "Slug resolution accepts Active themes with a slug only.",
+//   "fgTypeField defaults to valueField with _bg_class replaced by _fg_type.",
+//   "lockKind hides Kind radios and locks output to that kind."
+//  ],
+//  "keywords": ["resolveNceThemeSlug", "openDeskThemeSwatchPicker", "frappe.db", "Active", "lockKind", "set_value"],
+//  "format": 1
+// }
+// code-index:end
 import {
 	showThemePickerBlockedDialog,
 	themePickerBlockReason,

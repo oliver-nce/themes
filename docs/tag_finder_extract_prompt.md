@@ -1,3 +1,17 @@
+<!--
+Prompt and file list for copying the NCE Events Tag Finder into another Frappe app.
+
+code-index:begin
+{
+ "purpose": "Prompt and file list for copying the NCE Events Tag Finder into another Frappe app.",
+ "read_when": "When extracting the Tag Finder Vue components and optional pronoun-tag API.",
+ "gotchas": [],
+ "keywords": ["Tag Finder", "Miller columns", "useTagFinder", "pronoun", "rootDoctype", "Jinja2", "get_meta", "TagDialog"],
+ "format": 1
+}
+code-index:end
+-->
+
 # Tag Finder — Extract for Another Project
 
 Use this prompt to extract a **copyable, standalone Tag Finder** (Vue 3 Miller columns) for use in another Frappe app. The Tag Finder drills into DocType Link/Table relationships and generates paste-ready Jinja2 tags.

@@ -1,3 +1,23 @@
+<!--
+Overview of the Themes Frappe app, its nce_theme.css tokens, theme- classes, and Desk styling.
+
+code-index:begin
+{
+ "purpose": "Overview of the Themes Frappe app, its nce_theme.css tokens, theme- classes, and Desk styling.",
+ "read_when": "When installing Themes or looking up CSS variables and how Vue apps consume the theme.",
+ "gotchas": [
+  "Experimental app: APIs, token names, and behaviour may change between versions.",
+  "Base Theme (themes/data/base_theme.json) is a seed and is never rendered directly by client apps.",
+  "Always include a fallback such as var(--nce-color-primary, #126bc4); the token is undefined until a theme is saved.",
+  "Map --nce-* tokens to an app's own variables inside a scoped selector, never at :root.",
+  "Never override --text-muted, --text-color, --primary, or --border-color at :root; it breaks Frappe Desk."
+ ],
+ "keywords": ["nce_theme.css", "theme_json", "OKLCH", "data-nce-theme", "ThemeSwatchPicker", "Default Theme", "app_include_css", "Base Theme"],
+ "format": 1
+}
+code-index:end
+-->
+
 # Themes
 
 Frappe v15/v16 custom app for site-wide theming.

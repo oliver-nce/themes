@@ -1,4 +1,17 @@
 // Copyright (c) 2026 Oliver Reid. All rights reserved. Copying prohibited — see README.
+//
+// code-index:begin
+// {
+//  "purpose": "Shared theme editor state for list, load, save, rename, delete, and dirty checking.",
+//  "read_when": "When changing theme load, save, dirty baseline, or default-theme detection.",
+//  "gotchas": [
+//   "readIsDefaultTheme prefers is_default_theme, then is_base_theme, then is_active when useLegacyIsActive is set.",
+//   "readSiteDefaultTheme reads site_default_theme, then site_base_theme, then site_active_theme when useLegacyIsActive is set."
+//  ],
+//  "keywords": ["useThemeEditor", "isDirty", "css_hash", "is_default_theme", "is_base_theme", "establishDirtyBaseline", "saveAsBase"],
+//  "format": 1
+// }
+// code-index:end
 import { computed, nextTick, reactive, ref } from "vue"
 import { createResource } from "frappe-ui"
 

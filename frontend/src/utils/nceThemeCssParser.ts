@@ -1,4 +1,21 @@
 // Copyright (c) 2026 Oliver Reid. All rights reserved. Copying prohibited — see README.
+//
+// code-index:begin
+// {
+//  "purpose": "Fetches published nce_theme.css and builds the System tab class catalog from it.",
+//  "read_when": "Changing how the class catalog parses published nce_theme.css or resolves theme vars.",
+//  "gotchas": [
+//   "We fetch the published file so values always match what the consuming app sees — no JS reimplementation, no drift from Python css_writer.py.",
+//   "cssHash is used as a cache-buster only.",
+//   "Always starts from :root (Default / site base values). If a slug is provided, named theme overrides win.",
+//   "Each --nce-* declaration is on its own line from _emit_var_block.",
+//   "Each .theme-* class rule is emitted on a single line by css_writer.py.",
+//   "nce_theme.css not found means save the theme to publish it."
+//  ],
+//  "keywords": ["nce_theme.css", "parseVarBlock", "parseClassRules", "resolveThemeVars", "buildCatalogSections", "data-nce-theme", "css_writer.py", "cache-buster"],
+//  "format": 1
+// }
+// code-index:end
 /**
  * Parse nce_theme.css from disk to build the System tab class catalog.
  *

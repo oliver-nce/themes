@@ -1,3 +1,16 @@
+"""Renames Site Theme Config.active_theme to base_theme and maps old statuses to Inactive.
+
+code-index:begin
+{
+ "purpose": "Renames Site Theme Config.active_theme to base_theme and maps old statuses to Inactive.",
+ "read_when": "When Site Theme Config still stores active_theme or themes use Draft or Archived.",
+ "gotchas": [],
+ "keywords": ["active_theme", "base_theme", "Inactive", "Draft", "Archived", "tabSingles"],
+ "format": 1
+}
+code-index:end
+"""
+
 import frappe
 
 

@@ -1,3 +1,17 @@
+/*
+ * Checked-in expected CSS snapshot used by tests for web CSS with raised primary gamma and saturation.
+ *
+ * code-index:begin
+ * {
+ *  "purpose": "Checked-in expected CSS snapshot used by tests for web CSS with raised primary gamma and saturation.",
+ *  "read_when": "When a CSS snapshot test fails on the gamma and saturation web theme output.",
+ *  "gotchas": [],
+ *  "keywords": ["--nce-color-primary", "#0050BF", "canonical variables", "--nce-color-neutral", "--nce-color-table-header", "--nce-color-primary-fg"],
+ *  "format": 1
+ * }
+ * code-index:end
+ */
+
 :root {
 
 	/* ── Theme: canonical variables ── */
