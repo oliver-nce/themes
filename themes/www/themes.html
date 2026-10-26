@@ -13,5 +13,6 @@
 {%- block page_content -%}
 <div id="app"></div>
 {%- set _v = frappe.utils.now_datetime().timestamp() | int -%}
+<!-- Theme editor bundle includes the Layout tab Tables section. -->
 <script type="module" src="/assets/themes/frontend/assets/themes.js?v={{ _v }}"></script>
 {%- endblock -%}
