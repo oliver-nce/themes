@@ -248,6 +248,26 @@ def _fg_flip_tonal(g, field):
     return None
 
 
+def _table_header_fg(g, header_bg):
+    """Header text color. A primary or secondary shade uses that role's Colors-tab mono flip."""
+    target = (header_bg or "").strip().lower()
+    if len(target) < 7:
+        return "#FFFFFF"
+    for field in ("primary_color", "secondary_color"):
+        if not _role_is_configured(g, field):
+            continue
+        shades = _get_role_shades(g, field)
+        match = next((num for num, hx in shades if (hx or "").strip().lower() == target), None)
+        if match is None:
+            continue
+        opp_field = OPPOSITE_BRAND_FIELD[field]
+        opp_shades = _get_role_shades(g, opp_field) if _role_is_configured(g, opp_field) else []
+        return brand_shade_foreground(
+            match, shades, "mono", _fg_flip_mono(g, field), None, opp_shades,
+        )
+    return pick_fg_mono(header_bg)
+
+
 def _resolve_flat_color(g, field):
     """Scalar colour token with optional TABLE_COLOR_FALLBACKS inherit."""
     v = g(field)
@@ -298,7 +318,7 @@ def _emit_var_block(g, lines, selector=":root", include_custom_css=True):
         lines.append(f"\t--nce-{var}: {v};")
     header_bg = _resolve_flat_color(g, "table_header_bg_color")
     if header_bg:
-        lines.append(f"\t--nce-color-table-header-fg: {pick_fg_mono(header_bg)};")
+        lines.append(f"\t--nce-color-table-header-fg: {_table_header_fg(g, header_bg)};")
     for f, var in COLOR_FIELDS.items():
         if f not in FG_ROLES:
             continue

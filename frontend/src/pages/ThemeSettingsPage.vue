@@ -949,6 +949,27 @@ function roleShadeAdjustments(field: string) {
 	}
 }
 
+function tableHeaderForeground(header: string): string {
+	const target = header.trim().toLowerCase()
+	const corporateBrand = isCorporateBrandPaletteMode(form.brand_palette_mode)
+	for (const field of ["primary_color", "secondary_color"] as const) {
+		const base = form[field] as string
+		if (!base) continue
+		const adjust = roleShadeAdjustments(field)
+		const shades = generateShades(base, corporateBrand ? undefined : adjust)
+		const match = shades.find((s) => s.hex.toLowerCase() === target)
+		if (!match) continue
+		const oppField = field === "primary_color" ? "secondary_color" : "primary_color"
+		const oppBase = form[oppField] as string
+		const oppShades = oppBase
+			? generateShades(oppBase, corporateBrand ? undefined : roleShadeAdjustments(oppField))
+			: []
+		const flipMono = form[`${field}_fg_flip_mono` as FormKey] as number | null
+		return brandShadeForeground(match.shade, shades, "mono", flipMono, null, oppShades)
+	}
+	return pickFgMono(header)
+}
+
 function applyTableCssVars(vars: Record<string, string>) {
 	const row = (form.row_color as string) || (form.surface_color as string)
 	if (row) vars["--nce-color-row"] = row
@@ -957,7 +978,7 @@ function applyTableCssVars(vars: Record<string, string>) {
 		(form.table_header_bg_color as string) || (form.secondary_color as string)
 	if (header) {
 		vars["--nce-color-table-header"] = header
-		vars["--nce-color-table-header-fg"] = pickFgMono(header)
+		vars["--nce-color-table-header-fg"] = tableHeaderForeground(header)
 	}
 	const rowDiv =
 		(form.table_row_divider_color as string) || (form.border_color as string)

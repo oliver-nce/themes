@@ -2,7 +2,7 @@
 "_meta": {
 "description": "The single authoritative code index of this project: every function, class, method, route, test, Vue component, CSS section and doc section with a label, plus each file's purpose. Query it with the shared code-index tool (find / show / callers); do not read this file whole. Generated: never edit by hand; hand-written notes live in code-index.json.",
 "generator": "_Project support files/code-index/codeindex.py",
-"count": 951,
+"count": 953,
 "headers_sha256": "f49e0c689ffdd22f6556bb04ff53bd5529a1f71fa3d482c9cbd848751ce4f209"
 },
 "files": {
@@ -1627,7 +1627,7 @@
 "themes/public/frontend/assets/themes-ThemePreviewPage-BWOLXHlD.js": {
 "purpose": ""
 },
-"themes/public/frontend/assets/themes-ThemeSettingsPage-Cy8dVj4I.js": {
+"themes/public/frontend/assets/themes-ThemeSettingsPage-Cm8MMP2J.js": {
 "purpose": ""
 },
 "themes/public/frontend/assets/themes-_plugin-vue_export-helper-DlAUqK2U.js": {
@@ -1647,7 +1647,7 @@
 "themes/public/frontend/assets/themes-DeskThemeSettingsPage-JKVYp30Q.js",
 "themes/public/frontend/assets/themes-HomePage-D2p4TXWn.js",
 "themes/public/frontend/assets/themes-ThemePreviewPage-BWOLXHlD.js",
-"themes/public/frontend/assets/themes-ThemeSettingsPage-Cy8dVj4I.js"
+"themes/public/frontend/assets/themes-ThemeSettingsPage-Cm8MMP2J.js"
 ]
 },
 "themes/public/frontend/assets/themes2.css": {
@@ -8422,11 +8422,10 @@
 "name": "ThemeSettingsPage",
 "qualname": "ThemeSettingsPage",
 "sig": "",
-"hash": "895d449d73",
+"hash": "bfb24b97a7",
 "calls": [],
-"label": "Site Theme Editor for configuring colours, typography, layout, and CSS variables",
-"label_source": "generated",
-"label_hash": "895d449d73"
+"label": "Site Theme Editor for colours, typography, layout, live CSS variables, and base theme publishing.",
+"label_source": "docstring"
 },
 {
 "id": "frontend/src/pages/ThemeSettingsPage.vue::themeFromQuery",
@@ -8520,20 +8519,39 @@
 "label_hash": "476c08afc8"
 },
 {
+"id": "frontend/src/pages/ThemeSettingsPage.vue::tableHeaderForeground",
+"file": "frontend/src/pages/ThemeSettingsPage.vue",
+"kind": "function",
+"name": "tableHeaderForeground",
+"qualname": "tableHeaderForeground",
+"sig": "(header: string) -> string",
+"hash": "ddd28646a4",
+"exported": false,
+"calls": [
+"frontend/src/pages/ThemeSettingsPage.vue::isCorporateBrandPaletteMode",
+"frontend/src/pages/ThemeSettingsPage.vue::roleShadeAdjustments",
+"frontend/src/utils/color-shades.ts::brandShadeForeground",
+"frontend/src/utils/color-shades.ts::generateShades",
+"frontend/src/utils/color-shades.ts::pickFgMono"
+],
+"label": "",
+"label_source": "none"
+},
+{
 "id": "frontend/src/pages/ThemeSettingsPage.vue::applyTableCssVars",
 "file": "frontend/src/pages/ThemeSettingsPage.vue",
 "kind": "function",
 "name": "applyTableCssVars",
 "qualname": "applyTableCssVars",
 "sig": "(vars: Record<string, string>)",
-"hash": "8b4b76eac4",
+"hash": "527d647038",
 "exported": false,
 "calls": [
-"frontend/src/pages/ThemeSettingsPage.vue::tableWidthTierCssVar",
-"frontend/src/utils/color-shades.ts::pickFgMono"
+"frontend/src/pages/ThemeSettingsPage.vue::tableHeaderForeground",
+"frontend/src/pages/ThemeSettingsPage.vue::tableWidthTierCssVar"
 ],
 "label": "Map table color and divider settings to CSS variables",
-"label_source": "generated",
+"label_source": "generated-stale",
 "label_hash": "8b4b76eac4"
 },
 {
@@ -14005,6 +14023,24 @@
 "label_hash": "f54c76008d"
 },
 {
+"id": "themes/utils/css_writer.py::_table_header_fg",
+"file": "themes/utils/css_writer.py",
+"kind": "function",
+"name": "_table_header_fg",
+"qualname": "_table_header_fg",
+"sig": "(g, header_bg)",
+"hash": "8d2db0c97d",
+"calls": [
+"themes/utils/css_writer.py::_fg_flip_mono",
+"themes/utils/css_writer.py::_get_role_shades",
+"themes/utils/css_writer.py::_role_is_configured",
+"themes/utils/theme_color_utils.py::brand_shade_foreground",
+"themes/utils/theme_color_utils.py::pick_fg_mono"
+],
+"label": "Header text color.",
+"label_source": "docstring"
+},
+{
 "id": "themes/utils/css_writer.py::_resolve_flat_color",
 "file": "themes/utils/css_writer.py",
 "kind": "function",
@@ -14067,7 +14103,7 @@
 "name": "_emit_var_block",
 "qualname": "_emit_var_block",
 "sig": "(g, lines, selector=':root', include_custom_css=True)",
-"hash": "0a7f9890a7",
+"hash": "204581f91f",
 "calls": [
 "themes/utils/css_writer.py::_brand_palette_mode",
 "themes/utils/css_writer.py::_emit_table_width_vars",
@@ -14079,14 +14115,13 @@
 "themes/utils/css_writer.py::_role_base_hex",
 "themes/utils/css_writer.py::_role_gamma_sat",
 "themes/utils/css_writer.py::_role_is_configured",
+"themes/utils/css_writer.py::_table_header_fg",
 "themes/utils/theme_color_utils.py::_build_shadow",
 "themes/utils/theme_color_utils.py::_effective_role_hex",
-"themes/utils/theme_color_utils.py::brand_shade_foreground",
-"themes/utils/theme_color_utils.py::pick_fg_mono"
+"themes/utils/theme_color_utils.py::brand_shade_foreground"
 ],
-"label": "Emit CSS custom properties block with theme colors and foreground pairings",
-"label_source": "generated",
-"label_hash": "0a7f9890a7"
+"label": "Emit a `selector { --nce-* }` variable block and optional custom_css.",
+"label_source": "docstring"
 },
 {
 "id": "themes/utils/css_writer.py::_emit_role_bg_classes",
