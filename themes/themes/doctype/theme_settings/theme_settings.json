@@ -1,0 +1,414 @@
+{
+ "actions": [],
+ "creation": "2026-03-15 00:00:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "tab_colors",
+  "section_brand",
+  "theme_name",
+  "primary_color",
+  "secondary_color",
+  "column_break_brand2",
+  "font_family",
+  "heading_font_family",
+  "dark_mode",
+  "section_status",
+  "accent_color",
+  "success_color",
+  "info_color",
+  "column_break_status2",
+  "warning_color",
+  "danger_color",
+  "section_text",
+  "text_color",
+  "heading_color",
+  "muted_color",
+  "column_break_text",
+  "link_color",
+  "focus_color",
+  "section_surfaces",
+  "background_color",
+  "surface_color",
+  "column_break_surfaces",
+  "border_color",
+  "row_alt_color",
+  "tab_typography",
+  "section_type_settings",
+  "font_size",
+  "line_height",
+  "column_break_type",
+  "font_weight_body",
+  "tab_layout",
+  "section_layout",
+  "border_radius",
+  "spacing_scale",
+  "shadow",
+  "shadow_color",
+  "column_break_layout",
+  "sidebar_width",
+  "container_max_width",
+  "transition_speed",
+  "tab_advanced",
+  "section_theme_json",
+  "theme_json",
+  "column_break_overrides",
+  "tailwind_overrides",
+  "tab_custom",
+  "custom_css",
+  "tab_output",
+  "compiled_css",
+  "preview_html"
+ ],
+ "fields": [
+  {
+   "fieldname": "tab_colors",
+   "fieldtype": "Tab Break",
+   "label": "Colors"
+  },
+  {
+   "fieldname": "section_brand",
+   "fieldtype": "Section Break",
+   "label": "Brand"
+  },
+  {
+   "fieldname": "theme_name",
+   "fieldtype": "Data",
+   "label": "Theme Name",
+   "default": "Default",
+   "reqd": 1,
+   "description": "Human-readable label, e.g. Corporate Blue"
+  },
+  {
+   "fieldname": "primary_color",
+   "fieldtype": "Color",
+   "label": "Primary Color",
+   "default": "#3B82F6"
+  },
+  {
+   "fieldname": "secondary_color",
+   "fieldtype": "Color",
+   "label": "Secondary Color",
+   "default": "#10B981"
+  },
+  {
+   "fieldname": "column_break_brand2",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "font_family",
+   "fieldtype": "Select",
+   "label": "Body Font",
+   "default": "Inter",
+   "options": "Inter\nSource Sans 3\nOpen Sans\nRoboto\nLato\nPoppins\nNunito\nSystem Default"
+  },
+  {
+   "fieldname": "heading_font_family",
+   "fieldtype": "Select",
+   "label": "Heading Font",
+   "default": "Inter",
+   "options": "Inter\nSource Sans 3\nOpen Sans\nRoboto\nLato\nPoppins\nNunito\nSystem Default"
+  },
+  {
+   "fieldname": "dark_mode",
+   "fieldtype": "Check",
+   "label": "Dark Mode",
+   "default": "0"
+  },
+  {
+   "fieldname": "section_status",
+   "fieldtype": "Section Break",
+   "label": "Status Colors"
+  },
+  {
+   "fieldname": "accent_color",
+   "fieldtype": "Color",
+   "label": "Accent",
+   "default": "#8B5CF6"
+  },
+  {
+   "fieldname": "success_color",
+   "fieldtype": "Color",
+   "label": "Success",
+   "default": "#10B981"
+  },
+  {
+   "fieldname": "info_color",
+   "fieldtype": "Color",
+   "label": "Info",
+   "default": "#3B82F6"
+  },
+  {
+   "fieldname": "column_break_status2",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "warning_color",
+   "fieldtype": "Color",
+   "label": "Warning",
+   "default": "#F59E0B"
+  },
+  {
+   "fieldname": "danger_color",
+   "fieldtype": "Color",
+   "label": "Danger",
+   "default": "#EF4444"
+  },
+  {
+   "fieldname": "section_text",
+   "fieldtype": "Section Break",
+   "label": "Text Colors"
+  },
+  {
+   "fieldname": "text_color",
+   "fieldtype": "Color",
+   "label": "Body Text",
+   "default": "#1F2937"
+  },
+  {
+   "fieldname": "heading_color",
+   "fieldtype": "Color",
+   "label": "Heading Text",
+   "default": "#111827"
+  },
+  {
+   "fieldname": "muted_color",
+   "fieldtype": "Color",
+   "label": "Muted Text",
+   "default": "#6B7280"
+  },
+  {
+   "fieldname": "column_break_text",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "link_color",
+   "fieldtype": "Color",
+   "label": "Links",
+   "default": "#3B82F6"
+  },
+  {
+   "fieldname": "focus_color",
+   "fieldtype": "Color",
+   "label": "Focus Ring",
+   "default": "#3B82F6"
+  },
+  {
+   "fieldname": "section_surfaces",
+   "fieldtype": "Section Break",
+   "label": "Surfaces"
+  },
+  {
+   "fieldname": "background_color",
+   "fieldtype": "Color",
+   "label": "Page Background",
+   "default": "#FFFFFF"
+  },
+  {
+   "fieldname": "surface_color",
+   "fieldtype": "Color",
+   "label": "Card / Panel",
+   "default": "#F9FAFB"
+  },
+  {
+   "fieldname": "column_break_surfaces",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "border_color",
+   "fieldtype": "Color",
+   "label": "Borders",
+   "default": "#E5E7EB"
+  },
+  {
+   "fieldname": "row_alt_color",
+   "fieldtype": "Color",
+   "label": "Alternate Row",
+   "default": "#F3F4F6",
+   "description": "Background for alternating table/list rows"
+  },
+  {
+   "fieldname": "tab_typography",
+   "fieldtype": "Tab Break",
+   "label": "Typography"
+  },
+  {
+   "fieldname": "section_type_settings",
+   "fieldtype": "Section Break",
+   "label": "Type Settings"
+  },
+  {
+   "fieldname": "font_size",
+   "fieldtype": "Select",
+   "label": "Base Font Size",
+   "default": "14px",
+   "options": "12px\n13px\n14px\n15px\n16px\n18px"
+  },
+  {
+   "fieldname": "line_height",
+   "fieldtype": "Select",
+   "label": "Line Height",
+   "default": "normal",
+   "options": "tight\nsnug\nnormal\nrelaxed\nloose"
+  },
+  {
+   "fieldname": "column_break_type",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "font_weight_body",
+   "fieldtype": "Select",
+   "label": "Body Font Weight",
+   "default": "400",
+   "options": "300\n400\n500\n600"
+  },
+  {
+   "fieldname": "tab_layout",
+   "fieldtype": "Tab Break",
+   "label": "Layout"
+  },
+  {
+   "fieldname": "section_layout",
+   "fieldtype": "Section Break",
+   "label": "Layout & Spacing"
+  },
+  {
+   "fieldname": "border_radius",
+   "fieldtype": "Select",
+   "label": "Border Radius",
+   "default": "md",
+   "options": "none\nsm\nmd\nlg\nfull"
+  },
+  {
+   "fieldname": "spacing_scale",
+   "fieldtype": "Select",
+   "label": "Spacing Scale",
+   "default": "normal",
+   "options": "tight\nnormal\nrelaxed"
+  },
+  {
+   "fieldname": "shadow",
+   "fieldtype": "Select",
+   "label": "Shadow Depth",
+   "default": "md",
+   "options": "none\nsm\nmd\nlg\nxl\n2xl\n3xl"
+  },
+  {
+   "fieldname": "shadow_color",
+   "fieldtype": "Color",
+   "label": "Shadow Color",
+   "default": "#000000",
+   "description": "Base colour for drop shadows"
+  },
+  {
+   "fieldname": "column_break_layout",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "sidebar_width",
+   "fieldtype": "Select",
+   "label": "Sidebar Width",
+   "default": "240px",
+   "options": "200px\n220px\n240px\n260px\n280px"
+  },
+  {
+   "fieldname": "container_max_width",
+   "fieldtype": "Select",
+   "label": "Container Max Width",
+   "default": "1280px",
+   "options": "960px\n1024px\n1152px\n1280px\n1440px\nfull"
+  },
+  {
+   "fieldname": "transition_speed",
+   "fieldtype": "Select",
+   "label": "Transition Speed",
+   "default": "normal",
+   "options": "fast\nnormal\nslow"
+  },
+  {
+   "fieldname": "tab_advanced",
+   "fieldtype": "Tab Break",
+   "label": "Advanced"
+  },
+  {
+   "fieldname": "section_theme_json",
+   "fieldtype": "Section Break",
+   "label": "Raw Theme Overrides",
+   "collapsible": 1,
+   "description": "For advanced use only — most settings are available as fields above"
+  },
+  {
+   "fieldname": "theme_json",
+   "fieldtype": "Code",
+   "label": "Theme JSON",
+   "options": "JSON",
+   "description": "Full theme config from themes.formkit.com"
+  },
+  {
+   "fieldname": "column_break_overrides",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "tailwind_overrides",
+   "fieldtype": "Code",
+   "label": "Extra CSS Variables",
+   "options": "JSON",
+   "description": "Additional custom CSS variables as JSON (rarely needed)"
+  },
+  {
+   "fieldname": "tab_custom",
+   "fieldtype": "Tab Break",
+   "label": "Custom CSS"
+  },
+  {
+   "fieldname": "custom_css",
+   "fieldtype": "Code",
+   "label": "Custom CSS",
+   "options": "CSS",
+   "description": "Escape hatch for manual CSS additions"
+  },
+  {
+   "fieldname": "tab_output",
+   "fieldtype": "Tab Break",
+   "label": "Output"
+  },
+  {
+   "fieldname": "compiled_css",
+   "fieldtype": "Long Text",
+   "label": "Compiled CSS",
+   "read_only": 1,
+   "description": "Auto-generated CSS output (read-only)"
+  },
+  {
+   "fieldname": "preview_html",
+   "fieldtype": "Long Text",
+   "label": "Preview HTML",
+   "read_only": 1,
+   "description": "Sample HTML for preview panel (read-only)"
+  }
+ ],
+ "index_web_pages_for_search": 0,
+ "issingle": 1,
+ "links": [],
+ "modified": "2026-03-15 00:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Themes",
+ "name": "Theme Settings",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "print": 1,
+   "read": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "creation",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 1
+}
