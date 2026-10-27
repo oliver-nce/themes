@@ -843,11 +843,13 @@
 .theme-border-input-focus, .border-input-focus { border-color: var(--nce-color-focus); }
 /* ── Table bundle (theme-table) ── */
 .theme-table { border-collapse: collapse; }
-.theme-table thead th { background-color: var(--nce-color-table-header); color: var(--nce-color-table-header-fg, var(--nce-color-text)); }
+.theme-table thead th, .theme-table tfoot th, .theme-table tfoot td { background-color: var(--nce-color-table-header); color: var(--nce-color-table-header-fg, var(--nce-color-text)); }
 .theme-table tbody tr:nth-child(even) { background-color: var(--nce-color-row); }
 .theme-table tbody tr:nth-child(odd) { background-color: var(--nce-color-row-alt); }
 .theme-table td { border-bottom: var(--nce-border-width-table-row) solid var(--nce-color-table-row-divider); border-right: var(--nce-border-width-table-col) solid var(--nce-color-table-col-divider); }
 .theme-table td:last-child { border-right: none; }
+.theme-table tfoot td { border-bottom: none; border-right: var(--nce-border-width-table-col) solid var(--nce-color-table-col-divider); }
+.theme-table tfoot td:last-child { border-right: none; }
 .theme-table th { border-right: var(--nce-border-width-table-col) solid var(--nce-color-table-col-divider); }
 .theme-table th:last-child { border-right: none; }
 

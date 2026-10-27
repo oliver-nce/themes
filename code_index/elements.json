@@ -2,7 +2,7 @@
 "_meta": {
 "description": "The single authoritative code index of this project: every function, class, method, route, test, Vue component, CSS section and doc section with a label, plus each file's purpose. Query it with the shared code-index tool (find / show / callers); do not read this file whole. Generated: never edit by hand; hand-written notes live in code-index.json.",
 "generator": "_Project support files/code-index/codeindex.py",
-"count": 953,
+"count": 956,
 "headers_sha256": "f49e0c689ffdd22f6556bb04ff53bd5529a1f71fa3d482c9cbd848751ce4f209"
 },
 "files": {
@@ -1529,7 +1529,8 @@
 "Default"
 ],
 "depends_on": [
-"themes/utils/css_writer.py"
+"themes/utils/css_writer.py",
+"themes/utils/default_desk_theme.py"
 ]
 },
 "themes/patches/v1_0/remove_legacy_theme_doctypes.py": {
@@ -1609,31 +1610,37 @@
 "themes/public/css/nce_theme.css": {
 "purpose": "── Self-hosted variable fonts (active body + heading) ──"
 },
-"themes/public/frontend/assets/themes-DeskThemeHomePage-BV5M4sFv.js": {
+"themes/public/frontend/assets/themes 2.css": {
+"purpose": ",:before,:after{--tw-border-spacing-x: 0;--tw-border-spacing-y: 0;--tw-translate-x: 0;--tw-translate-y: 0;--tw-rotate: 0;--tw-skew-x: 0;--tw-skew-y: 0;--tw-sca…"
+},
+"themes/public/frontend/assets/themes 2.js": {
 "purpose": ""
 },
-"themes/public/frontend/assets/themes-DeskThemePreviewPage-CfjQU2of.js": {
+"themes/public/frontend/assets/themes-DeskThemeHomePage-Ciyf8U2y.js": {
 "purpose": ""
 },
-"themes/public/frontend/assets/themes-DeskThemeSettingsPage-JKVYp30Q.js": {
+"themes/public/frontend/assets/themes-DeskThemePreviewPage-DUG6GaE-.js": {
 "purpose": ""
 },
-"themes/public/frontend/assets/themes-HomePage-D2p4TXWn.js": {
+"themes/public/frontend/assets/themes-DeskThemeSettingsPage-B05_iH3o.js": {
 "purpose": ""
 },
-"themes/public/frontend/assets/themes-SwatchPicker-CxB1QSgK.js": {
+"themes/public/frontend/assets/themes-HomePage-C6RFiIE-.js": {
 "purpose": ""
 },
-"themes/public/frontend/assets/themes-ThemePreviewPage-BWOLXHlD.js": {
+"themes/public/frontend/assets/themes-SwatchPicker-CyprrY-z.js": {
 "purpose": ""
 },
-"themes/public/frontend/assets/themes-ThemeSettingsPage-Cm8MMP2J.js": {
+"themes/public/frontend/assets/themes-ThemePreviewPage-2GHVTwxD.js": {
 "purpose": ""
 },
-"themes/public/frontend/assets/themes-_plugin-vue_export-helper-DlAUqK2U.js": {
+"themes/public/frontend/assets/themes-ThemeSettingsPage-BrPePfK7.js": {
 "purpose": ""
 },
-"themes/public/frontend/assets/themes-useDeskTheme-D05bsGnk.js": {
+"themes/public/frontend/assets/themes-_plugin-vue_export-helper-DkZulUf9.js": {
+"purpose": ""
+},
+"themes/public/frontend/assets/themes-useDeskTheme-D-XwcKO9.js": {
 "purpose": ""
 },
 "themes/public/frontend/assets/themes.css": {
@@ -1642,30 +1649,51 @@
 "themes/public/frontend/assets/themes.js": {
 "purpose": "",
 "depends_on": [
-"themes/public/frontend/assets/themes-DeskThemeHomePage-BV5M4sFv.js",
-"themes/public/frontend/assets/themes-DeskThemePreviewPage-CfjQU2of.js",
-"themes/public/frontend/assets/themes-DeskThemeSettingsPage-JKVYp30Q.js",
-"themes/public/frontend/assets/themes-HomePage-D2p4TXWn.js",
-"themes/public/frontend/assets/themes-ThemePreviewPage-BWOLXHlD.js",
-"themes/public/frontend/assets/themes-ThemeSettingsPage-Cm8MMP2J.js"
+"themes/public/frontend/assets/themes-DeskThemeHomePage-Ciyf8U2y.js",
+"themes/public/frontend/assets/themes-DeskThemePreviewPage-DUG6GaE-.js",
+"themes/public/frontend/assets/themes-DeskThemeSettingsPage-B05_iH3o.js",
+"themes/public/frontend/assets/themes-HomePage-C6RFiIE-.js",
+"themes/public/frontend/assets/themes-ThemePreviewPage-2GHVTwxD.js",
+"themes/public/frontend/assets/themes-ThemeSettingsPage-BrPePfK7.js"
 ]
 },
+"themes/public/frontend/assets/themes2 2.css": {
+"purpose": ""
+},
 "themes/public/frontend/assets/themes2.css": {
+"purpose": ""
+},
+"themes/public/frontend/assets/themes3 2.css": {
 "purpose": ""
 },
 "themes/public/frontend/assets/themes3.css": {
 "purpose": ""
 },
+"themes/public/frontend/assets/themes4 2.css": {
+"purpose": ""
+},
 "themes/public/frontend/assets/themes4.css": {
+"purpose": ""
+},
+"themes/public/frontend/assets/themes5 2.css": {
 "purpose": ""
 },
 "themes/public/frontend/assets/themes5.css": {
 "purpose": ""
 },
+"themes/public/frontend/assets/themes6 2.css": {
+"purpose": ""
+},
 "themes/public/frontend/assets/themes6.css": {
 "purpose": ""
 },
+"themes/public/frontend/assets/themes7 2.css": {
+"purpose": ""
+},
 "themes/public/frontend/assets/themes7.css": {
+"purpose": ""
+},
+"themes/public/frontend/assets/themes8 2.css": {
 "purpose": ""
 },
 "themes/public/frontend/assets/themes8.css": {
@@ -1951,6 +1979,9 @@
 "custom_css",
 "OKLCH",
 "BORDER_RADIUS_MAP"
+],
+"depends_on": [
+"themes/utils/theme_color_utils.py"
 ]
 },
 "themes/themes/page/desk_theme_editor/desk_theme_editor.js": {
@@ -8422,10 +8453,11 @@
 "name": "ThemeSettingsPage",
 "qualname": "ThemeSettingsPage",
 "sig": "",
-"hash": "bfb24b97a7",
+"hash": "4e00e145ef",
 "calls": [],
-"label": "Site Theme Editor for colours, typography, layout, live CSS variables, and base theme publishing.",
-"label_source": "docstring"
+"label": "Edit site theme colors, typography, layout, and CSS variables with live preview",
+"label_source": "generated",
+"label_hash": "4e00e145ef"
 },
 {
 "id": "frontend/src/pages/ThemeSettingsPage.vue::themeFromQuery",
@@ -8534,8 +8566,9 @@
 "frontend/src/utils/color-shades.ts::generateShades",
 "frontend/src/utils/color-shades.ts::pickFgMono"
 ],
-"label": "",
-"label_source": "none"
+"label": "Calculate header text color from primary or secondary brand shade with foreground contrast",
+"label_source": "generated",
+"label_hash": "ddd28646a4"
 },
 {
 "id": "frontend/src/pages/ThemeSettingsPage.vue::applyTableCssVars",
@@ -8550,9 +8583,9 @@
 "frontend/src/pages/ThemeSettingsPage.vue::tableHeaderForeground",
 "frontend/src/pages/ThemeSettingsPage.vue::tableWidthTierCssVar"
 ],
-"label": "Map table color and divider settings to CSS variables",
-"label_source": "generated-stale",
-"label_hash": "8b4b76eac4"
+"label": "Build CSS variables for table row, header, and divider colors with defaults",
+"label_source": "generated",
+"label_hash": "527d647038"
 },
 {
 "id": "frontend/src/pages/ThemeSettingsPage.vue::normalizeTableWidthTier",
@@ -12735,13 +12768,14 @@
 "name": "execute",
 "qualname": "execute",
 "sig": "()",
-"hash": "53df27855e",
+"hash": "d6d714c504",
 "calls": [
-"themes/utils/css_writer.py::publish_theme"
+"themes/utils/css_writer.py::publish_theme",
+"themes/utils/default_desk_theme.py::load_bundled_base_desk_theme_payload"
 ],
-"label": "Convert legacy Theme Settings Single doctype to NCE Theme with Site Theme Config",
+"label": "Migrate legacy Theme Settings single document into NCE Theme and Site Theme Config",
 "label_source": "generated",
-"label_hash": "53df27855e"
+"label_hash": "d6d714c504"
 },
 {
 "id": "themes/patches/v1_0/remove_legacy_theme_doctypes.py::_delete_all_rows",
@@ -12911,7 +12945,7 @@
 "name": "all",
 "qualname": "all",
 "sig": "",
-"hash": "854d7cf1d8",
+"hash": "35870beb64",
 "calls": [],
 "label": "nce_desk_theme.css (the whole file)",
 "label_source": "title"
@@ -12923,14 +12957,14 @@
 "name": "all",
 "qualname": "all",
 "sig": "",
-"hash": "2b6509ad02",
+"hash": "d6bf0a2756",
 "calls": [],
 "label": "nce_theme.css (the whole file)",
 "label_source": "title"
 },
 {
-"id": "themes/public/frontend/assets/themes-_plugin-vue_export-helper-DlAUqK2U.js::s",
-"file": "themes/public/frontend/assets/themes-_plugin-vue_export-helper-DlAUqK2U.js",
+"id": "themes/public/frontend/assets/themes-_plugin-vue_export-helper-DkZulUf9.js::s",
+"file": "themes/public/frontend/assets/themes-_plugin-vue_export-helper-DkZulUf9.js",
 "kind": "function",
 "name": "s",
 "qualname": "s",
@@ -12938,9 +12972,21 @@
 "hash": "61c0bc8d24",
 "exported": false,
 "calls": [],
-"label": "Export Vue component options helper function for plugin internals",
+"label": "Merge component options into Vue component instance for export helper",
 "label_source": "generated",
 "label_hash": "61c0bc8d24"
+},
+{
+"id": "themes/public/frontend/assets/themes4 2.css::all",
+"file": "themes/public/frontend/assets/themes4 2.css",
+"kind": "css-section",
+"name": "all",
+"qualname": "all",
+"sig": "",
+"hash": "1928c14169",
+"calls": [],
+"label": "themes4 2.css (the whole file)",
+"label_source": "title"
 },
 {
 "id": "themes/public/frontend/assets/themes4.css::all",
@@ -12955,6 +13001,18 @@
 "label_source": "title"
 },
 {
+"id": "themes/public/frontend/assets/themes7 2.css::all",
+"file": "themes/public/frontend/assets/themes7 2.css",
+"kind": "css-section",
+"name": "all",
+"qualname": "all",
+"sig": "",
+"hash": "25b845de57",
+"calls": [],
+"label": "themes7 2.css (the whole file)",
+"label_source": "title"
+},
+{
 "id": "themes/public/frontend/assets/themes7.css::all",
 "file": "themes/public/frontend/assets/themes7.css",
 "kind": "css-section",
@@ -12964,6 +13022,18 @@
 "hash": "25b845de57",
 "calls": [],
 "label": "themes7.css (the whole file)",
+"label_source": "title"
+},
+{
+"id": "themes/public/frontend/assets/themes8 2.css::all",
+"file": "themes/public/frontend/assets/themes8 2.css",
+"kind": "css-section",
+"name": "all",
+"qualname": "all",
+"sig": "",
+"hash": "2a3114f427",
+"calls": [],
+"label": "themes8 2.css (the whole file)",
 "label_source": "title"
 },
 {
@@ -13028,7 +13098,7 @@
 "name": "all",
 "qualname": "all",
 "sig": "",
-"hash": "e43ef24f6c",
+"hash": "da89491f57",
 "calls": [],
 "label": "web_default.css (the whole file)",
 "label_source": "title"
@@ -13040,7 +13110,7 @@
 "name": "all",
 "qualname": "all",
 "sig": "",
-"hash": "08072aefd7",
+"hash": "2d586f4215",
 "calls": [],
 "label": "web_gamma_sat.css (the whole file)",
 "label_source": "title"
@@ -13052,7 +13122,7 @@
 "name": "all",
 "qualname": "all",
 "sig": "",
-"hash": "ce8238da82",
+"hash": "363e479ab1",
 "calls": [],
 "label": "web_neutral_warmth.css (the whole file)",
 "label_source": "title"
@@ -13064,7 +13134,7 @@
 "name": "all",
 "qualname": "all",
 "sig": "",
-"hash": "4744c3cc7c",
+"hash": "2fcc9d3893",
 "calls": [],
 "label": "web_site_default.css (the whole file)",
 "label_source": "title"
@@ -13606,7 +13676,11 @@
 "qualname": "_generate_shades",
 "sig": "(base_hex)",
 "hash": "3227fba1a8",
-"calls": [],
+"calls": [
+"themes/utils/theme_color_utils.py::_hex_to_oklch",
+"themes/utils/theme_color_utils.py::_max_chroma_in_gamut",
+"themes/utils/theme_color_utils.py::_oklch_to_hex"
+],
 "label": "Generate 11-stop perceptually uniform shade scale from base color in OKLCH",
 "label_source": "generated",
 "label_hash": "3227fba1a8"
@@ -14037,8 +14111,9 @@
 "themes/utils/theme_color_utils.py::brand_shade_foreground",
 "themes/utils/theme_color_utils.py::pick_fg_mono"
 ],
-"label": "Header text color.",
-"label_source": "docstring"
+"label": "Determine table header foreground color from background hex using brand role shades",
+"label_source": "generated",
+"label_hash": "8d2db0c97d"
 },
 {
 "id": "themes/utils/css_writer.py::_resolve_flat_color",
@@ -14120,8 +14195,9 @@
 "themes/utils/theme_color_utils.py::_effective_role_hex",
 "themes/utils/theme_color_utils.py::brand_shade_foreground"
 ],
-"label": "Emit a `selector { --nce-* }` variable block and optional custom_css.",
-"label_source": "docstring"
+"label": "Generate :root CSS variable block for theme colors, brand shades, and custom CSS",
+"label_source": "generated",
+"label_hash": "204581f91f"
 },
 {
 "id": "themes/utils/css_writer.py::_emit_role_bg_classes",
@@ -14204,11 +14280,11 @@
 "name": "_emit_table_classes",
 "qualname": "_emit_table_classes",
 "sig": "(lines)",
-"hash": "125ecaaaa2",
+"hash": "aa22684b78",
 "calls": [],
-"label": "Emit bundled table styling with zebra rows and cell dividers",
+"label": "Generate bundled table CSS classes with zebra striping and cell dividers from theme tokens",
 "label_source": "generated",
-"label_hash": "125ecaaaa2"
+"label_hash": "aa22684b78"
 },
 {
 "id": "themes/utils/css_writer.py::_emit_shape_classes",

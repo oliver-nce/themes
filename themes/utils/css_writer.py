@@ -550,7 +550,7 @@ def _emit_table_classes(lines):
     lines.append("/* ── Table bundle (theme-table) ── */")
     lines.append(".theme-table { border-collapse: collapse; }")
     lines.append(
-        ".theme-table thead th { background-color: var(--nce-color-table-header); color: var(--nce-color-table-header-fg, var(--nce-color-text)); }"
+        ".theme-table thead th, .theme-table tfoot th, .theme-table tfoot td { background-color: var(--nce-color-table-header); color: var(--nce-color-table-header-fg, var(--nce-color-text)); }"
     )
     lines.append(".theme-table tbody tr:nth-child(even) { background-color: var(--nce-color-row); }")
     lines.append(".theme-table tbody tr:nth-child(odd) { background-color: var(--nce-color-row-alt); }")
@@ -560,6 +560,12 @@ def _emit_table_classes(lines):
         " border-right: var(--nce-border-width-table-col) solid var(--nce-color-table-col-divider); }"
     )
     lines.append(".theme-table td:last-child { border-right: none; }")
+    lines.append(
+        ".theme-table tfoot td {"
+        " border-bottom: none;"
+        " border-right: var(--nce-border-width-table-col) solid var(--nce-color-table-col-divider); }"
+    )
+    lines.append(".theme-table tfoot td:last-child { border-right: none; }")
     lines.append(
         ".theme-table th {"
         " border-right: var(--nce-border-width-table-col) solid var(--nce-color-table-col-divider); }"

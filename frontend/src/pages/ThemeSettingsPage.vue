@@ -506,6 +506,11 @@ code-index:end
 									<td class="px-3 py-2">{{ row.status }}</td>
 								</tr>
 							</tbody>
+							<tfoot>
+								<tr>
+									<th colspan="3" class="px-3 py-2 text-center font-semibold">Footer</th>
+								</tr>
+							</tfoot>
 						</table>
 					</div>
 				</EditorSection>
@@ -2343,13 +2348,20 @@ onMounted(() => {
 :deep(.nce-editor-table-preview.theme-table td:last-child) {
 	border-right: none;
 }
-:deep(.nce-editor-table-preview.theme-table thead th) {
+:deep(.nce-editor-table-preview.theme-table thead th),
+:deep(.nce-editor-table-preview.theme-table tfoot th),
+:deep(.nce-editor-table-preview.theme-table tfoot td) {
 	background-color: var(--nce-color-table-header, var(--nce-color-secondary));
 	color: var(--nce-color-table-header-fg, var(--nce-color-text));
 	border-right: var(--nce-border-width-table-col, var(--nce-border-width-thin)) solid
 		var(--nce-color-table-col-divider, var(--nce-color-border));
 }
-:deep(.nce-editor-table-preview.theme-table thead th:last-child) {
+:deep(.nce-editor-table-preview.theme-table thead th:last-child),
+:deep(.nce-editor-table-preview.theme-table tfoot th:last-child),
+:deep(.nce-editor-table-preview.theme-table tfoot td:last-child) {
 	border-right: none;
+}
+:deep(.nce-editor-table-preview.theme-table tfoot td) {
+	border-bottom: none;
 }
 </style>

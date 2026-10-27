@@ -17,6 +17,11 @@ import os
 
 import frappe
 from frappe.model.document import Document
+from themes.utils.theme_color_utils import (
+	_hex_to_oklch,
+	_max_chroma_in_gamut,
+	_oklch_to_hex,
+)
 
 BORDER_RADIUS_MAP = {
 	"none": "0",
