@@ -1,14 +1,5 @@
 """Ensure is_default flag matches Site Theme Config pointers (flag-only Default detection).
 
-code-index:begin
-{
- "purpose": "Aligns web and desk is_default flags with the Site Theme Config pointers.",
- "read_when": "When is_default on NCE Theme or NCE Desk Theme does not match the site pointer.",
- "gotchas": [],
- "keywords": ["is_default", "get_site_base_theme_name", "base_desk_theme", "NCE Desk Theme", "theme_name"],
- "format": 1
-}
-code-index:end
 """
 
 from __future__ import annotations

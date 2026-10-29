@@ -1,16 +1,5 @@
 """Golden-file regression tests for CSS generation (no Frappe bench required).
 
-code-index:begin
-{
- "purpose": "Golden-file tests that generated web and desk CSS stays byte-stable and hash-stable.",
- "read_when": "When CSS generation changes and the checked-in snapshots may need a refresh.",
- "gotchas": [
-  "If the CSS change is intentional, refresh the golden files with UPDATE_GOLDEN=1."
- ],
- "keywords": ["web_default.css", "web_gamma_sat.css", "web_neutral_warmth.css", "web_site_default.css", "generate_site_css", "UPDATE_GOLDEN", "desk_default.css"],
- "format": 1
-}
-code-index:end
 """
 from __future__ import annotations
 

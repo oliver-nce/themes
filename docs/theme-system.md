@@ -1,22 +1,6 @@
 <!--
 Agent reference for nce_theme.css tokens and the mistakes that break Frappe Desk styling.
 
-code-index:begin
-{
- "purpose": "Agent reference for nce_theme.css tokens and the mistakes that break Frappe Desk styling.",
- "read_when": "When adding theme CSS in a downstream app or debugging Desk text and border bleed.",
- "gotchas": [
-  "Never set --text-muted, --text-color, --primary, or --border-color at :root in a site-wide CSS file.",
-  "Never add un-namespaced variables to nce_theme.css; always use the --nce- prefix.",
-  "Never add themes.css to app_include_css; load it only via themes.html or Preflight breaks Desk.",
-  "Always include a fallback such as var(--nce-color-primary, #126bc4) until a theme has been saved.",
-  "Unprefixed Tailwind utilities only work inside the Themes SPA; do not use them on Desk pages.",
-  "Frappe Desk is never touched; map tokens inside a component selector, not at :root."
- ],
- "keywords": ["nce_theme.css", "app_include_css", "themes.css", "text-muted", "data-nce-theme", "publish_theme", "Preflight", "Desk Text Bleed"],
- "format": 1
-}
-code-index:end
 -->
 
 # Theme System — Agent Reference

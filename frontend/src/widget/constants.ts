@@ -1,18 +1,6 @@
 /**
  * ThemeSwatchPicker constants — ROLES and CURATED_SHADES from generated theme-tokens.ts.
  *
- * code-index:begin
- * {
- *  "purpose": "Theme swatch picker kinds, roles, curated shades, and foreground types from theme tokens.",
- *  "read_when": "When changing picker kinds, default role, overlay roles, or foreground type constants.",
- *  "gotchas": [
- *   "OVERLAY_ROLES is primary and secondary only; add gray when gray_color lands.",
- *   "GRAY_ROW_STUB stays commented out until gray_color is in SHADE_SCALE_FIELDS."
- *  ],
- *  "keywords": ["CURATED_SHADES", "OVERLAY_ROLES", "DEFAULT_FG_TYPE", "theme-tokens", "roleLabel", "GRAY_ROW_STUB"],
- *  "format": 1
- * }
- * code-index:end
  */
 
 import { CURATED_SHADES, ROLES } from "@/domain/theme-tokens"

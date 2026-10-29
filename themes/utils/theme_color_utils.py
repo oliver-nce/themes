@@ -1,17 +1,5 @@
 """OKLCH color math for shade scales, neutral warmth, and foreground colors, matched to the frontend.
 
-code-index:begin
-{
- "purpose": "OKLCH color math for shade scales, neutral warmth, and foreground colors, matched to the frontend.",
- "read_when": "When changing shade generation, neutral warmth, or foreground contrast shared with the editor.",
- "gotchas": [
-  "OKLCH conversion and gamut clamping are written to match frontend color-shades.ts.",
-  "Neutral scales are generated from warmth only, with no base hex."
- ],
- "keywords": ["_hex_to_oklch", "generate_neutral_shades", "pick_fg_mono", "pick_fg_tonal", "_generate_anchored_shades", "neutral_color_warmth", "color-shades.ts"],
- "format": 1
-}
-code-index:end
 """
 
 # Copyright (c) 2026 Oliver Reid. All rights reserved. Copying prohibited — see README.

@@ -1,21 +1,6 @@
 <!--
 Steps to add a color role, shade class, border width, or foreground variant to the theme system.
 
-code-index:begin
-{
- "purpose": "Steps to add a color role, shade class, border width, or foreground variant to the theme system.",
- "read_when": "When adding a role or utility and keeping the Python and TypeScript emitters in sync.",
- "gotchas": [
-  "Keep Python and TypeScript in lock-step or the SPA preview and published CSS diverge.",
-  "Update THEME_CLASS_CONTRACT.json in the same PR or agents will target a class that does not exist.",
-  "Do not remove a class once shipped; it is a public API. Mark it deprecated instead.",
-  "tailwind.config.js only affects the editor SPA; emit theme- selectors from css_writer.py for Desk.",
-  "Directional borders are not emitted as theme-border-b; use the width CSS variables."
- ],
- "keywords": ["css_writer", "COLOR_FIELDS", "THEME_CLASS_CONTRACT", "brand2", "theme-border-thin", "pick_fg_soft", "publish_theme", "color-shades"],
- "format": 1
-}
-code-index:end
 -->
 
 # 08 — Extending the System

@@ -1,15 +1,6 @@
 <!--
 Popover for picking a primary, secondary, or gray shade, or typing a custom hex.
 
-code-index:begin
-{
- "purpose": "Popover for picking a primary, secondary, or gray shade, or typing a custom hex.",
- "read_when": "When changing the shade grid, custom hex entry, or the use-default action.",
- "gotchas": [],
- "keywords": ["primaryShades", "secondaryShades", "grayShades", "customHex", "Use Default", "generateShades"],
- "format": 1
-}
-code-index:end
 -->
 
 // Copyright (c) 2026 Oliver Reid. All rights reserved. Copying prohibited — see README.

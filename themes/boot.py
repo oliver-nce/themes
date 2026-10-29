@@ -1,14 +1,5 @@
 """Desk boot extensions — fresh theme CSS URLs without bench restart.
 
-code-index:begin
-{
- "purpose": "Desk boot hook that exposes the current desk theme CSS URL each session.",
- "read_when": "When the desk is not picking up a freshly published theme stylesheet.",
- "gotchas": [],
- "keywords": ["extend_bootinfo", "desk_theme_css_url", "bootinfo", "publish hash", "bench restart"],
- "format": 1
-}
-code-index:end
 """
 
 from __future__ import annotations

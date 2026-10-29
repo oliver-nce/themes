@@ -1,14 +1,5 @@
 """Deletes leftover Theme Version and Theme Settings DocTypes and their rows.
 
-code-index:begin
-{
- "purpose": "Deletes leftover Theme Version and Theme Settings DocTypes and their rows.",
- "read_when": "When deprecated Theme Version or Theme Settings tables are still in the database.",
- "gotchas": [],
- "keywords": ["Theme Version", "Theme Settings", "_delete_all_rows", "delete_doc", "Singles"],
- "format": 1
-}
-code-index:end
 """
 
 import frappe

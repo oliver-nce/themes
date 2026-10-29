@@ -1,15 +1,6 @@
 <!--
 Sample form preview that maps theme settings onto primary, font, radius, and spacing variables.
 
-code-index:begin
-{
- "purpose": "Sample form preview that maps theme settings onto primary, font, radius, and spacing variables.",
- "read_when": "When changing the sample preview or how settings become preview CSS variables.",
- "gotchas": [],
- "keywords": ["Theme Preview", "RADIUS_MAP", "SPACING_MAP", "primary_color", "border_radius", "FormKit"],
- "format": 1
-}
-code-index:end
 -->
 
 // Copyright (c) 2026 Oliver Reid. All rights reserved. Copying prohibited — see README.

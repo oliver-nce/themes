@@ -1,17 +1,5 @@
 """Theme family descriptors — parameterize Web vs Desk CRUD without duplicating logic.
 
-code-index:begin
-{
- "purpose": "ThemeFamily descriptors that parameterize Web and Desk CRUD, publish, seeding, and Base Theme bundling.",
- "read_when": "When changing a behavior that differs between Web site tokens and Desk chrome.",
- "gotchas": [
-  "Web is_active equals is_base; Desk is_active equals status Active.",
-  "Desk enforces a single Active theme; new Desk themes start Inactive and new Web themes start Active."
- ],
- "keywords": ["WEB_FAMILY", "DESK_FAMILY", "ThemeFamily", "is_active_is_base", "single_active", "bundle_to_app", "NCE Desk Theme"],
- "format": 1
-}
-code-index:end
 """
 from __future__ import annotations
 

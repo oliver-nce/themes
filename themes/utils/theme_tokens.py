@@ -4,19 +4,6 @@
 Keep in sync with frontend/src/widget/constants.ts and inline maps in
 ThemeSettingsPage.vue until Stage 2.2 generates the frontend contract.
 
-code-index:begin
-{
- "purpose": "Web theme token tables and export_token_contract, the payload the frontend build consumes.",
- "read_when": "When adding a theme field, font, or map that CSS generation and the editor share.",
- "gotchas": [
-  "Keep these tables in sync with frontend/src/widget/constants.ts until the frontend contract is generated.",
-  "Border radius full is legacy and now maps to the same value as x-lg.",
-  "Legacy themes may store raw px in table width fields; those map onto thin, normal, or strong."
- ],
- "keywords": ["TOKEN_FIELDS", "export_token_contract", "FONT_REGISTRY", "RETIRED_FONT_ALIASES", "neutral_color_warmth", "TABLE_COLOR_FALLBACKS", "brand_palette_mode", "GAMMA_SAT_ROLE_FIELDS"],
- "format": 1
-}
-code-index:end
 """
 from __future__ import annotations
 

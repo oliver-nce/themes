@@ -1,15 +1,6 @@
 <!--
 Iframe preview that applies Desk Theme Editor CSS variables onto live Frappe Desk pages.
 
-code-index:begin
-{
- "purpose": "Iframe preview that applies Desk Theme Editor CSS variables onto live Frappe Desk pages.",
- "read_when": "Changing the desk preview iframe targets or the nce-desk-theme-update message handler.",
- "gotchas": [],
- "keywords": ["nce-desk-theme-update", "LIVE DESK PREVIEW", "applyDeskThemeVars", "deskFrame", "Frappe Desk preview", "previewTargets", "onFrameLoad"],
- "format": 1
-}
-code-index:end
 -->
 
 <template>

@@ -1,18 +1,6 @@
 <!--
 Tells Claude to find project code through the code index instead of reading whole files.
 
-code-index:begin
-{
- "purpose": "Tells Claude to find project code through the code index instead of reading whole files.",
- "read_when": "When Claude needs to locate a function, class, route, or test before editing it.",
- "gotchas": [
-  "Ask the code index and do not read whole files; open a file only to edit it.",
-  "The index does not replace reading the code you are about to change."
- ],
- "keywords": ["code index", "elements.json", "callers", "Vue component", "pre-commit", "Markdown"],
- "format": 1
-}
-code-index:end
 -->
 
 # Finding code here: ask the code index, do not read files

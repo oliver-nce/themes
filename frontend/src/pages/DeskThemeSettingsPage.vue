@@ -1,22 +1,6 @@
 <!--
 Desk Theme Editor for NCE Desk Theme colours, shape, typography, Gantt, and live preview.
 
-code-index:begin
-{
- "purpose": "Desk Theme Editor for NCE Desk Theme colours, shape, typography, Gantt, and live preview.",
- "read_when": "Changing desk theme fields, save and restore, availability, or the preview postMessage.",
- "gotchas": [
-  "Changing Brand colours does not recolour every panel directly — it changes the palette of swatches available in the remaining panels.",
-  "Frappe's flat design removes borders from individual input fields — the Border tokens affect structural lines around sections and pages, not field edges.",
-  "Primary Button defaults to the same colour as Brand → Primary. Set it here to give Save and Submit their own colour independently.",
-  "Sidebar Filter Inputs have no effect outside the sidebar.",
-  "Workspace Quick List Buttons have no effect on standard list or form pages.",
-  "Save or revert changes before changing availability."
- ],
- "keywords": ["Desk Theme Editor", "NCE Desk Theme", "nce-desk-theme-update", "Restore to Base Desk Theme", "deskPayloadToCssVars", "font_weight_body", "Gantt", "Set as Default desk theme"],
- "format": 1
-}
-code-index:end
 -->
 
 // Copyright (c) 2026 Oliver Reid. All rights reserved. Copying prohibited — see README.
@@ -202,7 +186,11 @@ code-index:end
 			</nav>
 
 			<div v-show="activeTab === 'colors'" class="editor-tab">
-				<EditorSection title="Brand" :panel-help="deskPanelHelp.brand">
+				<EditorSection
+					title="Palette (editor only)"
+					hint="Sets the swatches offered in the colour pickers below. Not published to Desk."
+					:panel-help="deskPanelHelp.brand"
+				>
 					<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
 						<SwatchPicker
 							v-for="c in brandColors"
@@ -218,21 +206,22 @@ code-index:end
 				</EditorSection>
 
 				<EditorSection
-					title="Page &amp; Form"
+					title="Backgrounds"
 					hint="The large background areas visible behind and around forms."
-					:panel-help="deskPanelHelp.pageForm"
+					:panel-help="deskPanelHelp.backgrounds"
 				>
 					<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-						<SwatchPicker
-							v-for="c in pageFormColors"
-							:key="c.key"
-							:label="c.label"
-							:model-value="form[c.key]"
-							:default-value="DEFAULTS[c.key]"
-							:primary-color="form.primary_color"
-							:secondary-color="form.brand_color"
-							@update:model-value="form[c.key] = $event"
-						/>
+						<div v-for="c in backgroundColors" :key="c.key">
+							<SwatchPicker
+								:label="c.label"
+								:model-value="form[c.key]"
+								:default-value="DEFAULTS[c.key]"
+								:primary-color="form.primary_color"
+								:secondary-color="form.brand_color"
+								@update:model-value="form[c.key] = $event"
+							/>
+							<p v-if="c.hint" class="text-xs text-gray-500 mt-1">{{ c.hint }}</p>
+						</div>
 					</div>
 				</EditorSection>
 
@@ -256,9 +245,9 @@ code-index:end
 				</EditorSection>
 
 				<EditorSection
-					title="Inputs &amp; Borders"
+					title="Controls &amp; Borders"
 					hint="Controls the colour of inputs, toolbar buttons, and the lines that structure forms and pages."
-					:panel-help="deskPanelHelp.inputsBorders"
+					:panel-help="deskPanelHelp.controlsBorders"
 				>
 					<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6">
 						<SwatchPicker
@@ -273,96 +262,406 @@ code-index:end
 						/>
 					</div>
 				</EditorSection>
-
-				<EditorSection
-					title="Buttons &amp; Hover"
-					hint="Primary button colour, workspace widget buttons, and autocomplete hover highlight. Most toolbar buttons on list pages are controlled by Input Fields, Controls &amp; Toolbar Buttons above."
-					:panel-help="deskPanelHelp.buttonsHover"
-				>
-					<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-						<SwatchPicker
-							v-for="c in buttonColors"
-							:key="c.key"
-							:label="c.label"
-							:model-value="form[c.key]"
-							:default-value="DEFAULTS[c.key]"
-							:primary-color="form.primary_color"
-							:secondary-color="form.brand_color"
-							@update:model-value="form[c.key] = $event"
-						/>
-					</div>
-				</EditorSection>
 			</div>
 
 			<div v-show="activeTab === 'shape'" class="editor-tab">
 				<EditorSection
-					title="Shape"
-					hint="Frappe Desk layout tokens (--btn-height, --border-radius*)."
-					:panel-help="deskPanelHelp.shape"
+					title="Corners"
+					hint="Rounding of buttons, inputs, cards and the list header."
+					:panel-help="deskPanelHelp.corners"
 				>
-					<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-						<div v-for="field in shapeFields" :key="field.key">
-							<label class="block text-sm font-medium text-gray-700 mb-1">{{ field.label }}</label>
-							<input
-								v-model="form[field.key]"
-								type="text"
-								class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm font-mono"
-								:placeholder="field.placeholder"
+					<SizeSlider
+						label="Corner radius"
+						v-model="form.radius"
+						:min="0"
+						:max="20"
+						:step="1"
+						unit="px"
+						default-value="8px"
+					/>
+					<details class="mt-4">
+						<summary class="text-xs text-gray-500 cursor-pointer">Older components</summary>
+						<div class="mt-3">
+							<SizeSlider
+								label="Legacy border radius"
+								v-model="form.border_radius"
+								:min="0"
+								:max="20"
+								:step="1"
+								unit="px"
+								default-value="6px"
+								hint="Only a few older Desk elements use this."
 							/>
 						</div>
+					</details>
+				</EditorSection>
+
+				<EditorSection
+					title="Sizes"
+					hint="Heights of buttons and form fields, and checkbox size."
+					:panel-help="deskPanelHelp.sizes"
+				>
+					<div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+						<SizeSlider
+							label="Button height"
+							v-model="form.btn_height"
+							:min="20"
+							:max="44"
+							:step="1"
+							unit="px"
+							default-value="28px"
+						/>
+						<SizeSlider
+							label="Input height"
+							v-model="form.input_height"
+							:min="20"
+							:max="48"
+							:step="1"
+							unit="px"
+							default-value="28px"
+						/>
+						<SizeSlider
+							label="Checkbox size"
+							v-model="form.checkbox_size"
+							:min="10"
+							:max="24"
+							:step="1"
+							unit="px"
+							default-value="14px"
+						/>
+					</div>
+				</EditorSection>
+
+				<EditorSection title="Preview">
+					<div class="bg-white rounded-lg border border-gray-200 p-5">
+						<div class="flex flex-row flex-wrap gap-4 items-center">
+							<button
+								type="button"
+								class="text-sm text-white bg-gray-900 border-0"
+								:style="{
+									height: form.btn_height,
+									borderRadius: form.radius,
+									padding: '0 14px',
+								}"
+							>
+								Primary
+							</button>
+							<button
+								type="button"
+								class="text-sm bg-gray-100 border-0"
+								:style="{
+									height: form.btn_height,
+									borderRadius: form.radius,
+									padding: '0 14px',
+								}"
+							>
+								Default
+							</button>
+							<input
+								type="text"
+								placeholder="Input"
+								class="text-sm border border-gray-300 px-2"
+								:style="{
+									height: form.input_height,
+									borderRadius: form.radius,
+								}"
+							/>
+							<label class="inline-flex items-center gap-2 text-sm cursor-default">
+								<span
+									class="inline-block border-2 border-gray-500 shrink-0"
+									:style="{
+										width: form.checkbox_size,
+										height: form.checkbox_size,
+										borderRadius: '4px',
+									}"
+								/>
+								Checkbox
+							</label>
+							<div
+								class="text-xs border border-gray-200 p-3"
+								:style="{ borderRadius: form.radius }"
+							>
+								Card
+							</div>
+						</div>
+					</div>
+				</EditorSection>
+			</div>
+
+			<div v-show="activeTab === 'layout'" class="editor-tab">
+				<EditorSection
+					title="Density"
+					hint="How tightly Desk packs lists, forms and toolbars."
+					:panel-help="deskPanelHelp.density"
+				>
+					<div class="flex flex-wrap items-center gap-2">
+						<div class="inline-flex rounded-lg border border-gray-200 bg-white p-1">
+							<button
+								v-for="preset in densityPresetOptions"
+								:key="preset.id"
+								type="button"
+								class="px-4 py-1.5 text-sm rounded-md transition-colors"
+								:class="
+									form.density === preset.id
+										? 'bg-gray-900 text-white'
+										: 'text-gray-700 hover:bg-gray-100'
+								"
+								@click="applyDensityPreset(preset.id)"
+							>
+								{{ preset.label }}
+							</button>
+						</div>
+						<span
+							v-if="form.density === 'custom'"
+							class="text-xs bg-amber-100 text-amber-800 rounded px-2 py-0.5"
+						>
+							Custom
+						</span>
+					</div>
+					<details class="mt-4">
+						<summary class="text-sm text-gray-600 cursor-pointer">Fine-tune</summary>
+						<div class="grid grid-cols-1 md:grid-cols-3 gap-6 mt-4">
+							<SizeSlider
+								label="Base spacing"
+								v-model="form.spacing"
+								:min="0.15"
+								:max="0.4"
+								:step="0.01"
+								unit="rem"
+								default-value=".25rem"
+							/>
+							<SizeSlider
+								label="Padding — small items"
+								v-model="form.padding_xs"
+								:min="0"
+								:max="16"
+								:step="1"
+								unit="px"
+								default-value="5px"
+							/>
+							<SizeSlider
+								label="Padding — controls"
+								v-model="form.padding_sm"
+								:min="0"
+								:max="20"
+								:step="1"
+								unit="px"
+								default-value="7px"
+							/>
+							<SizeSlider
+								label="Padding — sections"
+								v-model="form.padding_md"
+								:min="4"
+								:max="32"
+								:step="1"
+								unit="px"
+								default-value="15px"
+							/>
+							<SizeSlider
+								label="Margin — tight"
+								v-model="form.margin_xs"
+								:min="0"
+								:max="16"
+								:step="1"
+								unit="px"
+								default-value="5px"
+							/>
+							<SizeSlider
+								label="Margin — blocks"
+								v-model="form.margin_sm"
+								:min="0"
+								:max="24"
+								:step="1"
+								unit="px"
+								default-value="10px"
+							/>
+						</div>
+					</details>
+				</EditorSection>
+
+				<EditorSection
+					title="Lists"
+					hint="Rows in list views."
+					:panel-help="deskPanelHelp.lists"
+				>
+					<SizeSlider
+						label="Row height"
+						v-model="form.list_row_height"
+						:min="22"
+						:max="48"
+						:step="1"
+						unit="px"
+						default-value="30px"
+					/>
+				</EditorSection>
+
+				<EditorSection
+					title="Pages"
+					hint="Width of forms and height of the page title bar."
+					:panel-help="deskPanelHelp.pages"
+				>
+					<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+						<SizeSlider
+							label="Form max width"
+							v-model="form.page_max_width"
+							:min="700"
+							:max="1600"
+							:step="10"
+							unit="px"
+							default-value="900px"
+						/>
+						<SizeSlider
+							label="Page header height"
+							v-model="form.page_head_height"
+							:min="36"
+							:max="72"
+							:step="1"
+							unit="px"
+							default-value="48px"
+						/>
 					</div>
 				</EditorSection>
 			</div>
 
 			<div v-show="activeTab === 'typography'" class="editor-tab">
-			<EditorSection title="Fonts" :panel-help="deskPanelHelp.fonts">
-				<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-					<FontSelectField
-						label="Body Font"
-						:options="fontOptions"
-						v-model="form.font_family"
-					/>
-				</div>
-				<div class="mt-4 rounded-lg border border-gray-200 p-5 bg-white">
-					<p
-						class="text-base text-gray-600"
-						:style="{
-							fontFamily: fontCSS(form.font_family),
-							fontWeight: form.font_weight_body || '420',
-						}"
-					>
-						Pack my box with five dozen liquor jugs. How vexingly quick daft zebras jump!
-						The five boxing wizards jump quickly.
-					</p>
-				</div>
-			</EditorSection>
-
-			<EditorSection title="Weight" :panel-help="deskPanelHelp.weight">
-				<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-					<div>
-						<label class="block text-sm font-medium text-gray-700 mb-1.5">
-							Body Weight
-							<span class="font-normal text-gray-500">({{ bodyWeightDisplay }})</span>
-						</label>
-						<input
-							type="range"
-							class="w-full accent-blue-600"
-							min="100"
-							max="900"
-							step="1"
-							:value="bodyWeightNumber"
-							@input="onBodyWeightInput"
+				<EditorSection
+					title="Body text"
+					hint="Font, size and weight of everyday Desk text."
+					:panel-help="deskPanelHelp.bodyText"
+				>
+					<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+						<FontSelectField
+							label="Body Font"
+							:options="fontOptions"
+							v-model="form.font_family"
 						/>
-						<div class="flex justify-between text-xs text-gray-400 mt-1 px-0.5">
-							<span>100</span>
-							<span>400</span>
-							<span>700</span>
-							<span>900</span>
-						</div>
+						<SizeSlider
+							label="Body Size"
+							v-model="form.font_size"
+							:min="11"
+							:max="18"
+							:step="1"
+							unit="px"
+							default-value="14px"
+							hint="Applies to Frappe v16 (--text-base)."
+						/>
 					</div>
-				</div>
-			</EditorSection>
-		</div>
+					<div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+						<SizeSlider
+							:label="`Body Weight (${bodyWeightDisplay})`"
+							v-model="form.font_weight_body"
+							:min="100"
+							:max="900"
+							:step="1"
+							unit=""
+							default-value="420"
+						/>
+						<SizeSlider
+							:label="`Bold Weight (${boldWeightDisplay})`"
+							v-model="form.font_weight_bold"
+							:min="100"
+							:max="900"
+							:step="1"
+							unit=""
+							default-value="600"
+							hint="Fields and list rows Frappe marks as bold."
+						/>
+					</div>
+					<div class="mt-4 rounded-lg border border-gray-200 p-5 bg-white">
+						<p
+							class="text-base text-gray-600"
+							:style="{
+								fontFamily: fontCSS(form.font_family),
+								fontWeight: form.font_weight_body || '420',
+								fontSize: form.font_size || '14px',
+							}"
+						>
+							Pack my box with five dozen liquor jugs. How vexingly quick daft zebras jump!
+							The five boxing wizards jump quickly.
+						</p>
+						<p class="mt-2">
+							<strong
+								:style="{
+									fontFamily: fontCSS(form.font_family),
+									fontWeight: form.font_weight_bold || '600',
+									fontSize: form.font_size || '14px',
+								}"
+							>Bold field sample</strong>
+						</p>
+					</div>
+				</EditorSection>
+
+				<EditorSection
+					title="Text scale"
+					hint="Small print, labels and titles."
+					:panel-help="deskPanelHelp.textScale"
+				>
+					<label class="inline-flex items-center gap-3 cursor-pointer select-none mb-4">
+						<input
+							type="checkbox"
+							class="sr-only peer"
+							style="position: absolute; opacity: 0; width: 1px; height: 1px; pointer-events: none"
+							:checked="form.text_scale_mode === 'auto'"
+							@change="setTextScaleAuto(($event.target as HTMLInputElement).checked)"
+						/>
+						<span
+							class="relative inline-flex h-6 w-11 shrink-0 rounded-full bg-gray-200 transition-colors peer-checked:bg-blue-600 after:absolute after:left-0.5 after:top-0.5 after:h-5 after:w-5 after:rounded-full after:bg-white after:shadow after:transition-transform peer-checked:after:translate-x-5"
+							aria-hidden="true"
+						/>
+						<span class="text-sm font-medium text-gray-700">Scale with body size</span>
+					</label>
+					<p
+						v-if="form.text_scale_mode === 'auto'"
+						class="text-sm text-gray-600 font-mono"
+					>
+						{{ textScaleSummary }}
+					</p>
+					<div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+						<SizeSlider
+							label="Small print"
+							v-model="form.text_xs"
+							:min="9"
+							:max="16"
+							:step="1"
+							unit="px"
+							default-value="12px"
+						/>
+						<SizeSlider
+							label="Labels & sidebar"
+							v-model="form.text_sm"
+							:min="10"
+							:max="18"
+							:step="1"
+							unit="px"
+							default-value="13px"
+						/>
+						<SizeSlider
+							label="Titles"
+							v-model="form.text_lg"
+							:min="12"
+							:max="24"
+							:step="1"
+							unit="px"
+							default-value="16px"
+						/>
+					</div>
+				</EditorSection>
+
+				<EditorSection title="Other weights" :panel-help="deskPanelHelp.otherWeights">
+					<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+						<SizeSlider
+							label="Medium weight"
+							v-model="form.font_weight_medium"
+							:min="100"
+							:max="900"
+							:step="1"
+							unit=""
+							default-value="500"
+							hint="Buttons, tabs and other medium-weight text."
+						/>
+					</div>
+				</EditorSection>
+			</div>
 
 		<div v-show="activeTab === 'gantt'" class="editor-tab">
 				<EditorSection title="Gantt chart" :panel-help="deskPanelHelp.gantt">
@@ -378,12 +677,6 @@ code-index:end
 							@update:model-value="form[c.key] = $event"
 						/>
 					</div>
-				</EditorSection>
-			</div>
-
-			<div v-show="activeTab === 'advanced'" class="editor-tab">
-				<EditorSection title="Advanced">
-					<p class="text-sm text-gray-500">No advanced options in v1.</p>
 				</EditorSection>
 			</div>
 
@@ -487,6 +780,7 @@ import { createResource } from "frappe-ui"
 import EditorSection, { type PanelHelpContent } from "@/components/EditorSection.vue"
 import FontSelectField from "@/components/FontSelectField.vue"
 import PasswordField from "@/components/PasswordField.vue"
+import SizeSlider from "@/components/SizeSlider.vue"
 import SwatchPicker from "@/components/SwatchPicker.vue"
 import { applyDeskThemeVars, deskPayloadToCssVars, deskFontStack } from "@/composables/useDeskTheme"
 import { useThemeEditor, type ThemeAvailabilityStatus } from "@/composables/useThemeEditor"
@@ -504,22 +798,40 @@ const ALL_FIELDS = [
 	"dark_border_color",
 	"control_bg",
 	"control_bg_on_gray",
-	"btn_primary",
 	"btn_default_bg",
-	"awesomplete_hover_bg",
+	"surface_gray_2",
+	"subtle_fg",
+	"heading_color",
 	"btn_height",
+	"radius",
+	"input_height",
+	"checkbox_size",
 	"border_radius",
-	"border_radius_lg",
-	"border_radius_full",
 	"g_bar_color",
 	"g_bar_border",
 	"g_progress_color",
 	"g_header_background",
 	"g_row_color",
-	"g_today_highlight",
 	// Typography
 	"font_family",
 	"font_weight_body",
+	"font_weight_bold",
+	"font_weight_medium",
+	"font_size",
+	"text_xs",
+	"text_sm",
+	"text_lg",
+	"text_scale_mode",
+	"spacing",
+	"padding_xs",
+	"padding_sm",
+	"padding_md",
+	"margin_xs",
+	"margin_sm",
+	"list_row_height",
+	"page_max_width",
+	"page_head_height",
+	"density",
 ] as const
 
 const PAYLOAD_FIELDS = ALL_FIELDS.filter((k) => k !== "theme_name")
@@ -538,33 +850,52 @@ const DEFAULTS: Record<FormKey, string> = {
 	dark_border_color: "#8d99a6",
 	control_bg: "#f7fafc",
 	control_bg_on_gray: "#ffffff",
-	btn_primary: "#2490EF",
 	btn_default_bg: "#f7fafc",
-	awesomplete_hover_bg: "#f0f4f7",
+	surface_gray_2: "#f3f3f3",
+	subtle_fg: "#f3f3f3",
+	heading_color: "#0f0f0f",
 	btn_height: "28px",
+	radius: "8px",
+	input_height: "28px",
+	checkbox_size: "14px",
 	border_radius: "6px",
-	border_radius_lg: "12px",
-	border_radius_full: "999px",
 	g_bar_color: "#2490EF",
 	g_bar_border: "#007be0",
 	g_progress_color: "#0070cc",
 	g_header_background: "#f3f3f3",
 	g_row_color: "#f8f8f8",
-	g_today_highlight: "#edf6fd",
 	// Typography
 	font_family: "System Default",
 	font_weight_body: "420",
+	font_weight_bold: "600",
+	font_weight_medium: "500",
+	font_size: "14px",
+	text_xs: "12px",
+	text_sm: "13px",
+	text_lg: "16px",
+	text_scale_mode: "auto",
+	spacing: ".25rem",
+	padding_xs: "5px",
+	padding_sm: "7px",
+	padding_md: "15px",
+	margin_xs: "5px",
+	margin_sm: "10px",
+	list_row_height: "30px",
+	page_max_width: "900px",
+	page_head_height: "48px",
+	density: "default",
 }
 
 const COLOR_FIELDS = new Set(
 	PAYLOAD_FIELDS.filter(
 		(k) =>
 			k.endsWith("_color") ||
+			k.endsWith("_fg") ||
 			k.includes("_bg") ||
-			k === "btn_primary" ||
 			k.includes("text_") ||
 			k.includes("border") ||
-			k.startsWith("g_"),
+			k.startsWith("g_") ||
+			k.startsWith("surface_"),
 	),
 )
 
@@ -574,10 +905,10 @@ let previewWin: Window | null = null
 const activeTab = ref("colors")
 const tabs = [
 	{ id: "colors", label: "Colours" },
-	{ id: "shape", label: "Shape" },
 	{ id: "typography", label: "Typography" },
+	{ id: "shape", label: "Shape" },
+	{ id: "layout", label: "Layout" },
 	{ id: "gantt", label: "Gantt" },
-	{ id: "advanced", label: "Advanced" },
 	{ id: "system", label: "System" },
 ]
 
@@ -593,20 +924,21 @@ function clampBodyWeight(raw: unknown): number {
 	return Math.min(BODY_WEIGHT_MAX, Math.max(BODY_WEIGHT_MIN, n))
 }
 
-const bodyWeightNumber = computed(() => clampBodyWeight(form.font_weight_body))
-
-const bodyWeightDisplay = computed(() => {
-	const n = bodyWeightNumber.value
+function weightDisplayLabel(n: number): string {
 	if (n <= 350) return `${n} — Light`
 	if (n <= 450) return `${n} — Regular`
 	if (n <= 550) return `${n} — Medium`
 	if (n <= 650) return `${n} — Semi-bold`
 	return `${n} — Bold`
-})
-
-function onBodyWeightInput(e: Event) {
-	form.font_weight_body = String((e.target as HTMLInputElement).value)
 }
+
+const bodyWeightDisplay = computed(() =>
+	weightDisplayLabel(clampBodyWeight(form.font_weight_body)),
+)
+
+const boldWeightDisplay = computed(() =>
+	weightDisplayLabel(clampBodyWeight(form.font_weight_bold)),
+)
 
 function fontCSS(name: string): string {
 	return deskFontStack(name) || "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif"
@@ -620,21 +952,21 @@ const brandColors = [
 const deskPanelHelp = {
 	brand: {
 		intro:
-			"Primary and Brand also publish Desk accent CSS variables, but in this editor their main job is to seed the shade grids shown in every other colour picker below.",
+			"Primary and Brand set the shade grids offered in every colour picker below. Saved with the theme but not published to Desk CSS.",
 		note:
-			"Changing Brand colours does not recolour every panel directly — it changes the palette of swatches available in the remaining panels.",
+			"Changing palette colours does not recolour Desk directly — it changes the swatches available in the published colour pickers below.",
 		items: [
 			{
 				label: "Primary",
-				affects: "Desk accent colour for links and highlights (`--primary-color`). Save/Submit buttons use Primary Button below.",
+				affects: "Palette anchor for shade grids in the colour pickers below (editor only).",
 			},
 			{
 				label: "Brand",
-				affects: "Brand accent highlights on Desk (`--brand-color`).",
+				affects: "Secondary palette anchor for shade grids in the colour pickers below (editor only).",
 			},
 		],
 	},
-	pageForm: {
+	backgrounds: {
 		items: [
 			{
 				label: "Page Background",
@@ -645,13 +977,22 @@ const deskPanelHelp = {
 				affects:
 					"Form card/sheet fill, dropdown menus, and Form Builder editable field patches in normal view (`--fg-color` / `--card-bg`).",
 			},
+			{
+				label: "Subtle Surface",
+				affects:
+					"List header row, toolbar surfaces, and paging buttons (`--surface-gray-2`).",
+			},
+			{
+				label: "List Header Background",
+				affects: "List view column header row background (`--subtle-fg`).",
+			},
 		],
 	},
 	text: {
 		items: [
 			{
 				label: "Body Text",
-				affects: "Field labels, body copy, and standard headings (`--text-color`).",
+				affects: "Field labels and body copy (`--text-color`).",
 			},
 			{
 				label: "Muted Text",
@@ -661,76 +1002,137 @@ const deskPanelHelp = {
 				label: "Light Text",
 				affects: "De-emphasised text on tinted or dark surfaces (`--text-light`).",
 			},
+			{
+				label: "Headings",
+				affects: "Page and section headings (`--heading-color`).",
+			},
 		],
 	},
-	inputsBorders: {
+	controlsBorders: {
 		note:
 			"Frappe's flat design removes borders from individual input fields — the Border tokens affect structural lines around sections and pages, not field edges.",
 		items: [
 			{
 				label: "Input Fields, Controls & Toolbar Buttons",
 				affects:
-					"Text inputs, dropdowns, and the neutral toolbar buttons you see on every list page — List View, Filter, Resize Columns, and similar controls throughout Desk.",
+					"Text inputs, dropdowns, and the neutral toolbar buttons you see on every list page — List View, Filter, Resize Columns, and similar controls throughout Desk (`--control-bg`).",
 			},
 			{
 				label: "Sidebar Filter Inputs",
 				affects:
-					"The small text boxes in the list sidebar — the filter inputs under \"Filter By\" and the \"Filter Name\" box under \"Save Filter\". Has no effect outside the sidebar.",
+					"The small text boxes in the list sidebar — the filter inputs under \"Filter By\" and the \"Filter Name\" box under \"Save Filter\". Has no effect outside the sidebar (`--control-bg-on-gray`).",
 			},
 			{
 				label: "Border",
 				affects:
-					"Section dividers, the outer edge of form pages, tab underlines, and sidebar separator lines.",
+					"Section dividers, the outer edge of form pages, tab underlines, and sidebar separator lines (`--border-color`).",
 			},
 			{
 				label: "Strong Border",
-				affects: "Heavier dividing lines — table header edges and emphasis separators.",
-			},
-		],
-	},
-	buttonsHover: {
-		note:
-			"Primary Button defaults to the same colour as Brand → Primary. Set it here to give Save and Submit their own colour independently.",
-		items: [
-			{
-				label: "Primary Button",
-				affects: "Save, Submit, and other main action buttons — the prominent coloured button at the top right of forms.",
+				affects: "Heavier dividing lines — table header edges and emphasis separators (`--dark-border-color`).",
 			},
 			{
 				label: "Workspace Quick List Buttons",
 				affects:
-					"The Refresh, Filter, Add New, and See All controls inside Quick List widgets on your Desk Home workspace. Has no effect on standard list or form pages.",
-			},
-			{
-				label: "Autocomplete Row Highlight",
-				affects: "The background that appears behind a row when you hover over a suggestion in a search typeahead or Link field dropdown.",
+					"The Refresh, Filter, Add New, and See All controls inside Quick List widgets on your Desk Home workspace. Has no effect on standard list or form pages (`--btn-default-bg`).",
 			},
 		],
 	},
-	shape: {
+	corners: {
 		items: [
-			{ label: "Button Height", affects: "Default button control height (`--btn-height`)." },
-			{ label: "Border Radius", affects: "Standard corner radius on buttons, inputs, and cards (`--border-radius`)." },
 			{
-				label: "Large Border Radius",
-				affects: "Larger radius variant for modals and prominent cards (`--border-radius-lg`).",
+				label: "Corner radius",
+				affects:
+					"Primary rounding token on Frappe v16 Desk (`--radius`) — buttons, inputs, cards, and the list header.",
 			},
-			{ label: "Full Border Radius", affects: "Pill and circular controls (`--border-radius-full`)." },
+			{
+				label: "Legacy border radius",
+				affects: "Older Desk components that still read `--border-radius` (not `--radius`).",
+			},
 		],
 	},
-	fonts: {
+	sizes: {
+		items: [
+			{ label: "Button height", affects: "Default button control height (`--btn-height`)." },
+			{ label: "Input height", affects: "Text inputs, selects, and similar form controls (`--input-height`)." },
+			{ label: "Checkbox size", affects: "Checkbox control width and height (`--checkbox-size`)." },
+		],
+	},
+	density: {
+		note:
+			"Compact, Default and Comfortable apply coordinated spacing, padding, margins, list row height and input height. Fine-tune any value to switch to Custom.",
+		items: [
+			{
+				label: "Density presets",
+				affects: "Editor preference only — not published to Desk CSS (`density`).",
+			},
+			{ label: "Base spacing", affects: "Root spacing multiplier used across Desk layout (`--spacing`)." },
+			{ label: "Padding — small items", affects: "Tight padding on chips, badges and compact controls (`--padding-xs`)." },
+			{ label: "Padding — controls", affects: "Padding inside buttons, inputs and toolbar controls (`--padding-sm`)." },
+			{ label: "Padding — sections", affects: "Padding around form sections and panels (`--padding-md`)." },
+			{ label: "Margin — tight", affects: "Small gaps between related controls (`--margin-xs`)." },
+			{ label: "Margin — blocks", affects: "Spacing between blocks and stacked sections (`--margin-sm`)." },
+		],
+	},
+	lists: {
+		items: [
+			{ label: "Row height", affects: "Height of rows in list views (`--list-row-height`)." },
+		],
+	},
+	pages: {
+		items: [
+			{ label: "Form max width", affects: "Maximum width of form layouts (`--page-max-width`)." },
+			{ label: "Page header height", affects: "Height of the page title bar (`--page-head-height`)." },
+		],
+	},
+	bodyText: {
 		items: [
 			{
 				label: "Body Font",
 				affects: "Desk typeface stack for body text and UI copy (`--font-stack`).",
 			},
-		],
-	},
-	weight: {
-		items: [
+			{
+				label: "Body Size",
+				affects: "Base body text size on Frappe v16 Desk (`--text-base`).",
+			},
 			{
 				label: "Body Weight",
-				affects: "Regular body text weight across Desk (`--weight-regular`).",
+				affects: "Regular body text weight across Desk (`--weight-regular` / `--font-weight-regular`).",
+			},
+			{
+				label: "Bold Weight",
+				affects:
+					"Fields and list rows Frappe marks bold (`.bold`, `.form-control.bold`) via `--nce-weight-bold`.",
+			},
+		],
+	},
+	textScale: {
+		note:
+			"When “Scale with body size” is on, small, label, and title sizes track Body Size (14px defaults → 12 / 13 / 16px). Turn off to set each size manually.",
+		items: [
+			{
+				label: "Scale with body size",
+				affects: "Editor preference only — not published to Desk CSS (`text_scale_mode`).",
+			},
+			{
+				label: "Small print",
+				affects: "Fine print and compact UI text (`--text-xs`).",
+			},
+			{
+				label: "Labels & sidebar",
+				affects: "Sidebar labels, field labels, and secondary UI copy (`--text-sm`).",
+			},
+			{
+				label: "Titles",
+				affects: "Section titles and prominent headings (`--text-lg`).",
+			},
+		],
+	},
+	otherWeights: {
+		items: [
+			{
+				label: "Medium weight",
+				affects: "Buttons, tabs, and other medium-weight UI text (`--font-weight-medium`).",
 			},
 		],
 	},
@@ -741,20 +1143,26 @@ const deskPanelHelp = {
 			{ label: "Progress", affects: "Completed portion of a Gantt bar (`--g-progress-color`)." },
 			{ label: "Header Background", affects: "Gantt timeline header row (`--g-header-background`)." },
 			{ label: "Row", affects: "Alternating Gantt grid row background (`--g-row-color`)." },
-			{ label: "Today Highlight", affects: "Vertical marker for the current date (`--g-today-highlight`)." },
 		],
 	},
 } satisfies Record<string, PanelHelpContent>
 
-const pageFormColors = [
-	{ key: "bg_color" as FormKey, label: "Page Background" },
-	{ key: "fg_color" as FormKey, label: "Card / Form Surface" },
+const backgroundColors: { key: FormKey; label: string; hint?: string }[] = [
+	{ key: "bg_color", label: "Page Background" },
+	{ key: "fg_color", label: "Card / Form Surface" },
+	{
+		key: "surface_gray_2",
+		label: "Subtle Surface",
+		hint: "List header row, toolbar and paging buttons",
+	},
+	{ key: "subtle_fg", label: "List Header Background" },
 ]
 
 const textColors = [
 	{ key: "text_color" as FormKey, label: "Body Text" },
 	{ key: "text_muted" as FormKey, label: "Muted Text" },
 	{ key: "text_light" as FormKey, label: "Light Text" },
+	{ key: "heading_color" as FormKey, label: "Headings" },
 ]
 
 const inputBorderColors = [
@@ -762,19 +1170,7 @@ const inputBorderColors = [
 	{ key: "control_bg_on_gray" as FormKey, label: "Sidebar Filter Inputs" },
 	{ key: "border_color" as FormKey, label: "Border" },
 	{ key: "dark_border_color" as FormKey, label: "Strong Border" },
-]
-
-const buttonColors = [
-	{ key: "btn_primary" as FormKey, label: "Primary Button" },
 	{ key: "btn_default_bg" as FormKey, label: "Workspace Quick List Buttons" },
-	{ key: "awesomplete_hover_bg" as FormKey, label: "Autocomplete Row Highlight" },
-]
-
-const shapeFields = [
-	{ key: "btn_height" as FormKey, label: "Button Height", placeholder: "28px" },
-	{ key: "border_radius" as FormKey, label: "Border Radius", placeholder: "6px" },
-	{ key: "border_radius_lg" as FormKey, label: "Large Border Radius", placeholder: "12px" },
-	{ key: "border_radius_full" as FormKey, label: "Full Border Radius", placeholder: "999px" },
 ]
 
 const ganttColors = [
@@ -783,7 +1179,6 @@ const ganttColors = [
 	{ key: "g_progress_color" as FormKey, label: "Progress" },
 	{ key: "g_header_background" as FormKey, label: "Header Background" },
 	{ key: "g_row_color" as FormKey, label: "Row" },
-	{ key: "g_today_highlight" as FormKey, label: "Today Highlight" },
 ]
 
 const form = reactive<Record<FormKey, string>>({ ...DEFAULTS })
@@ -863,14 +1258,178 @@ function canonicalPayload(source: Record<string, any>): Record<string, any> {
 	return payload
 }
 
-function applyPayloadToForm(payload: Record<string, any>) {
-	for (const key of ALL_FIELDS) form[key] = DEFAULTS[key]
-	for (const key of ALL_FIELDS) {
-		if (key === "theme_name") continue
-		const val = payload[key]
-		if (val !== undefined && val !== null) form[key] = String(val)
+const suppressTextScaleAuto = ref(false)
+const suppressDensityAuto = ref(false)
+
+const DENSITY_PRESET_IDS = ["compact", "default", "comfortable"] as const
+type DensityPresetId = (typeof DENSITY_PRESET_IDS)[number]
+type DensityMode = DensityPresetId | "custom"
+
+const DENSITY_PRESET_KEYS = [
+	"spacing",
+	"padding_xs",
+	"padding_sm",
+	"padding_md",
+	"margin_xs",
+	"margin_sm",
+	"list_row_height",
+	"input_height",
+] as const satisfies readonly FormKey[]
+
+const DENSITY_PRESETS: Record<DensityPresetId, Record<(typeof DENSITY_PRESET_KEYS)[number], string>> = {
+	compact: {
+		spacing: ".2rem",
+		padding_xs: "3px",
+		padding_sm: "5px",
+		padding_md: "10px",
+		margin_xs: "3px",
+		margin_sm: "6px",
+		list_row_height: "26px",
+		input_height: "24px",
+	},
+	default: {
+		spacing: ".25rem",
+		padding_xs: "5px",
+		padding_sm: "7px",
+		padding_md: "15px",
+		margin_xs: "5px",
+		margin_sm: "10px",
+		list_row_height: "30px",
+		input_height: "28px",
+	},
+	comfortable: {
+		spacing: ".3rem",
+		padding_xs: "7px",
+		padding_sm: "10px",
+		padding_md: "20px",
+		margin_xs: "7px",
+		margin_sm: "14px",
+		list_row_height: "36px",
+		input_height: "32px",
+	},
+}
+
+const densityPresetOptions = [
+	{ id: "compact" as const, label: "Compact" },
+	{ id: "default" as const, label: "Default" },
+	{ id: "comfortable" as const, label: "Comfortable" },
+]
+
+function densityPresetTokenEqual(
+	key: (typeof DENSITY_PRESET_KEYS)[number],
+	a: string,
+	b: string,
+): boolean {
+	if (key === "spacing") return parseFloat(a) === parseFloat(b)
+	return a === b
+}
+
+function densityPresetMatches(presetId: DensityPresetId): boolean {
+	const preset = DENSITY_PRESETS[presetId]
+	return DENSITY_PRESET_KEYS.every((key) =>
+		densityPresetTokenEqual(key, form[key], preset[key]),
+	)
+}
+
+function inferDensityFromForm(): DensityMode {
+	for (const id of DENSITY_PRESET_IDS) {
+		if (densityPresetMatches(id)) return id
+	}
+	return "custom"
+}
+
+function normalizeDensityMode(raw: unknown): DensityMode {
+	const s = String(raw ?? "").trim()
+	if (s === "compact" || s === "default" || s === "comfortable" || s === "custom") return s
+	return DEFAULTS.density as DensityMode
+}
+
+function applyDensityPreset(presetId: DensityPresetId) {
+	suppressDensityAuto.value = true
+	try {
+		form.density = presetId
+		const preset = DENSITY_PRESETS[presetId]
+		for (const key of DENSITY_PRESET_KEYS) form[key] = preset[key]
+	} finally {
+		suppressDensityAuto.value = false
 	}
 }
+
+function parseBodySizePx(raw: string): number {
+	const b = parseFloat(raw)
+	return Number.isFinite(b) ? b : 14
+}
+
+function applyAutoTextScale() {
+	const b = parseBodySizePx(form.font_size)
+	form.text_xs = `${Math.round((b * 12) / 14)}px`
+	form.text_sm = `${Math.round((b * 13) / 14)}px`
+	form.text_lg = `${Math.round((b * 16) / 14)}px`
+}
+
+function setTextScaleAuto(auto: boolean) {
+	form.text_scale_mode = auto ? "auto" : "manual"
+}
+
+const textScaleSummary = computed(() => {
+	if (form.text_scale_mode === "auto") {
+		const b = parseBodySizePx(form.font_size)
+		return `Small ${Math.round((b * 12) / 14)}px · Labels ${Math.round((b * 13) / 14)}px · Titles ${Math.round((b * 16) / 14)}px`
+	}
+	const xs = form.text_xs || DEFAULTS.text_xs
+	const sm = form.text_sm || DEFAULTS.text_sm
+	const lg = form.text_lg || DEFAULTS.text_lg
+	return `Small ${xs} · Labels ${sm} · Titles ${lg}`
+})
+
+function applyPayloadToForm(payload: Record<string, any>) {
+	suppressTextScaleAuto.value = true
+	suppressDensityAuto.value = true
+	try {
+		for (const key of ALL_FIELDS) form[key] = DEFAULTS[key]
+		for (const key of ALL_FIELDS) {
+			if (key === "theme_name") continue
+			const val = payload[key]
+			if (val !== undefined && val !== null) form[key] = String(val)
+		}
+		if (form.text_scale_mode !== "auto" && form.text_scale_mode !== "manual") {
+			form.text_scale_mode = DEFAULTS.text_scale_mode
+		}
+		const hadDensity =
+			payload.density !== undefined && payload.density !== null && String(payload.density).trim() !== ""
+		form.density = hadDensity ? normalizeDensityMode(form.density) : inferDensityFromForm()
+	} finally {
+		suppressTextScaleAuto.value = false
+		suppressDensityAuto.value = false
+	}
+}
+
+watch(
+	() => form.font_size,
+	() => {
+		if (suppressTextScaleAuto.value) return
+		if (form.text_scale_mode === "auto") applyAutoTextScale()
+	},
+)
+
+watch(
+	() => form.text_scale_mode,
+	(mode) => {
+		if (suppressTextScaleAuto.value) return
+		if (mode === "auto") applyAutoTextScale()
+	},
+)
+
+watch(
+	() => DENSITY_PRESET_KEYS.map((key) => form[key]),
+	() => {
+		if (suppressDensityAuto.value) return
+		const mode = form.density
+		if (mode === "compact" || mode === "default" || mode === "comfortable") {
+			if (!densityPresetMatches(mode)) form.density = "custom"
+		}
+	},
+)
 
 const {
 	loadingTheme,

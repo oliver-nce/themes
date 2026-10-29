@@ -1,14 +1,5 @@
 // Copyright (c) 2026 Oliver Reid. All rights reserved. Copying prohibited — see README.
 //
-// code-index:begin
-// {
-//  "purpose": "Writes live --nce CSS variables for brand shades, neutrals, type, radius, and spacing.",
-//  "read_when": "Changing how editor settings become document CSS variables for brand or neutral colours.",
-//  "gotchas": [],
-//  "keywords": ["injectCSSVars", "generateCSSVars", "brandShadeForeground", "generateNeutralShades", "effectiveRoleHex", "neutral_color_warmth", "--nce-color-neutral", "OPPOSITE_BRAND"],
-//  "format": 1
-// }
-// code-index:end
 import {
 	pickFgMono,
 	pickFgTonal,

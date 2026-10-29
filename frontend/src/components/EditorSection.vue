@@ -1,15 +1,6 @@
 <!--
 Collapsible editor panel with a title, hint, header actions, and a help dialog.
 
-code-index:begin
-{
- "purpose": "Collapsible editor panel with a title, hint, header actions, and a help dialog.",
- "read_when": "When changing editor section collapse, hints, or the panel help dialog.",
- "gotchas": [],
- "keywords": ["editor-section", "panelHelp", "collapsible", "defaultOpen", "what it affects", "aria-expanded"],
- "format": 1
-}
-code-index:end
 -->
 
 <template>

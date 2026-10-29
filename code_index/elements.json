@@ -1,9 +1,10 @@
 {
 "_meta": {
-"description": "The single authoritative code index of this project: every function, class, method, route, test, Vue component, CSS section and doc section with a label, plus each file's purpose. Query it with the shared code-index tool (find / show / callers); do not read this file whole. Generated: never edit by hand; hand-written notes live in code-index.json.",
+"description": "The single authoritative code index of this project: every function, class, method, route, test, Vue component, CSS section and doc section with a label, plus each file's purpose. Query it with the shared code-index tool (find / show / callers); do not read this file whole. Generated: never edit by hand; hand-written notes live in code_index/project.json.",
 "generator": "_Project support files/code-index/codeindex.py",
-"count": 956,
-"headers_sha256": "f49e0c689ffdd22f6556bb04ff53bd5529a1f71fa3d482c9cbd848751ce4f209"
+"count": 962,
+"project_sha256": "c1707ccb8aaec9b91d0aa78e39eb932e84ef71623b3c29b8142fc15c6ec095cd",
+"headers_sha256": "ef3c361ed38ce068b6e9c6f0894ba66346241292ca70d207ee8c7e3fb95926da"
 },
 "files": {
 "AGENTS.md": {
@@ -36,23 +37,6 @@
 "Vue component",
 "pre-commit",
 "Markdown"
-]
-},
-"Frappe Context/fc-route.ts": {
-"purpose": "Routes an agent to ranked Frappe Context files using B/U/F weights and a token budget.",
-"read_when": "When choosing which Frappe Context documents to load before reading that folder.",
-"gotchas": [
-"Vue, css, theme, v15, v16, or compat in the task description always adds the matching mandatory files."
-],
-"keywords": [
-"fc_index.json",
-"token budget",
-"weight_b",
-"rankChunks",
-"mandatory",
-"Frappe Context",
-"fc_route",
-"WeightedChunk"
 ]
 },
 "README.md": {
@@ -510,6 +494,19 @@
 "Theme Version"
 ]
 },
+"frontend/index.html": {
+"purpose": "Vite dev-server HTML entry for the Themes Vue app, mounting #app from src/main.ts.",
+"read_when": "When the Vue theme editor does not start under the Vite dev server.",
+"gotchas": [],
+"keywords": [
+"Themes",
+"app",
+"main.ts",
+"src/main.ts",
+"Vite dev server",
+"Vue entry"
+]
+},
 "frontend/postcss.config.js": {
 "purpose": "PostCSS setup that runs Tailwind CSS and Autoprefixer for the theme editor frontend.",
 "read_when": "When the frontend CSS pipeline or Tailwind processing stops applying.",
@@ -662,6 +659,9 @@
 "frontend/src/utils/shadowBuild.ts"
 ]
 },
+"frontend/src/components/SizeSlider.vue": {
+"purpose": "Numeric range control for theme size/weight tokens with default marker and reset."
+},
 "frontend/src/components/SwatchPicker.vue": {
 "purpose": "Popover for picking a primary, secondary, or gray shade, or typing a custom hex.",
 "read_when": "When changing the shade grid, custom hex entry, or the use-default action.",
@@ -734,21 +734,7 @@
 ]
 },
 "frontend/src/composables/useDeskTheme.ts": {
-"purpose": "Loads the active desk theme and writes its payload onto Frappe desk CSS variables.",
-"read_when": "When changing desk CSS variable names, font stack conversion, or active desk theme loading.",
-"gotchas": [
-"font_size is omitted because Frappe v15 does not use --font-size-base.",
-"font_family is handled separately and needs CSS stack conversion.",
-"font_weight_body targets Frappe v15 --weight-regular."
-],
-"keywords": [
-"DESK_VAR_MAP",
-"deskFontStack",
-"get_active_desk_theme_editor",
-"--weight-regular",
-"font_family",
-"applyDeskThemeVars"
-]
+"purpose": "Copyright (c) 2026 Oliver Reid."
 },
 "frontend/src/composables/useTheme.ts": {
 "purpose": "Loads the active theme editor payload and sets primary color and font CSS variables.",
@@ -862,29 +848,11 @@
 },
 "frontend/src/pages/DeskThemeSettingsPage.vue": {
 "purpose": "Desk Theme Editor for NCE Desk Theme colours, shape, typography, Gantt, and live preview.",
-"read_when": "Changing desk theme fields, save and restore, availability, or the preview postMessage.",
-"gotchas": [
-"Changing Brand colours does not recolour every panel directly — it changes the palette of swatches available in the remaining panels.",
-"Frappe's flat design removes borders from individual input fields — the Border tokens affect structural lines around sections and pages, not field edges.",
-"Primary Button defaults to the same colour as Brand → Primary. Set it here to give Save and Submit their own colour independently.",
-"Sidebar Filter Inputs have no effect outside the sidebar.",
-"Workspace Quick List Buttons have no effect on standard list or form pages.",
-"Save or revert changes before changing availability."
-],
-"keywords": [
-"Desk Theme Editor",
-"NCE Desk Theme",
-"nce-desk-theme-update",
-"Restore to Base Desk Theme",
-"deskPayloadToCssVars",
-"font_weight_body",
-"Gantt",
-"Set as Default desk theme"
-],
 "depends_on": [
 "frontend/src/components/EditorSection.vue",
 "frontend/src/components/FontSelectField.vue",
 "frontend/src/components/PasswordField.vue",
+"frontend/src/components/SizeSlider.vue",
 "frontend/src/components/SwatchPicker.vue",
 "frontend/src/composables/useDeskTheme.ts",
 "frontend/src/composables/useThemeEditor.ts"
@@ -918,24 +886,25 @@
 ]
 },
 "frontend/src/pages/ThemeSettingsPage.vue": {
-"purpose": "Site Theme Editor for colours, typography, layout, live CSS variables, and base theme publishing.",
-"read_when": "Changing theme editor tabs, live CSS variables, save and restore, or Save as base theme.",
+"purpose": "Web Theme Editor page for NCE Theme colours, typography, layout, tables, live CSS variables and the Base Theme.",
+"read_when": "When changing web theme editor tabs, live --nce-* variables, save and restore, or Save as Base Theme.",
 "gotchas": [
 "Neutral: always emit from warmth alone.",
 "Retired picker options map to Public Sans when loading saved themes.",
-"Skip the confirm dialog: save any current changes first, then load the app base into the editor. If the save fails, abort so edits aren't lost.",
+"Restore to Base Theme skips the confirm dialog: it saves current changes first and aborts if that save fails.",
 "Save or revert changes before changing availability.",
-"Rare release action: sets the site base theme, rebuilds CSS, and writes bundled files into the app for new installs. Commit and push after running.",
-"Unsaved-changes confirm when switching themes (not restore)."
+"Save as Base Theme writes bundled files into the app; commit and push the themes app afterwards.",
+"Corporate brand palette mode forces gamma 0 and saturation 100 on save and load."
 ],
 "keywords": [
 "Theme Editor",
 "nce-theme-update",
 "neutral_color_warmth",
 "brand_palette_mode",
-"base_theme.json",
+"computeCSSVariables",
+"useThemeEditor",
 "Public Sans",
-"AGENT:TAB",
+"Base Theme",
 "nce_theme.css"
 ],
 "depends_on": [
@@ -1517,15 +1486,20 @@
 ]
 },
 "themes/patches/v1_0/migrate_theme_settings_to_nce_theme.py": {
-"purpose": "Copies the legacy Theme Settings Single into an NCE Theme named Default.",
-"read_when": "When an old Theme Settings single still needs to become an NCE Theme record.",
-"gotchas": [],
+"purpose": "Patch that copies the legacy Theme Settings single into an NCE Theme named Default and fills Site Theme Config.",
+"read_when": "When an old Theme Settings single still needs to become an NCE Theme record, or the migrate patch fails on a fresh site.",
+"gotchas": [
+"Creates the Default NCE Desk Theme early because base_desk_theme is mandatory on newer schemas.",
+"Skips entirely when an NCE Theme named Default already exists."
+],
 "keywords": [
 "Theme Settings",
 "NCE Theme",
 "MIGRATED_FIELDS",
-"active_theme",
-"theme_json",
+"Site Theme Config",
+"base_desk_theme",
+"publish_theme",
+"patch",
 "Default"
 ],
 "depends_on": [
@@ -1601,46 +1575,45 @@
 "themes/utils/workspace_sync.py"
 ]
 },
-"themes/public/css/fonts.css": {
-"purpose": "Curated variable fonts — generated for the Theme Editor picker."
-},
 "themes/public/css/nce_desk_theme.css": {
 "purpose": "Generated by themes.utils.desk_css_writer — do not edit"
 },
-"themes/public/css/nce_theme.css": {
-"purpose": "── Self-hosted variable fonts (active body + heading) ──"
-},
-"themes/public/frontend/assets/themes 2.css": {
-"purpose": ",:before,:after{--tw-border-spacing-x: 0;--tw-border-spacing-y: 0;--tw-translate-x: 0;--tw-translate-y: 0;--tw-rotate: 0;--tw-skew-x: 0;--tw-skew-y: 0;--tw-sca…"
-},
-"themes/public/frontend/assets/themes 2.js": {
+"themes/public/frontend/assets/themes-DeskThemeHomePage-B__43kte.js": {
 "purpose": ""
 },
-"themes/public/frontend/assets/themes-DeskThemeHomePage-Ciyf8U2y.js": {
+"themes/public/frontend/assets/themes-DeskThemePreviewPage-B4AHRJ-C.js": {
 "purpose": ""
 },
-"themes/public/frontend/assets/themes-DeskThemePreviewPage-DUG6GaE-.js": {
+"themes/public/frontend/assets/themes-DeskThemeSettingsPage-BTDlUAU-.js": {
 "purpose": ""
 },
-"themes/public/frontend/assets/themes-DeskThemeSettingsPage-B05_iH3o.js": {
+"themes/public/frontend/assets/themes-HomePage-CSXqIXQ7.js": {
 "purpose": ""
 },
-"themes/public/frontend/assets/themes-HomePage-C6RFiIE-.js": {
+"themes/public/frontend/assets/themes-SwatchPicker-BGpmZksn.js": {
 "purpose": ""
 },
-"themes/public/frontend/assets/themes-SwatchPicker-CyprrY-z.js": {
+"themes/public/frontend/assets/themes-ThemePreviewPage-BNcsvvdp.js": {
 "purpose": ""
 },
-"themes/public/frontend/assets/themes-ThemePreviewPage-2GHVTwxD.js": {
-"purpose": ""
-},
-"themes/public/frontend/assets/themes-ThemeSettingsPage-BrPePfK7.js": {
+"themes/public/frontend/assets/themes-ThemeSettingsPage-CjeKjR8C.js": {
 "purpose": ""
 },
 "themes/public/frontend/assets/themes-_plugin-vue_export-helper-DkZulUf9.js": {
-"purpose": ""
+"purpose": "Built Vite chunk with Vue's SFC export helper that merges compiled options onto a component.",
+"read_when": "Rarely; only when debugging the built Vue bundle in themes/public/frontend/assets.",
+"gotchas": [
+"Build output: regenerated on every frontend build, so do not edit by hand."
+],
+"keywords": [
+"__vccOpts",
+"export",
+"sourceMappingURL",
+"Vue SFC",
+"built asset"
+]
 },
-"themes/public/frontend/assets/themes-useDeskTheme-D-XwcKO9.js": {
+"themes/public/frontend/assets/themes-useDeskTheme-Dfl2YImq.js": {
 "purpose": ""
 },
 "themes/public/frontend/assets/themes.css": {
@@ -1649,55 +1622,48 @@
 "themes/public/frontend/assets/themes.js": {
 "purpose": "",
 "depends_on": [
-"themes/public/frontend/assets/themes-DeskThemeHomePage-Ciyf8U2y.js",
-"themes/public/frontend/assets/themes-DeskThemePreviewPage-DUG6GaE-.js",
-"themes/public/frontend/assets/themes-DeskThemeSettingsPage-B05_iH3o.js",
-"themes/public/frontend/assets/themes-HomePage-C6RFiIE-.js",
-"themes/public/frontend/assets/themes-ThemePreviewPage-2GHVTwxD.js",
-"themes/public/frontend/assets/themes-ThemeSettingsPage-BrPePfK7.js"
+"themes/public/frontend/assets/themes-DeskThemeHomePage-B__43kte.js",
+"themes/public/frontend/assets/themes-DeskThemePreviewPage-B4AHRJ-C.js",
+"themes/public/frontend/assets/themes-DeskThemeSettingsPage-BTDlUAU-.js",
+"themes/public/frontend/assets/themes-HomePage-CSXqIXQ7.js",
+"themes/public/frontend/assets/themes-ThemePreviewPage-BNcsvvdp.js",
+"themes/public/frontend/assets/themes-ThemeSettingsPage-CjeKjR8C.js"
 ]
 },
-"themes/public/frontend/assets/themes2 2.css": {
-"purpose": ""
-},
 "themes/public/frontend/assets/themes2.css": {
-"purpose": ""
-},
-"themes/public/frontend/assets/themes3 2.css": {
 "purpose": ""
 },
 "themes/public/frontend/assets/themes3.css": {
 "purpose": ""
 },
-"themes/public/frontend/assets/themes4 2.css": {
-"purpose": ""
-},
 "themes/public/frontend/assets/themes4.css": {
-"purpose": ""
-},
-"themes/public/frontend/assets/themes5 2.css": {
 "purpose": ""
 },
 "themes/public/frontend/assets/themes5.css": {
 "purpose": ""
 },
-"themes/public/frontend/assets/themes6 2.css": {
-"purpose": ""
-},
 "themes/public/frontend/assets/themes6.css": {
-"purpose": ""
-},
-"themes/public/frontend/assets/themes7 2.css": {
 "purpose": ""
 },
 "themes/public/frontend/assets/themes7.css": {
 "purpose": ""
 },
-"themes/public/frontend/assets/themes8 2.css": {
-"purpose": ""
-},
 "themes/public/frontend/assets/themes8.css": {
 "purpose": ""
+},
+"themes/public/frontend/index.html": {
+"purpose": "Built Vite HTML shell for the Themes Vue app, loading the bundled themes.js and themes.css assets.",
+"read_when": "When checking which built bundle the Themes frontend loads after a production build.",
+"gotchas": [],
+"keywords": [
+"index.html",
+"Vite build",
+"themes.js",
+"themes.css",
+"frontend assets",
+"#app",
+"built shell"
+]
 },
 "themes/public/js/desk_theme_loader.js": {
 "purpose": "Injects the published desk theme stylesheet from the boot CSS URL each Desk session.",
@@ -1737,53 +1703,61 @@
 "themes/tests/golden/web_default.css": {
 "purpose": "Checked-in expected CSS snapshot used by tests for the default web theme stylesheet.",
 "read_when": "When a CSS snapshot test fails on the default web theme output.",
-"gotchas": [],
+"gotchas": [
+"Refresh with UPDATE_GOLDEN=1 only when the CSS change is intentional."
+],
 "keywords": [
 "--nce-color-primary",
 "--nce-color-neutral",
 "canonical variables",
 "--nce-color-secondary",
 "--nce-color-table-header",
-"--nce-color-row-alt"
+"golden snapshot"
 ]
 },
 "themes/tests/golden/web_gamma_sat.css": {
 "purpose": "Checked-in expected CSS snapshot used by tests for web CSS with raised primary gamma and saturation.",
 "read_when": "When a CSS snapshot test fails on the gamma and saturation web theme output.",
-"gotchas": [],
+"gotchas": [
+"Refresh with UPDATE_GOLDEN=1 only when the CSS change is intentional."
+],
 "keywords": [
 "--nce-color-primary",
 "#0050BF",
 "canonical variables",
 "--nce-color-neutral",
-"--nce-color-table-header",
-"--nce-color-primary-fg"
+"--nce-color-primary-fg",
+"golden snapshot"
 ]
 },
 "themes/tests/golden/web_neutral_warmth.css": {
 "purpose": "Checked-in expected CSS snapshot used by tests for web CSS with a warmer neutral color.",
 "read_when": "When a CSS snapshot test fails on the neutral warmth web theme output.",
-"gotchas": [],
+"gotchas": [
+"Refresh with UPDATE_GOLDEN=1 only when the CSS change is intentional."
+],
 "keywords": [
 "--nce-color-neutral",
 "#9d9792",
 "canonical variables",
 "--nce-color-primary",
 "--nce-color-neutral-fg",
-"--nce-color-table-header"
+"golden snapshot"
 ]
 },
 "themes/tests/golden/web_site_default.css": {
 "purpose": "Checked-in expected CSS snapshot used by tests for site CSS with :root plus a scoped alt theme.",
 "read_when": "When a CSS snapshot test fails on site CSS that scopes an alt theme.",
-"gotchas": [],
+"gotchas": [
+"Refresh with UPDATE_GOLDEN=1 only when the CSS change is intentional."
+],
 "keywords": [
 "data-nce-theme",
 "canonical variables",
 "--nce-color-primary",
 "Shade scales",
 "theme-bg-primary",
-"--nce-color-neutral"
+"golden snapshot"
 ]
 },
 "themes/tests/test_api_contract.py": {
@@ -1967,18 +1941,21 @@
 "purpose": ""
 },
 "themes/themes/doctype/theme_settings/theme_settings.py": {
-"purpose": "Theme Settings document that compiles :root --nce-* variables, including shade scales, and writes nce_theme.css.",
-"read_when": "When changing Theme Settings CSS generation, its shade scale, or the file it writes.",
-"gotchas": [],
+"purpose": "Legacy Theme Settings single that compiles :root --nce-* variables with shade scales and writes nce_theme.css on save.",
+"read_when": "When the legacy Theme Settings doctype is still present on a site, or before removing it in favour of NCE Theme.",
+"gotchas": [
+"on_update overwrites public/css/nce_theme.css, the same file css_writer.publish_theme publishes.",
+"Keeps its own copies of the shade, shadow and radius maps instead of using theme_tokens."
+],
 "keywords": [
 "ThemeSettings",
+"Theme Settings",
 "_generate_shades",
 "COLOR_FIELDS",
-"nce_theme.css",
 "compiled_css",
 "custom_css",
-"OKLCH",
-"BORDER_RADIUS_MAP"
+"nce_theme.css",
+"legacy doctype"
 ],
 "depends_on": [
 "themes/utils/theme_color_utils.py"
@@ -2069,20 +2046,24 @@
 },
 "themes/utils/css_writer.py": {
 "purpose": "Builds and publishes web nce_theme.css so the Default theme drives :root and Active themes are scoped.",
-"read_when": "When changing web CSS variables, utility classes, or how the Default theme is published.",
+"read_when": "When changing web CSS variables, theme- utility classes, fonts, or how the Default theme is published.",
 "gotchas": [
 "Utility classes are gated by fields present in the default payload; the default defines all standard roles.",
-"Unregistered font names, including System Default, emit no @font-face rules."
+"Unregistered font names, including System Default, emit no @font-face rules.",
+"custom_css is only added to the :root block, never to scoped Active theme blocks.",
+"Keep shade and colour logic in step with frontend/src/utils/color-shades.ts and src/widget/constants.ts."
 ],
 "keywords": [
 "generate_site_css",
+"generate_css",
 "publish_theme",
 "data-nce-theme",
 "FONT_REGISTRY",
 "Default theme",
-"OKLCH",
 "theme-bg",
-"nce_theme.css"
+"nce_theme.css",
+"fonts.css",
+"theme-table"
 ],
 "depends_on": [
 "themes/utils/css_publish.py",
@@ -2102,7 +2083,6 @@
 "base_desk_theme.json",
 "DESK_THEME_DEFAULT_PAYLOAD",
 "primary_color",
-"btn_primary",
 "_FALLBACK_PAYLOAD"
 ]
 },
@@ -2122,24 +2102,7 @@
 ]
 },
 "themes/utils/desk_css_writer.py": {
-"purpose": "Generates and publishes nce_desk_theme.css from the site desk theme pointer merged with the Active desk theme.",
-"read_when": "When changing Desk CSS variables, font stacks, or the desk publish hash.",
-"gotchas": [
-"font_size is omitted because Frappe v15 does not use --font-size-base.",
-"DESK_CSS_SELECTOR includes [data-theme=light] because Frappe v15 Espresso re-declares Desk vars after app_include_css.",
-"font_family must be in DESK_TOKEN_FIELDS or _desk_parse_payload strips it on save.",
-"btn_primary falls back to primary_color when unset."
-],
-"keywords": [
-"DESK_CSS_VARS",
-"nce_desk_theme.css",
-"publish_desk_theme",
-"DESK_CSS_SELECTOR",
-"font_family",
-"desk_css_hash",
-"btn_primary",
-"data-theme"
-],
+"purpose": "Desk theme CSS generation and publish (nce_desk_theme.css → Frappe Desk vars).",
 "depends_on": [
 "themes/utils/css_publish.py",
 "themes/utils/site_theme_config_helpers.py",
@@ -2311,6 +2274,23 @@
 "themes/utils/workspace_sync.py"
 ]
 },
+"themes/www/themes.html": {
+"purpose": "Frappe web page template for /themes that loads the Vue theme editor bundle, fonts.css and nce_theme.css.",
+"read_when": "When the /themes or /desk-themes page loads stale assets, misses the CSRF token, or shows no app.",
+"gotchas": [
+"Every asset URL gets a ?v= timestamp cache-buster built per request in the template."
+],
+"keywords": [
+"themes.html",
+"www",
+"web.html",
+"csrf_token",
+"cache-buster",
+"themes.js",
+"nce_theme.css",
+"fonts.css"
+]
+},
 "themes/www/themes.py": {
 "purpose": "Website context that sends guests to login except on public theme preview routes.",
 "read_when": "When theme editor pages are reachable without login or preview is wrongly blocked.",
@@ -2351,118 +2331,6 @@
 "calls": [],
 "label": "Finding code here: ask the code index, do not read files -- `code_index/elements.json` maps every function, class, method, route, test, Vue component, CSS sect…",
 "label_source": "title"
-},
-{
-"id": "Frappe Context/fc-route.ts::FcChunk",
-"file": "Frappe Context/fc-route.ts",
-"kind": "type",
-"name": "FcChunk",
-"qualname": "FcChunk",
-"sig": "",
-"hash": "ca919b319b",
-"exported": false,
-"calls": [],
-"label": "Define structure for a searchable content chunk from Frappe Context",
-"label_source": "generated",
-"label_hash": "ca919b319b"
-},
-{
-"id": "Frappe Context/fc-route.ts::FcIndex",
-"file": "Frappe Context/fc-route.ts",
-"kind": "type",
-"name": "FcIndex",
-"qualname": "FcIndex",
-"sig": "",
-"hash": "8b7cb86133",
-"exported": false,
-"calls": [],
-"label": "Define index of searchable Frappe Context chunks and metadata",
-"label_source": "generated",
-"label_hash": "8b7cb86133"
-},
-{
-"id": "Frappe Context/fc-route.ts::loadIndex",
-"file": "Frappe Context/fc-route.ts",
-"kind": "function",
-"name": "loadIndex",
-"qualname": "loadIndex",
-"sig": "(projectRoot: string) -> FcIndex",
-"hash": "f670bf0a1d",
-"exported": false,
-"calls": [],
-"label": "Load cached Frappe Context index from project files",
-"label_source": "generated",
-"label_hash": "f670bf0a1d"
-},
-{
-"id": "Frappe Context/fc-route.ts::WeightedChunk",
-"file": "Frappe Context/fc-route.ts",
-"kind": "type",
-"name": "WeightedChunk",
-"qualname": "WeightedChunk",
-"sig": "",
-"hash": "310f911c4f",
-"exported": false,
-"calls": [],
-"label": "Extend chunk with relevance score for ranking",
-"label_source": "generated",
-"label_hash": "310f911c4f"
-},
-{
-"id": "Frappe Context/fc-route.ts::rankChunks",
-"file": "Frappe Context/fc-route.ts",
-"kind": "function",
-"name": "rankChunks",
-"qualname": "rankChunks",
-"sig": "( chunks: FcChunk[], wb: number, wu: number, wf: number, tokenBudget: number, preferTiers: string[] = [\"rag\", \"guide\", \"standalone\", \"jsonl…",
-"hash": "ee50d1a1e3",
-"exported": false,
-"calls": [],
-"label": "Rank and select chunks by relevance score and token budget",
-"label_source": "generated",
-"label_hash": "ee50d1a1e3"
-},
-{
-"id": "Frappe Context/fc-route.ts::MANDATORY",
-"file": "Frappe Context/fc-route.ts",
-"kind": "const",
-"name": "MANDATORY",
-"qualname": "MANDATORY",
-"sig": "",
-"hash": "fa06a40e0e",
-"exported": false,
-"calls": [],
-"label": "Map keywords to mandatory documentation files for context",
-"label_source": "generated",
-"label_hash": "fa06a40e0e"
-},
-{
-"id": "Frappe Context/fc-route.ts::getMandatoryFiles",
-"file": "Frappe Context/fc-route.ts",
-"kind": "function",
-"name": "getMandatoryFiles",
-"qualname": "getMandatoryFiles",
-"sig": "(taskDesc: string) -> string[]",
-"hash": "fc7eb919ca",
-"exported": false,
-"calls": [],
-"label": "Get required documentation files based on task description",
-"label_source": "generated",
-"label_hash": "fc7eb919ca"
-},
-{
-"id": "Frappe Context/fc-route.ts::tool",
-"file": "Frappe Context/fc-route.ts",
-"kind": "const",
-"name": "tool",
-"qualname": "tool",
-"sig": "",
-"hash": "362d7ade34",
-"exported": true,
-"calls": [],
-"label": "Route to ranked Frappe Context documents based on task type and token budget",
-"label_source": "generated",
-"label_hash": "362d7ade34"
 },
 {
 "id": "README.md::themes",
@@ -5663,11 +5531,11 @@
 "name": "App",
 "qualname": "App",
 "sig": "",
-"hash": "7cda04362b",
+"hash": "6528eca941",
 "calls": [],
-"label": "Shell for theme editor with sidebar navigation to web and desk theme pages",
+"label": "Navigate between theme editor and preview pages for web and desk themes",
 "label_source": "generated",
-"label_hash": "7cda04362b"
+"label_hash": "6528eca941"
 },
 {
 "id": "frontend/src/components/BrandColorPicker.vue::BrandColorPicker",
@@ -5676,11 +5544,11 @@
 "name": "BrandColorPicker",
 "qualname": "BrandColorPicker",
 "sig": "",
-"hash": "2e1932ed05",
+"hash": "a97de3fe34",
 "calls": [],
-"label": "Dialog to select brand hue and configure color shade generation parameters",
+"label": "Pick brand color with hue selector, shade preview, and tonal pole markers",
 "label_source": "generated",
-"label_hash": "2e1932ed05"
+"label_hash": "a97de3fe34"
 },
 {
 "id": "frontend/src/components/BrandColorPicker.vue::BrandPaletteMode",
@@ -6322,11 +6190,11 @@
 "name": "ColorField",
 "qualname": "ColorField",
 "sig": "",
-"hash": "2115d96721",
+"hash": "f301e27ab9",
 "calls": [],
-"label": "Labelled hex color input with native picker and optional generated shade strip",
+"label": "Input hex color with native picker and optional generated shade strip preview",
 "label_source": "generated",
-"label_hash": "2115d96721"
+"label_hash": "f301e27ab9"
 },
 {
 "id": "frontend/src/components/EditorSection.vue::EditorSection",
@@ -6335,11 +6203,11 @@
 "name": "EditorSection",
 "qualname": "EditorSection",
 "sig": "",
-"hash": "3635ee920a",
+"hash": "e971673f78",
 "calls": [],
-"label": "Collapsible editor panel with title, hint, header actions, and help dialog",
+"label": "Collapsible editor panel with title, hint text, actions, and help dialog",
 "label_source": "generated",
-"label_hash": "3635ee920a"
+"label_hash": "e971673f78"
 },
 {
 "id": "frontend/src/components/EditorSection.vue::PanelHelpContent",
@@ -6362,11 +6230,11 @@
 "name": "FontSelectField",
 "qualname": "FontSelectField",
 "sig": "",
-"hash": "4324e8ea76",
+"hash": "464b0f1371",
 "calls": [],
-"label": "Font family dropdown that previews each option in its own CSS font stack",
+"label": "Select font family from dropdown with preview in each font's CSS stack",
 "label_source": "generated",
-"label_hash": "4324e8ea76"
+"label_hash": "464b0f1371"
 },
 {
 "id": "frontend/src/components/FontSelectField.vue::FONT_GENERIC",
@@ -6454,11 +6322,11 @@
 "name": "NeutralColorPicker",
 "qualname": "NeutralColorPicker",
 "sig": "",
-"hash": "f54be2be89",
+"hash": "b4e1ce0e68",
 "calls": [],
-"label": "Neutral shade strip with warmth slider showing 600 hex and resolved foreground",
+"label": "Control neutral color warmth with slider and preview shade strip",
 "label_source": "generated",
-"label_hash": "f54be2be89"
+"label_hash": "b4e1ce0e68"
 },
 {
 "id": "frontend/src/components/NeutralColorPicker.vue::onWarmthInput",
@@ -6484,11 +6352,11 @@
 "name": "PasswordField",
 "qualname": "PasswordField",
 "sig": "",
-"hash": "ebd1977520",
+"hash": "98247ade15",
 "calls": [],
-"label": "Password input field with visibility toggle and enter key emission",
+"label": "Toggle-able password input field with enter key support",
 "label_source": "generated",
-"label_hash": "ebd1977520"
+"label_hash": "98247ade15"
 },
 {
 "id": "frontend/src/components/SelectField.vue::SelectField",
@@ -6497,11 +6365,11 @@
 "name": "SelectField",
 "qualname": "SelectField",
 "sig": "",
-"hash": "67ad77f5bd",
+"hash": "b0f59b05b2",
 "calls": [],
-"label": "Select dropdown accepting plain strings or labeled option objects",
+"label": "Labeled dropdown select accepting strings or value-label objects",
 "label_source": "generated",
-"label_hash": "67ad77f5bd"
+"label_hash": "b0f59b05b2"
 },
 {
 "id": "frontend/src/components/SelectField.vue::SelectOption",
@@ -6524,11 +6392,11 @@
 "name": "ShadowDirectionDial",
 "qualname": "ShadowDirectionDial",
 "sig": "",
-"hash": "4443b2f050",
+"hash": "a54e5ddb11",
 "calls": [],
-"label": "Circular dial for setting shadow offset direction by pointer or touch",
+"label": "Circular dial for setting shadow offset direction in degrees",
 "label_source": "generated",
-"label_hash": "4443b2f050"
+"label_hash": "a54e5ddb11"
 },
 {
 "id": "frontend/src/components/ShadowDirectionDial.vue::clampAngle",
@@ -6692,17 +6560,94 @@
 "label_hash": "9966aa8af7"
 },
 {
+"id": "frontend/src/components/SizeSlider.vue::SizeSlider",
+"file": "frontend/src/components/SizeSlider.vue",
+"kind": "component",
+"name": "SizeSlider",
+"qualname": "SizeSlider",
+"sig": "",
+"hash": "6a9cab77e6",
+"calls": [],
+"label": "Numeric range slider for theme size and weight tokens with reset",
+"label_source": "generated",
+"label_hash": "6a9cab77e6"
+},
+{
+"id": "frontend/src/components/SizeSlider.vue::parseNumeric",
+"file": "frontend/src/components/SizeSlider.vue",
+"kind": "function",
+"name": "parseNumeric",
+"qualname": "parseNumeric",
+"sig": "(raw: string, fallback: string) -> number",
+"hash": "fab79a736e",
+"exported": false,
+"calls": [],
+"label": "Parse and constrain numeric value within min-max range with fallback",
+"label_source": "generated",
+"label_hash": "fab79a736e"
+},
+{
+"id": "frontend/src/components/SizeSlider.vue::formatOutput",
+"file": "frontend/src/components/SizeSlider.vue",
+"kind": "function",
+"name": "formatOutput",
+"qualname": "formatOutput",
+"sig": "(n: number) -> string",
+"hash": "31e5c5204a",
+"exported": false,
+"calls": [],
+"label": "Format numeric value with optional unit suffix",
+"label_source": "generated",
+"label_hash": "31e5c5204a"
+},
+{
+"id": "frontend/src/components/SizeSlider.vue::onInput",
+"file": "frontend/src/components/SizeSlider.vue",
+"kind": "function",
+"name": "onInput",
+"qualname": "onInput",
+"sig": "(e: Event)",
+"hash": "f446777e31",
+"exported": false,
+"calls": [
+"frontend/src/components/SizeSlider.vue::formatOutput"
+],
+"wired_by": [
+"frontend/src/components/SizeSlider.vue::SizeSlider"
+],
+"label": "Handle slider input and emit formatted output value",
+"label_source": "generated",
+"label_hash": "f446777e31"
+},
+{
+"id": "frontend/src/components/SizeSlider.vue::reset",
+"file": "frontend/src/components/SizeSlider.vue",
+"kind": "function",
+"name": "reset",
+"qualname": "reset",
+"sig": "()",
+"hash": "ad6592564b",
+"exported": false,
+"calls": [],
+"wired_by": [
+"frontend/src/components/SizeSlider.vue::SizeSlider"
+],
+"label": "Reset slider to default value",
+"label_source": "generated",
+"label_hash": "ad6592564b"
+},
+{
 "id": "frontend/src/components/SwatchPicker.vue::SwatchPicker",
 "file": "frontend/src/components/SwatchPicker.vue",
 "kind": "component",
 "name": "SwatchPicker",
 "qualname": "SwatchPicker",
 "sig": "",
-"hash": "f4f7e901e9",
+"hash": "c6b50c2972",
 "calls": [],
-"label": "Color picker popover for primary, secondary, gray shades, or custom hex values",
+"label": "Popover color picker for primary, secondary, gray shades or custom hex",
 "label_source": "generated",
-"label_hash": "f4f7e901e9"
+"label_hash": "c6b50c2972"
 },
 {
 "id": "frontend/src/components/SwatchPicker.vue::norm",
@@ -6892,11 +6837,11 @@
 "name": "ThemeClassCatalogPanel",
 "qualname": "ThemeClassCatalogPanel",
 "sig": "",
-"hash": "aeffd0323d",
+"hash": "b414b5c7cf",
 "calls": [],
-"label": "Catalog panel displaying published theme classes and CSS values from nce_theme.css",
+"label": "Display and filter published theme CSS classes and variable values from nce_theme.css catalog",
 "label_source": "generated",
-"label_hash": "aeffd0323d"
+"label_hash": "b414b5c7cf"
 },
 {
 "id": "frontend/src/components/ThemeClassCatalogPanel.vue::load",
@@ -6927,11 +6872,11 @@
 "name": "ThemePreview",
 "qualname": "ThemePreview",
 "sig": "",
-"hash": "3db14396b1",
+"hash": "cda2f49b44",
 "calls": [],
-"label": "Sample form preview rendering theme settings as primary color, font, radius, and spacing",
+"label": "Preview form with theme settings applied to primary color, font, radius, and spacing",
 "label_source": "generated",
-"label_hash": "3db14396b1"
+"label_hash": "cda2f49b44"
 },
 {
 "id": "frontend/src/components/ThemePreview.vue::RADIUS_MAP",
@@ -6968,11 +6913,11 @@
 "name": "ThemeSwatchPicker",
 "qualname": "ThemeSwatchPicker",
 "sig": "",
-"hash": "bcc3bb7086",
+"hash": "0d0351a8a0",
 "calls": [],
-"label": "Open theme swatch picker and write class fields via Vue form state",
+"label": "Open theme swatch color picker and write selected colors to form fields",
 "label_source": "generated",
-"label_hash": "bcc3bb7086"
+"label_hash": "0d0351a8a0"
 },
 {
 "id": "frontend/src/components/ThemeSwatchPicker.vue::FormLike",
@@ -7056,12 +7001,12 @@
 "name": "DESK_VAR_MAP",
 "qualname": "DESK_VAR_MAP",
 "sig": "",
-"hash": "0ab6420d60",
+"hash": "e4a6fb38f1",
 "exported": true,
 "calls": [],
-"label": "Map NCE theme setting keys to Frappe CSS variable names",
+"label": "Map Desk theme payload keys to CSS variable names for Frappe UI styling",
 "label_source": "generated",
-"label_hash": "0ab6420d60"
+"label_hash": "e4a6fb38f1"
 },
 {
 "id": "frontend/src/composables/useDeskTheme.ts::DESK_FONT_GENERIC",
@@ -7098,14 +7043,14 @@
 "name": "deskPayloadToCssVars",
 "qualname": "deskPayloadToCssVars",
 "sig": "(payload: Record<string, unknown>) -> Record<string, string>",
-"hash": "838e5f2d71",
+"hash": "19c96cc315",
 "exported": true,
 "calls": [
 "frontend/src/composables/useDeskTheme.ts::deskFontStack"
 ],
-"label": "Transform theme payload object to CSS custom property dictionary",
+"label": "Convert theme payload settings to CSS variable dictionary for application",
 "label_source": "generated",
-"label_hash": "838e5f2d71"
+"label_hash": "19c96cc315"
 },
 {
 "id": "frontend/src/composables/useDeskTheme.ts::applyDeskThemeVars",
@@ -7557,7 +7502,7 @@
 "name": "all",
 "qualname": "all",
 "sig": "",
-"hash": "9d58513679",
+"hash": "5c37fe15c5",
 "calls": [],
 "label": "index.css (the whole file)",
 "label_source": "title"
@@ -7569,11 +7514,11 @@
 "name": "DeskThemeHomePage",
 "qualname": "DeskThemeHomePage",
 "sig": "",
-"hash": "6a7838645d",
+"hash": "ca5ebb744d",
 "calls": [],
-"label": "Landing page linking to Desk Theme Editor and Preview",
+"label": "Landing page linking to Desk Theme Editor and live preview",
 "label_source": "generated",
-"label_hash": "6a7838645d"
+"label_hash": "ca5ebb744d"
 },
 {
 "id": "frontend/src/pages/DeskThemePreviewPage.vue::DeskThemePreviewPage",
@@ -7582,11 +7527,11 @@
 "name": "DeskThemePreviewPage",
 "qualname": "DeskThemePreviewPage",
 "sig": "",
-"hash": "477128364d",
+"hash": "1c511a15bf",
 "calls": [],
-"label": "Preview Desk Theme CSS variables on live Frappe Desk pages in iframe",
+"label": "Preview Desk Theme with live CSS variables applied to Frappe Desk iframe",
 "label_source": "generated",
-"label_hash": "477128364d"
+"label_hash": "1c511a15bf"
 },
 {
 "id": "frontend/src/pages/DeskThemePreviewPage.vue::applyVarsToIframe",
@@ -7649,11 +7594,11 @@
 "name": "DeskThemeSettingsPage",
 "qualname": "DeskThemeSettingsPage",
 "sig": "",
-"hash": "f44b05c657",
+"hash": "3db16f8321",
 "calls": [],
-"label": "Desk Theme Editor for colors, typography, shape, Gantt, and live preview",
+"label": "Edit and customize Desk Theme colors, typography, shape, Gantt, and preview changes",
 "label_source": "generated",
-"label_hash": "f44b05c657"
+"label_hash": "3db16f8321"
 },
 {
 "id": "frontend/src/pages/DeskThemeSettingsPage.vue::ALL_FIELDS",
@@ -7662,12 +7607,12 @@
 "name": "ALL_FIELDS",
 "qualname": "ALL_FIELDS",
 "sig": "",
-"hash": "813c0da56a",
+"hash": "8061669f8a",
 "exported": false,
 "calls": [],
-"label": "All editable desk theme field names",
+"label": "All customizable Desk Theme field names for colors, typography, spacing, and layout",
 "label_source": "generated",
-"label_hash": "813c0da56a"
+"label_hash": "8061669f8a"
 },
 {
 "id": "frontend/src/pages/DeskThemeSettingsPage.vue::PAYLOAD_FIELDS",
@@ -7704,12 +7649,12 @@
 "name": "DEFAULTS",
 "qualname": "DEFAULTS",
 "sig": "",
-"hash": "e65c44d49b",
+"hash": "497a826d33",
 "exported": false,
 "calls": [],
-"label": "Default values for all desk theme fields",
+"label": "Default values for all Desk Theme colors, typography, spacing, and layout properties",
 "label_source": "generated",
-"label_hash": "e65c44d49b"
+"label_hash": "497a826d33"
 },
 {
 "id": "frontend/src/pages/DeskThemeSettingsPage.vue::COLOR_FIELDS",
@@ -7718,12 +7663,12 @@
 "name": "COLOR_FIELDS",
 "qualname": "COLOR_FIELDS",
 "sig": "",
-"hash": "b6de46325d",
+"hash": "63e6359ae8",
 "exported": false,
 "calls": [],
-"label": "Desk theme color-related field names",
+"label": "Set of color-related Desk Theme field names for identifying swatch picker inputs",
 "label_source": "generated",
-"label_hash": "b6de46325d"
+"label_hash": "63e6359ae8"
 },
 {
 "id": "frontend/src/pages/DeskThemeSettingsPage.vue::FONT_OPTIONS",
@@ -7782,21 +7727,18 @@
 "label_hash": "f6f693e0d5"
 },
 {
-"id": "frontend/src/pages/DeskThemeSettingsPage.vue::onBodyWeightInput",
+"id": "frontend/src/pages/DeskThemeSettingsPage.vue::weightDisplayLabel",
 "file": "frontend/src/pages/DeskThemeSettingsPage.vue",
 "kind": "function",
-"name": "onBodyWeightInput",
-"qualname": "onBodyWeightInput",
-"sig": "(e: Event)",
-"hash": "db7e8d1677",
+"name": "weightDisplayLabel",
+"qualname": "weightDisplayLabel",
+"sig": "(n: number) -> string",
+"hash": "496d11cd94",
 "exported": false,
 "calls": [],
-"wired_by": [
-"frontend/src/pages/DeskThemeSettingsPage.vue::DeskThemeSettingsPage"
-],
-"label": "Handle body font weight input changes",
+"label": "Convert font weight number to human-readable label with weight category",
 "label_source": "generated",
-"label_hash": "db7e8d1677"
+"label_hash": "496d11cd94"
 },
 {
 "id": "frontend/src/pages/DeskThemeSettingsPage.vue::fontCSS",
@@ -7821,12 +7763,12 @@
 "name": "deskPanelHelp",
 "qualname": "deskPanelHelp",
 "sig": "",
-"hash": "cfa4c0e389",
+"hash": "3277c30da3",
 "exported": false,
 "calls": [],
-"label": "Help documentation for Desk theme color panel sections and properties",
+"label": "Help text explaining Desk Theme editor sections: brand palettes, backgrounds, and text",
 "label_source": "generated",
-"label_hash": "cfa4c0e389"
+"label_hash": "3277c30da3"
 },
 {
 "id": "frontend/src/pages/DeskThemeSettingsPage.vue::themeFromQuery",
@@ -7956,18 +7898,215 @@
 "label_hash": "8179ecf312"
 },
 {
+"id": "frontend/src/pages/DeskThemeSettingsPage.vue::DENSITY_PRESET_IDS",
+"file": "frontend/src/pages/DeskThemeSettingsPage.vue",
+"kind": "const",
+"name": "DENSITY_PRESET_IDS",
+"qualname": "DENSITY_PRESET_IDS",
+"sig": "",
+"hash": "e82849adbf",
+"exported": false,
+"calls": [],
+"label": "Available density preset identifiers for compact, default, and comfortable spacing modes",
+"label_source": "generated",
+"label_hash": "e82849adbf"
+},
+{
+"id": "frontend/src/pages/DeskThemeSettingsPage.vue::DensityPresetId",
+"file": "frontend/src/pages/DeskThemeSettingsPage.vue",
+"kind": "type",
+"name": "DensityPresetId",
+"qualname": "DensityPresetId",
+"sig": "",
+"hash": "6b15387f1a",
+"exported": false,
+"calls": [],
+"label": "Type union of density preset IDs representing predefined spacing and sizing presets",
+"label_source": "generated",
+"label_hash": "6b15387f1a"
+},
+{
+"id": "frontend/src/pages/DeskThemeSettingsPage.vue::DensityMode",
+"file": "frontend/src/pages/DeskThemeSettingsPage.vue",
+"kind": "type",
+"name": "DensityMode",
+"qualname": "DensityMode",
+"sig": "",
+"hash": "4e6377d4b3",
+"exported": false,
+"calls": [],
+"label": "Type union allowing density preset or custom mode for theme spacing configuration",
+"label_source": "generated",
+"label_hash": "4e6377d4b3"
+},
+{
+"id": "frontend/src/pages/DeskThemeSettingsPage.vue::DENSITY_PRESET_KEYS",
+"file": "frontend/src/pages/DeskThemeSettingsPage.vue",
+"kind": "const",
+"name": "DENSITY_PRESET_KEYS",
+"qualname": "DENSITY_PRESET_KEYS",
+"sig": "",
+"hash": "0e74191701",
+"exported": false,
+"calls": [],
+"label": "Field keys that control spacing density when applying preset or custom density modes",
+"label_source": "generated",
+"label_hash": "0e74191701"
+},
+{
+"id": "frontend/src/pages/DeskThemeSettingsPage.vue::DENSITY_PRESETS",
+"file": "frontend/src/pages/DeskThemeSettingsPage.vue",
+"kind": "const",
+"name": "DENSITY_PRESETS",
+"qualname": "DENSITY_PRESETS",
+"sig": "",
+"hash": "9702e2d149",
+"exported": false,
+"calls": [],
+"label": "Define spacing and sizing presets for compact, default, and comfortable density modes",
+"label_source": "generated",
+"label_hash": "9702e2d149"
+},
+{
+"id": "frontend/src/pages/DeskThemeSettingsPage.vue::densityPresetTokenEqual",
+"file": "frontend/src/pages/DeskThemeSettingsPage.vue",
+"kind": "function",
+"name": "densityPresetTokenEqual",
+"qualname": "densityPresetTokenEqual",
+"sig": "( key: (typeof DENSITY_PRESET_KEYS)[number], a: string, b: string, ) -> boolean",
+"hash": "0f3c7f0e96",
+"exported": false,
+"calls": [],
+"label": "Compare density preset token values accounting for floating-point spacing differences",
+"label_source": "generated",
+"label_hash": "0f3c7f0e96"
+},
+{
+"id": "frontend/src/pages/DeskThemeSettingsPage.vue::densityPresetMatches",
+"file": "frontend/src/pages/DeskThemeSettingsPage.vue",
+"kind": "function",
+"name": "densityPresetMatches",
+"qualname": "densityPresetMatches",
+"sig": "(presetId: DensityPresetId) -> boolean",
+"hash": "084c5e54d1",
+"exported": false,
+"calls": [
+"frontend/src/pages/DeskThemeSettingsPage.vue::densityPresetTokenEqual"
+],
+"label": "Check if current form matches a density preset",
+"label_source": "generated",
+"label_hash": "084c5e54d1"
+},
+{
+"id": "frontend/src/pages/DeskThemeSettingsPage.vue::inferDensityFromForm",
+"file": "frontend/src/pages/DeskThemeSettingsPage.vue",
+"kind": "function",
+"name": "inferDensityFromForm",
+"qualname": "inferDensityFromForm",
+"sig": "() -> DensityMode",
+"hash": "424869b869",
+"exported": false,
+"calls": [
+"frontend/src/pages/DeskThemeSettingsPage.vue::densityPresetMatches"
+],
+"label": "Detect which density preset the form currently uses, or return custom",
+"label_source": "generated",
+"label_hash": "424869b869"
+},
+{
+"id": "frontend/src/pages/DeskThemeSettingsPage.vue::normalizeDensityMode",
+"file": "frontend/src/pages/DeskThemeSettingsPage.vue",
+"kind": "function",
+"name": "normalizeDensityMode",
+"qualname": "normalizeDensityMode",
+"sig": "(raw: unknown) -> DensityMode",
+"hash": "6d1caf2f25",
+"exported": false,
+"calls": [],
+"label": "Validate and normalize density mode string to allowed preset or default",
+"label_source": "generated",
+"label_hash": "6d1caf2f25"
+},
+{
+"id": "frontend/src/pages/DeskThemeSettingsPage.vue::applyDensityPreset",
+"file": "frontend/src/pages/DeskThemeSettingsPage.vue",
+"kind": "function",
+"name": "applyDensityPreset",
+"qualname": "applyDensityPreset",
+"sig": "(presetId: DensityPresetId)",
+"hash": "9159bb8744",
+"exported": false,
+"calls": [],
+"wired_by": [
+"frontend/src/pages/DeskThemeSettingsPage.vue::DeskThemeSettingsPage"
+],
+"label": "Apply a density preset to update all spacing and sizing form fields",
+"label_source": "generated",
+"label_hash": "9159bb8744"
+},
+{
+"id": "frontend/src/pages/DeskThemeSettingsPage.vue::parseBodySizePx",
+"file": "frontend/src/pages/DeskThemeSettingsPage.vue",
+"kind": "function",
+"name": "parseBodySizePx",
+"qualname": "parseBodySizePx",
+"sig": "(raw: string) -> number",
+"hash": "92af1a1614",
+"exported": false,
+"calls": [],
+"label": "Parse font size string to pixels, defaulting to 14 if invalid",
+"label_source": "generated",
+"label_hash": "92af1a1614"
+},
+{
+"id": "frontend/src/pages/DeskThemeSettingsPage.vue::applyAutoTextScale",
+"file": "frontend/src/pages/DeskThemeSettingsPage.vue",
+"kind": "function",
+"name": "applyAutoTextScale",
+"qualname": "applyAutoTextScale",
+"sig": "()",
+"hash": "fdafaec618",
+"exported": false,
+"calls": [
+"frontend/src/pages/DeskThemeSettingsPage.vue::parseBodySizePx"
+],
+"label": "Auto-derive text size variants from base font size using Frappe's scaling ratios",
+"label_source": "generated",
+"label_hash": "fdafaec618"
+},
+{
+"id": "frontend/src/pages/DeskThemeSettingsPage.vue::setTextScaleAuto",
+"file": "frontend/src/pages/DeskThemeSettingsPage.vue",
+"kind": "function",
+"name": "setTextScaleAuto",
+"qualname": "setTextScaleAuto",
+"sig": "(auto: boolean)",
+"hash": "5139f988a6",
+"exported": false,
+"calls": [],
+"wired_by": [
+"frontend/src/pages/DeskThemeSettingsPage.vue::DeskThemeSettingsPage"
+],
+"label": "Toggle text scale between automatic and manual modes",
+"label_source": "generated",
+"label_hash": "5139f988a6"
+},
+{
 "id": "frontend/src/pages/DeskThemeSettingsPage.vue::applyPayloadToForm",
 "file": "frontend/src/pages/DeskThemeSettingsPage.vue",
 "kind": "function",
 "name": "applyPayloadToForm",
 "qualname": "applyPayloadToForm",
 "sig": "(payload: Record<string, any>)",
-"hash": "322b8db22c",
+"hash": "a96934aedc",
 "exported": false,
-"calls": [],
-"label": "Populate form with theme payload values",
+"calls": [
+"frontend/src/pages/DeskThemeSettingsPage.vue::inferDensityFromForm",
+"frontend/src/pages/DeskThemeSettingsPage.vue::normalizeDensityMode"
+],
+"label": "Load theme payload into form fields and infer density and text scale from values",
 "label_source": "generated",
-"label_hash": "322b8db22c"
+"label_hash": "a96934aedc"
 },
 {
 "id": "frontend/src/pages/DeskThemeSettingsPage.vue::labels",
@@ -8382,11 +8521,11 @@
 "name": "HomePage",
 "qualname": "HomePage",
 "sig": "",
-"hash": "11fb94266f",
+"hash": "53a606e620",
 "calls": [],
-"label": "Landing page linking to Theme Editor and Theme Preview pages",
+"label": "Landing page linking to Theme Editor and Theme Preview",
 "label_source": "generated",
-"label_hash": "11fb94266f"
+"label_hash": "53a606e620"
 },
 {
 "id": "frontend/src/pages/ThemePreviewPage.vue::ThemePreviewPage",
@@ -8395,11 +8534,11 @@
 "name": "ThemePreviewPage",
 "qualname": "ThemePreviewPage",
 "sig": "",
-"hash": "7674fa2a59",
+"hash": "66b268c20b",
 "calls": [],
-"label": "Sample UI page displaying live theme CSS variables and design components",
+"label": "Sample UI page showing theme variables applied as live CSS in real components",
 "label_source": "generated",
-"label_hash": "7674fa2a59"
+"label_hash": "66b268c20b"
 },
 {
 "id": "frontend/src/pages/ThemePreviewPage.vue::shadowDefs",
@@ -8453,11 +8592,11 @@
 "name": "ThemeSettingsPage",
 "qualname": "ThemeSettingsPage",
 "sig": "",
-"hash": "4e00e145ef",
+"hash": "c6670c0604",
 "calls": [],
-"label": "Edit site theme colors, typography, layout, and CSS variables with live preview",
+"label": "Web Theme Editor page for NCE Theme colours, typography, layout, tables, and live CSS",
 "label_source": "generated",
-"label_hash": "4e00e145ef"
+"label_hash": "c6670c0604"
 },
 {
 "id": "frontend/src/pages/ThemeSettingsPage.vue::themeFromQuery",
@@ -8469,9 +8608,8 @@
 "hash": "c28aed2b09",
 "exported": false,
 "calls": [],
-"label": "Extract theme name from URL query parameters",
-"label_source": "generated",
-"label_hash": "c28aed2b09"
+"label": "Read the theme name from the ?theme= query string",
+"label_source": "header"
 },
 {
 "id": "frontend/src/pages/ThemeSettingsPage.vue::openPreview",
@@ -8488,9 +8626,8 @@
 "wired_by": [
 "frontend/src/pages/ThemeSettingsPage.vue::ThemeSettingsPage"
 ],
-"label": "Open or focus theme preview window and sync current settings",
-"label_source": "generated",
-"label_hash": "43a09a15f3"
+"label": "Open or focus the /themes/preview popup and send it the current variables",
+"label_source": "header"
 },
 {
 "id": "frontend/src/pages/ThemeSettingsPage.vue::isCorporateBrandPaletteMode",
@@ -8502,9 +8639,8 @@
 "hash": "197c41de1b",
 "exported": false,
 "calls": [],
-"label": "Check if brand palette mode is corporate rather than flexible",
-"label_source": "generated",
-"label_hash": "197c41de1b"
+"label": "Tell whether the brand palette is in corporate mode rather than flexible",
+"label_source": "header"
 },
 {
 "id": "frontend/src/pages/ThemeSettingsPage.vue::normalizeBrandPaletteMode",
@@ -8516,9 +8652,8 @@
 "hash": "f632ad74c2",
 "exported": false,
 "calls": [],
-"label": "Normalize brand palette mode to corporate or flexible value",
-"label_source": "generated",
-"label_hash": "f632ad74c2"
+"label": "Coerce a stored brand palette mode to corporate or flexible",
+"label_source": "header"
 },
 {
 "id": "frontend/src/pages/ThemeSettingsPage.vue::resetBrandPaletteAdjustments",
@@ -8530,9 +8665,8 @@
 "hash": "a95b344546",
 "exported": false,
 "calls": [],
-"label": "Reset all gamma and saturation adjustments to defaults",
-"label_source": "generated",
-"label_hash": "a95b344546"
+"label": "Reset primary and secondary gamma and saturation to their neutral values",
+"label_source": "header"
 },
 {
 "id": "frontend/src/pages/ThemeSettingsPage.vue::roleShadeAdjustments",
@@ -8546,9 +8680,8 @@
 "calls": [
 "frontend/src/pages/ThemeSettingsPage.vue::isCorporateBrandPaletteMode"
 ],
-"label": "Get gamma and saturation adjustments for a role field based on mode",
-"label_source": "generated",
-"label_hash": "476c08afc8"
+"label": "Return a brand role's gamma and saturation, or neutral values in corporate mode",
+"label_source": "header"
 },
 {
 "id": "frontend/src/pages/ThemeSettingsPage.vue::tableHeaderForeground",
@@ -8566,9 +8699,8 @@
 "frontend/src/utils/color-shades.ts::generateShades",
 "frontend/src/utils/color-shades.ts::pickFgMono"
 ],
-"label": "Calculate header text color from primary or secondary brand shade with foreground contrast",
-"label_source": "generated",
-"label_hash": "ddd28646a4"
+"label": "Pick table header text colour, using the brand flip when the header is a brand shade",
+"label_source": "header"
 },
 {
 "id": "frontend/src/pages/ThemeSettingsPage.vue::applyTableCssVars",
@@ -8583,9 +8715,8 @@
 "frontend/src/pages/ThemeSettingsPage.vue::tableHeaderForeground",
 "frontend/src/pages/ThemeSettingsPage.vue::tableWidthTierCssVar"
 ],
-"label": "Build CSS variables for table row, header, and divider colors with defaults",
-"label_source": "generated",
-"label_hash": "527d647038"
+"label": "Add table row, header, divider colour and divider width variables for live preview",
+"label_source": "header"
 },
 {
 "id": "frontend/src/pages/ThemeSettingsPage.vue::normalizeTableWidthTier",
@@ -8597,9 +8728,8 @@
 "hash": "418f9f5ea6",
 "exported": false,
 "calls": [],
-"label": "Normalize table border width tier to thin, normal, or strong",
-"label_source": "generated",
-"label_hash": "418f9f5ea6"
+"label": "Normalise a table divider width, including old px values, to thin, normal or strong",
+"label_source": "header"
 },
 {
 "id": "frontend/src/pages/ThemeSettingsPage.vue::tableWidthTierCssVar",
@@ -8613,9 +8743,8 @@
 "calls": [
 "frontend/src/pages/ThemeSettingsPage.vue::normalizeTableWidthTier"
 ],
-"label": "Convert table width tier to corresponding CSS custom property reference",
-"label_source": "generated",
-"label_hash": "e6e17afcaf"
+"label": "Map a table divider width tier to its --nce-border-width variable",
+"label_source": "header"
 },
 {
 "id": "frontend/src/pages/ThemeSettingsPage.vue::computeCSSVariables",
@@ -8640,9 +8769,8 @@
 "frontend/src/utils/color-shades.ts::pickFgTonal",
 "frontend/src/utils/shadowBuild.ts::buildThemeShadow"
 ],
-"label": "Build complete CSS variable map from all theme form fields and settings",
-"label_source": "generated",
-"label_hash": "8e35efe34d"
+"label": "Build every --nce-* variable from the form for the live page and preview popup",
+"label_source": "header"
 },
 {
 "id": "frontend/src/pages/ThemeSettingsPage.vue::pushToPreview",
@@ -8659,9 +8787,8 @@
 "wired_by": [
 "frontend/src/pages/ThemeSettingsPage.vue::applyLiveThemeVars"
 ],
-"label": "Send computed CSS variables to preview window via postMessage",
-"label_source": "generated",
-"label_hash": "ac61b539af"
+"label": "Post the current CSS variables to the open preview popup",
+"label_source": "header"
 },
 {
 "id": "frontend/src/pages/ThemeSettingsPage.vue::ALL_FIELDS",
@@ -8673,9 +8800,8 @@
 "hash": "d1813a3e0a",
 "exported": false,
 "calls": [],
-"label": "List all customizable theme settings fields",
-"label_source": "generated",
-"label_hash": "d1813a3e0a"
+"label": "Every editable theme form field, including theme_name",
+"label_source": "header"
 },
 {
 "id": "frontend/src/pages/ThemeSettingsPage.vue::PAYLOAD_FIELDS",
@@ -8687,9 +8813,8 @@
 "hash": "fe37b09c0b",
 "exported": false,
 "calls": [],
-"label": "Theme payload fields excluding theme name",
-"label_source": "generated",
-"label_hash": "fe37b09c0b"
+"label": "Fields saved in the theme payload, adding the resolved neutral colour and shades",
+"label_source": "header"
 },
 {
 "id": "frontend/src/pages/ThemeSettingsPage.vue::FormKey",
@@ -8701,9 +8826,8 @@
 "hash": "af72b70378",
 "exported": false,
 "calls": [],
-"label": "Type for theme settings form field keys",
-"label_source": "generated",
-"label_hash": "af72b70378"
+"label": "Type of a theme form field name",
+"label_source": "header"
 },
 {
 "id": "frontend/src/pages/ThemeSettingsPage.vue::DEFAULTS",
@@ -8715,9 +8839,8 @@
 "hash": "d1f6d0d8f5",
 "exported": false,
 "calls": [],
-"label": "Default values for all theme customization settings",
-"label_source": "generated",
-"label_hash": "d1f6d0d8f5"
+"label": "Starting value for every theme form field",
+"label_source": "header"
 },
 {
 "id": "frontend/src/pages/ThemeSettingsPage.vue::onBrandPaletteModeChange",
@@ -8734,9 +8857,8 @@
 "wired_by": [
 "frontend/src/pages/ThemeSettingsPage.vue::ThemeSettingsPage"
 ],
-"label": "Toggle brand palette between corporate and flexible modes",
-"label_source": "generated",
-"label_hash": "eaba6f73e2"
+"label": "Switch corporate or flexible brand palette, clearing adjustments when corporate",
+"label_source": "header"
 },
 {
 "id": "frontend/src/pages/ThemeSettingsPage.vue::applyStatusColorDefaults",
@@ -8751,9 +8873,8 @@
 "wired_by": [
 "frontend/src/pages/ThemeSettingsPage.vue::ThemeSettingsPage"
 ],
-"label": "Reset status colors to default accent shades",
-"label_source": "generated",
-"label_hash": "8431a45eeb"
+"label": "Reset accent, success, info, warning and danger to their default colours",
+"label_source": "header"
 },
 {
 "id": "frontend/src/pages/ThemeSettingsPage.vue::normalizeFontChoice",
@@ -8765,9 +8886,8 @@
 "hash": "89c4ae4bae",
 "exported": false,
 "calls": [],
-"label": "Map retired font names to current font options",
-"label_source": "generated",
-"label_hash": "89c4ae4bae"
+"label": "Map a retired font name to its current picker option when loading a theme",
+"label_source": "header"
 },
 {
 "id": "frontend/src/pages/ThemeSettingsPage.vue::BODY_WEIGHT_MIN",
@@ -8779,9 +8899,8 @@
 "hash": "949253fb00",
 "exported": false,
 "calls": [],
-"label": "Minimum allowed font weight value",
-"label_source": "generated",
-"label_hash": "949253fb00"
+"label": "Lowest body font weight the slider allows",
+"label_source": "header"
 },
 {
 "id": "frontend/src/pages/ThemeSettingsPage.vue::BODY_WEIGHT_MAX",
@@ -8793,9 +8912,8 @@
 "hash": "22233cdf41",
 "exported": false,
 "calls": [],
-"label": "Maximum allowed font weight value",
-"label_source": "generated",
-"label_hash": "22233cdf41"
+"label": "Highest body font weight the slider allows",
+"label_source": "header"
 },
 {
 "id": "frontend/src/pages/ThemeSettingsPage.vue::clampBodyWeight",
@@ -8807,9 +8925,8 @@
 "hash": "f6f693e0d5",
 "exported": false,
 "calls": [],
-"label": "Validate and constrain font weight to valid range",
-"label_source": "generated",
-"label_hash": "f6f693e0d5"
+"label": "Parse and limit a body font weight to 100 to 900",
+"label_source": "header"
 },
 {
 "id": "frontend/src/pages/ThemeSettingsPage.vue::onBodyWeightInput",
@@ -8824,9 +8941,8 @@
 "wired_by": [
 "frontend/src/pages/ThemeSettingsPage.vue::ThemeSettingsPage"
 ],
-"label": "Update form font weight from input event",
-"label_source": "generated",
-"label_hash": "db7e8d1677"
+"label": "Store the body weight slider value in the form",
+"label_source": "header"
 },
 {
 "id": "frontend/src/pages/ThemeSettingsPage.vue::clampShadowOpacity",
@@ -8838,9 +8954,8 @@
 "hash": "24c0466699",
 "exported": false,
 "calls": [],
-"label": "Validate and constrain shadow opacity to 0-100 percent",
-"label_source": "generated",
-"label_hash": "24c0466699"
+"label": "Parse and limit shadow opacity to 0 to 100 percent",
+"label_source": "header"
 },
 {
 "id": "frontend/src/pages/ThemeSettingsPage.vue::onShadowOpacityInput",
@@ -8857,9 +8972,8 @@
 "wired_by": [
 "frontend/src/pages/ThemeSettingsPage.vue::ThemeSettingsPage"
 ],
-"label": "Update form shadow opacity from input event",
-"label_source": "generated",
-"label_hash": "bddc5eb5e6"
+"label": "Store the shadow opacity slider value in the form",
+"label_source": "header"
 },
 {
 "id": "frontend/src/pages/ThemeSettingsPage.vue::clampShadowDirection",
@@ -8871,9 +8985,8 @@
 "hash": "de0bebf94d",
 "exported": false,
 "calls": [],
-"label": "Validate and constrain shadow direction to 0-360 degrees",
-"label_source": "generated",
-"label_hash": "de0bebf94d"
+"label": "Parse and limit shadow direction to 0 to 360 degrees",
+"label_source": "header"
 },
 {
 "id": "frontend/src/pages/ThemeSettingsPage.vue::radiusMap",
@@ -8885,9 +8998,8 @@
 "hash": "25a342b682",
 "exported": false,
 "calls": [],
-"label": "Border radius values mapped to semantic size names",
-"label_source": "generated",
-"label_hash": "25a342b682"
+"label": "Corner radius values for each radius option in the preview",
+"label_source": "header"
 },
 {
 "id": "frontend/src/pages/ThemeSettingsPage.vue::lineHeightMap",
@@ -8899,9 +9011,8 @@
 "hash": "b829247853",
 "exported": false,
 "calls": [],
-"label": "Line height ratios mapped to spacing density options",
-"label_source": "generated",
-"label_hash": "b829247853"
+"label": "Line height ratios for each line height option in the preview",
+"label_source": "header"
 },
 {
 "id": "frontend/src/pages/ThemeSettingsPage.vue::FONT_GENERIC",
@@ -8913,9 +9024,8 @@
 "hash": "7146ecac14",
 "exported": false,
 "calls": [],
-"label": "Map font names to CSS generic family fallbacks",
-"label_source": "generated",
-"label_hash": "7146ecac14"
+"label": "Generic fallback family for each curated font",
+"label_source": "header"
 },
 {
 "id": "frontend/src/pages/ThemeSettingsPage.vue::fontCSS",
@@ -8927,9 +9037,8 @@
 "hash": "97085adf5b",
 "exported": false,
 "calls": [],
-"label": "Generate CSS font family string with fallbacks",
-"label_source": "generated",
-"label_hash": "97085adf5b"
+"label": "Build the font-family stack for a font name, or the system stack",
+"label_source": "header"
 },
 {
 "id": "frontend/src/pages/ThemeSettingsPage.vue::themeOptionLabel",
@@ -8941,9 +9050,8 @@
 "hash": "73acf2097b",
 "exported": false,
 "calls": [],
-"label": "Format theme option label indicating default or active status",
-"label_source": "generated",
-"label_hash": "73acf2097b"
+"label": "Label a theme in the selector, marking the Default theme",
+"label_source": "header"
 },
 {
 "id": "frontend/src/pages/ThemeSettingsPage.vue::buildPayloadFromForm",
@@ -8960,9 +9068,8 @@
 "frontend/src/utils/color-shades.ts::effectiveRoleHex",
 "frontend/src/utils/color-shades.ts::resolveNeutralIntoPayload"
 ],
-"label": "Convert theme form to API payload with computed values",
-"label_source": "generated",
-"label_hash": "ef7e40c2cf"
+"label": "Build the theme payload to save, folding in palette adjustments and neutral shades",
+"label_source": "header"
 },
 {
 "id": "frontend/src/pages/ThemeSettingsPage.vue::canonicalPayload",
@@ -8980,9 +9087,8 @@
 "frontend/src/pages/ThemeSettingsPage.vue::normalizeBrandPaletteMode",
 "frontend/src/utils/color-shades.ts::resolveNeutralIntoPayload"
 ],
-"label": "Normalize and validate theme payload with defaults",
-"label_source": "generated",
-"label_hash": "921ff46113"
+"label": "Normalise a payload to every field with defaults so saved and edited themes compare",
+"label_source": "header"
 },
 {
 "id": "frontend/src/pages/ThemeSettingsPage.vue::applyPayloadToForm",
@@ -9004,9 +9110,8 @@
 "frontend/src/pages/ThemeSettingsPage.vue::normalizeTableWidthTier",
 "frontend/src/utils/color-shades.ts::effectiveRoleHex"
 ],
-"label": "Populate form fields from a theme configuration payload",
-"label_source": "generated",
-"label_hash": "c6f269cb93"
+"label": "Load a saved theme payload into the form, migrating old values",
+"label_source": "header"
 },
 {
 "id": "frontend/src/pages/ThemeSettingsPage.vue::parseFlipShade",
@@ -9018,9 +9123,8 @@
 "hash": "d33c8659b4",
 "exported": false,
 "calls": [],
-"label": "Parse and validate a flip shade numeric value",
-"label_source": "generated",
-"label_hash": "d33c8659b4"
+"label": "Parse a foreground flip shade to a whole number, or null",
+"label_source": "header"
 },
 {
 "id": "frontend/src/pages/ThemeSettingsPage.vue::migrateFgFlipFields",
@@ -9034,9 +9138,8 @@
 "calls": [
 "frontend/src/pages/ThemeSettingsPage.vue::parseFlipShade"
 ],
-"label": "Migrate legacy flip shade field values to current form schema",
-"label_source": "generated",
-"label_hash": "f2cd8fecaa"
+"label": "Fill single mono and tonal flip fields from older dual flip fields",
+"label_source": "header"
 },
 {
 "id": "frontend/src/pages/ThemeSettingsPage.vue::tryLoadThemeFromQuery",
@@ -9050,9 +9153,8 @@
 "calls": [
 "frontend/src/pages/ThemeSettingsPage.vue::themeFromQuery"
 ],
-"label": "Load theme from URL query parameter if available",
-"label_source": "generated",
-"label_hash": "5052a5c63d"
+"label": "Open the theme named in ?theme= when it exists in the list",
+"label_source": "header"
 },
 {
 "id": "frontend/src/pages/ThemeSettingsPage.vue::labels",
@@ -9066,9 +9168,8 @@
 "calls": [
 "frontend/src/pages/ThemeSettingsPage.vue::themeOptionLabel"
 ],
-"label": "Map theme list data to option labels for dropdown selection",
-"label_source": "generated",
-"label_hash": "55b9ffe048"
+"label": "Selector labels for every theme, used to size the theme dropdown",
+"label_source": "header"
 },
 {
 "id": "frontend/src/pages/ThemeSettingsPage.vue::requestSetAsDefaultTheme",
@@ -9083,9 +9184,8 @@
 "wired_by": [
 "frontend/src/pages/ThemeSettingsPage.vue::ThemeSettingsPage"
 ],
-"label": "Set the currently edited theme as the site default",
-"label_source": "generated",
-"label_hash": "a47c228431"
+"label": "Make the edited theme the site Default theme, then reload it",
+"label_source": "header"
 },
 {
 "id": "frontend/src/pages/ThemeSettingsPage.vue::openConfirmDialog",
@@ -9097,9 +9197,8 @@
 "hash": "a90e6a4212",
 "exported": false,
 "calls": [],
-"label": "Open confirmation dialog for unsaved changes before action",
-"label_source": "generated",
-"label_hash": "a90e6a4212"
+"label": "Ask to save unsaved changes before switching theme or restoring",
+"label_source": "header"
 },
 {
 "id": "frontend/src/pages/ThemeSettingsPage.vue::closeConfirmDialog",
@@ -9114,9 +9213,8 @@
 "wired_by": [
 "frontend/src/pages/ThemeSettingsPage.vue::ThemeSettingsPage"
 ],
-"label": "Close the unsaved changes confirmation dialog",
-"label_source": "generated",
-"label_hash": "823436b753"
+"label": "Close the unsaved changes dialog unless it is busy",
+"label_source": "header"
 },
 {
 "id": "frontend/src/pages/ThemeSettingsPage.vue::confirmSaveAndContinue",
@@ -9135,9 +9233,8 @@
 "wired_by": [
 "frontend/src/pages/ThemeSettingsPage.vue::ThemeSettingsPage"
 ],
-"label": "Save changes and proceed with pending switch or restore action",
-"label_source": "generated",
-"label_hash": "d317500604"
+"label": "Save changes, then switch theme or restore as requested",
+"label_source": "header"
 },
 {
 "id": "frontend/src/pages/ThemeSettingsPage.vue::confirmDiscardAndContinue",
@@ -9156,9 +9253,8 @@
 "wired_by": [
 "frontend/src/pages/ThemeSettingsPage.vue::ThemeSettingsPage"
 ],
-"label": "Discard changes and proceed with pending switch or restore action",
-"label_source": "generated",
-"label_hash": "cb0346176c"
+"label": "Drop unsaved changes, then switch theme or restore as requested",
+"label_source": "header"
 },
 {
 "id": "frontend/src/pages/ThemeSettingsPage.vue::onThemeChange",
@@ -9175,9 +9271,8 @@
 "wired_by": [
 "frontend/src/pages/ThemeSettingsPage.vue::ThemeSettingsPage"
 ],
-"label": "Handle theme selection change with unsaved changes detection",
-"label_source": "generated",
-"label_hash": "6df57be925"
+"label": "Load the newly selected theme, asking first when there are unsaved changes",
+"label_source": "header"
 },
 {
 "id": "frontend/src/pages/ThemeSettingsPage.vue::revertChanges",
@@ -9194,9 +9289,8 @@
 "wired_by": [
 "frontend/src/pages/ThemeSettingsPage.vue::ThemeSettingsPage"
 ],
-"label": "Restore form to last saved theme configuration snapshot",
-"label_source": "generated",
-"label_hash": "ae03eafecc"
+"label": "Put the form back to the last saved theme",
+"label_source": "header"
 },
 {
 "id": "frontend/src/pages/ThemeSettingsPage.vue::handleSave",
@@ -9213,9 +9307,8 @@
 "wired_by": [
 "frontend/src/pages/ThemeSettingsPage.vue::ThemeSettingsPage"
 ],
-"label": "Save current form changes to the theme resource",
-"label_source": "generated",
-"label_hash": "d6ccfb3e87"
+"label": "Save the form as the edited theme's payload",
+"label_source": "header"
 },
 {
 "id": "frontend/src/pages/ThemeSettingsPage.vue::setThemeStatus",
@@ -9230,9 +9323,8 @@
 "wired_by": [
 "frontend/src/pages/ThemeSettingsPage.vue::ThemeSettingsPage"
 ],
-"label": "Update theme availability status and publish changes",
-"label_source": "generated",
-"label_hash": "97592a173f"
+"label": "Change the saved theme between Active and Inactive",
+"label_source": "header"
 },
 {
 "id": "frontend/src/pages/ThemeSettingsPage.vue::openSaveAsDialog",
@@ -9247,9 +9339,8 @@
 "wired_by": [
 "frontend/src/pages/ThemeSettingsPage.vue::ThemeSettingsPage"
 ],
-"label": "Open dialog to save current theme as a new copy",
-"label_source": "generated",
-"label_hash": "0dce063f41"
+"label": "Open the dialog to save the form as a new theme copy",
+"label_source": "header"
 },
 {
 "id": "frontend/src/pages/ThemeSettingsPage.vue::closeSaveAsDialog",
@@ -9264,9 +9355,8 @@
 "wired_by": [
 "frontend/src/pages/ThemeSettingsPage.vue::ThemeSettingsPage"
 ],
-"label": "Close the save as new theme dialog",
-"label_source": "generated",
-"label_hash": "af3fb431df"
+"label": "Close the save-as-new dialog unless it is busy",
+"label_source": "header"
 },
 {
 "id": "frontend/src/pages/ThemeSettingsPage.vue::submitSaveAs",
@@ -9283,9 +9373,8 @@
 "wired_by": [
 "frontend/src/pages/ThemeSettingsPage.vue::ThemeSettingsPage"
 ],
-"label": "Create a new theme by saving current form as named copy",
-"label_source": "generated",
-"label_hash": "f6505653b2"
+"label": "Create a new theme from the current form under the entered name",
+"label_source": "header"
 },
 {
 "id": "frontend/src/pages/ThemeSettingsPage.vue::openRenameDialog",
@@ -9300,9 +9389,8 @@
 "wired_by": [
 "frontend/src/pages/ThemeSettingsPage.vue::ThemeSettingsPage"
 ],
-"label": "Open dialog to rename the currently edited theme",
-"label_source": "generated",
-"label_hash": "b3a5170bc0"
+"label": "Open the rename dialog when the theme may be renamed",
+"label_source": "header"
 },
 {
 "id": "frontend/src/pages/ThemeSettingsPage.vue::closeRenameDialog",
@@ -9317,9 +9405,8 @@
 "wired_by": [
 "frontend/src/pages/ThemeSettingsPage.vue::ThemeSettingsPage"
 ],
-"label": "Close the rename theme dialog",
-"label_source": "generated",
-"label_hash": "684b572513"
+"label": "Close the rename dialog unless it is busy",
+"label_source": "header"
 },
 {
 "id": "frontend/src/pages/ThemeSettingsPage.vue::submitRename",
@@ -9334,9 +9421,8 @@
 "wired_by": [
 "frontend/src/pages/ThemeSettingsPage.vue::ThemeSettingsPage"
 ],
-"label": "Submit renamed theme name and reload theme list",
-"label_source": "generated",
-"label_hash": "189fd43185"
+"label": "Rename the edited theme and reload it",
+"label_source": "header"
 },
 {
 "id": "frontend/src/pages/ThemeSettingsPage.vue::openDeleteDialog",
@@ -9351,9 +9437,8 @@
 "wired_by": [
 "frontend/src/pages/ThemeSettingsPage.vue::ThemeSettingsPage"
 ],
-"label": "Open confirmation dialog to delete current theme",
-"label_source": "generated",
-"label_hash": "15814744bb"
+"label": "Open the delete dialog when the theme may be deleted",
+"label_source": "header"
 },
 {
 "id": "frontend/src/pages/ThemeSettingsPage.vue::closeDeleteDialog",
@@ -9368,9 +9453,8 @@
 "wired_by": [
 "frontend/src/pages/ThemeSettingsPage.vue::ThemeSettingsPage"
 ],
-"label": "Close delete theme confirmation dialog",
-"label_source": "generated",
-"label_hash": "09294690a7"
+"label": "Close the delete dialog unless it is busy",
+"label_source": "header"
 },
 {
 "id": "frontend/src/pages/ThemeSettingsPage.vue::submitDelete",
@@ -9385,9 +9469,8 @@
 "wired_by": [
 "frontend/src/pages/ThemeSettingsPage.vue::ThemeSettingsPage"
 ],
-"label": "Delete current theme and switch to default or base theme",
-"label_source": "generated",
-"label_hash": "d483eaf7af"
+"label": "Delete the edited theme and open the Default or first remaining theme",
+"label_source": "header"
 },
 {
 "id": "frontend/src/pages/ThemeSettingsPage.vue::requestRestoreToBase",
@@ -9405,9 +9488,8 @@
 "wired_by": [
 "frontend/src/pages/ThemeSettingsPage.vue::ThemeSettingsPage"
 ],
-"label": "Request and save changes before restoring theme to base",
-"label_source": "generated",
-"label_hash": "7cb6ff9874"
+"label": "Save pending edits, then load the Base Theme into the editor",
+"label_source": "header"
 },
 {
 "id": "frontend/src/pages/ThemeSettingsPage.vue::restoreToBaseConfirmed",
@@ -9422,9 +9504,8 @@
 "frontend/src/pages/ThemeSettingsPage.vue::applyLiveThemeVars",
 "frontend/src/pages/ThemeSettingsPage.vue::applyPayloadToForm"
 ],
-"label": "Load and apply base theme payload to editor form",
-"label_source": "generated",
-"label_hash": "de54ab0943"
+"label": "Load the app's Base Theme payload into the form as unsaved changes",
+"label_source": "header"
 },
 {
 "id": "frontend/src/pages/ThemeSettingsPage.vue::submitSaveAsBaseTheme",
@@ -9436,9 +9517,8 @@
 "hash": "95a02e476f",
 "exported": false,
 "calls": [],
-"label": "Save current theme as app base theme with password",
-"label_source": "generated",
-"label_hash": "95a02e476f"
+"label": "Bundle the edited theme into the app as the Base Theme after a password check",
+"label_source": "header"
 },
 {
 "id": "frontend/src/pages/ThemeSettingsPage.vue::requestSaveAsBaseTheme",
@@ -9453,9 +9533,8 @@
 "wired_by": [
 "frontend/src/pages/ThemeSettingsPage.vue::ThemeSettingsPage"
 ],
-"label": "Open confirmation dialog to save theme as base",
-"label_source": "generated",
-"label_hash": "8cfa799391"
+"label": "Open the Save as Base Theme confirm dialog once a password is entered",
+"label_source": "header"
 },
 {
 "id": "frontend/src/pages/ThemeSettingsPage.vue::closeSaveBaseThemeDialog",
@@ -9470,9 +9549,8 @@
 "wired_by": [
 "frontend/src/pages/ThemeSettingsPage.vue::ThemeSettingsPage"
 ],
-"label": "Close save as base theme dialog",
-"label_source": "generated",
-"label_hash": "04229aff5a"
+"label": "Close the Save as Base Theme dialog unless it is busy",
+"label_source": "header"
 },
 {
 "id": "frontend/src/pages/ThemeSettingsPage.vue::confirmSaveAsBaseTheme",
@@ -9490,9 +9568,8 @@
 "wired_by": [
 "frontend/src/pages/ThemeSettingsPage.vue::ThemeSettingsPage"
 ],
-"label": "Confirm and save current theme changes as base theme",
-"label_source": "generated",
-"label_hash": "a947412e74"
+"label": "Save the form, then bundle it into the app as the Base Theme",
+"label_source": "header"
 },
 {
 "id": "frontend/src/pages/ThemeSettingsPage.vue::applyLiveThemeVars",
@@ -9506,9 +9583,8 @@
 "calls": [
 "frontend/src/pages/ThemeSettingsPage.vue::computeCSSVariables"
 ],
-"label": "Apply computed CSS variables to live preview",
-"label_source": "generated",
-"label_hash": "71066c1375"
+"label": "Write the form's CSS variables onto the page and update the preview popup",
+"label_source": "header"
 },
 {
 "id": "frontend/src/stub-icon.vue::stub-icon",
@@ -9517,11 +9593,11 @@
 "name": "stub-icon",
 "qualname": "stub-icon",
 "sig": "",
-"hash": "469999bac5",
+"hash": "81f3ad53d1",
 "calls": [],
-"label": "Blank placeholder component for stubbed or missing icon imports",
+"label": "Blank icon component placeholder used when Lucide icon imports are stubbed",
 "label_source": "generated",
-"label_hash": "469999bac5"
+"label_hash": "81f3ad53d1"
 },
 {
 "id": "frontend/src/utils/__tests__/color-shades.parity.test.ts::normHex",
@@ -11871,7 +11947,7 @@
 "name": "all",
 "qualname": "all",
 "sig": "",
-"hash": "9139a57ce6",
+"hash": "90b7b2839f",
 "calls": [],
 "label": "theme-swatch-picker.css (the whole file)",
 "label_source": "title"
@@ -12773,9 +12849,8 @@
 "themes/utils/css_writer.py::publish_theme",
 "themes/utils/default_desk_theme.py::load_bundled_base_desk_theme_payload"
 ],
-"label": "Migrate legacy Theme Settings single document into NCE Theme and Site Theme Config",
-"label_source": "generated",
-"label_hash": "d6d714c504"
+"label": "Migrate the Theme Settings single to a Default NCE Theme, seed the desk theme, set config and publish",
+"label_source": "header"
 },
 {
 "id": "themes/patches/v1_0/remove_legacy_theme_doctypes.py::_delete_all_rows",
@@ -12927,39 +13002,15 @@
 "label_hash": "2def2af685"
 },
 {
-"id": "themes/public/css/fonts.css::all",
-"file": "themes/public/css/fonts.css",
-"kind": "css-section",
-"name": "all",
-"qualname": "all",
-"sig": "",
-"hash": "5c3c0bc6ea",
-"calls": [],
-"label": "fonts.css (the whole file)",
-"label_source": "title"
-},
-{
 "id": "themes/public/css/nce_desk_theme.css::all",
 "file": "themes/public/css/nce_desk_theme.css",
 "kind": "css-section",
 "name": "all",
 "qualname": "all",
 "sig": "",
-"hash": "35870beb64",
+"hash": "b489dd62fb",
 "calls": [],
 "label": "nce_desk_theme.css (the whole file)",
-"label_source": "title"
-},
-{
-"id": "themes/public/css/nce_theme.css::all",
-"file": "themes/public/css/nce_theme.css",
-"kind": "css-section",
-"name": "all",
-"qualname": "all",
-"sig": "",
-"hash": "8a0e7658c7",
-"calls": [],
-"label": "nce_theme.css (the whole file)",
 "label_source": "title"
 },
 {
@@ -12972,21 +13023,8 @@
 "hash": "61c0bc8d24",
 "exported": false,
 "calls": [],
-"label": "Merge component options into Vue component instance for export helper",
-"label_source": "generated",
-"label_hash": "61c0bc8d24"
-},
-{
-"id": "themes/public/frontend/assets/themes4 2.css::all",
-"file": "themes/public/frontend/assets/themes4 2.css",
-"kind": "css-section",
-"name": "all",
-"qualname": "all",
-"sig": "",
-"hash": "1928c14169",
-"calls": [],
-"label": "themes4 2.css (the whole file)",
-"label_source": "title"
+"label": "Attach compiled SFC options such as render and scoped id to a Vue component",
+"label_source": "header"
 },
 {
 "id": "themes/public/frontend/assets/themes4.css::all",
@@ -12995,21 +13033,9 @@
 "name": "all",
 "qualname": "all",
 "sig": "",
-"hash": "1928c14169",
+"hash": "5735027471",
 "calls": [],
 "label": "themes4.css (the whole file)",
-"label_source": "title"
-},
-{
-"id": "themes/public/frontend/assets/themes7 2.css::all",
-"file": "themes/public/frontend/assets/themes7 2.css",
-"kind": "css-section",
-"name": "all",
-"qualname": "all",
-"sig": "",
-"hash": "25b845de57",
-"calls": [],
-"label": "themes7 2.css (the whole file)",
 "label_source": "title"
 },
 {
@@ -13019,21 +13045,9 @@
 "name": "all",
 "qualname": "all",
 "sig": "",
-"hash": "25b845de57",
+"hash": "f4f8202f5f",
 "calls": [],
 "label": "themes7.css (the whole file)",
-"label_source": "title"
-},
-{
-"id": "themes/public/frontend/assets/themes8 2.css::all",
-"file": "themes/public/frontend/assets/themes8 2.css",
-"kind": "css-section",
-"name": "all",
-"qualname": "all",
-"sig": "",
-"hash": "2a3114f427",
-"calls": [],
-"label": "themes8 2.css (the whole file)",
 "label_source": "title"
 },
 {
@@ -13043,7 +13057,7 @@
 "name": "all",
 "qualname": "all",
 "sig": "",
-"hash": "2a3114f427",
+"hash": "b9bff366ab",
 "calls": [],
 "label": "themes8.css (the whole file)",
 "label_source": "title"
@@ -13086,7 +13100,7 @@
 "name": "all",
 "qualname": "all",
 "sig": "",
-"hash": "35870beb64",
+"hash": "19c12f849b",
 "calls": [],
 "label": "desk_default.css (the whole file)",
 "label_source": "title"
@@ -13098,7 +13112,7 @@
 "name": "all",
 "qualname": "all",
 "sig": "",
-"hash": "da89491f57",
+"hash": "0ae98206ca",
 "calls": [],
 "label": "web_default.css (the whole file)",
 "label_source": "title"
@@ -13110,7 +13124,7 @@
 "name": "all",
 "qualname": "all",
 "sig": "",
-"hash": "2d586f4215",
+"hash": "85b93803e4",
 "calls": [],
 "label": "web_gamma_sat.css (the whole file)",
 "label_source": "title"
@@ -13122,7 +13136,7 @@
 "name": "all",
 "qualname": "all",
 "sig": "",
-"hash": "363e479ab1",
+"hash": "a42fe77d6f",
 "calls": [],
 "label": "web_neutral_warmth.css (the whole file)",
 "label_source": "title"
@@ -13134,7 +13148,7 @@
 "name": "all",
 "qualname": "all",
 "sig": "",
-"hash": "2fcc9d3893",
+"hash": "6d83ea5428",
 "calls": [],
 "label": "web_site_default.css (the whole file)",
 "label_source": "title"
@@ -13623,9 +13637,8 @@
 "sig": "(hex_color)",
 "hash": "b6fe61964e",
 "calls": [],
-"label": "Convert hexadecimal color code to RGB tuple",
-"label_source": "generated",
-"label_hash": "b6fe61964e"
+"label": "Split a hex colour into red, green and blue for shadow rgba values",
+"label_source": "header"
 },
 {
 "id": "themes/themes/doctype/theme_settings/theme_settings.py::_hex_to_hsl",
@@ -13636,9 +13649,8 @@
 "sig": "(hex_color)",
 "hash": "b89ab5283d",
 "calls": [],
-"label": "Convert hexadecimal color code to HSL values",
-"label_source": "generated",
-"label_hash": "b89ab5283d"
+"label": "Convert a hex colour to hue, saturation and lightness",
+"label_source": "header"
 },
 {
 "id": "themes/themes/doctype/theme_settings/theme_settings.py::_hsl_to_hex",
@@ -13651,9 +13663,8 @@
 "calls": [
 "themes/themes/doctype/theme_settings/theme_settings.py::_hsl_to_hex.f"
 ],
-"label": "Convert HSL color values to hexadecimal color code",
-"label_source": "generated",
-"label_hash": "a58a733568"
+"label": "Convert hue, saturation and lightness back to a hex colour",
+"label_source": "header"
 },
 {
 "id": "themes/themes/doctype/theme_settings/theme_settings.py::_hsl_to_hex.f",
@@ -13664,9 +13675,8 @@
 "sig": "(n)",
 "hash": "863228a17d",
 "calls": [],
-"label": "Calculate RGB component from HSL color space values",
-"label_source": "generated",
-"label_hash": "863228a17d"
+"label": "Compute one RGB channel for the HSL to hex conversion",
+"label_source": "header"
 },
 {
 "id": "themes/themes/doctype/theme_settings/theme_settings.py::_generate_shades",
@@ -13681,9 +13691,8 @@
 "themes/utils/theme_color_utils.py::_max_chroma_in_gamut",
 "themes/utils/theme_color_utils.py::_oklch_to_hex"
 ],
-"label": "Generate 11-stop perceptually uniform shade scale from base color in OKLCH",
-"label_source": "generated",
-"label_hash": "3227fba1a8"
+"label": "Build the 50 to 950 OKLCH shade scale for a brand or status colour",
+"label_source": "header"
 },
 {
 "id": "themes/themes/doctype/theme_settings/theme_settings.py::_build_shadow",
@@ -13696,9 +13705,8 @@
 "calls": [
 "themes/themes/doctype/theme_settings/theme_settings.py::_hex_to_rgb"
 ],
-"label": "Build CSS shadow definition with offset, blur, spread, and color opacity",
-"label_source": "generated",
-"label_hash": "62bf707481"
+"label": "Build the box-shadow value for a named shadow level and shadow colour",
+"label_source": "header"
 },
 {
 "id": "themes/themes/doctype/theme_settings/theme_settings.py::ThemeSettings",
@@ -13712,9 +13720,8 @@
 "Document"
 ],
 "calls": [],
-"label": "Theme settings document class that compiles and publishes CSS variables",
-"label_source": "generated",
-"label_hash": "1c0f2dc5db"
+"label": "Legacy Theme Settings single that compiles and writes the theme stylesheet on save",
+"label_source": "header"
 },
 {
 "id": "themes/themes/doctype/theme_settings/theme_settings.py::ThemeSettings.on_update",
@@ -13728,9 +13735,8 @@
 "themes/themes/doctype/theme_settings/theme_settings.py::ThemeSettings._generate_css",
 "themes/themes/doctype/theme_settings/theme_settings.py::ThemeSettings._write_css_file"
 ],
-"label": "Compile CSS on update and persist to file and database",
-"label_source": "generated",
-"label_hash": "2d5ae90363"
+"label": "On save, compile the CSS, store it in compiled_css and write nce_theme.css",
+"label_source": "header"
 },
 {
 "id": "themes/themes/doctype/theme_settings/theme_settings.py::ThemeSettings._generate_css",
@@ -13744,9 +13750,8 @@
 "themes/themes/doctype/theme_settings/theme_settings.py::_build_shadow",
 "themes/themes/doctype/theme_settings/theme_settings.py::_generate_shades"
 ],
-"label": "Generate root CSS variables for colors, fonts, and typography settings",
-"label_source": "generated",
-"label_hash": "8ad458921e"
+"label": "Build the :root --nce-* block for colours, shades, fonts, shape, spacing and custom CSS",
+"label_source": "header"
 },
 {
 "id": "themes/themes/doctype/theme_settings/theme_settings.py::ThemeSettings._write_css_file",
@@ -13757,9 +13762,8 @@
 "sig": "(self, css)",
 "hash": "9216e4484c",
 "calls": [],
-"label": "Write compiled CSS to public theme file",
-"label_source": "generated",
-"label_hash": "9216e4484c"
+"label": "Write the compiled CSS to the app's public nce_theme.css",
+"label_source": "header"
 },
 {
 "id": "themes/utils/bundle_base_desk_theme.py::bundle_base_desk_theme_to_app",
@@ -13868,9 +13872,8 @@
 "sig": "(name)",
 "hash": "1f5d1d9716",
 "calls": [],
-"label": "Map retired font names to their current replacements",
-"label_source": "generated",
-"label_hash": "1f5d1d9716"
+"label": "Map a retired font name to its current replacement before publishing",
+"label_source": "header"
 },
 {
 "id": "themes/utils/css_writer.py::_font_stack",
@@ -13883,9 +13886,8 @@
 "calls": [
 "themes/utils/css_writer.py::_resolve_font_name"
 ],
-"label": "Build CSS font-family stack with fallback for configured font name",
-"label_source": "generated",
-"label_hash": "006181d2a3"
+"label": "Build the font-family stack for a theme font, or the system stack",
+"label_source": "header"
 },
 {
 "id": "themes/utils/css_writer.py::_font_face_blocks",
@@ -13896,9 +13898,8 @@
 "sig": "(name)",
 "hash": "df953d3b5e",
 "calls": [],
-"label": "Generate @font-face CSS rules for a registered variable font with both subsets",
-"label_source": "generated",
-"label_hash": "df953d3b5e"
+"label": "Return the @font-face rules for one registered self-hosted variable font",
+"label_source": "header"
 },
 {
 "id": "themes/utils/css_writer.py::_collect_font_names",
@@ -13911,9 +13912,8 @@
 "calls": [
 "themes/utils/css_writer.py::_resolve_font_name"
 ],
-"label": "Collect and deduplicate registered font names from theme payloads",
-"label_source": "generated",
-"label_hash": "7665116556"
+"label": "List the registered body and heading fonts used by a set of theme payloads",
+"label_source": "header"
 },
 {
 "id": "themes/utils/css_writer.py::_emit_font_faces",
@@ -13927,9 +13927,8 @@
 "themes/utils/css_writer.py::_collect_font_names",
 "themes/utils/css_writer.py::_font_face_blocks"
 ],
-"label": "Emit @font-face rules for active body and heading fonts to CSS output",
-"label_source": "generated",
-"label_hash": "914c6895ef"
+"label": "Add @font-face rules for one theme's body and heading fonts",
+"label_source": "header"
 },
 {
 "id": "themes/utils/css_writer.py::_emit_font_faces_multi",
@@ -13943,9 +13942,8 @@
 "themes/utils/css_writer.py::_collect_font_names",
 "themes/utils/css_writer.py::_font_face_blocks"
 ],
-"label": "Emit @font-face rules for fonts used across multiple theme payloads",
-"label_source": "generated",
-"label_hash": "971d637169"
+"label": "Add @font-face rules for every font used by the Default and Active themes",
+"label_source": "header"
 },
 {
 "id": "themes/utils/css_writer.py::generate_fonts_css",
@@ -13958,9 +13956,8 @@
 "calls": [
 "themes/utils/css_writer.py::_font_face_blocks"
 ],
-"label": "Generate complete @font-face stylesheet for all curated fonts for editor picker",
-"label_source": "generated",
-"label_hash": "c1e022d229"
+"label": "Build fonts.css with every curated font for the Theme Editor picker",
+"label_source": "header"
 },
 {
 "id": "themes/utils/css_writer.py::_role_gamma_sat",
@@ -13971,9 +13968,8 @@
 "sig": "(g, field)",
 "hash": "86b1341366",
 "calls": [],
-"label": "Retrieve gamma and saturation values for a role color field",
-"label_source": "generated",
-"label_hash": "86b1341366"
+"label": "Read a brand role's gamma and saturation adjustments, or neutral defaults",
+"label_source": "header"
 },
 {
 "id": "themes/utils/css_writer.py::_brand_palette_mode",
@@ -13984,9 +13980,8 @@
 "sig": "(g)",
 "hash": "d2451d3e93",
 "calls": [],
-"label": "Parse and normalize brand palette mode to corporate or flexible",
-"label_source": "generated",
-"label_hash": "d2451d3e93"
+"label": "Read the theme's brand palette mode as corporate or flexible",
+"label_source": "header"
 },
 {
 "id": "themes/utils/css_writer.py::_pin_stop_600_for_role",
@@ -14000,9 +13995,8 @@
 "themes/utils/css_writer.py::_brand_palette_mode",
 "themes/utils/css_writer.py::_role_gamma_sat"
 ],
-"label": "Determine whether to pin stop 600 for a role in flexible palette mode",
-"label_source": "generated",
-"label_hash": "471ed66b92"
+"label": "Decide whether a role's shade 600 stays exactly its base colour",
+"label_source": "header"
 },
 {
 "id": "themes/utils/css_writer.py::_parse_shades_map",
@@ -14013,9 +14007,8 @@
 "sig": "(raw)",
 "hash": "4156b75fec",
 "calls": [],
-"label": "Parse and validate shade-to-hex color map from raw JSON or dict",
-"label_source": "generated",
-"label_hash": "4156b75fec"
+"label": "Read a stored shade map into sorted shade and hex pairs",
+"label_source": "header"
 },
 {
 "id": "themes/utils/css_writer.py::_get_role_shades",
@@ -14033,9 +14026,8 @@
 "themes/utils/theme_color_utils.py::_generate_shades",
 "themes/utils/theme_color_utils.py::generate_neutral_shades"
 ],
-"label": "Get sorted list of shade-hex pairs for a shade-scale role field",
-"label_source": "generated",
-"label_hash": "89f39e18e7"
+"label": "Return a role's 50 to 950 shades, from stored shades, neutral warmth or generation",
+"label_source": "header"
 },
 {
 "id": "themes/utils/css_writer.py::_role_base_hex",
@@ -14051,9 +14043,8 @@
 "themes/utils/css_writer.py::_role_gamma_sat",
 "themes/utils/theme_color_utils.py::_effective_role_hex"
 ],
-"label": "Get base hex value for a role token at stop 600",
-"label_source": "generated",
-"label_hash": "015169ab43"
+"label": "Return the base colour emitted for a role, honouring flexible palette adjustments",
+"label_source": "header"
 },
 {
 "id": "themes/utils/css_writer.py::_role_is_configured",
@@ -14066,9 +14057,8 @@
 "calls": [
 "themes/utils/css_writer.py::_parse_shades_map"
 ],
-"label": "Check if a role field is configured with color or shades",
-"label_source": "generated",
-"label_hash": "59ae47f4bf"
+"label": "Tell whether a role has a colour or shades so its CSS is emitted",
+"label_source": "header"
 },
 {
 "id": "themes/utils/css_writer.py::_fg_flip_mono",
@@ -14079,9 +14069,8 @@
 "sig": "(g, field)",
 "hash": "dd2ddc6f30",
 "calls": [],
-"label": "Retrieve mono foreground flip value with fallback from dual-field themes",
-"label_source": "generated",
-"label_hash": "dd2ddc6f30"
+"label": "Read a role's mono foreground flip shade, accepting older dual fields",
+"label_source": "header"
 },
 {
 "id": "themes/utils/css_writer.py::_fg_flip_tonal",
@@ -14092,9 +14081,8 @@
 "sig": "(g, field)",
 "hash": "f54c76008d",
 "calls": [],
-"label": "Retrieve tonal foreground flip value with fallback from dual-field themes",
-"label_source": "generated",
-"label_hash": "f54c76008d"
+"label": "Read a role's tonal foreground flip shade, accepting older dual fields",
+"label_source": "header"
 },
 {
 "id": "themes/utils/css_writer.py::_table_header_fg",
@@ -14111,9 +14099,8 @@
 "themes/utils/theme_color_utils.py::brand_shade_foreground",
 "themes/utils/theme_color_utils.py::pick_fg_mono"
 ],
-"label": "Determine table header foreground color from background hex using brand role shades",
-"label_source": "generated",
-"label_hash": "8d2db0c97d"
+"label": "Pick table header text colour, using the brand flip when the header is a brand shade",
+"label_source": "header"
 },
 {
 "id": "themes/utils/css_writer.py::_resolve_flat_color",
@@ -14124,9 +14111,8 @@
 "sig": "(g, field)",
 "hash": "2dd90a925b",
 "calls": [],
-"label": "Resolve scalar color token with optional fallback inheritance",
-"label_source": "generated",
-"label_hash": "2dd90a925b"
+"label": "Return a flat colour token, inheriting its table colour fallback when unset",
+"label_source": "header"
 },
 {
 "id": "themes/utils/css_writer.py::_normalize_table_width_tier",
@@ -14137,9 +14123,8 @@
 "sig": "(g, field)",
 "hash": "250aacae4a",
 "calls": [],
-"label": "Normalize table width tier from value or fallback to valid tier",
-"label_source": "generated",
-"label_hash": "250aacae4a"
+"label": "Normalise a table divider width setting to thin, normal or strong",
+"label_source": "header"
 },
 {
 "id": "themes/utils/css_writer.py::_resolve_table_width_var",
@@ -14152,9 +14137,8 @@
 "calls": [
 "themes/utils/css_writer.py::_normalize_table_width_tier"
 ],
-"label": "Resolve CSS variable reference for a table width tier",
-"label_source": "generated",
-"label_hash": "75bca7f98b"
+"label": "Return the CSS variable reference for a table divider width tier",
+"label_source": "header"
 },
 {
 "id": "themes/utils/css_writer.py::_emit_table_width_vars",
@@ -14167,9 +14151,8 @@
 "calls": [
 "themes/utils/css_writer.py::_resolve_table_width_var"
 ],
-"label": "Emit table row and column divider width CSS variables",
-"label_source": "generated",
-"label_hash": "3439e69bc3"
+"label": "Add the table row and column divider width variables",
+"label_source": "header"
 },
 {
 "id": "themes/utils/css_writer.py::_emit_var_block",
@@ -14195,9 +14178,8 @@
 "themes/utils/theme_color_utils.py::_effective_role_hex",
 "themes/utils/theme_color_utils.py::brand_shade_foreground"
 ],
-"label": "Generate :root CSS variable block for theme colors, brand shades, and custom CSS",
-"label_source": "generated",
-"label_hash": "204581f91f"
+"label": "Add one theme's --nce-* variables, shades, foregrounds and shape tokens under a selector",
+"label_source": "header"
 },
 {
 "id": "themes/utils/css_writer.py::_emit_role_bg_classes",
@@ -14210,9 +14192,8 @@
 "calls": [
 "themes/utils/css_writer.py::_role_is_configured"
 ],
-"label": "Emit CSS classes for role background colors with default foreground pairs",
-"label_source": "generated",
-"label_hash": "0b62f718ac"
+"label": "Add theme-bg role classes with their default foreground colour",
+"label_source": "header"
 },
 {
 "id": "themes/utils/css_writer.py::_emit_role_text_border_classes",
@@ -14225,9 +14206,8 @@
 "calls": [
 "themes/utils/css_writer.py::_role_is_configured"
 ],
-"label": "Emit CSS classes for per-role text, border, and foreground color variants",
-"label_source": "generated",
-"label_hash": "d11d8b091b"
+"label": "Add theme-text and theme-border role classes and their fg variants",
+"label_source": "header"
 },
 {
 "id": "themes/utils/css_writer.py::_emit_role_shade_classes",
@@ -14240,9 +14220,8 @@
 "calls": [
 "themes/utils/css_writer.py::_role_is_configured"
 ],
-"label": "Emit CSS utility classes for per-role per-shade background and text colors",
-"label_source": "generated",
-"label_hash": "445f69e1c7"
+"label": "Add theme-bg, theme-text and theme-border classes for each curated role shade",
+"label_source": "header"
 },
 {
 "id": "themes/utils/css_writer.py::_emit_prefixed_rule",
@@ -14253,9 +14232,8 @@
 "sig": "(lines, theme_class: str, legacy_class: str, declarations: str) -> None",
 "hash": "44965862e1",
 "calls": [],
-"label": "Emit CSS rule with theme-prefixed class and unprefixed legacy alias",
-"label_source": "generated",
-"label_hash": "44965862e1"
+"label": "Add a theme- class rule together with its legacy unprefixed alias",
+"label_source": "header"
 },
 {
 "id": "themes/utils/css_writer.py::_emit_neutral_classes",
@@ -14269,9 +14247,8 @@
 "themes/utils/css_writer.py::_emit_prefixed_rule",
 "themes/utils/css_writer.py::_resolve_flat_color"
 ],
-"label": "Emit CSS for neutral surfaces, semantic chrome, text and border roles",
-"label_source": "generated",
-"label_hash": "4bc939c86d"
+"label": "Add surface, row, table header, heading, link, border and focus classes",
+"label_source": "header"
 },
 {
 "id": "themes/utils/css_writer.py::_emit_table_classes",
@@ -14282,9 +14259,8 @@
 "sig": "(lines)",
 "hash": "aa22684b78",
 "calls": [],
-"label": "Generate bundled table CSS classes with zebra striping and cell dividers from theme tokens",
-"label_source": "generated",
-"label_hash": "aa22684b78"
+"label": "Add the theme-table bundle with zebra rows and cell dividers",
+"label_source": "header"
 },
 {
 "id": "themes/utils/css_writer.py::_emit_shape_classes",
@@ -14295,9 +14271,8 @@
 "sig": "(lines)",
 "hash": "36c6dba9cb",
 "calls": [],
-"label": "Emit border-radius, box-shadow, and transition-duration utility classes",
-"label_source": "generated",
-"label_hash": "36c6dba9cb"
+"label": "Add theme rounded, shadow and transition duration classes",
+"label_source": "header"
 },
 {
 "id": "themes/utils/css_writer.py::_emit_typography_classes",
@@ -14308,9 +14283,8 @@
 "sig": "(g, lines)",
 "hash": "c8876d4ad8",
 "calls": [],
-"label": "Emit font family and font size utility classes",
-"label_source": "generated",
-"label_hash": "c8876d4ad8"
+"label": "Add theme font family and font size classes",
+"label_source": "header"
 },
 {
 "id": "themes/utils/css_writer.py::_emit_spacing_classes",
@@ -14321,9 +14295,8 @@
 "sig": "(lines)",
 "hash": "7939638761",
 "calls": [],
-"label": "Emit uniform padding, margin, and gap spacing utility classes",
-"label_source": "generated",
-"label_hash": "7939638761"
+"label": "Add theme padding, margin and gap classes at five sizes",
+"label_source": "header"
 },
 {
 "id": "themes/utils/css_writer.py::_emit_bg_themed",
@@ -14334,9 +14307,8 @@
 "sig": "(lines)",
 "hash": "e4c6cceb6e",
 "calls": [],
-"label": "Emit dynamic-shade escape hatch background color class",
-"label_source": "generated",
-"label_hash": "e4c6cceb6e"
+"label": "Add theme-bg-themed, which picks readable text for any --bg shade",
+"label_source": "header"
 },
 {
 "id": "themes/utils/css_writer.py::generate_css",
@@ -14359,9 +14331,8 @@
 "themes/utils/css_writer.py::_emit_typography_classes",
 "themes/utils/css_writer.py::_emit_var_block"
 ],
-"label": "Generate complete nce_theme.css stylesheet from token payload dictionary",
-"label_source": "generated",
-"label_hash": "17e35b4c35"
+"label": "Build a full nce_theme.css for one theme payload",
+"label_source": "header"
 },
 {
 "id": "themes/utils/css_writer.py::generate_site_css",
@@ -14384,9 +14355,8 @@
 "themes/utils/css_writer.py::_emit_typography_classes",
 "themes/utils/css_writer.py::_emit_var_block"
 ],
-"label": "Generate site-wide CSS with default theme at root and active themes as scoped overrides",
-"label_source": "generated",
-"label_hash": "04e6b3cbc0"
+"label": "Build site CSS with the Default theme on :root and Active themes scoped by slug",
+"label_source": "header"
 },
 {
 "id": "themes/utils/css_writer.py::_write_fonts_css",
@@ -14399,9 +14369,8 @@
 "calls": [
 "themes/utils/css_writer.py::generate_fonts_css"
 ],
-"label": "Write curated fonts stylesheet consumed by the editor page",
-"label_source": "generated",
-"label_hash": "bafe573da2"
+"label": "Write public/css/fonts.css for the Theme Editor page",
+"label_source": "header"
 },
 {
 "id": "themes/utils/css_writer.py::publish_theme",
@@ -14419,9 +14388,8 @@
 "themes/utils/site_theme_config_helpers.py::get_site_default_theme_name",
 "themes/utils/site_theme_config_helpers.py::set_site_base_theme_name"
 ],
-"label": "Publish theme by rebuilding nce_theme.css from database state",
-"label_source": "generated",
-"label_hash": "688821481a"
+"label": "Rebuild and publish nce_theme.css and fonts.css, then store the CSS hash and clear caches",
+"label_source": "header"
 },
 {
 "id": "themes/utils/default_desk_theme.py::load_bundled_base_desk_theme_payload",
@@ -14432,9 +14400,8 @@
 "sig": "() -> dict",
 "hash": "4ea7ed603d",
 "calls": [],
-"label": "Load bundled base desk theme from data file or embedded fallback",
-"label_source": "generated",
-"label_hash": "4ea7ed603d"
+"label": "Return the Base Theme desk payload used to seed the Default desk theme on install and in patches",
+"label_source": "header"
 },
 {
 "id": "themes/utils/default_theme.py::load_bundled_base_theme_payload",
@@ -14495,11 +14462,24 @@
 "name": "_resolve_desk_token_value",
 "qualname": "_resolve_desk_token_value",
 "sig": "(payload: dict, key: str) -> str | None",
-"hash": "2fc1498c16",
+"hash": "3616b4acfd",
 "calls": [],
-"label": "Resolve token value with btn_primary falling back to primary_color",
+"label": "Retrieve and trim token value from theme payload, returning None if unset",
 "label_source": "generated",
-"label_hash": "2fc1498c16"
+"label_hash": "3616b4acfd"
+},
+{
+"id": "themes/utils/desk_css_writer.py::_apply_auto_text_scale",
+"file": "themes/utils/desk_css_writer.py",
+"kind": "function",
+"name": "_apply_auto_text_scale",
+"qualname": "_apply_auto_text_scale",
+"sig": "(payload: dict) -> dict",
+"hash": "d8a3dc174f",
+"calls": [],
+"label": "Derive text size variants from base font size when text scale mode is auto",
+"label_source": "generated",
+"label_hash": "d8a3dc174f"
 },
 {
 "id": "themes/utils/desk_css_writer.py::_emit_desk_var_block",
@@ -14508,13 +14488,14 @@
 "name": "_emit_desk_var_block",
 "qualname": "_emit_desk_var_block",
 "sig": "(payload: dict, selector: str=':root') -> list[str]",
-"hash": "9846eec3f1",
+"hash": "8a0f1f00b8",
 "calls": [
+"themes/utils/desk_css_writer.py::_apply_auto_text_scale",
 "themes/utils/desk_css_writer.py::_resolve_desk_token_value"
 ],
-"label": "Generate CSS variable block for desk theme selector",
+"label": "Emit CSS variable block for desk theme with selector and values",
 "label_source": "generated",
-"label_hash": "9846eec3f1"
+"label_hash": "8a0f1f00b8"
 },
 {
 "id": "themes/utils/desk_css_writer.py::generate_desk_css",
@@ -14523,16 +14504,16 @@
 "name": "generate_desk_css",
 "qualname": "generate_desk_css",
 "sig": "(base_theme_name: str | None, active_theme_names: list[str] | None) -> str",
-"hash": "9af9cf8c35",
+"hash": "38fb255ac5",
 "calls": [
 "themes/utils/desk_css_writer.py::_desk_font_face_blocks",
 "themes/utils/desk_css_writer.py::_desk_font_stack",
 "themes/utils/desk_css_writer.py::_emit_desk_var_block",
 "themes/utils/desk_css_writer.py::_load_desk_payload"
 ],
-"label": "Generate complete desk theme CSS from base and active themes",
+"label": "Generate complete desk theme CSS from base and active theme payloads",
 "label_source": "generated",
-"label_hash": "9af9cf8c35"
+"label_hash": "38fb255ac5"
 },
 {
 "id": "themes/utils/desk_css_writer.py::get_desk_theme_css_url",

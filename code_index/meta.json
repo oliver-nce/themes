@@ -22,7 +22,9 @@
   ".php",
   ".css",
   ".yaml",
-  ".yml"
+  ".yml",
+  ".html",
+  ".htm"
  ],
  "doc_extensions": [
   ".md"

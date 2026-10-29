@@ -1,15 +1,6 @@
 /*
  * Global stylesheet that pulls in Tailwind base, components, and utilities.
  *
- * code-index:begin
- * {
- *  "purpose": "Global stylesheet that pulls in Tailwind base, components, and utilities.",
- *  "read_when": "When global Tailwind layers are missing from the theme editor frontend.",
- *  "gotchas": [],
- *  "keywords": ["tailwind", "base", "components", "utilities", "global stylesheet"],
- *  "format": 1
- * }
- * code-index:end
  */
 
 @tailwind base;

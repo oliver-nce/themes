@@ -1,17 +1,5 @@
 """Site Theme Config controller that checks the theme links exist and republishes web and desk CSS on update.
 
-code-index:begin
-{
- "purpose": "Site Theme Config controller that checks the theme links exist and republishes web and desk CSS on update.",
- "read_when": "When changing what happens after the site theme pointers are saved.",
- "gotchas": [
-  "Publishing is skipped during install or migrate.",
-  "An empty base_theme falls back to the legacy active_theme field."
- ],
- "keywords": ["SiteThemeConfig", "base_theme", "base_desk_theme", "active_theme", "publish_theme", "publish_desk_theme"],
- "format": 1
-}
-code-index:end
 """
 
 # Copyright (c) 2026 Oliver Reid. All rights reserved. Copying prohibited — see README.

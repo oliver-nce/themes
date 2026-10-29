@@ -1,21 +1,6 @@
 <!--
 Spec for ThemeSwatchPicker, which writes one theme class string into a bound form field.
 
-code-index:begin
-{
- "purpose": "Spec for ThemeSwatchPicker, which writes one theme class string into a bound form field.",
- "read_when": "When embedding the picker in Vue, Desk, or standalone HTML, or changing its output.",
- "gotchas": [
-  "Does not emit raw hex or inline styles; output is always one space-free utility class string.",
-  "The Vue wrapper does not call frm.set_value; pass get-field and set-field bound to the formData used at save.",
-  "Do not rely on inject(nceForm) unless that object is the same reactive object used at save time.",
-  "Desk themeField is an NCE Theme Link and is resolved to slug; a standalone value must already be the slug.",
-  "nce_theme.css must be loaded on the host page; the widget does zero color math."
- ],
- "keywords": ["ThemeSwatchPicker", "header_color", "data-nce-theme", "set-field", "frm.set_value", "nce_theme.css", "SHADE_SCALE_FIELDS", "slug"],
- "format": 1
-}
-code-index:end
 -->
 
 # ThemeSwatchPicker — Spec

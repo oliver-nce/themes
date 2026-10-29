@@ -1,16 +1,5 @@
 // Vite build for the theme editor frontend, including the Lucide icon stub plugin.
 //
-// code-index:begin
-// {
-//  "purpose": "Vite build for the theme editor frontend, including the Lucide icon stub plugin.",
-//  "read_when": "When changing the frontend dev server, output paths, or icon import stubs.",
-//  "gotchas": [
-//   "Chunk filenames must stay content-hashed or browsers keep stale lazy bundles after deploy."
-//  ],
-//  "keywords": ["stub-lucide-icons", "plugin-vue", "outDir", "chunkFileNames", "feather-icons", "entryFileNames", "dev server"],
-//  "format": 1
-// }
-// code-index:end
 
 import path from "node:path"
 import vue from "@vitejs/plugin-vue"

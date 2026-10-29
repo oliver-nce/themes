@@ -1,22 +1,6 @@
 <!--
 Button recipes and a decision tree for filled, soft, outline, ghost, and header styles.
 
-code-index:begin
-{
- "purpose": "Button recipes and a decision tree for filled, soft, outline, ghost, and header styles.",
- "read_when": "When writing a button class string in a downstream Frappe app.",
- "gotchas": [
-  "Do not add theme-text-{role}-fg beside theme-bg-{role}; the background class already sets the paired color.",
-  "theme-border-{role} only sets border-color; include theme-border or the outline has no width.",
-  "Never use a hex literal in a scoped style; use var(--nce-color-primary) if no class fits.",
-  "Do not use text-white on theme-bg-primary except for the fixed-color cascade case.",
-  "One filled primary per screen; a second theme-bg-primary should be demoted.",
-  "Do not use bg-primary without the theme- prefix; the site CSS emits theme-bg-primary."
- ],
- "keywords": ["theme-bg-primary", "theme-border", "Ghost", "Outline", "nce_theme.css", "text-white", "disabled", "accent"],
- "format": 1
-}
-code-index:end
 -->
 
 # 09 — Button Styling Guidelines

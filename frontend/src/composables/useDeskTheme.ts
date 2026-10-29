@@ -1,24 +1,9 @@
 // Copyright (c) 2026 Oliver Reid. All rights reserved. Copying prohibited — see README.
 //
-// code-index:begin
-// {
-//  "purpose": "Loads the active desk theme and writes its payload onto Frappe desk CSS variables.",
-//  "read_when": "When changing desk CSS variable names, font stack conversion, or active desk theme loading.",
-//  "gotchas": [
-//   "font_size is omitted because Frappe v15 does not use --font-size-base.",
-//   "font_family is handled separately and needs CSS stack conversion.",
-//   "font_weight_body targets Frappe v15 --weight-regular."
-//  ],
-//  "keywords": ["DESK_VAR_MAP", "deskFontStack", "get_active_desk_theme_editor", "--weight-regular", "font_family", "applyDeskThemeVars"],
-//  "format": 1
-// }
-// code-index:end
 import { ref } from "vue"
 import { createResource } from "frappe-ui"
 
 export const DESK_VAR_MAP: Record<string, string> = {
-	primary_color: "--primary-color",
-	brand_color: "--brand-color",
 	bg_color: "--bg-color",
 	fg_color: "--fg-color",
 	text_color: "--text-color",
@@ -28,22 +13,37 @@ export const DESK_VAR_MAP: Record<string, string> = {
 	dark_border_color: "--dark-border-color",
 	control_bg: "--control-bg",
 	control_bg_on_gray: "--control-bg-on-gray",
-	btn_primary: "--btn-primary",
 	btn_default_bg: "--btn-default-bg",
-	awesomplete_hover_bg: "--awesomplete-hover-bg",
+	surface_gray_2: "--surface-gray-2",
+	subtle_fg: "--subtle-fg",
+	heading_color: "--heading-color",
 	btn_height: "--btn-height",
+	radius: "--radius",
+	input_height: "--input-height",
+	checkbox_size: "--checkbox-size",
 	border_radius: "--border-radius",
-	border_radius_lg: "--border-radius-lg",
-	border_radius_full: "--border-radius-full",
 	g_bar_color: "--g-bar-color",
 	g_bar_border: "--g-bar-border",
 	g_progress_color: "--g-progress-color",
 	g_header_background: "--g-header-background",
 	g_row_color: "--g-row-color",
-	g_today_highlight: "--g-today-highlight",
 	// Typography — font_weight_body targets Frappe v15's --weight-regular (body text weight token)
-	// font_size omitted: Frappe v15 does not use --font-size-base
 	font_weight_body: "--weight-regular",
+	font_weight_bold: "--nce-weight-bold",
+	font_size: "--text-base",
+	text_xs: "--text-xs",
+	text_sm: "--text-sm",
+	text_lg: "--text-lg",
+	font_weight_medium: "--font-weight-medium",
+	spacing: "--spacing",
+	padding_xs: "--padding-xs",
+	padding_sm: "--padding-sm",
+	padding_md: "--padding-md",
+	margin_xs: "--margin-xs",
+	margin_sm: "--margin-sm",
+	list_row_height: "--list-row-height",
+	page_max_width: "--page-max-width",
+	page_head_height: "--page-head-height",
 	// font_family is handled separately (needs CSS stack conversion)
 }
 
@@ -68,17 +68,20 @@ const themeLoaded = ref(false)
 export function deskPayloadToCssVars(payload: Record<string, unknown>): Record<string, string> {
 	const vars: Record<string, string> = {}
 	for (const [key, cssVar] of Object.entries(DESK_VAR_MAP)) {
-		let value = payload[key]
-		if (
-			key === "btn_primary" &&
-			(value === undefined || value === null || !String(value).trim())
-		) {
-			value = payload.primary_color
-		}
+		const value = payload[key]
 		if (value !== undefined && value !== null && String(value).trim()) {
 			vars[cssVar] = String(value)
 		}
 	}
+	// Auto text scale (the default): small/label/title sizes follow body size at Frappe's 12/13/16 : 14
+	const base = parseFloat(String(payload.font_size ?? ""))
+	if ((payload.text_scale_mode || "auto") === "auto" && Number.isFinite(base)) {
+		vars["--text-xs"] = `${Math.round((base * 12) / 14)}px`
+		vars["--text-sm"] = `${Math.round((base * 13) / 14)}px`
+		vars["--text-lg"] = `${Math.round((base * 16) / 14)}px`
+	}
+	// v16 regular text (list cells, labels) reads --font-weight-regular, not --weight-regular
+	if (vars["--weight-regular"]) vars["--font-weight-regular"] = vars["--weight-regular"]
 	// Font family requires CSS stack conversion
 	const fontName = String(payload.font_family || "").trim()
 	const stack = deskFontStack(fontName)

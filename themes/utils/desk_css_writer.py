@@ -9,20 +9,6 @@ no OKLCH shade scale or theme-bg-* class layer.
 
 See themes/CODE_INDEX.json and plans/REFACTORING_PLAN.md for consolidation notes.
 
-code-index:begin
-{
- "purpose": "Generates and publishes nce_desk_theme.css from the site desk theme pointer merged with the Active desk theme.",
- "read_when": "When changing Desk CSS variables, font stacks, or the desk publish hash.",
- "gotchas": [
-  "font_size is omitted because Frappe v15 does not use --font-size-base.",
-  "DESK_CSS_SELECTOR includes [data-theme=light] because Frappe v15 Espresso re-declares Desk vars after app_include_css.",
-  "font_family must be in DESK_TOKEN_FIELDS or _desk_parse_payload strips it on save.",
-  "btn_primary falls back to primary_color when unset."
- ],
- "keywords": ["DESK_CSS_VARS", "nce_desk_theme.css", "publish_desk_theme", "DESK_CSS_SELECTOR", "font_family", "desk_css_hash", "btn_primary", "data-theme"],
- "format": 1
-}
-code-index:end
 """
 from __future__ import annotations
 
@@ -35,8 +21,6 @@ from themes.utils.css_publish import write_published_css
 from themes.utils.theme_tokens import FONT_REGISTRY, FONT_SUBSETS, FONT_BASE_URL
 
 DESK_CSS_VARS = (
-    ("primary_color", "--primary-color"),
-    ("brand_color", "--brand-color"),
     ("bg_color", "--bg-color"),
     ("fg_color", "--fg-color"),
     ("text_color", "--text-color"),
@@ -46,22 +30,55 @@ DESK_CSS_VARS = (
     ("dark_border_color", "--dark-border-color"),
     ("control_bg", "--control-bg"),
     ("control_bg_on_gray", "--control-bg-on-gray"),
-    ("btn_primary", "--btn-primary"),
     ("btn_default_bg", "--btn-default-bg"),
-    ("awesomplete_hover_bg", "--awesomplete-hover-bg"),
+    ("surface_gray_2", "--surface-gray-2"),
+    ("subtle_fg", "--subtle-fg"),
+    ("heading_color", "--heading-color"),
     ("btn_height", "--btn-height"),
+    ("radius", "--radius"),
+    ("input_height", "--input-height"),
+    ("checkbox_size", "--checkbox-size"),
     ("border_radius", "--border-radius"),
-    ("border_radius_lg", "--border-radius-lg"),
-    ("border_radius_full", "--border-radius-full"),
     ("g_bar_color", "--g-bar-color"),
     ("g_bar_border", "--g-bar-border"),
     ("g_progress_color", "--g-progress-color"),
     ("g_header_background", "--g-header-background"),
     ("g_row_color", "--g-row-color"),
-    ("g_today_highlight", "--g-today-highlight"),
     # Typography — font_family is handled separately (needs CSS stack conversion)
-    # font_size omitted: Frappe v15 does not use --font-size-base (uses --text-sm/base instead)
+    # font_size maps to --text-base (Frappe v16 token; ignored by v15).
     ("font_weight_body", "--weight-regular"),
+    # v16 regular text (list cells, labels) reads --font-weight-regular, not --weight-regular
+    ("font_weight_body", "--font-weight-regular"),
+    # weight for fields/rows Frappe marks bold (.bold, .form-control.bold)
+    ("font_weight_bold", "--nce-weight-bold"),
+    ("font_size", "--text-base"),
+    ("text_xs", "--text-xs"),
+    ("text_sm", "--text-sm"),
+    ("text_lg", "--text-lg"),
+    ("font_weight_medium", "--font-weight-medium"),
+    # Layout / spacing (Frappe v16 measured defaults)
+    ("spacing", "--spacing"),
+    ("padding_xs", "--padding-xs"),
+    ("padding_sm", "--padding-sm"),
+    ("padding_md", "--padding-md"),
+    ("margin_xs", "--margin-xs"),
+    ("margin_sm", "--margin-sm"),
+    ("list_row_height", "--list-row-height"),
+    ("page_max_width", "--page-max-width"),
+    ("page_head_height", "--page-head-height"),
+)
+
+DESK_CSS_RULES = (
+    ".bold,",
+    ".form-control.bold {",
+    # !important: Frappe's own .bold rule is !important
+    "\tfont-weight: var(--nce-weight-bold, var(--weight-semibold)) !important;",
+    "}",
+    "",
+    ".list-subject.seen,",
+    ".list-row-head .list-subject {",
+    "\tfont-weight: var(--font-weight-regular);",
+    "}",
 )
 
 _DESK_FONT_GENERIC: dict[str, str] = {
@@ -104,9 +121,16 @@ def _desk_font_face_blocks(name: str) -> list[str]:
         ]
     return out
 
-# font_family is not in DESK_CSS_VARS (needs stack conversion, handled separately in generate_desk_css)
-# but it must be in DESK_TOKEN_FIELDS so _desk_parse_payload doesn't strip it on save.
-DESK_TOKEN_FIELDS = [key for key, _ in DESK_CSS_VARS] + ["font_family"]
+# font_family, primary_color, brand_color, text_scale_mode, and density are not in DESK_CSS_VARS (font needs stack
+# conversion; primary/brand are palette-only; text_scale_mode and density are editor-only). Saved via DESK_TOKEN_FIELD_EXTRAS.
+DESK_TOKEN_FIELD_EXTRAS = (
+    "font_family",
+    "primary_color",
+    "brand_color",
+    "text_scale_mode",
+    "density",
+)
+DESK_TOKEN_FIELDS = list(dict.fromkeys(key for key, _ in DESK_CSS_VARS)) + list(DESK_TOKEN_FIELD_EXTRAS)
 
 # Frappe v15 Espresso re-declares Desk vars on [data-theme="light"] after app_include_css.
 DESK_CSS_SELECTOR = ":root, [data-theme=\"light\"]"
@@ -119,18 +143,32 @@ def _load_desk_payload(theme_name: str) -> dict:
 
 
 def _resolve_desk_token_value(payload: dict, key: str) -> str | None:
-    """Return a token value, with btn_primary falling back to primary_color when unset."""
+    """Return a trimmed token value from the payload, or None when unset."""
     value = payload.get(key)
     if value is not None and str(value).strip():
         return str(value).strip()
-    if key == "btn_primary":
-        primary = payload.get("primary_color")
-        if primary is not None and str(primary).strip():
-            return str(primary).strip()
     return None
 
 
+TEXT_SCALE_RATIOS = (("text_xs", 12), ("text_sm", 13), ("text_lg", 16))
+
+
+def _apply_auto_text_scale(payload: dict) -> dict:
+    """In auto mode (the default), derive text_xs/sm/lg from font_size in Frappe's 12/13/16 : 14 ratio."""
+    if (payload.get("text_scale_mode") or "auto") != "auto":
+        return payload
+    try:
+        base = float(str(payload.get("font_size") or "").replace("px", "").strip())
+    except ValueError:
+        return payload
+    derived = dict(payload)
+    for key, ratio in TEXT_SCALE_RATIOS:
+        derived[key] = f"{round(base * ratio / 14)}px"
+    return derived
+
+
 def _emit_desk_var_block(payload: dict, selector: str = ":root") -> list[str]:
+    payload = _apply_auto_text_scale(payload)
     lines = [f"{selector} {{"]
     for key, css_var in DESK_CSS_VARS:
         value = _resolve_desk_token_value(payload, key)
@@ -166,6 +204,8 @@ def generate_desk_css(base_theme_name: str | None, active_theme_names: list[str]
     if font_stack:
         var_block.insert(-1, f"\t--font-stack: {font_stack};")
     lines.extend(var_block)
+    lines.append("")
+    lines.extend(DESK_CSS_RULES)
 
     return "\n".join(lines)
 
