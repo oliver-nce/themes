@@ -1,14 +1,5 @@
 """Theme Settings document that compiles :root --nce-* variables, including shade scales, and writes nce_theme.css.
 
-code-index:begin
-{
- "purpose": "Theme Settings document that compiles :root --nce-* variables, including shade scales, and writes nce_theme.css.",
- "read_when": "When changing Theme Settings CSS generation, its shade scale, or the file it writes.",
- "gotchas": [],
- "keywords": ["ThemeSettings", "_generate_shades", "COLOR_FIELDS", "nce_theme.css", "compiled_css", "custom_css", "OKLCH", "BORDER_RADIUS_MAP"],
- "format": 1
-}
-code-index:end
 """
 
 import json

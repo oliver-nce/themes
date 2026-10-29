@@ -1,20 +1,6 @@
 <!--
 Handoff for the shipped ThemeSwatchPicker and how Desk and Vue hosts must embed it.
 
-code-index:begin
-{
- "purpose": "Handoff for the shipped ThemeSwatchPicker and how Desk and Vue hosts must embed it.",
- "read_when": "When changing the swatch picker or wiring it into a Vue form or Desk client script.",
- "gotchas": [
-  "ThemeSwatchPicker.vue does not use frm.set_value; Vue hosts must pass set-field and get-field bound to formData.",
-  "Do not regress: resolve the Desk Link to a slug, not the raw Link value on data-nce-theme.",
-  "Do not regress: while open, pin the theme with the backdrop only; no reactive slug watcher.",
-  "Empty Theme or an Inactive or missing slug opens blocked-dialog and no modal."
- ],
- "keywords": ["ThemeSwatchPicker", "data-nce-theme", "set-field", "blocked-dialog", "desk-adapter", "build:widget", "formData", "slug"],
- "format": 1
-}
-code-index:end
 -->
 
 # Handoff — ThemeSwatchPicker

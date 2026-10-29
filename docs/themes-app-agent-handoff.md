@@ -1,22 +1,6 @@
 <!--
 Handoff of the shipped Themes architecture, staging deploy steps, and deferred issues.
 
-code-index:begin
-{
- "purpose": "Handoff of the shipped Themes architecture, staging deploy steps, and deferred issues.",
- "read_when": "When starting a Themes session and you need current status, deploy commands, or known gaps.",
- "gotchas": [
-  "Base Theme is never rendered directly; Site Theme Config.base_theme is misnamed and holds the Default Theme.",
-  "publish_theme() always rebuilds the whole file from DB state; there is no partial publish.",
-  "Do not use Theme Version or Theme Settings; they were removed in Phase 5.",
-  "dark_mode is stored in theme_json and is not emitted to CSS.",
-  "list_themes() returns name, theme_name, and status, but not slug.",
-  "Do not bulk-load Frappe Context; use fc_route.ts if Frappe docs are needed."
- ],
- "keywords": ["nce_theme.css", "data-nce-theme", "base_theme", "publish_theme", "manager.ncesoccer.com", "dark_mode", "list_themes", "Theme Version"],
- "format": 1
-}
-code-index:end
 -->
 
 # Themes App — Agent Handoff

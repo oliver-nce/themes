@@ -1,18 +1,5 @@
 // Copyright (c) 2026 Oliver Reid. All rights reserved. Copying prohibited — see README.
 //
-// code-index:begin
-// {
-//  "purpose": "Builds the --nce-shadow value and the compass dial angle for theme shadows.",
-//  "read_when": "Changing shadow direction, opacity, or the dial so it stays aligned with Python.",
-//  "gotchas": [
-//   "directionDeg 180 is straight down (CSS +y).",
-//   "buildThemeShadow mirrors themes/utils/theme_color_utils._build_shadow.",
-//   "The dial handle at 180 degrees sits at the bottom of the SVG."
-//  ],
-//  "keywords": ["buildThemeShadow", "rotateShadowOffset", "directionDeg", "angleFromPointer", "dialHandlePosition", "--nce-shadow", "SHADOW_DEFS", "_build_shadow"],
-//  "format": 1
-// }
-// code-index:end
 import { SHADOW_DEFS, type ShadowLayer } from "@/domain/theme-tokens"
 
 /** Normalize hex for rgba() — accepts #RRGGBB or RRGGBB. */

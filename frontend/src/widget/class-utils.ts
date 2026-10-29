@@ -1,16 +1,5 @@
 // Parses and composes theme kind-role-shade class names and foreground overlay classes.
 //
-// code-index:begin
-// {
-//  "purpose": "Parses and composes theme kind-role-shade class names and foreground overlay classes.",
-//  "read_when": "When changing the theme class regex, default picker state, or overlay foreground class names.",
-//  "gotchas": [
-//   "parseThemeClass matches only shades 100, 200, 300, 500, 600, 700, and 900."
-//  ],
-//  "keywords": ["parseThemeClass", "composeThemeClass", "CLASS_RE", "composeOverlayFgClass", "fg-tonal", "defaultPickerState"],
-//  "format": 1
-// }
-// code-index:end
 
 import {
 	CURATED_SHADES,

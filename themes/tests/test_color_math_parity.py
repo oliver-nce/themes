@@ -1,16 +1,5 @@
 """Python side of color-math parity — golden data shared with frontend vitest.
 
-code-index:begin
-{
- "purpose": "Checks Python shade and foreground color math against the golden fixture shared with frontend vitest.",
- "read_when": "When changing shade generation or foreground colors that must match the frontend.",
- "gotchas": [
-  "Bright brand greens must lighten smoothly toward stop 50."
- ],
- "keywords": ["color_math_parity", "generate_shades", "pick_fg_mono", "pick_fg_tonal", "UPDATE_GOLDEN", "neutral_shades", "effective_role_hex"],
- "format": 1
-}
-code-index:end
 """
 from __future__ import annotations
 

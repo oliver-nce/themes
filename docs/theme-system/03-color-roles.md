@@ -1,17 +1,6 @@
 <!--
 Semantic guide for primary, secondary, accent, state colors, and structural neutral roles.
 
-code-index:begin
-{
- "purpose": "Semantic guide for primary, secondary, accent, state colors, and structural neutral roles.",
- "read_when": "When choosing which color role a button, badge, card, or table row should use.",
- "gotchas": [
-  "Structural neutral roles don't follow the role plus shade plus fg pattern; they are flat."
- ],
- "keywords": ["primary", "secondary", "accent", "theme-bg-surface", "theme-bg-row-alt", "danger", "warning", "neutral"],
- "format": 1
-}
-code-index:end
 -->
 
 # 03 — Color Roles

@@ -1,15 +1,6 @@
 <!--
 Prompt and file list for copying the NCE Events Tag Finder into another Frappe app.
 
-code-index:begin
-{
- "purpose": "Prompt and file list for copying the NCE Events Tag Finder into another Frappe app.",
- "read_when": "When extracting the Tag Finder Vue components and optional pronoun-tag API.",
- "gotchas": [],
- "keywords": ["Tag Finder", "Miller columns", "useTagFinder", "pronoun", "rootDoctype", "Jinja2", "get_meta", "TagDialog"],
- "format": 1
-}
-code-index:end
 -->
 
 # Tag Finder — Extract for Another Project

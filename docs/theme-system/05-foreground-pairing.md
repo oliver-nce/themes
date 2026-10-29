@@ -1,15 +1,6 @@
 <!--
 How mono, tonal, and fixed foreground colors are paired with theme backgrounds.
 
-code-index:begin
-{
- "purpose": "How mono, tonal, and fixed foreground colors are paired with theme backgrounds.",
- "read_when": "When text contrast is wrong or you need the 0.62 OKLCH threshold and the tonal formula.",
- "gotchas": [],
- "keywords": ["pick_fg_mono", "pickFgTonal", "theme-bg-secondary", "OKLCH", "tonal", "text-white", "css_writer", "0.62"],
- "format": 1
-}
-code-index:end
 -->
 
 # 05 — Foreground Pairing

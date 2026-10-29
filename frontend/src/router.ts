@@ -1,14 +1,5 @@
 // Vue router for web and desk theme editor, preview, and home routes.
 //
-// code-index:begin
-// {
-//  "purpose": "Vue router for web and desk theme editor, preview, and home routes.",
-//  "read_when": "When adding a page or changing which routes render without the app shell.",
-//  "gotchas": [],
-//  "keywords": ["createRouter", "ThemeSettings", "DeskThemeSettings", "standalone", "app-themes", "theme-settings"],
-//  "format": 1
-// }
-// code-index:end
 
 import { createRouter, createWebHistory } from "vue-router"
 

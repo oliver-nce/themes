@@ -2,15 +2,6 @@
 
 bench --site <site> execute themes.workspace_fix.run
 
-code-index:begin
-{
- "purpose": "One-shot site command that rebuilds the Themes workspace after Theme Version removal.",
- "read_when": "When the desk still shows stale Theme Version shortcuts in the Themes workspace.",
- "gotchas": [],
- "keywords": ["workspace_fix", "sync_themes_workspace", "Theme Version", "bench", "execute"],
- "format": 1
-}
-code-index:end
 """
 
 from themes.utils.workspace_sync import sync_themes_workspace

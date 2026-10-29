@@ -1,17 +1,6 @@
 <!--
 Chunked coding plan to emit mono and tonal foreground tokens for every theme role and curated shade.
 
-code-index:begin
-{
- "purpose": "Chunked coding plan to emit mono and tonal foreground tokens for every theme role and curated shade.",
- "read_when": "When implementing or verifying the foreground-pairing tasks in the Themes CSS pipeline.",
- "gotchas": [
-  "Each task says do not change anything else in the named file."
- ],
- "keywords": ["pick_fg_mono", "pick_fg_tonal", "CURATED_SHADES", "css_writer", "OKLCH", "foreground", "color-shades", "bg-themed"],
- "format": 1
-}
-code-index:end
 -->
 
 # Foreground Pairing — Coding Plan

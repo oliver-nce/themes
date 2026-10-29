@@ -1,18 +1,5 @@
 // Copyright (c) 2026 Oliver Reid. All rights reserved. Copying prohibited — see README.
 //
-// code-index:begin
-// {
-//  "purpose": "Loads the active desk theme and writes its payload onto Frappe desk CSS variables.",
-//  "read_when": "When changing desk CSS variable names, font stack conversion, or active desk theme loading.",
-//  "gotchas": [
-//   "font_size is omitted because Frappe v15 does not use --font-size-base.",
-//   "font_family is handled separately and needs CSS stack conversion.",
-//   "font_weight_body targets Frappe v15 --weight-regular."
-//  ],
-//  "keywords": ["DESK_VAR_MAP", "deskFontStack", "get_active_desk_theme_editor", "--weight-regular", "font_family", "applyDeskThemeVars"],
-//  "format": 1
-// }
-// code-index:end
 import { ref } from "vue"
 import { createResource } from "frappe-ui"
 

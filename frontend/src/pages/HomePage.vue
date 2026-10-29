@@ -1,15 +1,6 @@
 <!--
 Landing page that links to the site Theme Editor and the Theme Preview.
 
-code-index:begin
-{
- "purpose": "Landing page that links to the site Theme Editor and the Theme Preview.",
- "read_when": "Changing the Themes home cards or their routes to the editor and preview.",
- "gotchas": [],
- "keywords": ["Theme Editor", "Theme Preview", "site-wide colours", "home-page", "visual customization", "Themes"],
- "format": 1
-}
-code-index:end
 -->
 
 <template>

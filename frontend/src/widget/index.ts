@@ -1,14 +1,5 @@
 // Widget entry that exports the swatch picker API and mounts it on window and frappe.ui.
 //
-// code-index:begin
-// {
-//  "purpose": "Widget entry that exports the swatch picker API and mounts it on window and frappe.ui.",
-//  "read_when": "When changing what the theme swatch picker bundle exports or mounts on window.",
-//  "gotchas": [],
-//  "keywords": ["mountStandaloneThemeSwatchPicker", "mountDeskThemeSwatchPicker", "themeSwatchPicker", "parseThemeClass", "composeThemeClass", "isOpen"],
-//  "format": 1
-// }
-// code-index:end
 
 import { close, isOpen, open } from "./theme-swatch-picker-core"
 import { composeThemeClass, parseThemeClass } from "./class-utils"

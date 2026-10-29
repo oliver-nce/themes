@@ -9,20 +9,6 @@ no OKLCH shade scale or theme-bg-* class layer.
 
 See themes/CODE_INDEX.json and plans/REFACTORING_PLAN.md for consolidation notes.
 
-code-index:begin
-{
- "purpose": "Generates and publishes nce_desk_theme.css from the site desk theme pointer merged with the Active desk theme.",
- "read_when": "When changing Desk CSS variables, font stacks, or the desk publish hash.",
- "gotchas": [
-  "font_size is omitted because Frappe v15 does not use --font-size-base.",
-  "DESK_CSS_SELECTOR includes [data-theme=light] because Frappe v15 Espresso re-declares Desk vars after app_include_css.",
-  "font_family must be in DESK_TOKEN_FIELDS or _desk_parse_payload strips it on save.",
-  "btn_primary falls back to primary_color when unset."
- ],
- "keywords": ["DESK_CSS_VARS", "nce_desk_theme.css", "publish_desk_theme", "DESK_CSS_SELECTOR", "font_family", "desk_css_hash", "btn_primary", "data-theme"],
- "format": 1
-}
-code-index:end
 """
 from __future__ import annotations
 

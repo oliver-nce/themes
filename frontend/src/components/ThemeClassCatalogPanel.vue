@@ -1,19 +1,6 @@
 <!--
 Catalog of published theme classes and CSS values read from nce_theme.css.
 
-code-index:begin
-{
- "purpose": "Catalog of published theme classes and CSS values read from nce_theme.css.",
- "read_when": "When changing how the class catalog loads, filters, or warns about unsaved edits.",
- "gotchas": [
-  "Values read directly from nce_theme.css on disk and reflect the last save.",
-  "You have unsaved changes: values below are from the last save.",
-  "Reload whenever the published file changes (css_hash bumps on save)."
- ],
- "keywords": ["nce_theme.css", "css_hash", "Published class values", "buildCatalogSections", "parseClassRules", "isDirty"],
- "format": 1
-}
-code-index:end
 -->
 
 <template>

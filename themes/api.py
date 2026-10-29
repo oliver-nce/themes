@@ -8,20 +8,6 @@ AGENT NAVIGATION — grep "AGENT:" in this file
   AGENT:web-deprecated — get_active_theme_editor, save_active_theme, set_active_theme, save_as_default
   AGENT:desk-*        — parallel desk_* endpoints (DESK_FAMILY)
 
-code-index:begin
-{
- "purpose": "Whitelisted Frappe API wrapping theme_service for Web and Desk reads, saves, Default promotion, and Base Theme restore.",
- "read_when": "When changing an editor endpoint, a deprecated web alias, or System Manager theme maintenance.",
- "gotchas": [
-  "get_active_theme_editor, save_active_theme, set_active_theme, and save_as_default are deprecated; remove them only after callers are confirmed gone.",
-  "save_as_default aliases set_base_theme and does not require a password; prefer save_as_base_theme.",
-  "get_base_theme_payload returns the repo file data/base_theme.json for Restore to Base Theme.",
-  "set_base_theme promotes a theme to Default via is_default and Site Theme Config.base_theme, then regenerates nce_theme.css."
- ],
- "keywords": ["theme_service", "WEB_FAMILY", "DESK_FAMILY", "set_base_theme", "get_base_theme_payload", "save_as_base_theme", "System Manager", "DEPRECATED"],
- "format": 1
-}
-code-index:end
 """
 
 from __future__ import annotations

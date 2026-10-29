@@ -1,14 +1,5 @@
 """Copies the legacy Theme Settings Single into an NCE Theme named Default.
 
-code-index:begin
-{
- "purpose": "Copies the legacy Theme Settings Single into an NCE Theme named Default.",
- "read_when": "When an old Theme Settings single still needs to become an NCE Theme record.",
- "gotchas": [],
- "keywords": ["Theme Settings", "NCE Theme", "MIGRATED_FIELDS", "active_theme", "theme_json", "Default"],
- "format": 1
-}
-code-index:end
 """
 
 import json

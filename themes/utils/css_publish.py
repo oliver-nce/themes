@@ -8,18 +8,6 @@ stay in the callers because their ordering and DB side-effects differ between We
 write_published_css writes <css_filename> and its .hash sidecar under public/css and
 returns the 8-char SHA-1 hash used by hooks._css_url() for cache-busting.
 
-code-index:begin
-{
- "purpose": "Shared writer that saves published theme CSS and an 8-character SHA-1 hash sidecar for cache busting.",
- "read_when": "When changing how web or desk CSS files and their hash sidecars are written.",
- "gotchas": [
-  "A missing or unreadable hash can never break boot; hooks.py falls back to the bare CSS path.",
-  "Cache busting and Site Theme Config css_hash updates stay in the callers because Web and Desk side effects differ."
- ],
- "keywords": ["write_published_css", "css_hash_for", "nce_theme.css", "nce_desk_theme.css", "sha1", "sidecar", "cache-busting"],
- "format": 1
-}
-code-index:end
 """
 from __future__ import annotations
 

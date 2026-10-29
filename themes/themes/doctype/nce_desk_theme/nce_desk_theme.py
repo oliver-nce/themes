@@ -1,17 +1,5 @@
 """NCE Desk Theme controller that allows one Default and one Active theme, then republishes desk CSS.
 
-code-index:begin
-{
- "purpose": "NCE Desk Theme controller that allows one Default and one Active theme, then republishes desk CSS.",
- "read_when": "When changing desk theme save rules or when desk CSS is republished.",
- "gotchas": [
-  "Throws if another desk theme is already marked default or already Active.",
-  "on_update and on_trash skip publishing during install or migrate."
- ],
- "keywords": ["NCEDeskTheme", "is_default", "base_desk_theme", "publish_desk_theme", "theme_json", "already active", "in_migrate"],
- "format": 1
-}
-code-index:end
 """
 
 # Copyright (c) 2026 Oliver Reid. All rights reserved. Copying prohibited — see README.

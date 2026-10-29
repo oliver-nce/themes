@@ -1,14 +1,5 @@
 // Copyright (c) 2026 Oliver Reid. All rights reserved. Copying prohibited — see README.
 //
-// code-index:begin
-// {
-//  "purpose": "Standalone adapter that opens the theme swatch picker on plain DOM theme and value fields.",
-//  "read_when": "When changing how a non-Desk page reads and writes theme swatch fields.",
-//  "gotchas": [],
-//  "keywords": ["openStandaloneThemeSwatchPicker", "themeFieldEl", "valueFieldEl", "setFieldValue", "themeSwatchPicker", "dispatchEvent"],
-//  "format": 1
-// }
-// code-index:end
 import { open, close, type ThemeSwatchPickerCoreOpts } from "../theme-swatch-picker-core"
 
 function fieldValue(el: HTMLElement): string {

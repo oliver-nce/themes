@@ -1,20 +1,6 @@
 <!--
 Brand colour dialog that selects a hue, commits the shade-600 hex, and edits flip and tonal pole markers.
 
-code-index:begin
-{
- "purpose": "Brand colour dialog that selects a hue, commits the shade-600 hex, and edits flip and tonal pole markers.",
- "read_when": "When changing brand hue selection, the shade-600 commit, or flip and tonal pole markers.",
- "gotchas": [
-  "Cell height is derived from inner panel width so 36 squares always fit exactly.",
-  "Do not re-center fineCenter while dragging; that keeps the track stable under the thumb.",
-  "The hue strip previews shade 400, but hue selection still commits at 600.",
-  "Pin 600 to the picked hex in corporate mode, or in flexible mode while sliders stay at default; active flexible sliders let 600 shift with the curve."
- ],
- "keywords": ["brand colour", "hue selection", "commits at 600", "fineCenter", "gamma", "saturation", "pole markers", "EyeDropper"],
- "format": 1
-}
-code-index:end
 -->
 
 // Copyright (c) 2026 Oliver Reid. All rights reserved. Copying prohibited — see README.

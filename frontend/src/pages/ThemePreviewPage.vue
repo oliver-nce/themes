@@ -1,15 +1,6 @@
 <!--
 Sample UI page that applies live Theme Editor CSS variables from nce-theme-update messages.
 
-code-index:begin
-{
- "purpose": "Sample UI page that applies live Theme Editor CSS variables from nce-theme-update messages.",
- "read_when": "Changing the live theme preview sections or how editor CSS variables are applied.",
- "gotchas": [],
- "keywords": ["LIVE THEME PREVIEW", "nce-theme-update", "Colour Palette", "Foreground Pairing", "getDynamicShadow", "--nce-shadow-color", "preview-surface"],
- "format": 1
-}
-code-index:end
 -->
 
 <template>

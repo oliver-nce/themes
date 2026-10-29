@@ -1,20 +1,6 @@
 <!--
 Router for the theme-system docs: read this index, then open only the one relevant file.
 
-code-index:begin
-{
- "purpose": "Router for the theme-system docs: read this index, then open only the one relevant file.",
- "read_when": "When starting a theme-system question so you load one topic file instead of the folder.",
- "gotchas": [
-  "Read this index first, then only the one relevant file. Do not bulk-load this folder.",
-  "ThemeSwatchPicker does not emit hex; Vue hosts must pass set-field and get-field or the pick will not persist.",
-  "On Desk, themeField is the NCE Theme link doc name; the adapter looks up slug before scoping the modal.",
-  "Standalone themeSwatchPicker.open requires the element value to already be the slug."
- ],
- "keywords": ["THEME_CLASS_CONTRACT", "data-nce-theme", "ThemeSwatchPicker", "set-field", "css_writer", "header_color", "slug", "button"],
- "format": 1
-}
-code-index:end
 -->
 
 # Theme System — Documentation Index

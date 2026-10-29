@@ -2,827 +2,172 @@
 "_meta": {
 "description": "The single authoritative code index of this project: every function, class, method, route, test, Vue component, CSS section and doc section with a label, plus each file's purpose. Query it with the shared code-index tool (find / show / callers); do not read this file whole. Generated: never edit by hand; hand-written notes live in code-index.json.",
 "generator": "_Project support files/code-index/codeindex.py",
-"count": 956,
-"headers_sha256": "f49e0c689ffdd22f6556bb04ff53bd5529a1f71fa3d482c9cbd848751ce4f209"
+"count": 953
 },
 "files": {
 "AGENTS.md": {
-"purpose": "Tells agents to find project code through the code index instead of reading whole files.",
-"read_when": "When an agent needs to locate a function, class, route, or test before editing it.",
-"gotchas": [
-"Ask the code index and do not read whole files; open a file only to edit it.",
-"The index does not replace reading the code you are about to change."
-],
-"keywords": [
-"code index",
-"elements.json",
-"callers",
-"Vue component",
-"pre-commit",
-"Markdown"
-]
+"purpose": "Finding code here: ask the code index, do not read files"
 },
 "CLAUDE.md": {
-"purpose": "Tells Claude to find project code through the code index instead of reading whole files.",
-"read_when": "When Claude needs to locate a function, class, route, or test before editing it.",
-"gotchas": [
-"Ask the code index and do not read whole files; open a file only to edit it.",
-"The index does not replace reading the code you are about to change."
-],
-"keywords": [
-"code index",
-"elements.json",
-"callers",
-"Vue component",
-"pre-commit",
-"Markdown"
-]
+"purpose": "Finding code here: ask the code index, do not read files"
 },
 "Frappe Context/fc-route.ts": {
-"purpose": "Routes an agent to ranked Frappe Context files using B/U/F weights and a token budget.",
-"read_when": "When choosing which Frappe Context documents to load before reading that folder.",
-"gotchas": [
-"Vue, css, theme, v15, v16, or compat in the task description always adds the matching mandatory files."
-],
-"keywords": [
-"fc_index.json",
-"token budget",
-"weight_b",
-"rankChunks",
-"mandatory",
-"Frappe Context",
-"fc_route",
-"WeightedChunk"
-]
+"purpose": "fc-route — Frappe Context routing tool Reads fc_index.json, computes weighted B/U/F scores, returns a ranked list of files the agent should load."
 },
 "README.md": {
-"purpose": "Overview of the Themes Frappe app, its nce_theme.css tokens, theme- classes, and Desk styling.",
-"read_when": "When installing Themes or looking up CSS variables and how Vue apps consume the theme.",
-"gotchas": [
-"Experimental app: APIs, token names, and behaviour may change between versions.",
-"Base Theme (themes/data/base_theme.json) is a seed and is never rendered directly by client apps.",
-"Always include a fallback such as var(--nce-color-primary, #126bc4); the token is undefined until a theme is saved.",
-"Map --nce-* tokens to an app's own variables inside a scoped selector, never at :root.",
-"Never override --text-muted, --text-color, --primary, or --border-color at :root; it breaks Frappe Desk."
-],
-"keywords": [
-"nce_theme.css",
-"theme_json",
-"OKLCH",
-"data-nce-theme",
-"ThemeSwatchPicker",
-"Default Theme",
-"app_include_css",
-"Base Theme"
-]
+"purpose": "Themes"
 },
 "docs/Cursor-Ready Implementation Plan — Multi-Pane Hierarchy Explorer (Frappe v15 + v16).md": {
-"purpose": "Implementation plan for a Finder-style multi-pane Desk hierarchy explorer on Frappe v15 and v16.",
-"read_when": "When building or reviewing the multi-pane hierarchy explorer Desk page.",
-"gotchas": [
-"Implementation rule: all ordering is explicit (order_by always set).",
-"JS modules never rely on implicit global variables.",
-"No hardcoded /app routes; use Frappe route helpers and frappe.router.",
-"Server API respects Frappe permissions by default; no bypass."
-],
-"keywords": [
-"order_by",
-"get_children",
-"export_rows",
-"frappe.provide",
-"report_links",
-"Desk Page",
-"hierarchy",
-"v16"
-]
+"purpose": "**Cursor-Ready Implementation Plan — Multi-Pane Hierarchy Explorer (Frappe v15 + v16)**"
 },
 "docs/agent-system-prompt.md": {
-"purpose": "System prompt for a Themes agent to finish diagnosis in one response and not invent class names.",
-"read_when": "When setting agent rules for diagnosis, Frappe Context routing, or theme-class recommendations.",
-"gotchas": [
-"Finish all research and the complete diagnosis in one response; do not stop after reading some files.",
-"Never invent a class name; it must be in THEME_CLASS_CONTRACT.json with status shipping, using the theme- prefix.",
-"Never recommend text-white or text-black as the default for a theme background class.",
-"Never hardcode hex literals in component recommendations; use a theme- class or var(--nce-).",
-"Do not bulk-load the Frappe Context directory or the docs/theme-system folder.",
-"Do not write code unless the user explicitly asks."
-],
-"keywords": [
-"THEME_CLASS_CONTRACT",
-"fc_route",
-"theme-bg-primary",
-"Diagnosis",
-"Frappe Context",
-"shipping",
-"hex literals",
-"text-white"
-]
+"purpose": "Agent System Prompt — Themes Project"
 },
 "docs/foreground-pairing-coding-plan.md": {
-"purpose": "Chunked coding plan to emit mono and tonal foreground tokens for every theme role and curated shade.",
-"read_when": "When implementing or verifying the foreground-pairing tasks in the Themes CSS pipeline.",
-"gotchas": [
-"Each task says do not change anything else in the named file."
-],
-"keywords": [
-"pick_fg_mono",
-"pick_fg_tonal",
-"CURATED_SHADES",
-"css_writer",
-"OKLCH",
-"foreground",
-"color-shades",
-"bg-themed"
-]
+"purpose": "Foreground Pairing — Coding Plan"
 },
 "docs/fresh-install-verification.md": {
-"purpose": "Staging checklist that a fresh Themes install creates Site Theme Config, Default, and nce_theme.css.",
-"read_when": "When verifying after_install on a throwaway site on the staging bench.",
-"gotchas": [
-"Phase 5 note: Theme Version and Theme Settings DocTypes are removed."
-],
-"keywords": [
-"after_install",
-"Site Theme Config",
-"nce_theme.css",
-"verify_fresh_install",
-"themes-fresh-test",
-"NCE Theme",
-"active_theme",
-"bench"
-]
+"purpose": "Fresh Install Verification (Task 13, Step 6)"
 },
 "docs/handoff-theme-swatch-picker.md": {
-"purpose": "Handoff for the shipped ThemeSwatchPicker and how Desk and Vue hosts must embed it.",
-"read_when": "When changing the swatch picker or wiring it into a Vue form or Desk client script.",
-"gotchas": [
-"ThemeSwatchPicker.vue does not use frm.set_value; Vue hosts must pass set-field and get-field bound to formData.",
-"Do not regress: resolve the Desk Link to a slug, not the raw Link value on data-nce-theme.",
-"Do not regress: while open, pin the theme with the backdrop only; no reactive slug watcher.",
-"Empty Theme or an Inactive or missing slug opens blocked-dialog and no modal."
-],
-"keywords": [
-"ThemeSwatchPicker",
-"data-nce-theme",
-"set-field",
-"blocked-dialog",
-"desk-adapter",
-"build:widget",
-"formData",
-"slug"
-]
+"purpose": "Handoff — ThemeSwatchPicker"
 },
 "docs/implementation-summary.md": {
-"purpose": "Summary of how NCE Theme records compile into site-wide nce_theme.css and theme- utility classes.",
-"read_when": "When you need the data model, publish flow, CSS variable list, or install commands.",
-"gotchas": [
-"NCE Theme name is the primary key from theme_name at creation and never changes.",
-"Base Theme is the repo seed and is never rendered directly; Default Theme is the live :root fallback.",
-"Site Theme Config.base_theme is a legacy field name that holds the Default Theme.",
-"publish_theme() always rebuilds the entire nce_theme.css file; there is no partial publish."
-],
-"keywords": [
-"nce_theme.css",
-"theme_json",
-"data-nce-theme",
-"publish_theme",
-"Site Theme Config",
-"css_writer",
-"OKLCH",
-"theme-bg-primary"
-]
+"purpose": "Themes — Implementation Summary"
 },
 "docs/tag_finder_extract_prompt.md": {
-"purpose": "Prompt and file list for copying the NCE Events Tag Finder into another Frappe app.",
-"read_when": "When extracting the Tag Finder Vue components and optional pronoun-tag API.",
-"gotchas": [],
-"keywords": [
-"Tag Finder",
-"Miller columns",
-"useTagFinder",
-"pronoun",
-"rootDoctype",
-"Jinja2",
-"get_meta",
-"TagDialog"
-]
+"purpose": "Tag Finder — Extract for Another Project"
 },
 "docs/theme-classes-reference.md": {
-"purpose": "Copy-paste catalog of shipped theme- classes for color, type, borders, spacing, and buttons.",
-"read_when": "When choosing a theme class name or pasting a lookup block into an agent prompt.",
-"gotchas": [
-"If this file disagrees with THEME_CLASS_CONTRACT.json, the JSON wins.",
-"Emitted classes use a theme- prefix so they never collide with Frappe Desk, Bootstrap, or Tailwind.",
-"Never hardcode hex literals in components.",
-"Panel CTA is theme-bg-primary; Cancel is theme-bg-primary-100 theme-border, never variant=outline with page bg fill.",
-"Never hardcode color: white as a class default.",
-"Do not drop the theme- prefix, and do not add it to vanilla utilities such as flex or font-bold."
-],
-"keywords": [
-"theme-bg-primary",
-"theme-text-muted",
-"THEME_CLASS_CONTRACT",
-"theme-bg-themed",
-"theme-border-strong",
-"fg-tonal",
-"button_hierarchy",
-"shipping"
-]
+"purpose": "Theme Class Reference"
 },
 "docs/theme-swatch-picker.md": {
-"purpose": "Spec for ThemeSwatchPicker, which writes one theme class string into a bound form field.",
-"read_when": "When embedding the picker in Vue, Desk, or standalone HTML, or changing its output.",
-"gotchas": [
-"Does not emit raw hex or inline styles; output is always one space-free utility class string.",
-"The Vue wrapper does not call frm.set_value; pass get-field and set-field bound to the formData used at save.",
-"Do not rely on inject(nceForm) unless that object is the same reactive object used at save time.",
-"Desk themeField is an NCE Theme Link and is resolved to slug; a standalone value must already be the slug.",
-"nce_theme.css must be loaded on the host page; the widget does zero color math."
-],
-"keywords": [
-"ThemeSwatchPicker",
-"header_color",
-"data-nce-theme",
-"set-field",
-"frm.set_value",
-"nce_theme.css",
-"SHADE_SCALE_FIELDS",
-"slug"
-]
+"purpose": "ThemeSwatchPicker — Spec"
 },
 "docs/theme-system.md": {
-"purpose": "Agent reference for nce_theme.css tokens and the mistakes that break Frappe Desk styling.",
-"read_when": "When adding theme CSS in a downstream app or debugging Desk text and border bleed.",
-"gotchas": [
-"Never set --text-muted, --text-color, --primary, or --border-color at :root in a site-wide CSS file.",
-"Never add un-namespaced variables to nce_theme.css; always use the --nce- prefix.",
-"Never add themes.css to app_include_css; load it only via themes.html or Preflight breaks Desk.",
-"Always include a fallback such as var(--nce-color-primary, #126bc4) until a theme has been saved.",
-"Unprefixed Tailwind utilities only work inside the Themes SPA; do not use them on Desk pages.",
-"Frappe Desk is never touched; map tokens inside a component selector, not at :root."
-],
-"keywords": [
-"nce_theme.css",
-"app_include_css",
-"themes.css",
-"text-muted",
-"data-nce-theme",
-"publish_theme",
-"Preflight",
-"Desk Text Bleed"
-]
+"purpose": "Theme System — Agent Reference"
 },
 "docs/theme-system/01-architecture.md": {
-"purpose": "How the editor publishes a :root palette and Active data-nce-theme blocks into nce_theme.css.",
-"read_when": "When you need the publish pipeline, Base versus Default theme, or Active scoped palettes.",
-"gotchas": [
-"Do not confuse Base Theme (repo seed, never rendered directly) with Default Theme (the live :root fallback).",
-"Site Theme Config.base_theme is misnamed: it holds the Default Theme, not the Base Theme.",
-"NCE Theme name is set from theme_name at creation and never changes after.",
-"publish_theme() always rebuilds the full CSS; utility classes are not repeated per palette.",
-"Delete requires the theme to be Inactive and not the Default theme."
-],
-"keywords": [
-"publish_theme",
-"data-nce-theme",
-"base_theme",
-"theme_json",
-"css_writer",
-"nce_theme.css",
-"Inactive",
-"Default Theme"
-]
+"purpose": "01 — Architecture"
 },
 "docs/theme-system/02-token-naming.md": {
-"purpose": "Naming rules for --nce- CSS variables and the theme- classes emitted from them.",
-"read_when": "When adding a token, shade, or modifier, or checking whether a class name is valid.",
-"gotchas": [
-"Never invent a new prefix. Use --nce- always.",
-"There is no directional theme-border-b class; use the width variable in scoped CSS."
-],
-"keywords": [
-"--nce-",
-"theme-bg-primary",
-"fg-tonal",
-"theme-border-thin",
-"Tailwind",
-"theme_json",
-"shade",
-"prefix"
-]
+"purpose": "02 — Token Naming"
 },
 "docs/theme-system/03-color-roles.md": {
-"purpose": "Semantic guide for primary, secondary, accent, state colors, and structural neutral roles.",
-"read_when": "When choosing which color role a button, badge, card, or table row should use.",
-"gotchas": [
-"Structural neutral roles don't follow the role plus shade plus fg pattern; they are flat."
-],
-"keywords": [
-"primary",
-"secondary",
-"accent",
-"theme-bg-surface",
-"theme-bg-row-alt",
-"danger",
-"warning",
-"neutral"
-]
+"purpose": "03 — Color Roles"
 },
 "docs/theme-system/04-shade-scale.md": {
-"purpose": "Explains the 11-stop OKLCH shade scale, with the picked color pinned at stop 600.",
-"read_when": "When choosing a shade stop or tuning gamma, saturation, or neutral warmth.",
-"gotchas": [
-"The user's picked color always lands at stop 600; other stops are computed in OKLCH and gamut-clipped."
-],
-"keywords": [
-"OKLCH",
-"stop 600",
-"gamma",
-"saturation",
-"warmth",
-"theme-bg-primary-300",
-"neutral",
-"gamut"
-]
+"purpose": "04 — Shade Scale"
 },
 "docs/theme-system/05-foreground-pairing.md": {
-"purpose": "How mono, tonal, and fixed foreground colors are paired with theme backgrounds.",
-"read_when": "When text contrast is wrong or you need the 0.62 OKLCH threshold and the tonal formula.",
-"gotchas": [],
-"keywords": [
-"pick_fg_mono",
-"pickFgTonal",
-"theme-bg-secondary",
-"OKLCH",
-"tonal",
-"text-white",
-"css_writer",
-"0.62"
-]
+"purpose": "05 — Foreground Pairing"
 },
 "docs/theme-system/06-escape-hatch.md": {
-"purpose": "Documents theme-bg-themed, which computes black or white text from a runtime --bg color.",
-"read_when": "When a shade is chosen at runtime for charts, pickers, or data-driven backgrounds.",
-"gotchas": [
-"The computed foreground is always pure black or pure white.",
-"Do not put theme-text-* on the same element unless you mean to override the computed color.",
-"Only mono foreground ships; a tonal theme-bg-themed variant is not currently shipped.",
-"Typos in --bg pass silently because there is no autocomplete.",
-"Relative oklch() needs Chromium 119+, Safari 16.4+, or Firefox 128+; older browsers need an inline color."
-],
-"keywords": [
-"theme-bg-themed",
-"oklch",
-"--bg",
-"0.62",
-"Chromium",
-"Firefox",
-"mono",
-"shade"
-]
+"purpose": "06 — Dynamic Shade Escape Hatch"
 },
 "docs/theme-system/07-using-in-vue.md": {
-"purpose": "Decision tree for theme- classes, CSS variables, or theme-bg-themed in Vue components.",
-"read_when": "When authoring a Vue component that needs theme color, spacing, borders, or buttons.",
-"gotchas": [
-"Raw hex literals are never allowed; they break the theming chain.",
-"A bare bg-primary is not safe on Desk; always use the theme- form so Desk and Bootstrap do not win.",
-"No theme-border-b class exists; use scoped CSS with the border-width variables for row lines.",
-"Do not write color: white in a scoped style as a default; it fights light backgrounds.",
-"Do not drop the theme- prefix, and do not prefix vanilla utilities such as w-full.",
-"The editor SPA Tailwind build is not the downstream contract."
-],
-"keywords": [
-"THEME_CLASS_CONTRACT",
-"theme-bg-primary",
-"theme-bg-themed",
-"theme-border",
-"Frappe Desk",
-"theme-border-b",
-"color: white",
-"button_hierarchy"
-]
+"purpose": "07 — Using Theme Classes in Vue"
 },
 "docs/theme-system/08-extending.md": {
-"purpose": "Steps to add a color role, shade class, border width, or foreground variant to the theme system.",
-"read_when": "When adding a role or utility and keeping the Python and TypeScript emitters in sync.",
-"gotchas": [
-"Keep Python and TypeScript in lock-step or the SPA preview and published CSS diverge.",
-"Update THEME_CLASS_CONTRACT.json in the same PR or agents will target a class that does not exist.",
-"Do not remove a class once shipped; it is a public API. Mark it deprecated instead.",
-"tailwind.config.js only affects the editor SPA; emit theme- selectors from css_writer.py for Desk.",
-"Directional borders are not emitted as theme-border-b; use the width CSS variables."
-],
-"keywords": [
-"css_writer",
-"COLOR_FIELDS",
-"THEME_CLASS_CONTRACT",
-"brand2",
-"theme-border-thin",
-"pick_fg_soft",
-"publish_theme",
-"color-shades"
-]
+"purpose": "08 — Extending the System"
 },
 "docs/theme-system/09-buttons.md": {
-"purpose": "Button recipes and a decision tree for filled, soft, outline, ghost, and header styles.",
-"read_when": "When writing a button class string in a downstream Frappe app.",
-"gotchas": [
-"Do not add theme-text-{role}-fg beside theme-bg-{role}; the background class already sets the paired color.",
-"theme-border-{role} only sets border-color; include theme-border or the outline has no width.",
-"Never use a hex literal in a scoped style; use var(--nce-color-primary) if no class fits.",
-"Do not use text-white on theme-bg-primary except for the fixed-color cascade case.",
-"One filled primary per screen; a second theme-bg-primary should be demoted.",
-"Do not use bg-primary without the theme- prefix; the site CSS emits theme-bg-primary."
-],
-"keywords": [
-"theme-bg-primary",
-"theme-border",
-"Ghost",
-"Outline",
-"nce_theme.css",
-"text-white",
-"disabled",
-"accent"
-]
+"purpose": "09 — Button Styling Guidelines"
 },
 "docs/theme-system/INDEX.md": {
-"purpose": "Router for the theme-system docs: read this index, then open only the one relevant file.",
-"read_when": "When starting a theme-system question so you load one topic file instead of the folder.",
-"gotchas": [
-"Read this index first, then only the one relevant file. Do not bulk-load this folder.",
-"ThemeSwatchPicker does not emit hex; Vue hosts must pass set-field and get-field or the pick will not persist.",
-"On Desk, themeField is the NCE Theme link doc name; the adapter looks up slug before scoping the modal.",
-"Standalone themeSwatchPicker.open requires the element value to already be the slug."
-],
-"keywords": [
-"THEME_CLASS_CONTRACT",
-"data-nce-theme",
-"ThemeSwatchPicker",
-"set-field",
-"css_writer",
-"header_color",
-"slug",
-"button"
-]
+"purpose": "Theme System — Documentation Index"
 },
 "docs/themes-app-agent-handoff.md": {
-"purpose": "Handoff of the shipped Themes architecture, staging deploy steps, and deferred issues.",
-"read_when": "When starting a Themes session and you need current status, deploy commands, or known gaps.",
-"gotchas": [
-"Base Theme is never rendered directly; Site Theme Config.base_theme is misnamed and holds the Default Theme.",
-"publish_theme() always rebuilds the whole file from DB state; there is no partial publish.",
-"Do not use Theme Version or Theme Settings; they were removed in Phase 5.",
-"dark_mode is stored in theme_json and is not emitted to CSS.",
-"list_themes() returns name, theme_name, and status, but not slug.",
-"Do not bulk-load Frappe Context; use fc_route.ts if Frappe docs are needed."
-],
-"keywords": [
-"nce_theme.css",
-"data-nce-theme",
-"base_theme",
-"publish_theme",
-"manager.ncesoccer.com",
-"dark_mode",
-"list_themes",
-"Theme Version"
-]
+"purpose": "Themes App — Agent Handoff"
 },
 "docs/themes-app-restructure-coding-plan.md": {
-"purpose": "Phase 2 task prompts that move Theme Settings into NCE Theme, Site Theme Config, and a switcher.",
-"read_when": "When following the sequential restructure tasks from color utilities through fresh-install checks.",
-"gotchas": [
-"Do not import frappe in theme_color_utils.py; only json and math are needed.",
-"Do not delete theme_settings.py helpers in Task 1; that happens in Task 3.",
-"Do not publish during install or migrate; the patch calls publish_version explicitly.",
-"If a step fails, migrate --skip-failing is not the answer; capture the traceback and stop.",
-"The migration patch is idempotent and short-circuits when NCE Theme Default already exists.",
-"Per-page theming is postponed; this plan drives one global nce_theme.css."
-],
-"keywords": [
-"Site Theme Config",
-"theme_color_utils",
-"css_writer",
-"after_install",
-"nce_theme.css",
-"Theme Settings",
-"generate_css",
-"Theme Version"
-]
+"purpose": "Themes App Restructure — Phase 2 Coding Plan"
 },
 "frontend/postcss.config.js": {
-"purpose": "PostCSS setup that runs Tailwind CSS and Autoprefixer for the theme editor frontend.",
-"read_when": "When the frontend CSS pipeline or Tailwind processing stops applying.",
-"gotchas": [],
-"keywords": [
-"plugins",
-"tailwindcss",
-"autoprefixer",
-"postcss",
-"css build"
-]
+"purpose": "PostCSS setup that runs Tailwind CSS and Autoprefixer for the theme editor frontend."
 },
 "frontend/src/App.vue": {
-"purpose": "Theme editor shell with sidebar links for web and desk theme pages.",
-"read_when": "When the standalone frontend navigation or full-page preview layout changes.",
-"gotchas": [],
-"keywords": [
-"router-view",
-"isStandalone",
-"Theme Editor",
-"Desk Themes",
-"navSections",
-"sidebar"
-]
+"purpose": "Theme editor shell with sidebar links for web and desk theme pages."
 },
 "frontend/src/components/BrandColorPicker.vue": {
 "purpose": "Brand colour dialog that selects a hue, commits the shade-600 hex, and edits flip and tonal pole markers.",
-"read_when": "When changing brand hue selection, the shade-600 commit, or flip and tonal pole markers.",
-"gotchas": [
-"Cell height is derived from inner panel width so 36 squares always fit exactly.",
-"Do not re-center fineCenter while dragging; that keeps the track stable under the thumb.",
-"The hue strip previews shade 400, but hue selection still commits at 600.",
-"Pin 600 to the picked hex in corporate mode, or in flexible mode while sliders stay at default; active flexible sliders let 600 shift with the curve."
-],
-"keywords": [
-"brand colour",
-"hue selection",
-"commits at 600",
-"fineCenter",
-"gamma",
-"saturation",
-"pole markers",
-"EyeDropper"
-],
 "depends_on": [
 "frontend/src/utils/color-shades.ts"
 ]
 },
 "frontend/src/components/ColorField.vue": {
 "purpose": "Labelled hex colour input with a native colour picker and an optional generated shade strip.",
-"read_when": "When changing the single-colour field or its optional shade strip.",
-"gotchas": [],
-"keywords": [
-"generateShades",
-"showShades",
-"modelValue",
-"type color",
-"shade",
-"hex"
-],
 "depends_on": [
 "frontend/src/utils/color-shades.ts"
 ]
 },
 "frontend/src/components/EditorSection.vue": {
-"purpose": "Collapsible editor panel with a title, hint, header actions, and a help dialog.",
-"read_when": "When changing editor section collapse, hints, or the panel help dialog.",
-"gotchas": [],
-"keywords": [
-"editor-section",
-"panelHelp",
-"collapsible",
-"defaultOpen",
-"what it affects",
-"aria-expanded"
-]
+"purpose": "Collapsible editor panel with a title, hint, header actions, and a help dialog."
 },
 "frontend/src/components/FontSelectField.vue": {
-"purpose": "Font family dropdown that previews each option in its own CSS font stack.",
-"read_when": "When changing how font families are listed, previewed, or selected.",
-"gotchas": [
-"Generic fallback per curated family mirrors FONT_REGISTRY in css_writer.py."
-],
-"keywords": [
-"font-select",
-"fontStack",
-"FONT_GENERIC",
-"System Default",
-"FONT_REGISTRY",
-"listbox"
-]
+"purpose": "Font family dropdown that previews each option in its own CSS font stack."
 },
 "frontend/src/components/NeutralColorPicker.vue": {
 "purpose": "Neutral shade strip controlled by a warmth slider, showing the 600 hex and a reset.",
-"read_when": "When changing how neutral warmth maps to the shade strip or the 600 swatch.",
-"gotchas": [],
-"keywords": [
-"warmth",
-"generateNeutralShades",
-"neutral600Hex",
-"Reset",
-"shade",
-"cool"
-],
 "depends_on": [
 "frontend/src/utils/color-shades.ts"
 ]
 },
 "frontend/src/components/PasswordField.vue": {
-"purpose": "Password input with a show-hide toggle that emits the value and an enter key.",
-"read_when": "When changing the password visibility toggle or the enter key emit.",
-"gotchas": [],
-"keywords": [
-"password",
-"showPassword",
-"current-password",
-"Hide password",
-"Show password",
-"update:modelValue"
-]
+"purpose": "Password input with a show-hide toggle that emits the value and an enter key."
 },
 "frontend/src/components/SelectField.vue": {
-"purpose": "Labelled select that accepts plain strings or value and label option objects.",
-"read_when": "When changing the shared select used for string or labelled options.",
-"gotchas": [],
-"keywords": [
-"SelectOption",
-"modelValue",
-"options",
-"opt.value",
-"opt.label",
-"update:modelValue"
-]
+"purpose": "Labelled select that accepts plain strings or value and label option objects."
 },
 "frontend/src/components/ShadowDirectionDial.vue": {
 "purpose": "Circular slider that sets shadow offset direction in degrees by pointer, touch, or keys.",
-"read_when": "When changing how shadow direction is dragged, touched, or stepped from the keyboard.",
-"gotchas": [
-"180° = down. Drag the handle to set offset direction."
-],
-"keywords": [
-"Shadow Direction",
-"angleFromPointer",
-"dialHandlePosition",
-"displayAngle",
-"ArrowLeft",
-"shadow-direction"
-],
 "depends_on": [
 "frontend/src/utils/shadowBuild.ts"
 ]
 },
 "frontend/src/components/SwatchPicker.vue": {
 "purpose": "Popover for picking a primary, secondary, or gray shade, or typing a custom hex.",
-"read_when": "When changing the shade grid, custom hex entry, or the use-default action.",
-"gotchas": [],
-"keywords": [
-"primaryShades",
-"secondaryShades",
-"grayShades",
-"customHex",
-"Use Default",
-"generateShades"
-],
 "depends_on": [
 "frontend/src/utils/color-shades.ts"
 ]
 },
 "frontend/src/components/ThemeClassCatalogPanel.vue": {
 "purpose": "Catalog of published theme classes and CSS values read from nce_theme.css.",
-"read_when": "When changing how the class catalog loads, filters, or warns about unsaved edits.",
-"gotchas": [
-"Values read directly from nce_theme.css on disk and reflect the last save.",
-"You have unsaved changes: values below are from the last save.",
-"Reload whenever the published file changes (css_hash bumps on save)."
-],
-"keywords": [
-"nce_theme.css",
-"css_hash",
-"Published class values",
-"buildCatalogSections",
-"parseClassRules",
-"isDirty"
-],
 "depends_on": [
 "frontend/src/components/EditorSection.vue",
 "frontend/src/utils/nceThemeCssParser.ts"
 ]
 },
 "frontend/src/components/ThemePreview.vue": {
-"purpose": "Sample form preview that maps theme settings onto primary, font, radius, and spacing variables.",
-"read_when": "When changing the sample preview or how settings become preview CSS variables.",
-"gotchas": [],
-"keywords": [
-"Theme Preview",
-"RADIUS_MAP",
-"SPACING_MAP",
-"primary_color",
-"border_radius",
-"FormKit"
-]
+"purpose": "Sample form preview that maps theme settings onto primary, font, radius, and spacing variables."
 },
 "frontend/src/components/ThemeSwatchPicker.vue": {
 "purpose": "Headless Vue control that opens the theme swatch picker and writes class fields on the form.",
-"read_when": "When wiring the Vue theme swatch picker to host form get and set callbacks.",
-"gotchas": [
-"Without setField, writes may miss the save payload and dirty tracking.",
-"Desk uses frappe.ui.themeSwatchPicker.open({ frm }); that path uses frm.set_value."
-],
-"keywords": [
-"setField",
-"getField",
-"themeField",
-"valueField",
-"fgTypeField",
-"nceForm",
-"headless"
-],
 "depends_on": [
 "frontend/src/widget/constants.ts",
 "frontend/src/widget/theme-swatch-picker-core.ts"
 ]
 },
 "frontend/src/composables/useDeskTheme.ts": {
-"purpose": "Loads the active desk theme and writes its payload onto Frappe desk CSS variables.",
-"read_when": "When changing desk CSS variable names, font stack conversion, or active desk theme loading.",
-"gotchas": [
-"font_size is omitted because Frappe v15 does not use --font-size-base.",
-"font_family is handled separately and needs CSS stack conversion.",
-"font_weight_body targets Frappe v15 --weight-regular."
-],
-"keywords": [
-"DESK_VAR_MAP",
-"deskFontStack",
-"get_active_desk_theme_editor",
-"--weight-regular",
-"font_family",
-"applyDeskThemeVars"
-]
+"purpose": "Copyright (c) 2026 Oliver Reid."
 },
 "frontend/src/composables/useTheme.ts": {
-"purpose": "Loads the active theme editor payload and sets primary color and font CSS variables.",
-"read_when": "When the standalone app should apply the saved theme onto the document root.",
-"gotchas": [],
-"keywords": [
-"useTheme",
-"get_active_theme_editor",
-"primary_color",
-"font_family",
-"nce-color-primary",
-"themeLoaded"
-]
+"purpose": "Copyright (c) 2026 Oliver Reid."
 },
 "frontend/src/composables/useThemeDefaults.ts": {
-"purpose": "Default NCE theme colours and settings, mapped to --nce-color CSS variables on the document root.",
-"read_when": "When changing fallback theme colours, shade CSS variable names, or apply-to-root behaviour.",
-"gotchas": [
-"Falls back to default values if no theme is loaded."
-],
-"keywords": [
-"defaultTheme",
-"cssVariableMap",
-"STATUS_COLOR_DEFAULTS",
-"applyToRoot",
-"getCSSVariables",
-"SHADE_STEPS"
-]
+"purpose": "Copyright (c) 2026 Oliver Reid."
 },
 "frontend/src/composables/useThemeEditor.ts": {
-"purpose": "Shared theme editor state for list, load, save, rename, delete, and dirty checking.",
-"read_when": "When changing theme load, save, dirty baseline, or default-theme detection.",
-"gotchas": [
-"readIsDefaultTheme prefers is_default_theme, then is_base_theme, then is_active when useLegacyIsActive is set.",
-"readSiteDefaultTheme reads site_default_theme, then site_base_theme, then site_active_theme when useLegacyIsActive is set."
-],
-"keywords": [
-"useThemeEditor",
-"isDirty",
-"css_hash",
-"is_default_theme",
-"is_base_theme",
-"establishDirtyBaseline",
-"saveAsBase"
-]
+"purpose": "Copyright (c) 2026 Oliver Reid."
 },
 "frontend/src/domain/theme-tokens.ts": {
 "purpose": "GENERATED from themes/utils/theme_tokens.py — do not edit by hand."
 },
 "frontend/src/index.css": {
-"purpose": "Global stylesheet that pulls in Tailwind base, components, and utilities.",
-"read_when": "When global Tailwind layers are missing from the theme editor frontend.",
-"gotchas": [],
-"keywords": [
-"tailwind",
-"base",
-"components",
-"utilities",
-"global stylesheet"
-]
+"purpose": "Global stylesheet that pulls in Tailwind base, components, and utilities."
 },
 "frontend/src/main.ts": {
 "purpose": "Vue app entry that mounts the theme editor with Frappe UI, the router, and resources.",
-"read_when": "When the standalone frontend fails to boot or Frappe UI plugins are missing.",
-"gotchas": [],
-"keywords": [
-"createApp",
-"frappe-ui",
-"router",
-"resourceFetcher",
-"pageMetaPlugin",
-"resourcesPlugin",
-"app entry"
-],
 "depends_on": [
 "frontend/src/App.vue",
 "frontend/src/index.css",
@@ -830,57 +175,16 @@
 ]
 },
 "frontend/src/pages/DeskThemeHomePage.vue": {
-"purpose": "Landing page that links to the Desk Theme Editor and the live Desk Theme Preview.",
-"read_when": "Changing the Desk Themes home cards or their routes to the editor and preview.",
-"gotchas": [],
-"keywords": [
-"Desk Themes",
-"Desk Theme Editor",
-"Desk Theme Preview",
-"nce_desk_theme.css",
-"Frappe Desk",
-"navbar",
-"Gantt"
-]
+"purpose": "Landing page that links to the Desk Theme Editor and the live Desk Theme Preview."
 },
 "frontend/src/pages/DeskThemePreviewPage.vue": {
 "purpose": "Iframe preview that applies Desk Theme Editor CSS variables onto live Frappe Desk pages.",
-"read_when": "Changing the desk preview iframe targets or the nce-desk-theme-update message handler.",
-"gotchas": [],
-"keywords": [
-"nce-desk-theme-update",
-"LIVE DESK PREVIEW",
-"applyDeskThemeVars",
-"deskFrame",
-"Frappe Desk preview",
-"previewTargets",
-"onFrameLoad"
-],
 "depends_on": [
 "frontend/src/composables/useDeskTheme.ts"
 ]
 },
 "frontend/src/pages/DeskThemeSettingsPage.vue": {
 "purpose": "Desk Theme Editor for NCE Desk Theme colours, shape, typography, Gantt, and live preview.",
-"read_when": "Changing desk theme fields, save and restore, availability, or the preview postMessage.",
-"gotchas": [
-"Changing Brand colours does not recolour every panel directly — it changes the palette of swatches available in the remaining panels.",
-"Frappe's flat design removes borders from individual input fields — the Border tokens affect structural lines around sections and pages, not field edges.",
-"Primary Button defaults to the same colour as Brand → Primary. Set it here to give Save and Submit their own colour independently.",
-"Sidebar Filter Inputs have no effect outside the sidebar.",
-"Workspace Quick List Buttons have no effect on standard list or form pages.",
-"Save or revert changes before changing availability."
-],
-"keywords": [
-"Desk Theme Editor",
-"NCE Desk Theme",
-"nce-desk-theme-update",
-"Restore to Base Desk Theme",
-"deskPayloadToCssVars",
-"font_weight_body",
-"Gantt",
-"Set as Default desk theme"
-],
 "depends_on": [
 "frontend/src/components/EditorSection.vue",
 "frontend/src/components/FontSelectField.vue",
@@ -891,53 +195,13 @@
 ]
 },
 "frontend/src/pages/HomePage.vue": {
-"purpose": "Landing page that links to the site Theme Editor and the Theme Preview.",
-"read_when": "Changing the Themes home cards or their routes to the editor and preview.",
-"gotchas": [],
-"keywords": [
-"Theme Editor",
-"Theme Preview",
-"site-wide colours",
-"home-page",
-"visual customization",
-"Themes"
-]
+"purpose": "Landing page that links to the site Theme Editor and the Theme Preview."
 },
 "frontend/src/pages/ThemePreviewPage.vue": {
-"purpose": "Sample UI page that applies live Theme Editor CSS variables from nce-theme-update messages.",
-"read_when": "Changing the live theme preview sections or how editor CSS variables are applied.",
-"gotchas": [],
-"keywords": [
-"LIVE THEME PREVIEW",
-"nce-theme-update",
-"Colour Palette",
-"Foreground Pairing",
-"getDynamicShadow",
-"--nce-shadow-color",
-"preview-surface"
-]
+"purpose": "Sample UI page that applies live Theme Editor CSS variables from nce-theme-update messages."
 },
 "frontend/src/pages/ThemeSettingsPage.vue": {
 "purpose": "Site Theme Editor for colours, typography, layout, live CSS variables, and base theme publishing.",
-"read_when": "Changing theme editor tabs, live CSS variables, save and restore, or Save as base theme.",
-"gotchas": [
-"Neutral: always emit from warmth alone.",
-"Retired picker options map to Public Sans when loading saved themes.",
-"Skip the confirm dialog: save any current changes first, then load the app base into the editor. If the save fails, abort so edits aren't lost.",
-"Save or revert changes before changing availability.",
-"Rare release action: sets the site base theme, rebuilds CSS, and writes bundled files into the app for new installs. Commit and push after running.",
-"Unsaved-changes confirm when switching themes (not restore)."
-],
-"keywords": [
-"Theme Editor",
-"nce-theme-update",
-"neutral_color_warmth",
-"brand_palette_mode",
-"base_theme.json",
-"Public Sans",
-"AGENT:TAB",
-"nce_theme.css"
-],
 "depends_on": [
 "frontend/src/components/BrandColorPicker.vue",
 "frontend/src/components/EditorSection.vue",
@@ -957,16 +221,6 @@
 },
 "frontend/src/router.ts": {
 "purpose": "Vue router for web and desk theme editor, preview, and home routes.",
-"read_when": "When adding a page or changing which routes render without the app shell.",
-"gotchas": [],
-"keywords": [
-"createRouter",
-"ThemeSettings",
-"DeskThemeSettings",
-"standalone",
-"app-themes",
-"theme-settings"
-],
 "depends_on": [
 "frontend/src/pages/DeskThemeHomePage.vue",
 "frontend/src/pages/DeskThemePreviewPage.vue",
@@ -977,136 +231,35 @@
 ]
 },
 "frontend/src/stub-icon.vue": {
-"purpose": "Blank Vue component used as a stand-in when Lucide icon imports are stubbed.",
-"read_when": "When icon imports resolve to an empty component instead of a real icon.",
-"gotchas": [],
-"keywords": [
-"template",
-"span",
-"placeholder icon",
-"blank component"
-]
+"purpose": "Blank Vue component used as a stand-in when Lucide icon imports are stubbed."
 },
 "frontend/src/utils/__tests__/color-shades.parity.test.ts": {
 "purpose": "Vitest parity checks that color-shades matches the Python color math golden file.",
-"read_when": "Changing generateShades, neutral shades, foreground picks, or the Python golden JSON.",
-"gotchas": [
-"Python golden uses lowercase; TS oklchToHex returns uppercase."
-],
-"keywords": [
-"color-shades parity",
-"generateShades",
-"generateNeutralShades",
-"effectiveRoleHex",
-"pickFgMono",
-"pickFgTonal",
-"color_math_parity.json",
-"oklchToHex"
-],
 "depends_on": [
 "frontend/src/utils/color-shades.ts"
 ]
 },
 "frontend/src/utils/color-shades.ts": {
-"purpose": "OKLCH shade scales, foreground colour picks, and neutral warmth for the theme editor.",
-"read_when": "Changing shade generation, foreground flip, or neutral warmth so it stays aligned with Python.",
-"gotchas": [
-"Pin the exact hex at 600 and derive lighter and darker stops from its actual OKLCH lightness so adjacent shades never cliff.",
-"Without gamma or saturation options, generateShades derives chroma from the base hex (legacy behaviour).",
-"Legacy themes may omit gamma/sat when building params from a saved 600 hex.",
-"The 600-stop hex after gamma and saturation matches Python _effective_role_hex and the publish emit.",
-"Generate the neutral 11-stop scale from warmth alone — no base hex."
-],
-"keywords": [
-"generateAnchoredShades",
-"generateNeutralShades",
-"effectiveRoleHex",
-"oklchToHex",
-"neutral_color_warmth",
-"brandShadeForeground",
-"OKLCH",
-"legacy behaviour"
-]
+"purpose": "Copyright (c) 2026 Oliver Reid."
 },
 "frontend/src/utils/nceThemeCssParser.ts": {
-"purpose": "Fetches published nce_theme.css and builds the System tab class catalog from it.",
-"read_when": "Changing how the class catalog parses published nce_theme.css or resolves theme vars.",
-"gotchas": [
-"We fetch the published file so values always match what the consuming app sees — no JS reimplementation, no drift from Python css_writer.py.",
-"cssHash is used as a cache-buster only.",
-"Always starts from :root (Default / site base values). If a slug is provided, named theme overrides win.",
-"Each --nce-* declaration is on its own line from _emit_var_block.",
-"Each .theme-* class rule is emitted on a single line by css_writer.py.",
-"nce_theme.css not found means save the theme to publish it."
-],
-"keywords": [
-"nce_theme.css",
-"parseVarBlock",
-"parseClassRules",
-"resolveThemeVars",
-"buildCatalogSections",
-"data-nce-theme",
-"css_writer.py",
-"cache-buster"
-]
+"purpose": "Copyright (c) 2026 Oliver Reid."
 },
 "frontend/src/utils/shadowBuild.ts": {
-"purpose": "Builds the --nce-shadow value and the compass dial angle for theme shadows.",
-"read_when": "Changing shadow direction, opacity, or the dial so it stays aligned with Python.",
-"gotchas": [
-"directionDeg 180 is straight down (CSS +y).",
-"buildThemeShadow mirrors themes/utils/theme_color_utils._build_shadow.",
-"The dial handle at 180 degrees sits at the bottom of the SVG."
-],
-"keywords": [
-"buildThemeShadow",
-"rotateShadowOffset",
-"directionDeg",
-"angleFromPointer",
-"dialHandlePosition",
-"--nce-shadow",
-"SHADOW_DEFS",
-"_build_shadow"
-],
+"purpose": "Copyright (c) 2026 Oliver Reid.",
 "depends_on": [
 "frontend/src/domain/theme-tokens.ts"
 ]
 },
 "frontend/src/utils/theme-injector.ts": {
-"purpose": "Writes live --nce CSS variables for brand shades, neutrals, type, radius, and spacing.",
-"read_when": "Changing how editor settings become document CSS variables for brand or neutral colours.",
-"gotchas": [],
-"keywords": [
-"injectCSSVars",
-"generateCSSVars",
-"brandShadeForeground",
-"generateNeutralShades",
-"effectiveRoleHex",
-"neutral_color_warmth",
-"--nce-color-neutral",
-"OPPOSITE_BRAND"
-],
+"purpose": "Copyright (c) 2026 Oliver Reid.",
 "depends_on": [
 "frontend/src/domain/theme-tokens.ts",
 "frontend/src/utils/color-shades.ts"
 ]
 },
 "frontend/src/widget/adapters/desk-adapter.ts": {
-"purpose": "Desk adapter that resolves an NCE Theme link to an Active slug and opens the swatch picker.",
-"read_when": "When changing Desk theme-link slug lookup, blocked open, or frm.set_value writes.",
-"gotchas": [
-"Slug resolution accepts Active themes with a slug only.",
-"fgTypeField defaults to valueField with _bg_class replaced by _fg_type.",
-"lockKind hides Kind radios and locks output to that kind."
-],
-"keywords": [
-"resolveNceThemeSlug",
-"openDeskThemeSwatchPicker",
-"frappe.db",
-"Active",
-"lockKind",
-"set_value"
-],
+"purpose": "Copyright (c) 2026 Oliver Reid.",
 "depends_on": [
 "frontend/src/widget/blocked-dialog.ts",
 "frontend/src/widget/constants.ts",
@@ -1114,85 +267,28 @@
 ]
 },
 "frontend/src/widget/adapters/standalone-adapter.ts": {
-"purpose": "Standalone adapter that opens the theme swatch picker on plain DOM theme and value fields.",
-"read_when": "When changing how a non-Desk page reads and writes theme swatch fields.",
-"gotchas": [],
-"keywords": [
-"openStandaloneThemeSwatchPicker",
-"themeFieldEl",
-"valueFieldEl",
-"setFieldValue",
-"themeSwatchPicker",
-"dispatchEvent"
-],
+"purpose": "Copyright (c) 2026 Oliver Reid.",
 "depends_on": [
 "frontend/src/widget/theme-swatch-picker-core.ts"
 ]
 },
 "frontend/src/widget/blocked-dialog.ts": {
-"purpose": "Dialog shown when the theme swatch picker is blocked for a missing or unavailable theme.",
-"read_when": "When changing blocked-picker messages or how the reason is chosen from the theme link.",
-"gotchas": [
-"A blank theme link is no_theme_selected; any non-blank link is theme_not_available."
-],
-"keywords": [
-"themePickerBlockReason",
-"no_theme_selected",
-"theme_not_available",
-"msgprint",
-"Theme required",
-"Active"
-]
+"purpose": "Dialog shown when the theme swatch picker is blocked for a missing or unavailable theme."
 },
 "frontend/src/widget/class-utils.ts": {
 "purpose": "Parses and composes theme kind-role-shade class names and foreground overlay classes.",
-"read_when": "When changing the theme class regex, default picker state, or overlay foreground class names.",
-"gotchas": [
-"parseThemeClass matches only shades 100, 200, 300, 500, 600, 700, and 900."
-],
-"keywords": [
-"parseThemeClass",
-"composeThemeClass",
-"CLASS_RE",
-"composeOverlayFgClass",
-"fg-tonal",
-"defaultPickerState"
-],
 "depends_on": [
 "frontend/src/widget/constants.ts"
 ]
 },
 "frontend/src/widget/constants.ts": {
-"purpose": "Theme swatch picker kinds, roles, curated shades, and foreground types from theme tokens.",
-"read_when": "When changing picker kinds, default role, overlay roles, or foreground type constants.",
-"gotchas": [
-"OVERLAY_ROLES is primary and secondary only; add gray when gray_color lands.",
-"GRAY_ROW_STUB stays commented out until gray_color is in SHADE_SCALE_FIELDS."
-],
-"keywords": [
-"CURATED_SHADES",
-"OVERLAY_ROLES",
-"DEFAULT_FG_TYPE",
-"theme-tokens",
-"roleLabel",
-"GRAY_ROW_STUB"
-],
+"purpose": "ThemeSwatchPicker constants — ROLES and CURATED_SHADES from generated theme-tokens.ts.",
 "depends_on": [
 "frontend/src/domain/theme-tokens.ts"
 ]
 },
 "frontend/src/widget/index.ts": {
 "purpose": "Widget entry that exports the swatch picker API and mounts it on window and frappe.ui.",
-"read_when": "When changing what the theme swatch picker bundle exports or mounts on window.",
-"gotchas": [],
-"keywords": [
-"mountStandaloneThemeSwatchPicker",
-"mountDeskThemeSwatchPicker",
-"themeSwatchPicker",
-"parseThemeClass",
-"composeThemeClass",
-"isOpen"
-],
 "depends_on": [
 "frontend/src/widget/adapters/desk-adapter.ts",
 "frontend/src/widget/adapters/standalone-adapter.ts",
@@ -1201,22 +297,7 @@
 ]
 },
 "frontend/src/widget/theme-swatch-picker-core.ts": {
-"purpose": "Modal that picks a theme class, injects picker CSS, and saves the class on confirm.",
-"read_when": "When changing picker open and close, lockKind, foreground type, or injected CSS.",
-"gotchas": [
-"When lockKind is set, Kind radios are hidden and the picker always emits theme-{lockKind}-* classes.",
-"An empty theme slug cancels open and shows the no_theme_selected dialog.",
-"If theme-bg-primary-500 has no background, nce_theme.css may not be loaded and swatches may not paint."
-],
-"keywords": [
-"lockKind",
-"theme slug",
-"nce_theme.css",
-"data-nce-theme",
-"composeThemeClass",
-"Foreground Type",
-"injectStyles"
-],
+"purpose": "Copyright (c) 2026 Oliver Reid.",
 "depends_on": [
 "frontend/src/widget/blocked-dialog.ts",
 "frontend/src/widget/class-utils.ts",
@@ -1224,141 +305,38 @@
 ]
 },
 "frontend/src/widget/theme-swatch-picker.css": {
-"purpose": "Layout and colour styles for the theme swatch picker modal, radios, and swatches.",
-"read_when": "When changing the theme swatch picker modal layout, z-index, or swatch appearance.",
-"gotchas": [
-"The backdrop is a full-viewport layer that blocks clicks on the host form, including the Theme field, while open."
-],
-"keywords": [
-"nce-theme-swatch-picker",
-"tsp-modal-bg",
-"backdrop",
-"swatch-strip",
-"chrome-pick",
-"z-index"
-]
+"purpose": "Layout and colour styles for the theme swatch picker modal, radios, and swatches."
 },
 "frontend/tailwind.config.js": {
-"purpose": "Tailwind theme that maps NCE color, type, radius, shadow, and spacing CSS variables.",
-"read_when": "When a Tailwind color, font, radius, or shadow class does not match theme tokens.",
-"gotchas": [],
-"keywords": [
-"tailwind",
-"safelist",
-"buildColorMap",
-"nce-color",
-"darkMode",
-"fontFamily",
-"borderRadius",
-"boxShadow",
-"design tokens"
-]
+"purpose": "Tailwind theme that maps NCE color, type, radius, shadow, and spacing CSS variables."
 },
 "frontend/vite.config.js": {
-"purpose": "Vite build for the theme editor frontend, including the Lucide icon stub plugin.",
-"read_when": "When changing the frontend dev server, output paths, or icon import stubs.",
-"gotchas": [
-"Chunk filenames must stay content-hashed or browsers keep stale lazy bundles after deploy."
-],
-"keywords": [
-"stub-lucide-icons",
-"plugin-vue",
-"outDir",
-"chunkFileNames",
-"feather-icons",
-"entryFileNames",
-"dev server"
-]
+"purpose": "Vite build for the theme editor frontend, including the Lucide icon stub plugin."
 },
 "frontend/vite.widget.config.js": {
-"purpose": "Vite library build that emits the theme swatch picker as ES and UMD bundles.",
-"read_when": "When the embeddable swatch picker bundle path or format needs to change.",
-"gotchas": [],
-"keywords": [
-"themeSwatchPicker",
-"theme-swatch-picker",
-"widget",
-"umd",
-"public/dist",
-"library build"
-]
+"purpose": "Vite library build that emits the theme swatch picker as ES and UMD bundles."
 },
 "frontend/vitest.config.ts": {
-"purpose": "Vitest config that runs TypeScript tests under src __tests__ folders.",
-"read_when": "When frontend unit tests are not being discovered or the test glob changes.",
-"gotchas": [],
-"keywords": [
-"vitest",
-"defineConfig",
-"include",
-"__tests__",
-"unit tests"
-]
+"purpose": "Vitest config that runs TypeScript tests under src __tests__ folders."
 },
 "scripts/export_theme_tokens.py": {
-"purpose": "Generates frontend/src/domain/theme-tokens.ts from themes.utils.theme_tokens.",
-"read_when": "Changing the token contract that the frontend imports from theme-tokens.ts.",
-"gotchas": [
-"The generated theme-tokens.ts file says do not edit by hand; regenerate with npm run export:tokens or this script."
-],
-"keywords": [
-"theme-tokens.ts",
-"export_token_contract",
-"render_ts",
-"do not edit by hand",
-"CURATED_SHADES",
-"npm run export:tokens",
-"theme_tokens.py"
-],
+"purpose": "Generate frontend/src/domain/theme-tokens.ts from themes.utils.theme_tokens.",
 "depends_on": [
 "themes/utils/theme_tokens.py"
 ]
 },
 "themes/__init__.py": {
-"purpose": "Themes app package version string.",
-"read_when": "When checking or bumping the installed themes app version.",
-"gotchas": [],
-"keywords": [
-"__version__",
-"0.0.1",
-"package version"
-]
+"purpose": "Themes app package version string."
 },
 "themes/api.py": {
-"purpose": "Whitelisted Frappe API wrapping theme_service for Web and Desk reads, saves, Default promotion, and Base Theme restore.",
-"read_when": "When changing an editor endpoint, a deprecated web alias, or System Manager theme maintenance.",
-"gotchas": [
-"get_active_theme_editor, save_active_theme, set_active_theme, and save_as_default are deprecated; remove them only after callers are confirmed gone.",
-"save_as_default aliases set_base_theme and does not require a password; prefer save_as_base_theme.",
-"get_base_theme_payload returns the repo file data/base_theme.json for Restore to Base Theme.",
-"set_base_theme promotes a theme to Default via is_default and Site Theme Config.base_theme, then regenerates nce_theme.css."
-],
-"keywords": [
-"theme_service",
-"WEB_FAMILY",
-"DESK_FAMILY",
-"set_base_theme",
-"get_base_theme_payload",
-"save_as_base_theme",
-"System Manager",
-"DEPRECATED"
-],
+"purpose": "Whitelisted Frappe API — thin wrappers over theme_service (WEB_FAMILY / DESK_FAMILY).",
 "depends_on": [
 "themes/utils/theme_family.py",
 "themes/utils/theme_service.py"
 ]
 },
 "themes/boot.py": {
-"purpose": "Desk boot hook that exposes the current desk theme CSS URL each session.",
-"read_when": "When the desk is not picking up a freshly published theme stylesheet.",
-"gotchas": [],
-"keywords": [
-"extend_bootinfo",
-"desk_theme_css_url",
-"bootinfo",
-"publish hash",
-"bench restart"
-],
+"purpose": "Desk boot extensions — fresh theme CSS URLs without bench restart.",
 "depends_on": [
 "themes/utils/desk_css_writer.py"
 ]
@@ -1367,37 +345,10 @@
 "purpose": ""
 },
 "themes/hooks.py": {
-"purpose": "Frappe app hooks that include published theme CSS, register the theme editor routes, and call after_install.",
-"read_when": "When changing included stylesheets, theme editor routes, or the install hook.",
-"gotchas": [
-"The CSS hash is read at hooks import time, so it must be DB-free and never raise; problems fall back to the bare path.",
-"Never monkey-patch frappe.get_hooks; a previous approach broke boot."
-],
-"keywords": [
-"app_include_css",
-"website_route_rules",
-"after_install",
-"nce_theme.css",
-"cache-buster",
-"desk_theme_loader",
-"theme-editor",
-"frappe.get_hooks"
-]
+"purpose": "Frappe app hooks that include published theme CSS, register the theme editor routes, and call after_install."
 },
 "themes/init_desk_theme.py": {
-"purpose": "Ensures the Default NCE Desk Theme exists, sets base_desk_theme when missing, and publishes nce_desk_theme.css.",
-"read_when": "When re-running desk theme setup or checking how the Default desk theme is published.",
-"gotchas": [
-"An existing Site Theme Config.base_desk_theme link is kept; only a missing or broken link is replaced."
-],
-"keywords": [
-"initialize_desk_theme",
-"base_desk_theme",
-"nce_desk_theme.css",
-"publish_desk_theme",
-"Site Theme Config",
-"NCE Desk Theme"
-],
+"purpose": "Initialize NCE Desk Theme Default and generate nce_desk_theme.css.",
 "depends_on": [
 "themes/install.py",
 "themes/utils/desk_css_writer.py",
@@ -1405,19 +356,7 @@
 ]
 },
 "themes/init_theme.py": {
-"purpose": "Seeds NCE Theme Default from the bundled Base Theme payload, points the site link at it, and publishes nce_theme.css.",
-"read_when": "When re-running web theme setup or seeing how the Default theme is seeded from the bundled payload.",
-"gotchas": [
-"If NCE Theme Default already exists, this republishes CSS and does not replace its theme_json."
-],
-"keywords": [
-"initialize_theme",
-"load_bundled_base_theme_payload",
-"is_default",
-"nce_theme.css",
-"publish_theme",
-"Site Theme Config"
-],
+"purpose": "Initialize NCE Theme Default and generate nce_theme.css.",
 "depends_on": [
 "themes/utils/css_writer.py",
 "themes/utils/default_theme.py",
@@ -1426,18 +365,6 @@
 },
 "themes/install.py": {
 "purpose": "after_install creates Default web and desk themes from the bundled Base Theme payloads, publishes CSS, and syncs the workspace.",
-"read_when": "When changing what a fresh install creates for themes, CSS, or the workspace.",
-"gotchas": [
-"after_install returns immediately when the Site Theme Config DocType does not exist."
-],
-"keywords": [
-"after_install",
-"load_bundled_base_theme_payload",
-"load_bundled_base_desk_theme_payload",
-"is_default",
-"publish_desk_theme",
-"sync_themes_workspace"
-],
 "depends_on": [
 "themes/utils/css_writer.py",
 "themes/utils/default_desk_theme.py",
@@ -1455,16 +382,6 @@
 },
 "themes/patches/v1_0/add_base_desk_theme_field.py": {
 "purpose": "Seeds the Default NCE Desk Theme and points Site Theme Config.base_desk_theme at it.",
-"read_when": "When a site is missing the default desk theme or the base_desk_theme pointer.",
-"gotchas": [],
-"keywords": [
-"base_desk_theme",
-"NCE Desk Theme",
-"theme_json",
-"publish_desk_theme",
-"is_default",
-"Default"
-],
 "depends_on": [
 "themes/utils/default_desk_theme.py",
 "themes/utils/desk_css_writer.py"
@@ -1472,131 +389,49 @@
 },
 "themes/patches/v1_0/add_desk_css_hash_field.py": {
 "purpose": "Backfills Site Theme Config.desk_css_hash from the published desk CSS sidecar.",
-"read_when": "When desk theme CSS is published but desk_css_hash on Site Theme Config is empty.",
-"gotchas": [],
-"keywords": [
-"desk_css_hash",
-"Site Theme Config",
-"_read_desk_css_hash",
-"publish_desk_theme",
-"css_hash"
-],
 "depends_on": [
 "themes/utils/desk_css_writer.py"
 ]
 },
 "themes/patches/v1_0/bootstrap_default_desk_theme.py": {
-"purpose": "Re-runs the desk theme seed for sites whose earlier field patch did nothing.",
-"read_when": "When Default NCE Desk Theme was never created because the field patch no-oped.",
-"gotchas": [],
-"keywords": [
-"Default NCE Desk Theme",
-"base_desk_theme",
-"no-op",
-"add_base_desk_theme_field",
-"execute"
-],
+"purpose": "Seed Default NCE Desk Theme + base_desk_theme for sites that already ran the no-op field patch.",
 "depends_on": [
 "themes/patches/v1_0/add_base_desk_theme_field.py"
 ]
 },
 "themes/patches/v1_0/collapse_theme_versions_to_nce_theme.py": {
 "purpose": "Copies Theme Version JSON onto NCE Theme and clears the active_version pointer.",
-"read_when": "When theme payloads still live on Theme Version instead of NCE Theme.theme_json.",
-"gotchas": [],
-"keywords": [
-"Theme Version",
-"theme_json",
-"active_version",
-"publish_theme",
-"parent_theme",
-"published"
-],
 "depends_on": [
 "themes/utils/css_writer.py"
 ]
 },
 "themes/patches/v1_0/migrate_theme_settings_to_nce_theme.py": {
 "purpose": "Copies the legacy Theme Settings Single into an NCE Theme named Default.",
-"read_when": "When an old Theme Settings single still needs to become an NCE Theme record.",
-"gotchas": [],
-"keywords": [
-"Theme Settings",
-"NCE Theme",
-"MIGRATED_FIELDS",
-"active_theme",
-"theme_json",
-"Default"
-],
 "depends_on": [
 "themes/utils/css_writer.py",
 "themes/utils/default_desk_theme.py"
 ]
 },
 "themes/patches/v1_0/remove_legacy_theme_doctypes.py": {
-"purpose": "Deletes leftover Theme Version and Theme Settings DocTypes and their rows.",
-"read_when": "When deprecated Theme Version or Theme Settings tables are still in the database.",
-"gotchas": [],
-"keywords": [
-"Theme Version",
-"Theme Settings",
-"_delete_all_rows",
-"delete_doc",
-"Singles"
-]
+"purpose": "Deletes leftover Theme Version and Theme Settings DocTypes and their rows."
 },
 "themes/patches/v1_0/rename_base_theme_and_status.py": {
-"purpose": "Renames Site Theme Config.active_theme to base_theme and maps old statuses to Inactive.",
-"read_when": "When Site Theme Config still stores active_theme or themes use Draft or Archived.",
-"gotchas": [],
-"keywords": [
-"active_theme",
-"base_theme",
-"Inactive",
-"Draft",
-"Archived",
-"tabSingles"
-]
+"purpose": "Renames Site Theme Config.active_theme to base_theme and maps old statuses to Inactive."
 },
 "themes/patches/v1_0/resolve_neutral_color_shades.py": {
 "purpose": "Backfills resolved neutral color shade tokens onto saved NCE Theme JSON.",
-"read_when": "When saved themes are missing neutral_color_shades in theme_json.",
-"gotchas": [],
-"keywords": [
-"neutral_color_shades",
-"resolve_neutral_into_payload",
-"theme_json",
-"NCE Theme"
-],
 "depends_on": [
 "themes/utils/theme_color_utils.py"
 ]
 },
 "themes/patches/v1_0/sync_is_default_flag.py": {
-"purpose": "Aligns web and desk is_default flags with the Site Theme Config pointers.",
-"read_when": "When is_default on NCE Theme or NCE Desk Theme does not match the site pointer.",
-"gotchas": [],
-"keywords": [
-"is_default",
-"get_site_base_theme_name",
-"base_desk_theme",
-"NCE Desk Theme",
-"theme_name"
-],
+"purpose": "Ensure is_default flag matches Site Theme Config pointers (flag-only Default detection).",
 "depends_on": [
 "themes/utils/site_theme_config_helpers.py"
 ]
 },
 "themes/patches/v1_0/sync_themes_workspace.py": {
-"purpose": "Reimports the Themes workspace and removes leftover Theme Version links.",
-"read_when": "When the Themes workspace still shows Theme Version shortcuts after the migration.",
-"gotchas": [],
-"keywords": [
-"sync_themes_workspace",
-"Theme Version",
-"workspace",
-"execute"
-],
+"purpose": "Force-sync the Themes workspace from app JSON and remove Theme Version links.",
 "depends_on": [
 "themes/utils/workspace_sync.py"
 ]
@@ -1609,12 +444,6 @@
 },
 "themes/public/css/nce_theme.css": {
 "purpose": "── Self-hosted variable fonts (active body + heading) ──"
-},
-"themes/public/frontend/assets/themes 2.css": {
-"purpose": ",:before,:after{--tw-border-spacing-x: 0;--tw-border-spacing-y: 0;--tw-translate-x: 0;--tw-translate-y: 0;--tw-rotate: 0;--tw-skew-x: 0;--tw-skew-y: 0;--tw-sca…"
-},
-"themes/public/frontend/assets/themes 2.js": {
-"purpose": ""
 },
 "themes/public/frontend/assets/themes-DeskThemeHomePage-Ciyf8U2y.js": {
 "purpose": ""
@@ -1657,61 +486,29 @@
 "themes/public/frontend/assets/themes-ThemeSettingsPage-BrPePfK7.js"
 ]
 },
-"themes/public/frontend/assets/themes2 2.css": {
-"purpose": ""
-},
 "themes/public/frontend/assets/themes2.css": {
-"purpose": ""
-},
-"themes/public/frontend/assets/themes3 2.css": {
 "purpose": ""
 },
 "themes/public/frontend/assets/themes3.css": {
 "purpose": ""
 },
-"themes/public/frontend/assets/themes4 2.css": {
-"purpose": ""
-},
 "themes/public/frontend/assets/themes4.css": {
-"purpose": ""
-},
-"themes/public/frontend/assets/themes5 2.css": {
 "purpose": ""
 },
 "themes/public/frontend/assets/themes5.css": {
 "purpose": ""
 },
-"themes/public/frontend/assets/themes6 2.css": {
-"purpose": ""
-},
 "themes/public/frontend/assets/themes6.css": {
 "purpose": ""
 },
-"themes/public/frontend/assets/themes7 2.css": {
-"purpose": ""
-},
 "themes/public/frontend/assets/themes7.css": {
-"purpose": ""
-},
-"themes/public/frontend/assets/themes8 2.css": {
 "purpose": ""
 },
 "themes/public/frontend/assets/themes8.css": {
 "purpose": ""
 },
 "themes/public/js/desk_theme_loader.js": {
-"purpose": "Injects the published desk theme stylesheet from the boot CSS URL each Desk session.",
-"read_when": "When a saved desk theme does not show up until the bench is restarted.",
-"gotchas": [
-"hooks.app_include_css URLs are fixed at worker import; this loader reads bootinfo instead."
-],
-"keywords": [
-"desk_theme_css_url",
-"nce_desk_theme.css",
-"syncDeskThemeCss",
-"whenDeskReady",
-"bench restart"
-]
+"purpose": "Load nce_desk_theme.css using frappe.boot.desk_theme_css_url so saves apply without bench restart."
 },
 "themes/templates/__init__.py": {
 "purpose": ""
@@ -1720,128 +517,39 @@
 "purpose": ""
 },
 "themes/tests/frappe_stub.py": {
-"purpose": "Installs a minimal frappe module mock so unit tests can run outside a bench.",
-"read_when": "When a test imports frappe and fails because no bench is running.",
-"gotchas": [],
-"keywords": [
-"install_frappe_stub",
-"MagicMock",
-"frappe.utils.password",
-"check_password",
-"sys.modules"
-]
+"purpose": "Minimal frappe stub for unit tests outside a Frappe bench."
 },
 "themes/tests/golden/desk_default.css": {
 "purpose": "Generated by themes.utils.desk_css_writer — do not edit"
 },
 "themes/tests/golden/web_default.css": {
-"purpose": "Checked-in expected CSS snapshot used by tests for the default web theme stylesheet.",
-"read_when": "When a CSS snapshot test fails on the default web theme output.",
-"gotchas": [],
-"keywords": [
-"--nce-color-primary",
-"--nce-color-neutral",
-"canonical variables",
-"--nce-color-secondary",
-"--nce-color-table-header",
-"--nce-color-row-alt"
-]
+"purpose": "Checked-in expected CSS snapshot used by tests for the default web theme stylesheet."
 },
 "themes/tests/golden/web_gamma_sat.css": {
-"purpose": "Checked-in expected CSS snapshot used by tests for web CSS with raised primary gamma and saturation.",
-"read_when": "When a CSS snapshot test fails on the gamma and saturation web theme output.",
-"gotchas": [],
-"keywords": [
-"--nce-color-primary",
-"#0050BF",
-"canonical variables",
-"--nce-color-neutral",
-"--nce-color-table-header",
-"--nce-color-primary-fg"
-]
+"purpose": "Checked-in expected CSS snapshot used by tests for web CSS with raised primary gamma and saturation."
 },
 "themes/tests/golden/web_neutral_warmth.css": {
-"purpose": "Checked-in expected CSS snapshot used by tests for web CSS with a warmer neutral color.",
-"read_when": "When a CSS snapshot test fails on the neutral warmth web theme output.",
-"gotchas": [],
-"keywords": [
-"--nce-color-neutral",
-"#9d9792",
-"canonical variables",
-"--nce-color-primary",
-"--nce-color-neutral-fg",
-"--nce-color-table-header"
-]
+"purpose": "Checked-in expected CSS snapshot used by tests for web CSS with a warmer neutral color."
 },
 "themes/tests/golden/web_site_default.css": {
-"purpose": "Checked-in expected CSS snapshot used by tests for site CSS with :root plus a scoped alt theme.",
-"read_when": "When a CSS snapshot test fails on site CSS that scopes an alt theme.",
-"gotchas": [],
-"keywords": [
-"data-nce-theme",
-"canonical variables",
-"--nce-color-primary",
-"Shade scales",
-"theme-bg-primary",
-"--nce-color-neutral"
-]
+"purpose": "Checked-in expected CSS snapshot used by tests for site CSS with :root plus a scoped alt theme."
 },
 "themes/tests/test_api_contract.py": {
-"purpose": "Mocked tests of web and desk editor response shapes, including is_active versus the Default flag.",
-"read_when": "When changing editor response keys or desk is_active semantics.",
-"gotchas": [
-"A Default desk theme can be Inactive; is_active must follow status, not the Default flag."
-],
-"keywords": [
-"WEB_EDITOR_KEYS",
-"DESK_EDITOR_KEYS",
-"is_default_theme",
-"is_base_theme",
-"is_active",
-"css_hash",
-"site_active_theme",
-"frappe_stub"
-],
+"purpose": "API response shape tests for editor helpers (mocked — no Frappe bench required).",
 "depends_on": [
 "themes/api.py",
 "themes/tests/frappe_stub.py"
 ]
 },
 "themes/tests/test_color_math_parity.py": {
-"purpose": "Checks Python shade and foreground color math against the golden fixture shared with frontend vitest.",
-"read_when": "When changing shade generation or foreground colors that must match the frontend.",
-"gotchas": [
-"Bright brand greens must lighten smoothly toward stop 50."
-],
-"keywords": [
-"color_math_parity",
-"generate_shades",
-"pick_fg_mono",
-"pick_fg_tonal",
-"UPDATE_GOLDEN",
-"neutral_shades",
-"effective_role_hex"
-],
+"purpose": "Python side of color-math parity — golden data shared with frontend vitest.",
 "depends_on": [
 "themes/tests/frappe_stub.py",
 "themes/utils/theme_color_utils.py"
 ]
 },
 "themes/tests/test_css_snapshots.py": {
-"purpose": "Golden-file tests that generated web and desk CSS stays byte-stable and hash-stable.",
-"read_when": "When CSS generation changes and the checked-in snapshots may need a refresh.",
-"gotchas": [
-"If the CSS change is intentional, refresh the golden files with UPDATE_GOLDEN=1."
-],
-"keywords": [
-"web_default.css",
-"web_gamma_sat.css",
-"web_neutral_warmth.css",
-"web_site_default.css",
-"generate_site_css",
-"UPDATE_GOLDEN",
-"desk_default.css"
-],
+"purpose": "Golden-file regression tests for CSS generation (no Frappe bench required).",
 "depends_on": [
 "themes/tests/frappe_stub.py",
 "themes/utils/css_writer.py",
@@ -1850,19 +558,7 @@
 ]
 },
 "themes/tests/test_theme_service_default.py": {
-"purpose": "Tests that is_default alone marks the Default theme and that promote moves the flag and the config pointer.",
-"read_when": "When changing promotion to Default or whether the Default theme can be renamed.",
-"gotchas": [
-"Rename is allowed for the Default theme even when its status is Active."
-],
-"keywords": [
-"is_default",
-"_promote_to_default",
-"WEB_FAMILY",
-"set_base_theme_name",
-"theme_name",
-"frappe_stub"
-],
+"purpose": "Tests for movable is_default flag and promote-to-default behavior.",
 "depends_on": [
 "themes/tests/frappe_stub.py",
 "themes/utils/theme_family.py",
@@ -1870,17 +566,7 @@
 ]
 },
 "themes/tests/test_token_contract_export.py": {
-"purpose": "Checks that export_token_contract stays identical to the checked-in token_contract.json golden file.",
-"read_when": "When changing the web token contract exported for the frontend build.",
-"gotchas": [],
-"keywords": [
-"export_token_contract",
-"token_contract.json",
-"UPDATE_GOLDEN",
-"GOLDEN_PATH",
-"sort_keys",
-"matches_golden"
-],
+"purpose": "Tests for export_token_contract() stability.",
 "depends_on": [
 "themes/utils/theme_tokens.py"
 ]
@@ -1896,20 +582,6 @@
 },
 "themes/themes/doctype/nce_desk_theme/nce_desk_theme.py": {
 "purpose": "NCE Desk Theme controller that allows one Default and one Active theme, then republishes desk CSS.",
-"read_when": "When changing desk theme save rules or when desk CSS is republished.",
-"gotchas": [
-"Throws if another desk theme is already marked default or already Active.",
-"on_update and on_trash skip publishing during install or migrate."
-],
-"keywords": [
-"NCEDeskTheme",
-"is_default",
-"base_desk_theme",
-"publish_desk_theme",
-"theme_json",
-"already active",
-"in_migrate"
-],
 "depends_on": [
 "themes/utils/desk_css_writer.py",
 "themes/utils/site_theme_config_helpers.py"
@@ -1920,20 +592,6 @@
 },
 "themes/themes/doctype/nce_theme/nce_theme.py": {
 "purpose": "NCE Theme controller that keeps a single Default theme and republishes web CSS on update or trash.",
-"read_when": "When changing web theme validation or when nce_theme.css is republished from the document.",
-"gotchas": [
-"Throws if another theme is already marked default.",
-"on_update and on_trash skip publishing during install or migrate."
-],
-"keywords": [
-"NCETheme",
-"is_default",
-"publish_theme",
-"theme_json",
-"get_site_base_theme_name",
-"already marked default",
-"in_migrate"
-],
 "depends_on": [
 "themes/utils/css_writer.py",
 "themes/utils/site_theme_config_helpers.py"
@@ -1944,19 +602,6 @@
 },
 "themes/themes/doctype/site_theme_config/site_theme_config.py": {
 "purpose": "Site Theme Config controller that checks the theme links exist and republishes web and desk CSS on update.",
-"read_when": "When changing what happens after the site theme pointers are saved.",
-"gotchas": [
-"Publishing is skipped during install or migrate.",
-"An empty base_theme falls back to the legacy active_theme field."
-],
-"keywords": [
-"SiteThemeConfig",
-"base_theme",
-"base_desk_theme",
-"active_theme",
-"publish_theme",
-"publish_desk_theme"
-],
 "depends_on": [
 "themes/utils/css_writer.py",
 "themes/utils/desk_css_writer.py",
@@ -1968,122 +613,33 @@
 },
 "themes/themes/doctype/theme_settings/theme_settings.py": {
 "purpose": "Theme Settings document that compiles :root --nce-* variables, including shade scales, and writes nce_theme.css.",
-"read_when": "When changing Theme Settings CSS generation, its shade scale, or the file it writes.",
-"gotchas": [],
-"keywords": [
-"ThemeSettings",
-"_generate_shades",
-"COLOR_FIELDS",
-"nce_theme.css",
-"compiled_css",
-"custom_css",
-"OKLCH",
-"BORDER_RADIUS_MAP"
-],
 "depends_on": [
 "themes/utils/theme_color_utils.py"
 ]
 },
 "themes/themes/page/desk_theme_editor/desk_theme_editor.js": {
-"purpose": "Desk page that redirects the legacy desk theme editor to the Vue settings route.",
-"read_when": "When the Desk page desk-theme-editor should open the Vue desk theme editor.",
-"gotchas": [],
-"keywords": [
-"desk-theme-editor",
-"on_page_load",
-"desk-themes",
-"theme-settings"
-]
+"purpose": "Desk page that redirects the legacy desk theme editor to the Vue settings route."
 },
 "themes/themes/page/site_theme_switch/site_theme_switch.js": {
-"purpose": "Desk page that opens the Site Theme Config form instead of a custom switch UI.",
-"read_when": "When the site-theme-switch Desk page should land on Site Theme Config.",
-"gotchas": [],
-"keywords": [
-"site-theme-switch",
-"set_route",
-"Site Theme Config",
-"on_page_load"
-]
+"purpose": "Desk page that opens the Site Theme Config form instead of a custom switch UI."
 },
 "themes/themes/page/theme_editor/theme_editor.js": {
-"purpose": "Desk page that redirects the legacy theme editor to the Vue theme settings route.",
-"read_when": "When the Desk page theme-editor should open the Vue web theme editor.",
-"gotchas": [],
-"keywords": [
-"theme-editor",
-"on_page_load",
-"theme-settings",
-"location.href"
-]
+"purpose": "Desk page that redirects the legacy theme editor to the Vue theme settings route."
 },
 "themes/utils/__init__.py": {
 "purpose": ""
 },
 "themes/utils/bundle_base_desk_theme.py": {
-"purpose": "Writes the bundled Base desk theme into base_desk_theme.json and refreshes the default_desk_theme.py install fallback.",
-"read_when": "When changing how the desk repo seed is saved for git commit and new installs.",
-"gotchas": [
-"This overwrites themes/utils/default_desk_theme.py, including its embedded fallback payload."
-],
-"keywords": [
-"bundle_base_desk_theme_to_app",
-"base_desk_theme.json",
-"default_desk_theme.py",
-"load_bundled_base_desk_theme_payload",
-"git commit",
-"_FALLBACK_PAYLOAD"
-]
+"purpose": "Write the bundled base desk theme into app source files (for git commit + new installs)."
 },
 "themes/utils/bundle_base_theme.py": {
-"purpose": "Writes the repo Base Theme seed into base_theme.json and refreshes the default_theme.py install fallback.",
-"read_when": "When changing how the web Base Theme seed is saved for git commit and new installs.",
-"gotchas": [
-"This overwrites themes/utils/default_theme.py, including its embedded fallback payload."
-],
-"keywords": [
-"bundle_base_theme_to_app",
-"base_theme.json",
-"default_theme.py",
-"load_bundled_base_theme_payload",
-"git commit",
-"_FALLBACK_PAYLOAD"
-]
+"purpose": "Write the bundled base theme into app source files (for git commit + new installs)."
 },
 "themes/utils/css_publish.py": {
-"purpose": "Shared writer that saves published theme CSS and an 8-character SHA-1 hash sidecar for cache busting.",
-"read_when": "When changing how web or desk CSS files and their hash sidecars are written.",
-"gotchas": [
-"A missing or unreadable hash can never break boot; hooks.py falls back to the bare CSS path.",
-"Cache busting and Site Theme Config css_hash updates stay in the callers because Web and Desk side effects differ."
-],
-"keywords": [
-"write_published_css",
-"css_hash_for",
-"nce_theme.css",
-"nce_desk_theme.css",
-"sha1",
-"sidecar",
-"cache-busting"
-]
+"purpose": "Shared CSS publish plumbing for Web and Desk theme writers."
 },
 "themes/utils/css_writer.py": {
-"purpose": "Builds and publishes web nce_theme.css so the Default theme drives :root and Active themes are scoped.",
-"read_when": "When changing web CSS variables, utility classes, or how the Default theme is published.",
-"gotchas": [
-"Utility classes are gated by fields present in the default payload; the default defines all standard roles.",
-"Unregistered font names, including System Default, emit no @font-face rules."
-],
-"keywords": [
-"generate_site_css",
-"publish_theme",
-"data-nce-theme",
-"FONT_REGISTRY",
-"Default theme",
-"OKLCH",
-"theme-bg",
-"nce_theme.css"
-],
+"purpose": "Web theme CSS generation and publish (nce_theme.css → --nce-* tokens).",
 "depends_on": [
 "themes/utils/css_publish.py",
 "themes/utils/site_theme_config_helpers.py",
@@ -2107,39 +663,10 @@
 ]
 },
 "themes/utils/default_theme.py": {
-"purpose": "Loads the repo Base Theme seed from base_theme.json, or the embedded fallback, for new Default Theme installs.",
-"read_when": "When checking the token seed copied onto a new Default NCE Theme.",
-"gotchas": [
-"If base_theme.json is missing or invalid, the embedded _FALLBACK_PAYLOAD is returned."
-],
-"keywords": [
-"load_bundled_base_theme_payload",
-"base_theme.json",
-"DEFAULT_THEME_PAYLOAD",
-"brand_palette_mode",
-"neutral_color_warmth",
-"primary_color"
-]
+"purpose": "Default token payload for new NCE Theme installs."
 },
 "themes/utils/desk_css_writer.py": {
-"purpose": "Generates and publishes nce_desk_theme.css from the site desk theme pointer merged with the Active desk theme.",
-"read_when": "When changing Desk CSS variables, font stacks, or the desk publish hash.",
-"gotchas": [
-"font_size is omitted because Frappe v15 does not use --font-size-base.",
-"DESK_CSS_SELECTOR includes [data-theme=light] because Frappe v15 Espresso re-declares Desk vars after app_include_css.",
-"font_family must be in DESK_TOKEN_FIELDS or _desk_parse_payload strips it on save.",
-"btn_primary falls back to primary_color when unset."
-],
-"keywords": [
-"DESK_CSS_VARS",
-"nce_desk_theme.css",
-"publish_desk_theme",
-"DESK_CSS_SELECTOR",
-"font_family",
-"desk_css_hash",
-"btn_primary",
-"data-theme"
-],
+"purpose": "Desk theme CSS generation and publish (nce_desk_theme.css → Frappe Desk vars).",
 "depends_on": [
 "themes/utils/css_publish.py",
 "themes/utils/site_theme_config_helpers.py",
@@ -2147,58 +674,16 @@
 ]
 },
 "themes/utils/site_theme_config_helpers.py": {
-"purpose": "Reads the Default Theme (is_default) that drives :root, and reads or writes the Site Theme Config link fields.",
-"read_when": "When changing how the live Default Theme or the config theme links are stored.",
-"gotchas": [
-"get_site_default_theme_name drives :root from is_default and falls back to base_theme only when no row is flagged.",
-"get_site_base_theme_name still reads the pre-migrate active_theme field.",
-"set_site_base_theme_name writes both base_theme and active_theme during migration."
-],
-"keywords": [
-"get_site_default_theme_name",
-"get_site_base_theme_name",
-"base_desk_theme",
-"active_theme",
-"is_default",
-"tabSingles"
-]
+"purpose": "Read/write Site Theme Config.base_theme across rename from active_theme."
 },
 "themes/utils/theme_color_utils.py": {
 "purpose": "OKLCH color math for shade scales, neutral warmth, and foreground colors, matched to the frontend.",
-"read_when": "When changing shade generation, neutral warmth, or foreground contrast shared with the editor.",
-"gotchas": [
-"OKLCH conversion and gamut clamping are written to match frontend color-shades.ts.",
-"Neutral scales are generated from warmth only, with no base hex."
-],
-"keywords": [
-"_hex_to_oklch",
-"generate_neutral_shades",
-"pick_fg_mono",
-"pick_fg_tonal",
-"_generate_anchored_shades",
-"neutral_color_warmth",
-"color-shades.ts"
-],
 "depends_on": [
 "themes/utils/theme_tokens.py"
 ]
 },
 "themes/utils/theme_family.py": {
-"purpose": "ThemeFamily descriptors that parameterize Web and Desk CRUD, publish, seeding, and Base Theme bundling.",
-"read_when": "When changing a behavior that differs between Web site tokens and Desk chrome.",
-"gotchas": [
-"Web is_active equals is_base; Desk is_active equals status Active.",
-"Desk enforces a single Active theme; new Desk themes start Inactive and new Web themes start Active."
-],
-"keywords": [
-"WEB_FAMILY",
-"DESK_FAMILY",
-"ThemeFamily",
-"is_active_is_base",
-"single_active",
-"bundle_to_app",
-"NCE Desk Theme"
-],
+"purpose": "Theme family descriptors — parameterize Web vs Desk CRUD without duplicating logic.",
 "depends_on": [
 "themes/utils/bundle_base_desk_theme.py",
 "themes/utils/bundle_base_theme.py",
@@ -2211,120 +696,34 @@
 ]
 },
 "themes/utils/theme_service.py": {
-"purpose": "Shared Web and Desk CRUD that promotes the Default Theme, publishes CSS, and can bundle the repo Base Theme.",
-"read_when": "When changing save, promote-to-Default, Active status, rename, or delete rules.",
-"gotchas": [
-"A wrong save_as_base password must not raise AuthenticationError; it is reported as a validation error.",
-"is_base_theme is deprecated and copies is_default_theme; do not use it in new code.",
-"The Default theme may be renamed but cannot be deleted.",
-"set_base promotes a theme to the Default :root driver; save_as_base also bundles that payload into app source."
-],
-"keywords": [
-"set_base",
-"save_as_base",
-"is_default_theme",
-"is_base_theme",
-"get_restore_base_payload",
-"AuthenticationError",
-"_promote_to_default",
-"regenerate_css"
-],
+"purpose": "Family-parameterized theme CRUD — single implementation for Web and Desk.",
 "depends_on": [
 "themes/utils/theme_family.py"
 ]
 },
 "themes/utils/theme_tokens.py": {
-"purpose": "Web theme token tables and export_token_contract, the payload the frontend build consumes.",
-"read_when": "When adding a theme field, font, or map that CSS generation and the editor share.",
-"gotchas": [
-"Keep these tables in sync with frontend/src/widget/constants.ts until the frontend contract is generated.",
-"Border radius full is legacy and now maps to the same value as x-lg.",
-"Legacy themes may store raw px in table width fields; those map onto thin, normal, or strong."
-],
-"keywords": [
-"TOKEN_FIELDS",
-"export_token_contract",
-"FONT_REGISTRY",
-"RETIRED_FONT_ALIASES",
-"neutral_color_warmth",
-"TABLE_COLOR_FALLBACKS",
-"brand_palette_mode",
-"GAMMA_SAT_ROLE_FIELDS"
-]
+"purpose": "Single source of truth for Web theme token tables and editor field contracts."
 },
 "themes/utils/version.py": {
-"purpose": "Reads the installed Frappe major version and whether it is v16 or later.",
-"read_when": "When theme code must branch between Frappe 15 and 16 behaviour.",
-"gotchas": [],
-"keywords": [
-"get_frappe_major_version",
-"is_v16_or_later",
-"frappe.__version__",
-"major version"
-]
+"purpose": "Reads the installed Frappe major version and whether it is v16 or later."
 },
 "themes/utils/workspace_sync.py": {
-"purpose": "Scrubs leftover Theme Version workspace rows and force-imports the Themes workspace JSON.",
-"read_when": "When the Themes workspace still shows Theme Version shortcuts after that DocType was removed.",
-"gotchas": [
-"scrub_theme_version_workspace_rows deletes child rows directly to bypass Desk Link validation."
-],
-"keywords": [
-"sync_themes_workspace",
-"Theme Version",
-"Workspace Shortcut",
-"import_file_by_path",
-"themes.json",
-"LEGACY_LINK_TARGETS"
-]
+"purpose": "Sync Themes workspace JSON and remove orphaned Theme Version shortcuts."
 },
 "themes/verify_fresh_install.py": {
-"purpose": "Bench check that a fresh install has a Default NCE Theme, a matching base_theme pointer, and non-empty nce_theme.css.",
-"read_when": "When confirming after_install left Site Theme Config, the Default theme, and published CSS in place.",
-"gotchas": [
-"The check fails unless Site Theme Config.base_theme matches the NCE Theme marked is_default."
-],
-"keywords": [
-"is_default",
-"base_theme",
-"nce_theme.css",
-"css_hash",
-"Site Theme Config",
-"theme_json"
-],
+"purpose": "Fresh-install verification for Task 13 step 6.",
 "depends_on": [
 "themes/utils/site_theme_config_helpers.py"
 ]
 },
 "themes/workspace_fix.py": {
-"purpose": "One-shot site command that rebuilds the Themes workspace after Theme Version removal.",
-"read_when": "When the desk still shows stale Theme Version shortcuts in the Themes workspace.",
-"gotchas": [],
-"keywords": [
-"workspace_fix",
-"sync_themes_workspace",
-"Theme Version",
-"bench",
-"execute"
-],
+"purpose": "One-shot fix for stale Themes workspace — run on any site after Theme Version removal.",
 "depends_on": [
 "themes/utils/workspace_sync.py"
 ]
 },
 "themes/www/themes.py": {
-"purpose": "Website context that sends guests to login except on public theme preview routes.",
-"read_when": "When theme editor pages are reachable without login or preview is wrongly blocked.",
-"gotchas": [
-"Preview paths stay public; every other themes route redirects Guest to login."
-],
-"keywords": [
-"get_context",
-"no_cache",
-"Guest",
-"redirect-to",
-"preview",
-"theme-settings"
-]
+"purpose": "Website context that sends guests to login except on public theme preview routes."
 }
 },
 "elements": [
@@ -5663,11 +4062,11 @@
 "name": "App",
 "qualname": "App",
 "sig": "",
-"hash": "7cda04362b",
+"hash": "6528eca941",
 "calls": [],
-"label": "Shell for theme editor with sidebar navigation to web and desk theme pages",
+"label": "Theme editor shell with sidebar navigation for web and desk themes",
 "label_source": "generated",
-"label_hash": "7cda04362b"
+"label_hash": "6528eca941"
 },
 {
 "id": "frontend/src/components/BrandColorPicker.vue::BrandColorPicker",
@@ -5676,11 +4075,11 @@
 "name": "BrandColorPicker",
 "qualname": "BrandColorPicker",
 "sig": "",
-"hash": "2e1932ed05",
+"hash": "a97de3fe34",
 "calls": [],
-"label": "Dialog to select brand hue and configure color shade generation parameters",
+"label": "Brand color picker dialog with hue selection and shade generation",
 "label_source": "generated",
-"label_hash": "2e1932ed05"
+"label_hash": "a97de3fe34"
 },
 {
 "id": "frontend/src/components/BrandColorPicker.vue::BrandPaletteMode",
@@ -6322,11 +4721,11 @@
 "name": "ColorField",
 "qualname": "ColorField",
 "sig": "",
-"hash": "2115d96721",
+"hash": "f301e27ab9",
 "calls": [],
-"label": "Labelled hex color input with native picker and optional generated shade strip",
+"label": "Labelled hex color input with native picker and optional shade strip",
 "label_source": "generated",
-"label_hash": "2115d96721"
+"label_hash": "f301e27ab9"
 },
 {
 "id": "frontend/src/components/EditorSection.vue::EditorSection",
@@ -6335,11 +4734,11 @@
 "name": "EditorSection",
 "qualname": "EditorSection",
 "sig": "",
-"hash": "3635ee920a",
+"hash": "e971673f78",
 "calls": [],
-"label": "Collapsible editor panel with title, hint, header actions, and help dialog",
+"label": "Collapsible editor panel with title, hint, actions, and help dialog",
 "label_source": "generated",
-"label_hash": "3635ee920a"
+"label_hash": "e971673f78"
 },
 {
 "id": "frontend/src/components/EditorSection.vue::PanelHelpContent",
@@ -6362,11 +4761,11 @@
 "name": "FontSelectField",
 "qualname": "FontSelectField",
 "sig": "",
-"hash": "4324e8ea76",
+"hash": "464b0f1371",
 "calls": [],
-"label": "Font family dropdown that previews each option in its own CSS font stack",
+"label": "Font family dropdown previewing each option in its own CSS font stack",
 "label_source": "generated",
-"label_hash": "4324e8ea76"
+"label_hash": "464b0f1371"
 },
 {
 "id": "frontend/src/components/FontSelectField.vue::FONT_GENERIC",
@@ -6454,11 +4853,11 @@
 "name": "NeutralColorPicker",
 "qualname": "NeutralColorPicker",
 "sig": "",
-"hash": "f54be2be89",
+"hash": "b4e1ce0e68",
 "calls": [],
-"label": "Neutral shade strip with warmth slider showing 600 hex and resolved foreground",
+"label": "Neutral shade strip with warmth slider showing 600 hex value",
 "label_source": "generated",
-"label_hash": "f54be2be89"
+"label_hash": "b4e1ce0e68"
 },
 {
 "id": "frontend/src/components/NeutralColorPicker.vue::onWarmthInput",
@@ -6484,11 +4883,11 @@
 "name": "PasswordField",
 "qualname": "PasswordField",
 "sig": "",
-"hash": "ebd1977520",
+"hash": "98247ade15",
 "calls": [],
-"label": "Password input field with visibility toggle and enter key emission",
+"label": "Password input field with show-hide toggle and enter key detection",
 "label_source": "generated",
-"label_hash": "ebd1977520"
+"label_hash": "98247ade15"
 },
 {
 "id": "frontend/src/components/SelectField.vue::SelectField",
@@ -6497,11 +4896,11 @@
 "name": "SelectField",
 "qualname": "SelectField",
 "sig": "",
-"hash": "67ad77f5bd",
+"hash": "b0f59b05b2",
 "calls": [],
-"label": "Select dropdown accepting plain strings or labeled option objects",
+"label": "Dropdown select field with label supporting string or object options",
 "label_source": "generated",
-"label_hash": "67ad77f5bd"
+"label_hash": "b0f59b05b2"
 },
 {
 "id": "frontend/src/components/SelectField.vue::SelectOption",
@@ -6524,11 +4923,11 @@
 "name": "ShadowDirectionDial",
 "qualname": "ShadowDirectionDial",
 "sig": "",
-"hash": "4443b2f050",
+"hash": "a54e5ddb11",
 "calls": [],
-"label": "Circular dial for setting shadow offset direction by pointer or touch",
+"label": "Circular dial slider for setting shadow offset direction in degrees",
 "label_source": "generated",
-"label_hash": "4443b2f050"
+"label_hash": "a54e5ddb11"
 },
 {
 "id": "frontend/src/components/ShadowDirectionDial.vue::clampAngle",
@@ -6698,11 +5097,11 @@
 "name": "SwatchPicker",
 "qualname": "SwatchPicker",
 "sig": "",
-"hash": "f4f7e901e9",
+"hash": "c6b50c2972",
 "calls": [],
-"label": "Color picker popover for primary, secondary, gray shades, or custom hex values",
+"label": "Color picker popover for primary, secondary, gray shades, and custom hex input",
 "label_source": "generated",
-"label_hash": "f4f7e901e9"
+"label_hash": "c6b50c2972"
 },
 {
 "id": "frontend/src/components/SwatchPicker.vue::norm",
@@ -6892,11 +5291,11 @@
 "name": "ThemeClassCatalogPanel",
 "qualname": "ThemeClassCatalogPanel",
 "sig": "",
-"hash": "aeffd0323d",
+"hash": "b414b5c7cf",
 "calls": [],
-"label": "Catalog panel displaying published theme classes and CSS values from nce_theme.css",
+"label": "Display and search published theme classes and CSS values from nce_theme.css",
 "label_source": "generated",
-"label_hash": "aeffd0323d"
+"label_hash": "b414b5c7cf"
 },
 {
 "id": "frontend/src/components/ThemeClassCatalogPanel.vue::load",
@@ -6927,11 +5326,11 @@
 "name": "ThemePreview",
 "qualname": "ThemePreview",
 "sig": "",
-"hash": "3db14396b1",
+"hash": "cda2f49b44",
 "calls": [],
-"label": "Sample form preview rendering theme settings as primary color, font, radius, and spacing",
+"label": "Live preview form applying theme settings to primary color, font, radius, and spacing",
 "label_source": "generated",
-"label_hash": "3db14396b1"
+"label_hash": "cda2f49b44"
 },
 {
 "id": "frontend/src/components/ThemePreview.vue::RADIUS_MAP",
@@ -6968,11 +5367,11 @@
 "name": "ThemeSwatchPicker",
 "qualname": "ThemeSwatchPicker",
 "sig": "",
-"hash": "bcc3bb7086",
+"hash": "0d0351a8a0",
 "calls": [],
-"label": "Open theme swatch picker and write class fields via Vue form state",
+"label": "Open theme swatch picker dialog and save color selections to form fields",
 "label_source": "generated",
-"label_hash": "bcc3bb7086"
+"label_hash": "0d0351a8a0"
 },
 {
 "id": "frontend/src/components/ThemeSwatchPicker.vue::FormLike",
@@ -7557,7 +5956,7 @@
 "name": "all",
 "qualname": "all",
 "sig": "",
-"hash": "9d58513679",
+"hash": "5c37fe15c5",
 "calls": [],
 "label": "index.css (the whole file)",
 "label_source": "title"
@@ -7569,11 +5968,11 @@
 "name": "DeskThemeHomePage",
 "qualname": "DeskThemeHomePage",
 "sig": "",
-"hash": "6a7838645d",
+"hash": "ca5ebb744d",
 "calls": [],
-"label": "Landing page linking to Desk Theme Editor and Preview",
+"label": "Landing page linking to Desk Theme Editor and live Desk Theme Preview",
 "label_source": "generated",
-"label_hash": "6a7838645d"
+"label_hash": "ca5ebb744d"
 },
 {
 "id": "frontend/src/pages/DeskThemePreviewPage.vue::DeskThemePreviewPage",
@@ -7582,11 +5981,11 @@
 "name": "DeskThemePreviewPage",
 "qualname": "DeskThemePreviewPage",
 "sig": "",
-"hash": "477128364d",
+"hash": "1c511a15bf",
 "calls": [],
-"label": "Preview Desk Theme CSS variables on live Frappe Desk pages in iframe",
+"label": "Preview Desk Theme CSS variables on live Frappe pages in iframe",
 "label_source": "generated",
-"label_hash": "477128364d"
+"label_hash": "1c511a15bf"
 },
 {
 "id": "frontend/src/pages/DeskThemePreviewPage.vue::applyVarsToIframe",
@@ -7649,11 +6048,11 @@
 "name": "DeskThemeSettingsPage",
 "qualname": "DeskThemeSettingsPage",
 "sig": "",
-"hash": "f44b05c657",
+"hash": "57173826f9",
 "calls": [],
-"label": "Desk Theme Editor for colors, typography, shape, Gantt, and live preview",
+"label": "Edit Desk Theme colors, fonts, Gantt appearance with live preview updates",
 "label_source": "generated",
-"label_hash": "f44b05c657"
+"label_hash": "57173826f9"
 },
 {
 "id": "frontend/src/pages/DeskThemeSettingsPage.vue::ALL_FIELDS",
@@ -8382,11 +6781,11 @@
 "name": "HomePage",
 "qualname": "HomePage",
 "sig": "",
-"hash": "11fb94266f",
+"hash": "53a606e620",
 "calls": [],
-"label": "Landing page linking to Theme Editor and Theme Preview pages",
+"label": "Landing page linking to Theme Editor and Theme Preview",
 "label_source": "generated",
-"label_hash": "11fb94266f"
+"label_hash": "53a606e620"
 },
 {
 "id": "frontend/src/pages/ThemePreviewPage.vue::ThemePreviewPage",
@@ -8395,11 +6794,11 @@
 "name": "ThemePreviewPage",
 "qualname": "ThemePreviewPage",
 "sig": "",
-"hash": "7674fa2a59",
+"hash": "66b268c20b",
 "calls": [],
-"label": "Sample UI page displaying live theme CSS variables and design components",
+"label": "Sample page demonstrating site theme colors, typography, and component styles",
 "label_source": "generated",
-"label_hash": "7674fa2a59"
+"label_hash": "66b268c20b"
 },
 {
 "id": "frontend/src/pages/ThemePreviewPage.vue::shadowDefs",
@@ -8453,11 +6852,11 @@
 "name": "ThemeSettingsPage",
 "qualname": "ThemeSettingsPage",
 "sig": "",
-"hash": "4e00e145ef",
+"hash": "c6670c0604",
 "calls": [],
-"label": "Edit site theme colors, typography, layout, and CSS variables with live preview",
+"label": "Edit site theme colours, typography, layout, and live CSS variables",
 "label_source": "generated",
-"label_hash": "4e00e145ef"
+"label_hash": "c6670c0604"
 },
 {
 "id": "frontend/src/pages/ThemeSettingsPage.vue::themeFromQuery",
@@ -9517,11 +7916,11 @@
 "name": "stub-icon",
 "qualname": "stub-icon",
 "sig": "",
-"hash": "469999bac5",
+"hash": "81f3ad53d1",
 "calls": [],
-"label": "Blank placeholder component for stubbed or missing icon imports",
+"label": "Placeholder component for stubbed icon imports",
 "label_source": "generated",
-"label_hash": "469999bac5"
+"label_hash": "81f3ad53d1"
 },
 {
 "id": "frontend/src/utils/__tests__/color-shades.parity.test.ts::normHex",
@@ -11871,7 +10270,7 @@
 "name": "all",
 "qualname": "all",
 "sig": "",
-"hash": "9139a57ce6",
+"hash": "90b7b2839f",
 "calls": [],
 "label": "theme-swatch-picker.css (the whole file)",
 "label_source": "title"
@@ -12945,7 +11344,7 @@
 "name": "all",
 "qualname": "all",
 "sig": "",
-"hash": "35870beb64",
+"hash": "b9c0bbc6c3",
 "calls": [],
 "label": "nce_desk_theme.css (the whole file)",
 "label_source": "title"
@@ -12957,7 +11356,7 @@
 "name": "all",
 "qualname": "all",
 "sig": "",
-"hash": "8a0e7658c7",
+"hash": "08ce00474c",
 "calls": [],
 "label": "nce_theme.css (the whole file)",
 "label_source": "title"
@@ -12977,18 +11376,6 @@
 "label_hash": "61c0bc8d24"
 },
 {
-"id": "themes/public/frontend/assets/themes4 2.css::all",
-"file": "themes/public/frontend/assets/themes4 2.css",
-"kind": "css-section",
-"name": "all",
-"qualname": "all",
-"sig": "",
-"hash": "1928c14169",
-"calls": [],
-"label": "themes4 2.css (the whole file)",
-"label_source": "title"
-},
-{
 "id": "themes/public/frontend/assets/themes4.css::all",
 "file": "themes/public/frontend/assets/themes4.css",
 "kind": "css-section",
@@ -13001,18 +11388,6 @@
 "label_source": "title"
 },
 {
-"id": "themes/public/frontend/assets/themes7 2.css::all",
-"file": "themes/public/frontend/assets/themes7 2.css",
-"kind": "css-section",
-"name": "all",
-"qualname": "all",
-"sig": "",
-"hash": "25b845de57",
-"calls": [],
-"label": "themes7 2.css (the whole file)",
-"label_source": "title"
-},
-{
 "id": "themes/public/frontend/assets/themes7.css::all",
 "file": "themes/public/frontend/assets/themes7.css",
 "kind": "css-section",
@@ -13022,18 +11397,6 @@
 "hash": "25b845de57",
 "calls": [],
 "label": "themes7.css (the whole file)",
-"label_source": "title"
-},
-{
-"id": "themes/public/frontend/assets/themes8 2.css::all",
-"file": "themes/public/frontend/assets/themes8 2.css",
-"kind": "css-section",
-"name": "all",
-"qualname": "all",
-"sig": "",
-"hash": "2a3114f427",
-"calls": [],
-"label": "themes8 2.css (the whole file)",
 "label_source": "title"
 },
 {
@@ -13098,7 +11461,7 @@
 "name": "all",
 "qualname": "all",
 "sig": "",
-"hash": "da89491f57",
+"hash": "0ae98206ca",
 "calls": [],
 "label": "web_default.css (the whole file)",
 "label_source": "title"
@@ -13110,7 +11473,7 @@
 "name": "all",
 "qualname": "all",
 "sig": "",
-"hash": "2d586f4215",
+"hash": "85b93803e4",
 "calls": [],
 "label": "web_gamma_sat.css (the whole file)",
 "label_source": "title"
@@ -13122,7 +11485,7 @@
 "name": "all",
 "qualname": "all",
 "sig": "",
-"hash": "363e479ab1",
+"hash": "a42fe77d6f",
 "calls": [],
 "label": "web_neutral_warmth.css (the whole file)",
 "label_source": "title"
@@ -13134,7 +11497,7 @@
 "name": "all",
 "qualname": "all",
 "sig": "",
-"hash": "2fcc9d3893",
+"hash": "6d83ea5428",
 "calls": [],
 "label": "web_site_default.css (the whole file)",
 "label_source": "title"
