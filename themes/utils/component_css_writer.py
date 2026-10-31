@@ -51,6 +51,126 @@ def declarations_for(row: dict) -> list[str]:
 	return decls
 
 
+def _table_bg_decls(bg_cls: str, fg_type: str) -> list[str]:
+	bg_match = BG_RE.match(bg_cls) if bg_cls else None
+	if not bg_match:
+		return []
+	role, shade = bg_match.group(1), bg_match.group(2)
+	v = f"--nce-color-{role}-{shade}" if shade else f"--nce-color-{role}"
+	fg_suffix = "-fg-tonal" if fg_type == "tonal" else "-fg"
+	return [
+		f"background-color: var({v});",
+		f"color: var({v}{fg_suffix});",
+	]
+
+
+def _table_border_value(width_cls: str, color_cls: str, default_width_var: str, default_color_var: str) -> str | None:
+	width_var = None
+	if width_cls in BORDER_WIDTHS:
+		width_var = BORDER_WIDTHS[width_cls]
+	elif color_cls and BORDER_COLOR_RE.match(color_cls):
+		width_var = default_width_var
+
+	color_var = None
+	border_match = BORDER_COLOR_RE.match(color_cls) if color_cls else None
+	if border_match:
+		role, shade = border_match.group(1), border_match.group(2)
+		color_var = f"--nce-color-{role}-{shade}"
+	elif width_cls in BORDER_WIDTHS:
+		color_var = default_color_var
+
+	if not width_var or not color_var:
+		return None
+	return f"var({width_var}) solid var({color_var})"
+
+
+def _table_prefix(parent: dict) -> str | None:
+	sel = (parent.get("table_selector") or "").strip()
+	scope = (parent.get("table_scope_class") or "").strip()
+	if not sel or not SELECTOR_RE.match(sel):
+		return None
+	if scope and not SELECTOR_RE.match(scope):
+		return None
+	if scope:
+		return f".{scope}.{scope}.{scope} .{sel}"
+	return f".{sel}.{sel}.{sel}"
+
+
+def table_css_for(parent: dict) -> str:
+	if (parent.get("status") or "").strip() != "Present":
+		return ""
+	if not int(parent.get("has_table") or 0):
+		return ""
+	prefix = _table_prefix(parent)
+	if not prefix:
+		return ""
+
+	component_name = parent.get("component_name") or ""
+	sel = (parent.get("table_selector") or "").strip()
+	rules: list[str] = []
+
+	header_bg = (parent.get("table_header_bg_class") or "").strip()
+	header_fg = (parent.get("table_header_fg_type") or "mono").strip() or "mono"
+	header_decls = _table_bg_decls(header_bg, header_fg)
+	if header_decls:
+		target = f"{prefix} thead th, {prefix} tfoot th, {prefix} tfoot td"
+		rules.append(target + " {\n\t" + "\n\t".join(header_decls) + "\n}")
+
+	row_bg = (parent.get("table_row_bg_class") or "").strip()
+	row_fg = (parent.get("table_row_fg_type") or "mono").strip() or "mono"
+	row_decls = _table_bg_decls(row_bg, row_fg)
+	if row_decls:
+		target = f"{prefix} tbody tr:nth-child(even)"
+		rules.append(target + " {\n\t" + "\n\t".join(row_decls) + "\n}")
+
+	alt_bg = (parent.get("table_row_alt_bg_class") or "").strip()
+	alt_fg = (parent.get("table_row_alt_fg_type") or "mono").strip() or "mono"
+	alt_decls = _table_bg_decls(alt_bg, alt_fg)
+	if alt_decls:
+		target = f"{prefix} tbody tr:nth-child(odd)"
+		rules.append(target + " {\n\t" + "\n\t".join(alt_decls) + "\n}")
+
+	header_line_w = (parent.get("table_header_line_class") or "").strip()
+	header_line_c = (parent.get("table_header_line_color_class") or "").strip()
+	header_border = _table_border_value(
+		header_line_w,
+		header_line_c,
+		"--nce-border-width-table-row",
+		"--nce-color-table-row-divider",
+	)
+	if header_border:
+		rules.append(f"{prefix} thead th {{\n\tborder-bottom: {header_border};\n}}")
+
+	row_div_w = (parent.get("table_row_divider_class") or "").strip()
+	row_div_c = (parent.get("table_row_divider_color_class") or "").strip()
+	row_border = _table_border_value(
+		row_div_w,
+		row_div_c,
+		"--nce-border-width-table-row",
+		"--nce-color-table-row-divider",
+	)
+	if row_border:
+		rules.append(f"{prefix} td {{\n\tborder-bottom: {row_border};\n}}")
+
+	col_div_w = (parent.get("table_col_divider_class") or "").strip()
+	col_div_c = (parent.get("table_col_divider_color_class") or "").strip()
+	col_border = _table_border_value(
+		col_div_w,
+		col_div_c,
+		"--nce-border-width-table-col",
+		"--nce-color-table-col-divider",
+	)
+	if col_border:
+		rules.append(f"{prefix} th, {prefix} td {{\n\tborder-right: {col_border};\n}}")
+		rules.append(
+			f"{prefix} th:last-child, {prefix} td:last-child {{\n\tborder-right: none;\n}}"
+		)
+
+	if not rules:
+		return ""
+	return f"/* {component_name} › table {sel} */\n" + "\n\n".join(rules)
+
+
 def generate_component_css(rows: list[dict]) -> str:
 	eligible: list[dict] = []
 	for row in rows:
@@ -95,8 +215,28 @@ def publish_component_css() -> dict:
 
 	from themes.utils.css_publish import write_published_css
 
+	_parent_fields = [
+		"name",
+		"component_name",
+		"status",
+		"has_table",
+		"table_selector",
+		"table_scope_class",
+		"table_header_bg_class",
+		"table_header_fg_type",
+		"table_row_bg_class",
+		"table_row_fg_type",
+		"table_row_alt_bg_class",
+		"table_row_alt_fg_type",
+		"table_header_line_class",
+		"table_header_line_color_class",
+		"table_row_divider_class",
+		"table_row_divider_color_class",
+		"table_col_divider_class",
+		"table_col_divider_color_class",
+	]
 	parents = {}
-	for p in frappe.get_all("Vue Component", fields=["name", "component_name", "status"]):
+	for p in frappe.get_all("Vue Component", fields=_parent_fields):
 		name = p.get("name") if isinstance(p, dict) else p.name
 		parents[name] = p
 	rows = []
@@ -114,7 +254,23 @@ def publish_component_css() -> dict:
 		if status != "Present":
 			continue
 		rows.append({**dict(r), "component_name": component_name})
-	css = generate_component_css(rows)
+	element_css = generate_component_css(rows)
+	table_blocks: list[str] = []
+	for p in sorted(parents.values(), key=lambda row: (row.get("component_name") if isinstance(row, dict) else row.component_name) or ""):
+		status = p.get("status") if isinstance(p, dict) else p.status
+		if status != "Present":
+			continue
+		parent_dict = dict(p) if isinstance(p, dict) else p.as_dict()
+		block = table_css_for(parent_dict)
+		if block:
+			table_blocks.append(block)
+	if table_blocks:
+		if element_css == HEADER:
+			css = HEADER + "\n\n" + "\n\n".join(table_blocks) + "\n"
+		else:
+			css = element_css.rstrip() + "\n\n" + "\n\n".join(table_blocks) + "\n"
+	else:
+		css = element_css
 	css_hash = write_published_css("nce_component_overrides.css", css)
 	frappe.cache.delete_value("assets_json")
 	frappe.clear_cache()

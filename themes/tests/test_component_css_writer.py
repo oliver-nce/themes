@@ -3,7 +3,7 @@ from __future__ import annotations
 
 import unittest
 
-from themes.utils.component_css_writer import HEADER, declarations_for, generate_component_css
+from themes.utils.component_css_writer import HEADER, declarations_for, generate_component_css, table_css_for
 
 
 def _row(**kwargs: object) -> dict:
@@ -118,6 +118,96 @@ class TestComponentCssWriter(unittest.TestCase):
 			override_bg_class="theme-bg-primary",
 		)])
 		self.assertIn(".card.card.card {", css)
+
+
+def _parent(**kwargs: object) -> dict:
+	base = {
+		"status": "Present",
+		"component_name": "TestComp",
+		"has_table": 1,
+		"table_selector": "ppv2-table",
+		"table_scope_class": "",
+		"table_header_bg_class": "",
+		"table_header_fg_type": "mono",
+		"table_row_bg_class": "",
+		"table_row_fg_type": "mono",
+		"table_row_alt_bg_class": "",
+		"table_row_alt_fg_type": "mono",
+		"table_header_line_class": "",
+		"table_header_line_color_class": "",
+		"table_row_divider_class": "",
+		"table_row_divider_color_class": "",
+		"table_col_divider_class": "",
+		"table_col_divider_color_class": "",
+	}
+	base.update(kwargs)
+	return base
+
+
+class TestTableCssWriter(unittest.TestCase):
+	def test_table_header_bg_mono(self) -> None:
+		css = table_css_for(_parent(
+			table_header_bg_class="theme-bg-primary-800",
+			table_header_fg_type="mono",
+		))
+		self.assertIn(".ppv2-table.ppv2-table.ppv2-table thead th", css)
+		self.assertIn("background-color: var(--nce-color-primary-800);", css)
+		self.assertIn("color: var(--nce-color-primary-800-fg);", css)
+
+	def test_table_header_bg_tonal(self) -> None:
+		css = table_css_for(_parent(
+			table_header_bg_class="theme-bg-primary-800",
+			table_header_fg_type="tonal",
+		))
+		self.assertIn("color: var(--nce-color-primary-800-fg-tonal);", css)
+
+	def test_table_row_even(self) -> None:
+		css = table_css_for(_parent(table_row_bg_class="theme-bg-primary-100"))
+		self.assertIn("tbody tr:nth-child(even)", css)
+
+	def test_table_row_odd(self) -> None:
+		css = table_css_for(_parent(table_row_alt_bg_class="theme-bg-primary-200"))
+		self.assertIn("tbody tr:nth-child(odd)", css)
+
+	def test_table_scope_prefix(self) -> None:
+		css = table_css_for(_parent(
+			table_scope_class="wrap",
+			table_header_bg_class="theme-bg-primary-800",
+		))
+		self.assertIn(".wrap.wrap.wrap .ppv2-table", css)
+
+	def test_empty_colours_no_css(self) -> None:
+		self.assertEqual(table_css_for(_parent()), "")
+
+	def test_bad_bg_class_ignored(self) -> None:
+		css = table_css_for(_parent(table_header_bg_class="nope"))
+		self.assertNotIn("background-color", css)
+
+	def test_row_divider_width_and_colour(self) -> None:
+		css = table_css_for(_parent(
+			table_row_divider_class="theme-border-strong",
+			table_row_divider_color_class="theme-border-primary-500",
+		))
+		self.assertIn(
+			"border-bottom: var(--nce-border-width-strong) solid var(--nce-color-primary-500);",
+			css,
+		)
+		self.assertIn(".ppv2-table.ppv2-table.ppv2-table td", css)
+
+	def test_row_divider_width_only_default_colour(self) -> None:
+		css = table_css_for(_parent(table_row_divider_class="theme-border"))
+		self.assertIn(
+			"border-bottom: var(--nce-border-width) solid var(--nce-color-table-row-divider);",
+			css,
+		)
+
+	def test_col_divider_last_child_reset(self) -> None:
+		css = table_css_for(_parent(
+			table_col_divider_class="theme-border",
+			table_col_divider_color_class="theme-border-primary-500",
+		))
+		self.assertIn("border-right: none", css)
+		self.assertIn("th:last-child", css)
 
 
 if __name__ == "__main__":

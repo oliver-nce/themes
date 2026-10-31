@@ -6,7 +6,7 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from themes.utils.component_scan import iter_vue_files, scan_vue_file
+from themes.utils.component_scan import inherit_table_usage, iter_vue_files, scan_vue_source, scan_vue_file
 
 FIXTURES = Path(__file__).resolve().parent / "fixtures" / "vue"
 
@@ -85,6 +85,128 @@ class TestComponentScan(unittest.TestCase):
 			(root / "sub" / "d.vue").write_text("<template></template>", encoding="utf-8")
 			found = iter_vue_files(root)
 			self.assertEqual(found, sorted([root / "a.vue", root / "sub" / "d.vue"], key=str))
+
+	def test_table_with_selector(self) -> None:
+		source = """<template>
+<div class="wrap">
+  <table class="ppv2-table theme-table"></table>
+</div>
+</template>"""
+		result = scan_vue_source(source)
+		self.assertEqual(result["has_table"], 1)
+		self.assertEqual(result["owns_table"], 1)
+		self.assertEqual(result["table_selector"], "ppv2-table")
+		self.assertEqual(result["root_class"], "wrap")
+		self.assertEqual(result["table_scope_class"], "")
+
+	def test_no_table(self) -> None:
+		source = """<template><div class="wrap"></div></template>"""
+		result = scan_vue_source(source)
+		self.assertEqual(result["has_table"], 0)
+		self.assertEqual(result["owns_table"], 0)
+		self.assertEqual(result["table_selector"], "")
+
+	def test_table_theme_only_class(self) -> None:
+		source = """<template><table class="theme-table"></table></template>"""
+		result = scan_vue_source(source)
+		self.assertEqual(result["has_table"], 1)
+		self.assertEqual(result["table_selector"], "")
+
+	def test_inherit_table_usage_direct(self) -> None:
+		scans = [
+			{
+				"app": "nce",
+				"component_name": "Parent",
+				"owns_table": 0,
+				"root_class": "wrap",
+				"uses_components": ["PanelTable"],
+				"has_table": 0,
+				"table_selector": "",
+				"table_scope_class": "",
+			},
+			{
+				"app": "nce",
+				"component_name": "PanelTable",
+				"owns_table": 1,
+				"has_table": 1,
+				"table_selector": "ppv2-table",
+				"root_class": "",
+				"uses_components": [],
+				"table_scope_class": "",
+			},
+		]
+		inherit_table_usage(scans)
+		parent = scans[0]
+		child = scans[1]
+		self.assertEqual(parent["has_table"], 1)
+		self.assertEqual(parent["table_selector"], "ppv2-table")
+		self.assertEqual(parent["table_scope_class"], "wrap")
+		self.assertEqual(child["table_selector"], "ppv2-table")
+
+	def test_inherit_table_usage_chain(self) -> None:
+		scans = [
+			{
+				"app": "nce",
+				"component_name": "A",
+				"owns_table": 0,
+				"root_class": "root-a",
+				"uses_components": ["B"],
+				"has_table": 0,
+				"table_selector": "",
+				"table_scope_class": "",
+			},
+			{
+				"app": "nce",
+				"component_name": "B",
+				"owns_table": 0,
+				"root_class": "root-b",
+				"uses_components": ["C"],
+				"has_table": 0,
+				"table_selector": "",
+				"table_scope_class": "",
+			},
+			{
+				"app": "nce",
+				"component_name": "C",
+				"owns_table": 1,
+				"has_table": 1,
+				"table_selector": "ppv2-table",
+				"root_class": "",
+				"uses_components": [],
+				"table_scope_class": "",
+			},
+		]
+		inherit_table_usage(scans)
+		self.assertEqual(scans[0]["table_selector"], "ppv2-table")
+		self.assertEqual(scans[0]["table_scope_class"], "root-a")
+		self.assertEqual(scans[1]["table_selector"], "ppv2-table")
+		self.assertEqual(scans[1]["table_scope_class"], "root-b")
+
+	def test_inherit_does_not_overwrite_owner(self) -> None:
+		scans = [
+			{
+				"app": "nce",
+				"component_name": "Owner",
+				"owns_table": 1,
+				"has_table": 1,
+				"table_selector": "mine-table",
+				"root_class": "mine",
+				"uses_components": ["OtherTable"],
+				"table_scope_class": "",
+			},
+			{
+				"app": "nce",
+				"component_name": "OtherTable",
+				"owns_table": 1,
+				"has_table": 1,
+				"table_selector": "other-table",
+				"root_class": "",
+				"uses_components": [],
+				"table_scope_class": "",
+			},
+		]
+		inherit_table_usage(scans)
+		self.assertEqual(scans[0]["table_selector"], "mine-table")
 
 
 if __name__ == "__main__":

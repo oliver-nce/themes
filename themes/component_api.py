@@ -7,7 +7,7 @@ import frappe
 from frappe import _
 
 from themes.utils.component_css_writer import declarations_for, publish_component_css
-from themes.utils.component_scan import iter_vue_files, scan_vue_file
+from themes.utils.component_scan import inherit_table_usage, iter_vue_files, scan_vue_file
 from themes.utils.component_summary import build_summary
 from themes.utils.component_sync import ALWAYS_EXCLUDED_APPS, merge_elements
 
@@ -67,12 +67,22 @@ def _apply_scan(doc, scan: dict | None) -> None:
 		doc.status = "Missing"
 		for row in doc.elements:
 			row.element_status = "Missing"
+		doc.has_table = 0
+		doc.owns_table = 0
+		doc.root_class = ""
+		doc.table_selector = ""
+		doc.table_scope_class = ""
 	else:
 		doc.component_name = scan["component_name"]
 		doc.source_hash = scan["source_hash"]
 		doc.purpose = scan["purpose"]
 		doc.uses_components = "\n".join(scan["uses_components"])
 		doc.status = "Present"
+		doc.has_table = int(scan.get("has_table") or 0)
+		doc.owns_table = int(scan.get("owns_table") or 0)
+		doc.root_class = scan.get("root_class") or ""
+		doc.table_selector = scan.get("table_selector") or ""
+		doc.table_scope_class = scan.get("table_scope_class") or ""
 		merged = merge_elements([r.as_dict() for r in doc.elements], scan["elements"])
 		_set_rows(doc, merged)
 	doc.last_scanned = frappe.utils.now_datetime()
@@ -114,6 +124,7 @@ def rescan_all() -> dict:
 	missing = 0
 	excluded = _excluded_apps()
 
+	pending: list[tuple] = []
 	for app in frappe.get_installed_apps():
 		if app in excluded:
 			continue
@@ -132,9 +143,16 @@ def rescan_all() -> dict:
 				doc.file_path = rel
 				doc.component_key = key
 				new += 1
-			_apply_scan(doc, scan_vue_file(path))
-			doc.flags.skip_css_publish = True
-			doc.save(ignore_permissions=True)
+			scan = scan_vue_file(path)
+			scan["app"] = app
+			pending.append((doc, scan))
+
+	inherit_table_usage([scan for _, scan in pending])
+
+	for doc, scan in pending:
+		_apply_scan(doc, scan)
+		doc.flags.skip_css_publish = True
+		doc.save(ignore_permissions=True)
 
 	for row in frappe.get_all("Vue Component", fields=["name", "component_key", "status"]):
 		if row.component_key in seen or row.status == "Missing":
@@ -161,6 +179,36 @@ def refresh_component(name: str) -> dict:
 	doc = frappe.get_doc("Vue Component", name)
 	path = _vue_file(doc)
 	scan = scan_vue_file(path) if path else None
+	if scan is not None:
+		scan["app"] = doc.app
+		siblings: list[dict] = []
+		for child_name in scan["uses_components"]:
+			row = frappe.db.get_value(
+				"Vue Component",
+				{"app": doc.app, "component_name": child_name},
+				[
+					"component_name",
+					"has_table",
+					"table_selector",
+					"root_class",
+					"uses_components",
+					"table_scope_class",
+				],
+				as_dict=True,
+			)
+			if not row:
+				continue
+			siblings.append({
+				"app": doc.app,
+				"component_name": row["component_name"],
+				"has_table": int(row.get("has_table") or 0),
+				"owns_table": 1,
+				"table_selector": row.get("table_selector") or "",
+				"root_class": row.get("root_class") or "",
+				"uses_components": row.get("uses_components") or "",
+				"table_scope_class": row.get("table_scope_class") or "",
+			})
+		inherit_table_usage([scan, *siblings])
 	_apply_scan(doc, scan)
 	doc.save()
 	_refresh_all_summaries()
@@ -197,3 +245,26 @@ def preview_declarations(rows) -> dict:
 def publish_css() -> dict:
 	frappe.only_for("System Manager")
 	return publish_component_css()
+
+
+@frappe.whitelist()
+def open_vue_components() -> dict:
+	"""Ensure Vue Component exists and has rows, then return its Desk list URL."""
+	frappe.only_for("System Manager")
+	created = False
+	if not frappe.db.exists("DocType", "Vue Component"):
+		# Child table first, then the parent, then the settings single.
+		frappe.reload_doc("themes", "doctype", "vue_component_element", force=True)
+		frappe.reload_doc("themes", "doctype", "vue_component", force=True)
+		frappe.reload_doc("themes", "doctype", "theme_component_settings", force=True)
+		frappe.clear_cache()
+		created = True
+	populated = False
+	if created or not frappe.db.count("Vue Component"):
+		rescan_all()
+		populated = True
+	return {
+		"url": "/app/vue-component",
+		"created": created,
+		"populated": populated,
+	}

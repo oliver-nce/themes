@@ -9,6 +9,7 @@ from themes.utils.component_summary import build_summary
 from themes.utils.component_sync import (
 	BG_RE,
 	BORDER_COLOR_RE,
+	BORDER_WIDTHS,
 	OVERRIDE_FIELDS,
 	SELECTOR_RE,
 	TEXT_RE,
@@ -23,6 +24,27 @@ _VALIDATORS = (
 	("selector_class", SELECTOR_RE, "selector class"),
 )
 
+_TABLE_BG_FIELDS = (
+	("table_header_bg_class", "Table Header Background"),
+	("table_row_bg_class", "Table Row Background"),
+	("table_row_alt_bg_class", "Table Alternate Row Background"),
+)
+_TABLE_FG_FIELDS = (
+	("table_header_fg_type", "Table Header Text"),
+	("table_row_fg_type", "Table Row Text"),
+	("table_row_alt_fg_type", "Table Alternate Row Text"),
+)
+_TABLE_LINE_WIDTH_FIELDS = (
+	("table_header_line_class", "Column Header Underline Width"),
+	("table_row_divider_class", "Horizontal Divider Width"),
+	("table_col_divider_class", "Vertical Divider Width"),
+)
+_TABLE_LINE_COLOR_FIELDS = (
+	("table_header_line_color_class", "Column Header Underline Colour"),
+	("table_row_divider_color_class", "Horizontal Divider Colour"),
+	("table_col_divider_color_class", "Vertical Divider Colour"),
+)
+
 
 class VueComponent(Document):
 	def validate(self):
@@ -33,6 +55,31 @@ class VueComponent(Document):
 					frappe.throw(
 						_("Row {0}: {1} is not a valid {2}.").format(row.idx, value, label)
 					)
+
+		for fieldname, label in _TABLE_BG_FIELDS:
+			value = (self.get(fieldname) or "").strip()
+			if value and not BG_RE.match(value):
+				frappe.throw(
+					_("Table {0}: {1} is not a valid {2}.").format(label, value, "background class")
+				)
+		for fieldname, label in _TABLE_FG_FIELDS:
+			value = (self.get(fieldname) or "").strip()
+			if value and value not in ("mono", "tonal"):
+				frappe.throw(
+					_("Table {0}: {1} is not a valid {2}.").format(label, value, "text type")
+				)
+		for fieldname, label in _TABLE_LINE_WIDTH_FIELDS:
+			value = (self.get(fieldname) or "").strip()
+			if value and value not in BORDER_WIDTHS:
+				frappe.throw(
+					_("Table {0}: {1} is not a valid {2}.").format(label, value, "border width class")
+				)
+		for fieldname, label in _TABLE_LINE_COLOR_FIELDS:
+			value = (self.get(fieldname) or "").strip()
+			if value and not BORDER_COLOR_RE.match(value):
+				frappe.throw(
+					_("Table {0}: {1} is not a valid {2}.").format(label, value, "border colour class")
+				)
 
 		rows = normalise_groups([r.as_dict() for r in self.elements])
 		for i, row in enumerate(self.elements):

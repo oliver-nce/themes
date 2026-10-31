@@ -1,27 +1,91 @@
 let _vc_preview = null;
 
+const VC_TABLE_CLASS_FIELDS = [
+	"table_header_bg_class",
+	"table_row_bg_class",
+	"table_row_alt_bg_class",
+	"table_header_line_class",
+	"table_header_line_color_class",
+	"table_row_divider_class",
+	"table_row_divider_color_class",
+	"table_col_divider_class",
+	"table_col_divider_color_class",
+];
+
+const VC_TABLE_ROW_SLOTS = [
+	{
+		label: __("Header row"),
+		field: "table_header_bg_class",
+		fgField: "table_header_fg_type",
+		fallback: "theme-bg-table-header",
+	},
+	{
+		label: __("Row (main / even)"),
+		field: "table_row_bg_class",
+		fgField: "table_row_fg_type",
+		fallback: "theme-bg-row",
+	},
+	{
+		label: __("Row (alternate / odd)"),
+		field: "table_row_alt_bg_class",
+		fgField: "table_row_alt_fg_type",
+		fallback: "theme-bg-row-alt",
+	},
+];
+
+const VC_TABLE_LINE_SLOTS = [
+	{
+		label: __("Column header underline"),
+		widthField: "table_header_line_class",
+		colorField: "table_header_line_color_class",
+	},
+	{
+		label: __("Horizontal dividers"),
+		widthField: "table_row_divider_class",
+		colorField: "table_row_divider_color_class",
+	},
+	{
+		label: __("Vertical dividers"),
+		widthField: "table_col_divider_class",
+		colorField: "table_col_divider_color_class",
+	},
+];
+
 frappe.ui.form.on("Vue Component", {
 	refresh(frm) {
 		frm.clear_custom_buttons();
 		if (!frm.is_new()) {
 			frm.add_custom_button(__("Refresh from file"), () => {
-				frappe.call({
-					method: "themes.component_api.refresh_component",
-					args: { name: frm.doc.name },
-					freeze: true,
-					callback() {
-						frm.reload_doc();
-					},
-				});
+				_vc_refresh_from_file(frm);
 			});
 		}
 		frm._vc_saved = JSON.parse(JSON.stringify(frm.doc.elements || []));
+		frm._vc_table_saved = _vc_table_saved_from_doc(frm.doc);
 		_vc_render_colours(frm);
 	},
 	after_save(frm) {
 		_vc_reload_css();
 	},
 });
+
+function _vc_refresh_from_file(frm) {
+	frappe.call({
+		method: "themes.component_api.refresh_component",
+		args: { name: frm.doc.name },
+		freeze: true,
+		callback() {
+			frm.reload_doc();
+		},
+	});
+}
+
+function _vc_table_saved_from_doc(doc) {
+	const snap = {};
+	VC_TABLE_CLASS_FIELDS.forEach((f) => {
+		snap[f] = doc[f] || "";
+	});
+	return snap;
+}
 
 function _vc_reload_css() {
 	document.querySelectorAll('link[rel="stylesheet"]').forEach((link) => {
@@ -104,28 +168,8 @@ function _vc_preview_bg_class(first) {
 	return "";
 }
 
-function _vc_class_cell_html(first) {
-	const parts = [];
-	if ((first.override_bg_class || "").trim()) {
-		parts.push("<strong>" + frappe.utils.escape_html(first.override_bg_class.trim()) + "</strong>");
-	}
-	if ((first.override_text_class || "").trim()) {
-		parts.push("<strong>" + frappe.utils.escape_html(first.override_text_class.trim()) + "</strong>");
-	}
-	if ((first.override_border_color_class || "").trim()) {
-		parts.push("<strong>" + frappe.utils.escape_html(first.override_border_color_class.trim()) + "</strong>");
-	}
-	if (parts.length) {
-		return parts.join(" ");
-	}
-	if ((first.source_classes || "").trim()) {
-		return '<span class="vc-muted">' + frappe.utils.escape_html(first.source_classes.trim()) + "</span>";
-	}
-	return "—";
-}
-
-function _vc_show_revert(saved) {
-	return (saved || []).some((row) => {
+function _vc_show_revert(savedElements, savedTable) {
+	const elementsDirty = (savedElements || []).some((row) => {
 		if (row.keep_default) {
 			return true;
 		}
@@ -136,22 +180,367 @@ function _vc_show_revert(saved) {
 			"override_border_color_class",
 		].some((f) => ((row[f] || "").trim()));
 	});
+	if (elementsDirty) {
+		return true;
+	}
+	return VC_TABLE_CLASS_FIELDS.some((f) => ((savedTable[f] || "").trim()));
 }
 
 function _vc_ensure_styles() {
-	if (document.getElementById("vc-colours-style")) {
-		return;
+	const css =
+		".vc-colours-wrap .vc-chrome-table{width:100%;max-width:760px;background:#fff;table-layout:fixed;margin:0}" +
+		".vc-colours-wrap .vc-chrome-table thead th{padding:6px 10px;background:#f7f7f7;font-weight:600;font-size:13px;vertical-align:middle}" +
+		".vc-colours-wrap .vc-chrome-table tbody td{padding:8px 10px;font-size:12px;vertical-align:middle}" +
+		".vc-colours-wrap .vc-class-default{color:#8d99a6}" +
+		".vc-colours-wrap .vc-class-custom{color:#36414c;font-weight:600}" +
+		".vc-colours-wrap .vc-class-cell{font-family:monospace;font-size:12px}" +
+		".vc-colours-wrap .vc-section-title{margin:18px 0 8px;font-weight:600;font-size:13px}" +
+		".vc-colours-wrap .vc-section-title:first-child{margin-top:0}" +
+		".vc-colours-wrap .vc-theme-row{display:flex;align-items:flex-end;gap:8px;flex-wrap:wrap;margin-bottom:8px}" +
+		".vc-colours-wrap .vc-theme-label{font-weight:600;font-size:13px;margin-bottom:4px;display:block}" +
+		".vc-colours-wrap .vc-theme-name{display:block;min-width:220px;border:1px solid #d1d8dd;background:#f4f5f6;border-radius:4px;padding:4px 8px;font-size:13px}" +
+		".vc-colours-wrap .vc-muted{color:#8d99a6;font-size:12px}" +
+		".vc-colours-wrap .vc-warn{color:#e24c4c;font-weight:600}" +
+		".vc-colours-wrap .vc-swatch{width:36px;height:22px;display:inline-flex;align-items:center;justify-content:center;border-radius:4px;border:1px solid #d1d8dd;font-size:10px;box-sizing:border-box}" +
+		".vc-colours-wrap .vc-swatch-empty{background:#f4f5f6;color:#8d99a6}" +
+		".vc-colours-wrap .vc-quiet{margin-top:4px;display:flex;align-items:center;flex-wrap:wrap;gap:6px}" +
+		".vc-colours-wrap .vc-revert{padding-left:0;margin:0 0 10px}" +
+		".vc-colours-wrap .vc-table-preview-wrap{margin:10px 0 14px;overflow:hidden;border-radius:6px;border:1px solid #d1d8dd;max-width:420px}" +
+		".vc-colours-wrap .vc-table-preview{width:100%;border-collapse:collapse;font-size:12px}" +
+		".vc-colours-wrap .vc-table-preview th:not([class*='theme-bg-']){background:var(--nce-color-table-header);color:var(--nce-color-table-header-fg,var(--nce-color-text))}" +
+		".vc-colours-wrap .vc-table-preview tbody tr:nth-child(odd):not([class*='theme-bg-']){background:var(--nce-color-row-alt)}" +
+		".vc-colours-wrap .vc-table-preview tbody tr:nth-child(even):not([class*='theme-bg-']){background:var(--nce-color-row)}" +
+		".vc-colours-wrap .vc-table-preview th,.vc-colours-wrap .vc-table-preview td{padding:5px 8px;text-align:left;border-bottom:var(--nce-border-width-table-row,1px) solid var(--nce-color-table-row-divider,#d1d8dd);border-right:var(--nce-border-width-table-col,1px) solid var(--nce-color-table-col-divider,#d1d8dd)}" +
+		".vc-colours-wrap .vc-table-preview th:last-child,.vc-colours-wrap .vc-table-preview td:last-child{border-right:none}" +
+		".vc-colours-wrap .vc-line-preview{display:block;width:48px;border-bottom-style:solid;border-bottom-color:var(--nce-color-table-row-divider,#d1d8dd)}" +
+		".vc-colours-wrap .vc-changed{background:var(--yellow-50)}" +
+		".vc-colours-wrap .vc-border-width,.vc-colours-wrap .vc-table-width{font-size:11px;height:24px;padding:2px 4px;max-width:120px;display:inline-block;width:auto}";
+	let style = document.getElementById("vc-colours-style-v2");
+	if (!style) {
+		style = document.createElement("style");
+		style.id = "vc-colours-style-v2";
+		document.head.appendChild(style);
 	}
-	const style = document.createElement("style");
-	style.id = "vc-colours-style";
-	style.textContent =
-		".vc-swatch{width:56px;height:28px;display:inline-flex;align-items:center;justify-content:center;border-radius:4px;font-size:10px}" +
-		".vc-warn{color:var(--red-600);font-weight:600}" +
-		".vc-changed{background:var(--yellow-50)}" +
-		".vc-colours-table{width:100%;border-collapse:collapse}" +
-		".vc-colours-table td,.vc-colours-table th{border:1px solid var(--border-color);padding:6px 8px;vertical-align:middle}" +
-		".vc-muted{color:var(--text-muted);font-size:12px}";
-	document.head.appendChild(style);
+	style.textContent = css;
+}
+
+function _vc_element_swatch_html(first) {
+	const overrideBg = (first.override_bg_class || "").trim();
+	const bg = overrideBg || _vc_preview_bg_class(first);
+	const overrideText = (first.override_text_class || "").trim();
+	let classes = ["vc-swatch"];
+	if (bg) {
+		const tonal = first.override_fg_type === "tonal" ? _vc_fg_tonal_class(bg) : "";
+		classes = classes.concat([bg, tonal].filter(Boolean));
+	} else if (overrideText) {
+		classes.push(overrideText);
+	} else {
+		classes.push("vc-swatch-empty");
+	}
+	return (
+		'<span class="' +
+		frappe.utils.escape_html(classes.join(" ")) +
+		'">' +
+		frappe.utils.escape_html(__("Text")) +
+		"</span>"
+	);
+}
+
+function _vc_width_select_html(className, attrString, current) {
+	const w = current || "";
+	let html =
+		'<select class="form-control input-xs ' +
+		frappe.utils.escape_html(className) +
+		'" ' +
+		attrString +
+		">";
+	html +=
+		'<option value=""' +
+		(w === "" ? " selected" : "") +
+		">" +
+		frappe.utils.escape_html(__("Theme default")) +
+		"</option>";
+	html +=
+		'<option value="theme-border-thin"' +
+		(w === "theme-border-thin" ? " selected" : "") +
+		">" +
+		frappe.utils.escape_html(__("Thin")) +
+		"</option>";
+	html +=
+		'<option value="theme-border"' +
+		(w === "theme-border" ? " selected" : "") +
+		">" +
+		frappe.utils.escape_html(__("Normal")) +
+		"</option>";
+	html +=
+		'<option value="theme-border-strong"' +
+		(w === "theme-border-strong" ? " selected" : "") +
+		">" +
+		frappe.utils.escape_html(__("Strong")) +
+		"</option>";
+	html += "</select>";
+	return html;
+}
+
+function _vc_line_width_px(widthClass) {
+	if (widthClass === "theme-border-thin") {
+		return 1;
+	}
+	if (widthClass === "theme-border") {
+		return 2;
+	}
+	if (widthClass === "theme-border-strong") {
+		return 3;
+	}
+	return 1;
+}
+
+function _vc_line_preview_html(widthClass, colorClass) {
+	const px = _vc_line_width_px((widthClass || "").trim());
+	const color = (colorClass || "").trim();
+	const cls = color ? "vc-line-preview " + color : "vc-line-preview";
+	return (
+		'<span class="' +
+		frappe.utils.escape_html(cls) +
+		'" style="border-bottom-width:' +
+		px +
+		'px;"></span>'
+	);
+}
+
+function _vc_element_class_cell_html(first, dataGroup) {
+	const bgRaw = (first.override_bg_class || "").trim();
+	const mainLine = bgRaw
+		? '<span class="vc-class-custom">' + frappe.utils.escape_html(bgRaw) + "</span>"
+		: '<span class="vc-class-default">—</span>';
+	const tonalSuffix =
+		first.override_fg_type === "tonal"
+			? ' <span class="vc-muted">(' + frappe.utils.escape_html(__("tonal")) + ")</span>"
+			: "";
+	const textVal = (first.override_text_class || "").trim()
+		? first.override_text_class.trim()
+		: first.override_fg_type || "mono";
+	const borderWidth = first.override_border_width_class || "";
+	const borderColor = (first.override_border_color_class || "").trim();
+	const borderColorHtml = borderColor
+		? frappe.utils.escape_html(borderColor)
+		: '<span class="vc-muted">' + frappe.utils.escape_html(__("Theme default")) + "</span>";
+
+	let html = '<div class="vc-class-cell">';
+	html += "<div>" + mainLine + tonalSuffix + "</div>";
+	html += '<div class="vc-quiet vc-muted">';
+	html += frappe.utils.escape_html(textVal);
+	html +=
+		' <button type="button" class="btn btn-xs btn-default vc-pick-text" data-group="' +
+		dataGroup +
+		'">' +
+		frappe.utils.escape_html(__("Pick text")) +
+		"</button>";
+	html += "</div>";
+	html += '<div class="vc-quiet">';
+	html += _vc_width_select_html(
+		"vc-border-width",
+		'data-group="' + dataGroup + '"',
+		borderWidth,
+	);
+	html += " " + borderColorHtml;
+	html +=
+		' <button type="button" class="btn btn-xs btn-default vc-pick-border" data-group="' +
+		dataGroup +
+		'">' +
+		frappe.utils.escape_html(__("Pick")) +
+		"</button>";
+	html += "</div>";
+	html += '<div class="vc-quiet">';
+	html +=
+		'<label class="vc-muted" style="font-weight:400;margin:0;"><input type="checkbox" class="vc-keep" data-group="' +
+		dataGroup +
+		'"' +
+		(first.keep_default ? " checked" : "") +
+		"> " +
+		frappe.utils.escape_html(__("Keep default")) +
+		"</label>";
+	html += "</div></div>";
+	return html;
+}
+
+function _vc_chrome_table_head_html() {
+	return (
+		"<thead><tr>" +
+		'<th style="width:24%;">' +
+		frappe.utils.escape_html(__("Surface")) +
+		"</th>" +
+		'<th style="width:80px;">' +
+		frappe.utils.escape_html(__("Preview")) +
+		"</th>" +
+		"<th>" +
+		frappe.utils.escape_html(__("Class")) +
+		"</th>" +
+		'<th style="width:72px;"></th>' +
+		"</tr></thead>"
+	);
+}
+
+function _vc_table_row_swatch_html(effectiveClass, fgType) {
+	let classes = ["vc-swatch", effectiveClass];
+	if (fgType === "tonal") {
+		const tonal = _vc_fg_tonal_class(effectiveClass);
+		if (tonal) {
+			classes.push(tonal);
+		}
+	}
+	return (
+		'<span class="' +
+		frappe.utils.escape_html(classes.join(" ")) +
+		'">' +
+		frappe.utils.escape_html(__("Text")) +
+		"</span>"
+	);
+}
+
+function _vc_build_tables_section_html(frm) {
+	let html = '<div class="vc-section-title">' + frappe.utils.escape_html(__("Tables")) + "</div>";
+	html +=
+		'<p class="vc-muted" style="margin:-4px 0 10px;">' +
+		frappe.utils.escape_html(
+			__(
+				"Empty slots use the assigned theme's Tables tokens (same as the Theme Editor). Row 1 is alternate/odd; row 2 is main/even — matching theme-table striping.",
+			),
+		) +
+		"</p>";
+
+	const tableSelector = (frm.doc.table_selector || "").trim();
+	if (!tableSelector) {
+		html +=
+			'<p class="vc-warn">!! ' +
+			frappe.utils.escape_html(__("no class — add a class on the table in the .vue file.")) +
+			"</p>";
+	} else if (
+		!cint(frm.doc.owns_table) &&
+		!(frm.doc.table_scope_class || "").trim()
+	) {
+		html +=
+			'<p class="vc-muted">' +
+			frappe.utils.escape_html(
+				__(
+					"Add a class on this component's outer element so these colours apply only to its tables.",
+				),
+			) +
+			"</p>";
+	}
+
+	html += '<table class="vc-chrome-table table table-bordered">';
+	html += _vc_chrome_table_head_html();
+	html += "<tbody>";
+
+	VC_TABLE_ROW_SLOTS.forEach((slot) => {
+		const raw = (frm.doc[slot.field] || "").trim();
+		const effective = raw || slot.fallback;
+		const fgType = frm.doc[slot.fgField] || "mono";
+		const display = raw
+			? '<span class="vc-class-custom">' + frappe.utils.escape_html(raw) + "</span>"
+			: '<span class="vc-class-default">' + frappe.utils.escape_html(slot.fallback) + "</span>";
+		const fgLabel =
+			fgType === "tonal"
+				? ' <span class="vc-muted">(' + frappe.utils.escape_html(__("tonal")) + ")</span>"
+				: "";
+		html += "<tr>";
+		html += "<td>" + frappe.utils.escape_html(slot.label) + "</td>";
+		html += "<td>" + _vc_table_row_swatch_html(effective, fgType) + "</td>";
+		html +=
+			'<td class="vc-class-cell">' +
+			display +
+			fgLabel +
+			"</td>";
+		html +=
+			'<td style="text-align:right;"><button type="button" class="btn btn-xs btn-default vc-table-pick" data-field="' +
+			frappe.utils.escape_html(slot.field) +
+			'" data-fg-type-field="' +
+			frappe.utils.escape_html(slot.fgField) +
+			'">' +
+			frappe.utils.escape_html(__("Pick…")) +
+			"</button></td>";
+		html += "</tr>";
+	});
+
+	html += "</tbody></table>";
+
+	const previewRows = [
+		{ id: "101", name: "Alpha", status: "Active" },
+		{ id: "102", name: "Beta", status: "Pending" },
+		{ id: "103", name: "Gamma", status: "Active" },
+	];
+	const thClass = (frm.doc.table_header_bg_class || "").trim();
+	html += '<div class="vc-table-preview-wrap"><table class="vc-table-preview"><thead><tr>';
+	["ID", "Name", "Status"].forEach((col) => {
+		const thCls = thClass ? ' class="' + frappe.utils.escape_html(thClass) + '"' : "";
+		html += "<th" + thCls + ">" + frappe.utils.escape_html(col) + "</th>";
+	});
+	html += "</tr></thead><tbody>";
+	previewRows.forEach((row, ri) => {
+		const rowField = ri % 2 === 0 ? "table_row_alt_bg_class" : "table_row_bg_class";
+		const trClass = (frm.doc[rowField] || "").trim();
+		const trAttr = trClass ? ' class="' + frappe.utils.escape_html(trClass) + '"' : "";
+		html +=
+			"<tr" +
+			trAttr +
+			"><td>" +
+			frappe.utils.escape_html(row.id) +
+			"</td><td>" +
+			frappe.utils.escape_html(row.name) +
+			"</td><td>" +
+			frappe.utils.escape_html(row.status) +
+			"</td></tr>";
+	});
+	html += "</tbody></table></div>";
+
+	html += '<table class="vc-chrome-table table table-bordered">';
+	html +=
+		"<thead><tr>" +
+		'<th style="width:24%;">' +
+		frappe.utils.escape_html(__("Line")) +
+		"</th>" +
+		'<th style="width:80px;">' +
+		frappe.utils.escape_html(__("Preview")) +
+		"</th>" +
+		'<th style="width:100px;">' +
+		frappe.utils.escape_html(__("Width")) +
+		"</th>" +
+		"<th>" +
+		frappe.utils.escape_html(__("Color class")) +
+		"</th>" +
+		'<th style="width:88px;"></th>' +
+		"</tr></thead><tbody>";
+
+	VC_TABLE_LINE_SLOTS.forEach((slot) => {
+		const widthVal = frm.doc[slot.widthField] || "";
+		const colorRaw = (frm.doc[slot.colorField] || "").trim();
+		const colorDisplay = colorRaw
+			? '<span class="vc-class-custom">' + frappe.utils.escape_html(colorRaw) + "</span>"
+			: '<span class="vc-class-default">' + frappe.utils.escape_html(__("theme")) + "</span>";
+		html += "<tr>";
+		html += "<td>" + frappe.utils.escape_html(slot.label) + "</td>";
+		html += "<td>" + _vc_line_preview_html(widthVal, colorRaw) + "</td>";
+		html +=
+			"<td>" +
+			_vc_width_select_html(
+				"vc-table-width",
+				'data-field="' + frappe.utils.escape_html(slot.widthField) + '"',
+				widthVal,
+			) +
+			"</td>";
+		html += '<td class="vc-class-cell">' + colorDisplay + "</td>";
+		html +=
+			'<td style="text-align:right;"><button type="button" class="btn btn-xs btn-default vc-table-color" data-field="' +
+			frappe.utils.escape_html(slot.colorField) +
+			'">' +
+			frappe.utils.escape_html(__("Color…")) +
+			"</button></td>";
+		html += "</tr>";
+	});
+
+	html += "</tbody></table>";
+	return html;
 }
 
 function _vc_group_by_key(frm, key) {
@@ -218,12 +607,49 @@ function _vc_bind_colours_events(frm, $wrapper) {
 					});
 					frappe.model.set_value(row.doctype, row.name, "keep_default", 0);
 				});
+				VC_TABLE_CLASS_FIELDS.forEach((f) => {
+					frappe.model.set_value(frm.doctype, frm.docname, f, "");
+				});
+				[
+					"table_header_fg_type",
+					"table_row_fg_type",
+					"table_row_alt_fg_type",
+				].forEach((f) => {
+					frappe.model.set_value(frm.doctype, frm.docname, f, "mono");
+				});
 				frm.save();
 			},
 		);
 	});
 	$wrapper.on("click.vc-colours", ".vc-preview", () => {
 		_vc_open_preview(frm);
+	});
+	$wrapper.on("click.vc-colours", ".vc-refresh", () => {
+		_vc_refresh_from_file(frm);
+	});
+	$wrapper.on("click.vc-colours", ".vc-edit-theme", () => {
+		window.open("/themes/theme-settings", "_blank");
+	});
+	$wrapper.on("click.vc-colours", ".vc-table-pick", function () {
+		const field = $(this).attr("data-field");
+		const fgField = $(this).attr("data-fg-type-field");
+		if (field) {
+			_vc_open_doc_picker(frm, field, fgField, "bg");
+		}
+	});
+	$wrapper.on("click.vc-colours", ".vc-table-color", function () {
+		const field = $(this).attr("data-field");
+		if (field) {
+			_vc_open_doc_picker(frm, field, null, "border");
+		}
+	});
+	$wrapper.on("change.vc-colours", ".vc-table-width", function () {
+		const field = $(this).attr("data-field");
+		if (field) {
+			frappe.model.set_value(frm.doctype, frm.docname, field, $(this).val() || "");
+			frm.dirty();
+			_vc_render_colours(frm);
+		}
 	});
 }
 
@@ -279,16 +705,62 @@ function _vc_open_swatch_picker(frm, group, kind) {
 	});
 }
 
+function _vc_open_doc_picker(frm, valueField, fgTypeField, lockKind) {
+	_vc_preview_theme((preview) => {
+		const theme = (preview && preview.theme) || "";
+		if (!theme) {
+			frappe.msgprint(__("Set a Default NCE Theme first."));
+			return;
+		}
+		if (!(frappe.ui && frappe.ui.themeSwatchPicker)) {
+			frappe.msgprint({
+				title: __("ThemeSwatchPicker unavailable"),
+				message: __(
+					"Install/build the Themes app widget (theme-swatch-picker.umd.js) and reload Desk.",
+				),
+				indicator: "orange",
+			});
+			return;
+		}
+		const shim = {
+			doc: Object.assign({}, frm.doc, { __preview_theme: theme }),
+			set_value: (f, v) => {
+				frappe.model.set_value(frm.doctype, frm.docname, f, v);
+			},
+		};
+		const opts = {
+			frm: shim,
+			themeField: "__preview_theme",
+			valueField,
+			lockKind,
+		};
+		if (fgTypeField) {
+			opts.fgTypeField = fgTypeField;
+		}
+		frappe.ui.themeSwatchPicker.open(opts).then((saved) => {
+			if (saved) {
+				frm.dirty();
+				_vc_render_colours(frm);
+			}
+		});
+	});
+}
+
 function _vc_render_colours(frm) {
 	_vc_ensure_styles();
 	const $wrapper = frm.fields_dict.colours_html.$wrapper;
 	_vc_preview_theme((preview) => {
 		const slug = (preview && preview.slug) || "";
+		const themeName = (preview && preview.theme) || "";
 		const groups = _vc_groups(frm.doc.elements || []);
 		const missingCount = (frm.doc.elements || []).filter(
 			(row) => row.element_status === "Missing",
 		).length;
-		let html = "";
+		const showRevert = _vc_show_revert(frm._vc_saved || [], frm._vc_table_saved || {});
+		const editLabel = themeName
+			? __("Edit {0}", [themeName])
+			: __("Edit theme");
+		let html = '<div class="vc-colours-wrap">';
 
 		if (frm.doc.status === "Missing") {
 			html +=
@@ -306,155 +778,111 @@ function _vc_render_colours(frm) {
 				"</p>";
 		}
 
-		html += '<p class="vc-toolbar">';
+		html += '<div class="vc-theme-row">';
+		html += "<div>";
+		html +=
+			'<span class="vc-theme-label">' + frappe.utils.escape_html(__("Theme")) + "</span>";
+		html +=
+			'<span class="vc-theme-name">' +
+			(themeName
+				? frappe.utils.escape_html(themeName)
+				: '<span class="vc-muted">—</span>') +
+			"</span>";
+		html += "</div>";
 		html +=
 			'<button type="button" class="btn btn-default btn-sm vc-preview">' +
 			frappe.utils.escape_html(__("Preview")) +
-			"</button> ";
-		if (_vc_show_revert(frm._vc_saved || [])) {
-			html +=
-				'<button type="button" class="btn btn-default btn-sm vc-revert">' +
-				frappe.utils.escape_html(__("Revert to Theme Defaults")) +
-				"</button> ";
-		}
+			"</button>";
+		html +=
+			'<button type="button" class="btn btn-default btn-sm vc-refresh">' +
+			frappe.utils.escape_html(__("Refresh")) +
+			"</button>";
 		html +=
 			'<button type="button" class="btn btn-default btn-sm vc-edit-theme">' +
-			frappe.utils.escape_html(__("Edit theme")) +
+			frappe.utils.escape_html(editLabel) +
 			"</button>";
-		html += "</p>";
+		html += "</div>";
+
+		if (showRevert) {
+			html +=
+				'<p><button type="button" class="btn btn-link btn-sm vc-revert">' +
+				frappe.utils.escape_html(__("Revert to Theme Defaults")) +
+				"</button></p>";
+		}
 
 		if (slug) {
 			html += '<div data-nce-theme="' + frappe.utils.escape_html(slug) + '">';
 		} else {
 			html += "<div>";
 		}
-		html += '<table class="vc-colours-table"><thead><tr>';
-		html += "<th>" + frappe.utils.escape_html(__("Element")) + "</th>";
-		html += "<th>" + frappe.utils.escape_html(__("Preview")) + "</th>";
-		html += "<th>" + frappe.utils.escape_html(__("Class")) + "</th>";
-		html += "<th>" + frappe.utils.escape_html(__("Text")) + "</th>";
-		html += "<th>" + frappe.utils.escape_html(__("Border")) + "</th>";
-		html += "<th></th>";
-		html += "</tr></thead><tbody>";
 
-		groups.forEach((group) => {
-			const first = group.first;
-			const escKey = frappe.utils.escape_html(group.key);
-			const dataGroup = frappe.utils.escape_html(group.key);
-			const bg = _vc_preview_bg_class(first);
-			const tonal =
-				first.override_fg_type === "tonal" && bg ? _vc_fg_tonal_class(bg) : "";
-			const swatchClasses = ["vc-swatch", bg, tonal].filter(Boolean).join(" ");
-			const textVal = (first.override_text_class || "").trim()
-				? first.override_text_class.trim()
-				: (first.override_fg_type || "mono");
-			const borderWidth = first.override_border_width_class || "";
-			const anyDynamic = group.rows.some((r) => r.is_dynamic);
+		html +=
+			'<div class="vc-section-title">' + frappe.utils.escape_html(__("Elements")) + "</div>";
 
-			html += "<tr>";
-			html += "<td>";
-			html += "<div>" + escKey + "</div>";
+		if (!groups.length) {
 			html +=
-				'<div class="vc-muted">' +
-				frappe.utils.escape_html(first.tag || "") +
-				" · L" +
-				frappe.utils.escape_html(String(first.line || "")) +
-				(group.rows.length > 1
-					? " · " + frappe.utils.escape_html(__("{0} places", [group.rows.length]))
-					: "") +
-				"</div>";
-			if (anyDynamic) {
+				'<p class="vc-muted">' +
+				frappe.utils.escape_html(__("No themed elements in this file.")) +
+				"</p>";
+		} else {
+			html += '<table class="vc-chrome-table table table-bordered">';
+			html += _vc_chrome_table_head_html();
+			html += "<tbody>";
+
+			groups.forEach((group) => {
+				const first = group.first;
+				const escKey = frappe.utils.escape_html(group.key);
+				const dataGroup = frappe.utils.escape_html(group.key);
+				const anyDynamic = group.rows.some((r) => r.is_dynamic);
+
+				html += "<tr>";
+				html += "<td>";
+				html += "<div>" + escKey + "</div>";
 				html +=
 					'<div class="vc-muted">' +
-					frappe.utils.escape_html(__("colour also set by code")) +
+					frappe.utils.escape_html(first.tag || "") +
+					" · L" +
+					frappe.utils.escape_html(String(first.line || "")) +
+					(group.rows.length > 1
+						? " · " + frappe.utils.escape_html(__("{0} places", [group.rows.length]))
+						: "") +
 					"</div>";
-			}
-			if (!(first.selector_class || "").trim()) {
+				if (anyDynamic) {
+					html +=
+						'<div class="vc-muted">' +
+						frappe.utils.escape_html(__("colour also set by code")) +
+						"</div>";
+				}
+				if (!(first.selector_class || "").trim()) {
+					html +=
+						'<div class="vc-warn">!! ' +
+						frappe.utils.escape_html(
+							__(
+								"no class — add one in the .vue file, set Selector Class on the Elements tab, or tick Keep default",
+							),
+						) +
+						"</div>";
+				}
+				html += "</td>";
+				html += "<td>" + _vc_element_swatch_html(first) + "</td>";
+				html += "<td>" + _vc_element_class_cell_html(first, dataGroup) + "</td>";
 				html +=
-					'<div class="vc-warn">!! ' +
-					frappe.utils.escape_html(
-						__(
-							"no class — add one in the .vue file, set Selector Class on the Elements tab, or tick Keep default",
-						),
-					) +
-					"</div>";
-			}
-			html += "</td>";
-			html +=
-				'<td><span class="' +
-				frappe.utils.escape_html(swatchClasses) +
-				'">' +
-				frappe.utils.escape_html(__("Text")) +
-				"</span></td>";
-			html += "<td>" + _vc_class_cell_html(first) + "</td>";
-			html += "<td>" + frappe.utils.escape_html(textVal) + "</td>";
-			html += "<td>";
-			html +=
-				'<select class="vc-border-width form-control input-sm" data-group="' +
-				dataGroup +
-				'">';
-			html +=
-				'<option value=""' +
-				(borderWidth === "" ? " selected" : "") +
-				">" +
-				frappe.utils.escape_html(__("Theme default")) +
-				"</option>";
-			html +=
-				'<option value="theme-border-thin"' +
-				(borderWidth === "theme-border-thin" ? " selected" : "") +
-				">" +
-				frappe.utils.escape_html(__("Thin")) +
-				"</option>";
-			html +=
-				'<option value="theme-border"' +
-				(borderWidth === "theme-border" ? " selected" : "") +
-				">" +
-				frappe.utils.escape_html(__("Normal")) +
-				"</option>";
-			html +=
-				'<option value="theme-border-strong"' +
-				(borderWidth === "theme-border-strong" ? " selected" : "") +
-				">" +
-				frappe.utils.escape_html(__("Strong")) +
-				"</option>";
-			html += "</select> ";
-			html +=
-				'<button type="button" class="btn btn-default btn-xs vc-pick-border" data-group="' +
-				dataGroup +
-				'">' +
-				frappe.utils.escape_html(__("Pick…")) +
-				"</button>";
-			if ((first.override_border_color_class || "").trim()) {
-				html +=
-					" " + frappe.utils.escape_html(first.override_border_color_class.trim());
-			}
-			html += "</td>";
-			html += "<td>";
-			html +=
-				'<button type="button" class="btn btn-default btn-xs vc-pick-bg" data-group="' +
-				dataGroup +
-				'">' +
-				frappe.utils.escape_html(__("Pick background…")) +
-				"</button> ";
-			html +=
-				'<button type="button" class="btn btn-default btn-xs vc-pick-text" data-group="' +
-				dataGroup +
-				'">' +
-				frappe.utils.escape_html(__("Pick text…")) +
-				"</button> ";
-			html +=
-				'<label><input type="checkbox" class="vc-keep" data-group="' +
-				dataGroup +
-				'"' +
-				(first.keep_default ? " checked" : "") +
-				"> " +
-				frappe.utils.escape_html(__("Keep default")) +
-				"</label>";
-			html += "</td>";
-			html += "</tr>";
-		});
+					'<td style="text-align:right;"><button type="button" class="btn btn-xs btn-default vc-pick-bg" data-group="' +
+					dataGroup +
+					'">' +
+					frappe.utils.escape_html(__("Pick…")) +
+					"</button></td>";
+				html += "</tr>";
+			});
 
-		html += "</tbody></table></div>";
+			html += "</tbody></table>";
+		}
+
+		if (cint(frm.doc.has_table)) {
+			html += _vc_build_tables_section_html(frm);
+		}
+
+		html += "</div>";
 
 		if (missingCount) {
 			html +=
@@ -465,12 +893,9 @@ function _vc_render_colours(frm) {
 				"</p>";
 		}
 
+		html += "</div>";
+
 		$wrapper.html(html);
-
-		$wrapper.find(".vc-edit-theme").on("click", () => {
-			window.open("/themes/theme-settings", "_blank");
-		});
-
 		_vc_bind_colours_events(frm, $wrapper);
 	});
 }

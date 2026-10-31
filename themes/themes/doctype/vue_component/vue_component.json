@@ -17,6 +17,23 @@
   "source_hash",
   "purpose",
   "uses_components",
+  "has_table",
+  "owns_table",
+  "root_class",
+  "table_selector",
+  "table_scope_class",
+  "table_header_bg_class",
+  "table_header_fg_type",
+  "table_row_bg_class",
+  "table_row_fg_type",
+  "table_row_alt_bg_class",
+  "table_row_alt_fg_type",
+  "table_header_line_class",
+  "table_header_line_color_class",
+  "table_row_divider_class",
+  "table_row_divider_color_class",
+  "table_col_divider_class",
+  "table_col_divider_color_class",
   "section_summary",
   "summary",
   "tab_colours",
@@ -111,6 +128,121 @@
    "read_only": 1
   },
   {
+   "default": "0",
+   "fieldname": "has_table",
+   "fieldtype": "Check",
+   "hidden": 1,
+   "label": "Has Table",
+   "read_only": 1
+  },
+  {
+   "default": "0",
+   "fieldname": "owns_table",
+   "fieldtype": "Check",
+   "hidden": 1,
+   "label": "Owns Table",
+   "read_only": 1
+  },
+  {
+   "fieldname": "root_class",
+   "fieldtype": "Data",
+   "hidden": 1,
+   "label": "Root Class",
+   "read_only": 1
+  },
+  {
+   "fieldname": "table_selector",
+   "fieldtype": "Data",
+   "hidden": 1,
+   "label": "Table Selector",
+   "read_only": 1
+  },
+  {
+   "fieldname": "table_scope_class",
+   "fieldtype": "Data",
+   "hidden": 1,
+   "label": "Table Scope Class",
+   "read_only": 1
+  },
+  {
+   "fieldname": "table_header_bg_class",
+   "fieldtype": "Data",
+   "hidden": 1,
+   "label": "Table Header Background"
+  },
+  {
+   "default": "mono",
+   "fieldname": "table_header_fg_type",
+   "fieldtype": "Select",
+   "hidden": 1,
+   "label": "Table Header Text",
+   "options": "mono\ntonal"
+  },
+  {
+   "fieldname": "table_row_bg_class",
+   "fieldtype": "Data",
+   "hidden": 1,
+   "label": "Table Row Background"
+  },
+  {
+   "default": "mono",
+   "fieldname": "table_row_fg_type",
+   "fieldtype": "Select",
+   "hidden": 1,
+   "label": "Table Row Text",
+   "options": "mono\ntonal"
+  },
+  {
+   "fieldname": "table_row_alt_bg_class",
+   "fieldtype": "Data",
+   "hidden": 1,
+   "label": "Table Alternate Row Background"
+  },
+  {
+   "default": "mono",
+   "fieldname": "table_row_alt_fg_type",
+   "fieldtype": "Select",
+   "hidden": 1,
+   "label": "Table Alternate Row Text",
+   "options": "mono\ntonal"
+  },
+  {
+   "fieldname": "table_header_line_class",
+   "fieldtype": "Data",
+   "hidden": 1,
+   "label": "Column Header Underline Width"
+  },
+  {
+   "fieldname": "table_header_line_color_class",
+   "fieldtype": "Data",
+   "hidden": 1,
+   "label": "Column Header Underline Colour"
+  },
+  {
+   "fieldname": "table_row_divider_class",
+   "fieldtype": "Data",
+   "hidden": 1,
+   "label": "Horizontal Divider Width"
+  },
+  {
+   "fieldname": "table_row_divider_color_class",
+   "fieldtype": "Data",
+   "hidden": 1,
+   "label": "Horizontal Divider Colour"
+  },
+  {
+   "fieldname": "table_col_divider_class",
+   "fieldtype": "Data",
+   "hidden": 1,
+   "label": "Vertical Divider Width"
+  },
+  {
+   "fieldname": "table_col_divider_color_class",
+   "fieldtype": "Data",
+   "hidden": 1,
+   "label": "Vertical Divider Colour"
+  },
+  {
    "fieldname": "section_summary",
    "fieldtype": "Section Break",
    "label": "Summary"
@@ -144,7 +276,7 @@
    "options": "Vue Component Element"
   }
  ],
- "modified": "2026-10-31 00:00:00.000000",
+ "modified": "2026-10-31 12:30:00.000000",
  "modified_by": "Administrator",
  "module": "Themes",
  "name": "Vue Component",

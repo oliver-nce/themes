@@ -82,6 +82,60 @@ def kebab_to_pascal(name: str) -> str:
 	return "".join(part.capitalize() for part in name.split("-"))
 
 
+def _selector_from_class_tokens(tokens: list[str]) -> str:
+	for token in reversed(tokens):
+		if token.startswith("theme-"):
+			continue
+		if not SELECTOR_RE.match(token):
+			continue
+		if UTILITY_RE.match(token):
+			continue
+		return token
+	return ""
+
+
+def inherit_table_usage(scans: list[dict]) -> None:
+	"""If a component does not own a table, copy the table selector from a component it uses.
+
+	Mutates scans. A component with owns_table is left unchanged.
+	Match children by (app, component_name). Repeat until stable so A uses B uses C works.
+	When a child has has_table and table_selector, set the parent:
+	  has_table = 1
+	  table_selector = child table_selector
+	  table_scope_class = parent root_class (may be empty)
+	Use the first matching child in uses_components order.
+	uses_components may be a list of strings or a newline-separated string.
+	"""
+	by_key = {(s.get("app"), s.get("component_name")): s for s in scans}
+	changed = True
+	while changed:
+		changed = False
+		for scan in scans:
+			if scan.get("owns_table"):
+				continue
+			uses = scan.get("uses_components") or []
+			if isinstance(uses, str):
+				uses = [u.strip() for u in uses.split("\n") if u.strip()]
+			parent_app = scan.get("app")
+			for child_name in uses:
+				child = by_key.get((parent_app, child_name))
+				if not child:
+					continue
+				if not child.get("has_table") or not (child.get("table_selector") or "").strip():
+					continue
+				child_sel = child["table_selector"]
+				if (
+					scan.get("has_table") != 1
+					or scan.get("table_selector") != child_sel
+					or scan.get("table_scope_class") != (scan.get("root_class") or "").strip()
+				):
+					changed = True
+				scan["has_table"] = 1
+				scan["table_selector"] = child_sel
+				scan["table_scope_class"] = (scan.get("root_class") or "").strip()
+				break
+
+
 class _TemplateParser(HTMLParser):
 	def __init__(self, line_offset: int) -> None:
 		super().__init__(convert_charrefs=True)
@@ -89,6 +143,10 @@ class _TemplateParser(HTMLParser):
 		self.elements: list[dict] = []
 		self.uses_components: set[str] = set()
 		self._key_counts: dict[str, int] = {}
+		self.has_table = False
+		self.owns_table = False
+		self.root_class = ""
+		self.table_selector = ""
 
 	def handle_starttag(self, tag: str, attrs: list[tuple[str, str | None]]) -> None:
 		self._on_tag(tag, attrs)
@@ -103,11 +161,6 @@ class _TemplateParser(HTMLParser):
 			return
 		original_name = name_match.group(1)
 		line = self.getpos()[0] + self.line_offset
-		if original_name.lower() in ("template", "slot"):
-			return
-		pascal = kebab_to_pascal(original_name)
-		if (original_name[0].isupper() or "-" in original_name) and pascal not in VUE_BUILTINS:
-			self.uses_components.add(pascal)
 		a: dict[str, str] = {}
 		for key, value in attrs:
 			norm_key = key
@@ -117,6 +170,19 @@ class _TemplateParser(HTMLParser):
 				norm_key = ":style"
 			a[norm_key] = value if value is not None else ""
 		tokens = a.get("class", "").split()
+		tag_selector = _selector_from_class_tokens(tokens)
+		if not self.root_class and tag_selector:
+			self.root_class = tag_selector
+		if original_name.lower() == "table":
+			self.has_table = True
+			self.owns_table = True
+			if not self.table_selector and tag_selector:
+				self.table_selector = tag_selector
+		if original_name.lower() in ("template", "slot"):
+			return
+		pascal = kebab_to_pascal(original_name)
+		if (original_name[0].isupper() or "-" in original_name) and pascal not in VUE_BUILTINS:
+			self.uses_components.add(pascal)
 		theme_tokens = [t for t in tokens if t.startswith("theme-")]
 		colour_tokens = [
 			t for t in theme_tokens if re.match(r"^theme-(bg|text|border)(-|$)", t)
@@ -131,16 +197,7 @@ class _TemplateParser(HTMLParser):
 			qualifies = True
 		if not qualifies:
 			return
-		selector = ""
-		for token in reversed(tokens):
-			if token.startswith("theme-"):
-				continue
-			if not SELECTOR_RE.match(token):
-				continue
-			if UTILITY_RE.match(token):
-				continue
-			selector = token
-			break
+		selector = _selector_from_class_tokens(tokens)
 		base_key = selector or f"{original_name}@L{line}"
 		self._key_counts[base_key] = self._key_counts.get(base_key, 0) + 1
 		count = self._key_counts[base_key]
@@ -172,6 +229,11 @@ def scan_vue_source(source: str) -> dict:
 		"elements": parser.elements,
 		"uses_components": sorted(parser.uses_components),
 		"purpose": extract_purpose(source),
+		"has_table": 1 if parser.has_table else 0,
+		"owns_table": 1 if parser.owns_table else 0,
+		"root_class": parser.root_class,
+		"table_selector": parser.table_selector,
+		"table_scope_class": "",
 	}
 
 

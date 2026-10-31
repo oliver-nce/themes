@@ -2,8 +2,8 @@
 "_meta": {
 "description": "The single authoritative code index of this project: every function, class, method, route, test, Vue component, CSS section and doc section with a label, plus each file's purpose. Query it with the shared code-index tool (find / show / callers); do not read this file whole. Generated: never edit by hand; hand-written notes live in code_index/project.json.",
 "generator": "_Project support files/code-index/codeindex.py",
-"count": 1093,
-"project_sha256": "c1707ccb8aaec9b91d0aa78e39eb932e84ef71623b3c29b8142fc15c6ec095cd",
+"count": 1132,
+"project_sha256": "69ed9bd33e3667cacec4984d7aaf00e86d1167071b7c0f7916ee05d2458bf936",
 "headers_sha256": "ef3c361ed38ce068b6e9c6f0894ba66346241292ca70d207ee8c7e3fb95926da"
 },
 "files": {
@@ -520,17 +520,7 @@
 ]
 },
 "frontend/src/App.vue": {
-"purpose": "Theme editor shell with sidebar links for web and desk theme pages.",
-"read_when": "When the standalone frontend navigation or full-page preview layout changes.",
-"gotchas": [],
-"keywords": [
-"router-view",
-"isStandalone",
-"Theme Editor",
-"Desk Themes",
-"navSections",
-"sidebar"
-]
+"purpose": "Theme editor shell with sidebar links for web and desk theme pages."
 },
 "frontend/src/components/BrandColorPicker.vue": {
 "purpose": "Brand colour dialog that selects a hue, commits the shade-600 hex, and edits flip and tonal pole markers.",
@@ -2403,19 +2393,7 @@
 ]
 },
 "themes/www/themes.py": {
-"purpose": "Website context that sends guests to login except on public theme preview routes.",
-"read_when": "When theme editor pages are reachable without login or preview is wrongly blocked.",
-"gotchas": [
-"Preview paths stay public; every other themes route redirects Guest to login."
-],
-"keywords": [
-"get_context",
-"no_cache",
-"Guest",
-"redirect-to",
-"preview",
-"theme-settings"
-]
+"purpose": "Website context that sends guests to login except on public theme preview routes."
 }
 },
 "elements": [
@@ -5642,11 +5620,41 @@
 "name": "App",
 "qualname": "App",
 "sig": "",
-"hash": "6528eca941",
+"hash": "56ed0c97f3",
 "calls": [],
-"label": "Navigate between theme editor and preview pages for web and desk themes",
-"label_source": "generated",
-"label_hash": "6528eca941"
+"label": "Theme editor shell with sidebar links for web and desk theme pages.",
+"label_source": "docstring"
+},
+{
+"id": "frontend/src/App.vue::vueComponentsErrorMessage",
+"file": "frontend/src/App.vue",
+"kind": "function",
+"name": "vueComponentsErrorMessage",
+"qualname": "vueComponentsErrorMessage",
+"sig": "(data: Record<string, unknown>) -> string",
+"hash": "2e613852ac",
+"exported": false,
+"calls": [],
+"label": "",
+"label_source": "none"
+},
+{
+"id": "frontend/src/App.vue::openVueComponents",
+"file": "frontend/src/App.vue",
+"kind": "function",
+"name": "openVueComponents",
+"qualname": "openVueComponents",
+"sig": "()",
+"hash": "e2a7759be0",
+"exported": false,
+"calls": [
+"frontend/src/App.vue::vueComponentsErrorMessage"
+],
+"wired_by": [
+"frontend/src/App.vue::App"
+],
+"label": "",
+"label_source": "none"
 },
 {
 "id": "frontend/src/components/BrandColorPicker.vue::BrandColorPicker",
@@ -12826,7 +12834,7 @@
 "name": "_apply_scan",
 "qualname": "_apply_scan",
 "sig": "(doc, scan: dict | None) -> None",
-"hash": "0ed94ed013",
+"hash": "2923b444bd",
 "calls": [
 "themes/component_api.py::_set_rows",
 "themes/utils/component_sync.py::merge_elements"
@@ -12868,13 +12876,14 @@
 "name": "rescan_all",
 "qualname": "rescan_all",
 "sig": "() -> dict",
-"hash": "92b8050238",
+"hash": "528352d6a8",
 "calls": [
 "themes/component_api.py::_app_root",
 "themes/component_api.py::_apply_scan",
 "themes/component_api.py::_excluded_apps",
 "themes/component_api.py::_refresh_all_summaries",
 "themes/utils/component_css_writer.py::publish_component_css",
+"themes/utils/component_scan.py::inherit_table_usage",
 "themes/utils/component_scan.py::iter_vue_files",
 "themes/utils/component_scan.py::scan_vue_file"
 ],
@@ -12888,11 +12897,12 @@
 "name": "refresh_component",
 "qualname": "refresh_component",
 "sig": "(name: str) -> dict",
-"hash": "a6fbbd1d94",
+"hash": "53653cb0ee",
 "calls": [
 "themes/component_api.py::_apply_scan",
 "themes/component_api.py::_refresh_all_summaries",
 "themes/component_api.py::_vue_file",
+"themes/utils/component_scan.py::inherit_table_usage",
 "themes/utils/component_scan.py::scan_vue_file"
 ],
 "label": "",
@@ -12939,6 +12949,20 @@
 ],
 "label": "",
 "label_source": "none"
+},
+{
+"id": "themes/component_api.py::open_vue_components",
+"file": "themes/component_api.py",
+"kind": "function",
+"name": "open_vue_components",
+"qualname": "open_vue_components",
+"sig": "() -> dict",
+"hash": "79afabb84f",
+"calls": [
+"themes/component_api.py::rescan_all"
+],
+"label": "Ensure Vue Component exists and has rows, then return its Desk list URL.",
+"label_source": "docstring"
 },
 {
 "id": "themes/hooks.py::_css_url",
@@ -13314,7 +13338,7 @@
 "name": "all",
 "qualname": "all",
 "sig": "",
-"hash": "b489dd62fb",
+"hash": "c96ee20281",
 "calls": [],
 "label": "nce_desk_theme.css (the whole file)",
 "label_source": "title"
@@ -13891,6 +13915,146 @@
 "label_source": "name"
 },
 {
+"id": "themes/tests/test_component_css_writer.py::TestTableCssWriter.test_table_header_bg_mono",
+"file": "themes/tests/test_component_css_writer.py",
+"kind": "test",
+"name": "test_table_header_bg_mono",
+"qualname": "TestTableCssWriter.test_table_header_bg_mono",
+"sig": "(self) -> None",
+"hash": "1fd9cf19c3",
+"calls": [
+"themes/utils/component_css_writer.py::table_css_for"
+],
+"label": "table header bg mono",
+"label_source": "name"
+},
+{
+"id": "themes/tests/test_component_css_writer.py::TestTableCssWriter.test_table_header_bg_tonal",
+"file": "themes/tests/test_component_css_writer.py",
+"kind": "test",
+"name": "test_table_header_bg_tonal",
+"qualname": "TestTableCssWriter.test_table_header_bg_tonal",
+"sig": "(self) -> None",
+"hash": "acde6be2a0",
+"calls": [
+"themes/utils/component_css_writer.py::table_css_for"
+],
+"label": "table header bg tonal",
+"label_source": "name"
+},
+{
+"id": "themes/tests/test_component_css_writer.py::TestTableCssWriter.test_table_row_even",
+"file": "themes/tests/test_component_css_writer.py",
+"kind": "test",
+"name": "test_table_row_even",
+"qualname": "TestTableCssWriter.test_table_row_even",
+"sig": "(self) -> None",
+"hash": "667eef4ebe",
+"calls": [
+"themes/utils/component_css_writer.py::table_css_for"
+],
+"label": "table row even",
+"label_source": "name"
+},
+{
+"id": "themes/tests/test_component_css_writer.py::TestTableCssWriter.test_table_row_odd",
+"file": "themes/tests/test_component_css_writer.py",
+"kind": "test",
+"name": "test_table_row_odd",
+"qualname": "TestTableCssWriter.test_table_row_odd",
+"sig": "(self) -> None",
+"hash": "be1eac7ecd",
+"calls": [
+"themes/utils/component_css_writer.py::table_css_for"
+],
+"label": "table row odd",
+"label_source": "name"
+},
+{
+"id": "themes/tests/test_component_css_writer.py::TestTableCssWriter.test_table_scope_prefix",
+"file": "themes/tests/test_component_css_writer.py",
+"kind": "test",
+"name": "test_table_scope_prefix",
+"qualname": "TestTableCssWriter.test_table_scope_prefix",
+"sig": "(self) -> None",
+"hash": "5d39600182",
+"calls": [
+"themes/utils/component_css_writer.py::table_css_for"
+],
+"label": "table scope prefix",
+"label_source": "name"
+},
+{
+"id": "themes/tests/test_component_css_writer.py::TestTableCssWriter.test_empty_colours_no_css",
+"file": "themes/tests/test_component_css_writer.py",
+"kind": "test",
+"name": "test_empty_colours_no_css",
+"qualname": "TestTableCssWriter.test_empty_colours_no_css",
+"sig": "(self) -> None",
+"hash": "f1ac0eb4f8",
+"calls": [
+"themes/utils/component_css_writer.py::table_css_for"
+],
+"label": "empty colours no css",
+"label_source": "name"
+},
+{
+"id": "themes/tests/test_component_css_writer.py::TestTableCssWriter.test_bad_bg_class_ignored",
+"file": "themes/tests/test_component_css_writer.py",
+"kind": "test",
+"name": "test_bad_bg_class_ignored",
+"qualname": "TestTableCssWriter.test_bad_bg_class_ignored",
+"sig": "(self) -> None",
+"hash": "c85c436fe2",
+"calls": [
+"themes/utils/component_css_writer.py::table_css_for"
+],
+"label": "bad bg class ignored",
+"label_source": "name"
+},
+{
+"id": "themes/tests/test_component_css_writer.py::TestTableCssWriter.test_row_divider_width_and_colour",
+"file": "themes/tests/test_component_css_writer.py",
+"kind": "test",
+"name": "test_row_divider_width_and_colour",
+"qualname": "TestTableCssWriter.test_row_divider_width_and_colour",
+"sig": "(self) -> None",
+"hash": "f9532e4610",
+"calls": [
+"themes/utils/component_css_writer.py::table_css_for"
+],
+"label": "row divider width and colour",
+"label_source": "name"
+},
+{
+"id": "themes/tests/test_component_css_writer.py::TestTableCssWriter.test_row_divider_width_only_default_colour",
+"file": "themes/tests/test_component_css_writer.py",
+"kind": "test",
+"name": "test_row_divider_width_only_default_colour",
+"qualname": "TestTableCssWriter.test_row_divider_width_only_default_colour",
+"sig": "(self) -> None",
+"hash": "5c8c45cc1f",
+"calls": [
+"themes/utils/component_css_writer.py::table_css_for"
+],
+"label": "row divider width only default colour",
+"label_source": "name"
+},
+{
+"id": "themes/tests/test_component_css_writer.py::TestTableCssWriter.test_col_divider_last_child_reset",
+"file": "themes/tests/test_component_css_writer.py",
+"kind": "test",
+"name": "test_col_divider_last_child_reset",
+"qualname": "TestTableCssWriter.test_col_divider_last_child_reset",
+"sig": "(self) -> None",
+"hash": "4b6bf2a655",
+"calls": [
+"themes/utils/component_css_writer.py::table_css_for"
+],
+"label": "col divider last child reset",
+"label_source": "name"
+},
+{
 "id": "themes/tests/test_component_scan.py::TestComponentScan.test_static_theme",
 "file": "themes/tests/test_component_scan.py",
 "kind": "test",
@@ -14000,6 +14164,90 @@
 "themes/utils/component_scan.py::iter_vue_files"
 ],
 "label": "iter vue files",
+"label_source": "name"
+},
+{
+"id": "themes/tests/test_component_scan.py::TestComponentScan.test_table_with_selector",
+"file": "themes/tests/test_component_scan.py",
+"kind": "test",
+"name": "test_table_with_selector",
+"qualname": "TestComponentScan.test_table_with_selector",
+"sig": "(self) -> None",
+"hash": "358d28478d",
+"calls": [
+"themes/utils/component_scan.py::scan_vue_source"
+],
+"label": "table with selector",
+"label_source": "name"
+},
+{
+"id": "themes/tests/test_component_scan.py::TestComponentScan.test_no_table",
+"file": "themes/tests/test_component_scan.py",
+"kind": "test",
+"name": "test_no_table",
+"qualname": "TestComponentScan.test_no_table",
+"sig": "(self) -> None",
+"hash": "e0b90a8cfd",
+"calls": [
+"themes/utils/component_scan.py::scan_vue_source"
+],
+"label": "no table",
+"label_source": "name"
+},
+{
+"id": "themes/tests/test_component_scan.py::TestComponentScan.test_table_theme_only_class",
+"file": "themes/tests/test_component_scan.py",
+"kind": "test",
+"name": "test_table_theme_only_class",
+"qualname": "TestComponentScan.test_table_theme_only_class",
+"sig": "(self) -> None",
+"hash": "18441c6668",
+"calls": [
+"themes/utils/component_scan.py::scan_vue_source"
+],
+"label": "table theme only class",
+"label_source": "name"
+},
+{
+"id": "themes/tests/test_component_scan.py::TestComponentScan.test_inherit_table_usage_direct",
+"file": "themes/tests/test_component_scan.py",
+"kind": "test",
+"name": "test_inherit_table_usage_direct",
+"qualname": "TestComponentScan.test_inherit_table_usage_direct",
+"sig": "(self) -> None",
+"hash": "e51a6ec1bd",
+"calls": [
+"themes/utils/component_scan.py::inherit_table_usage"
+],
+"label": "inherit table usage direct",
+"label_source": "name"
+},
+{
+"id": "themes/tests/test_component_scan.py::TestComponentScan.test_inherit_table_usage_chain",
+"file": "themes/tests/test_component_scan.py",
+"kind": "test",
+"name": "test_inherit_table_usage_chain",
+"qualname": "TestComponentScan.test_inherit_table_usage_chain",
+"sig": "(self) -> None",
+"hash": "1f0c9bb0e3",
+"calls": [
+"themes/utils/component_scan.py::inherit_table_usage"
+],
+"label": "inherit table usage chain",
+"label_source": "name"
+},
+{
+"id": "themes/tests/test_component_scan.py::TestComponentScan.test_inherit_does_not_overwrite_owner",
+"file": "themes/tests/test_component_scan.py",
+"kind": "test",
+"name": "test_inherit_does_not_overwrite_owner",
+"qualname": "TestComponentScan.test_inherit_does_not_overwrite_owner",
+"sig": "(self) -> None",
+"hash": "8d51c899d7",
+"calls": [
+"themes/utils/component_scan.py::inherit_table_usage"
+],
+"label": "inherit does not overwrite owner",
 "label_source": "name"
 },
 {
@@ -14976,16 +15224,57 @@
 "label_source": "header"
 },
 {
+"id": "themes/themes/doctype/vue_component/vue_component.js::VC_TABLE_CLASS_FIELDS",
+"file": "themes/themes/doctype/vue_component/vue_component.js",
+"kind": "const",
+"name": "VC_TABLE_CLASS_FIELDS",
+"qualname": "VC_TABLE_CLASS_FIELDS",
+"sig": "",
+"hash": "aa27d556e4",
+"exported": false,
+"calls": [],
+"label": "",
+"label_source": "none"
+},
+{
+"id": "themes/themes/doctype/vue_component/vue_component.js::VC_TABLE_ROW_SLOTS",
+"file": "themes/themes/doctype/vue_component/vue_component.js",
+"kind": "const",
+"name": "VC_TABLE_ROW_SLOTS",
+"qualname": "VC_TABLE_ROW_SLOTS",
+"sig": "",
+"hash": "274fdc4ccd",
+"exported": false,
+"calls": [],
+"label": "",
+"label_source": "none"
+},
+{
+"id": "themes/themes/doctype/vue_component/vue_component.js::VC_TABLE_LINE_SLOTS",
+"file": "themes/themes/doctype/vue_component/vue_component.js",
+"kind": "const",
+"name": "VC_TABLE_LINE_SLOTS",
+"qualname": "VC_TABLE_LINE_SLOTS",
+"sig": "",
+"hash": "12944c5f06",
+"exported": false,
+"calls": [],
+"label": "",
+"label_source": "none"
+},
+{
 "id": "themes/themes/doctype/vue_component/vue_component.js::form.on Vue Component.refresh",
 "file": "themes/themes/doctype/vue_component/vue_component.js",
 "kind": "method",
 "name": "refresh",
 "qualname": "form.on Vue Component.refresh",
 "sig": "(frm)",
-"hash": "b6e8f98c1d",
+"hash": "a289a87b58",
 "exported": false,
 "calls": [
-"themes/themes/doctype/vue_component/vue_component.js::_vc_render_colours"
+"themes/themes/doctype/vue_component/vue_component.js::_vc_refresh_from_file",
+"themes/themes/doctype/vue_component/vue_component.js::_vc_render_colours",
+"themes/themes/doctype/vue_component/vue_component.js::_vc_table_saved_from_doc"
 ],
 "wired_by": [
 "themes/themes/doctype/vue_component/vue_component.js"
@@ -15008,6 +15297,32 @@
 "wired_by": [
 "themes/themes/doctype/vue_component/vue_component.js"
 ],
+"label": "",
+"label_source": "none"
+},
+{
+"id": "themes/themes/doctype/vue_component/vue_component.js::_vc_refresh_from_file",
+"file": "themes/themes/doctype/vue_component/vue_component.js",
+"kind": "function",
+"name": "_vc_refresh_from_file",
+"qualname": "_vc_refresh_from_file",
+"sig": "(frm)",
+"hash": "52e12328fe",
+"exported": false,
+"calls": [],
+"label": "",
+"label_source": "none"
+},
+{
+"id": "themes/themes/doctype/vue_component/vue_component.js::_vc_table_saved_from_doc",
+"file": "themes/themes/doctype/vue_component/vue_component.js",
+"kind": "function",
+"name": "_vc_table_saved_from_doc",
+"qualname": "_vc_table_saved_from_doc",
+"sig": "(doc)",
+"hash": "d30033fb2a",
+"exported": false,
+"calls": [],
 "label": "",
 "label_source": "none"
 },
@@ -15105,26 +15420,26 @@
 "label_source": "none"
 },
 {
-"id": "themes/themes/doctype/vue_component/vue_component.js::_vc_class_cell_html",
+"id": "themes/themes/doctype/vue_component/vue_component.js::_vc_show_revert",
 "file": "themes/themes/doctype/vue_component/vue_component.js",
 "kind": "function",
-"name": "_vc_class_cell_html",
-"qualname": "_vc_class_cell_html",
-"sig": "(first)",
-"hash": "d6c70374b6",
+"name": "_vc_show_revert",
+"qualname": "_vc_show_revert",
+"sig": "(savedElements, savedTable)",
+"hash": "442b47c52d",
 "exported": false,
 "calls": [],
 "label": "",
 "label_source": "none"
 },
 {
-"id": "themes/themes/doctype/vue_component/vue_component.js::_vc_show_revert",
+"id": "themes/themes/doctype/vue_component/vue_component.js::_vc_show_revert.elementsDirty",
 "file": "themes/themes/doctype/vue_component/vue_component.js",
 "kind": "function",
-"name": "_vc_show_revert",
-"qualname": "_vc_show_revert",
-"sig": "(saved)",
-"hash": "3f6d0e3f7b",
+"name": "elementsDirty",
+"qualname": "_vc_show_revert.elementsDirty",
+"sig": "(savedElements || [])",
+"hash": "91cdfa98ab",
 "exported": false,
 "calls": [],
 "label": "",
@@ -15137,9 +15452,127 @@
 "name": "_vc_ensure_styles",
 "qualname": "_vc_ensure_styles",
 "sig": "()",
-"hash": "e5d1281c3f",
+"hash": "c9d462d303",
 "exported": false,
 "calls": [],
+"label": "",
+"label_source": "none"
+},
+{
+"id": "themes/themes/doctype/vue_component/vue_component.js::_vc_element_swatch_html",
+"file": "themes/themes/doctype/vue_component/vue_component.js",
+"kind": "function",
+"name": "_vc_element_swatch_html",
+"qualname": "_vc_element_swatch_html",
+"sig": "(first)",
+"hash": "27b0fc5362",
+"exported": false,
+"calls": [
+"themes/themes/doctype/vue_component/vue_component.js::_vc_fg_tonal_class",
+"themes/themes/doctype/vue_component/vue_component.js::_vc_preview_bg_class"
+],
+"label": "",
+"label_source": "none"
+},
+{
+"id": "themes/themes/doctype/vue_component/vue_component.js::_vc_width_select_html",
+"file": "themes/themes/doctype/vue_component/vue_component.js",
+"kind": "function",
+"name": "_vc_width_select_html",
+"qualname": "_vc_width_select_html",
+"sig": "(className, attrString, current)",
+"hash": "d57affe2d3",
+"exported": false,
+"calls": [],
+"label": "",
+"label_source": "none"
+},
+{
+"id": "themes/themes/doctype/vue_component/vue_component.js::_vc_line_width_px",
+"file": "themes/themes/doctype/vue_component/vue_component.js",
+"kind": "function",
+"name": "_vc_line_width_px",
+"qualname": "_vc_line_width_px",
+"sig": "(widthClass)",
+"hash": "1169e92ed5",
+"exported": false,
+"calls": [],
+"label": "",
+"label_source": "none"
+},
+{
+"id": "themes/themes/doctype/vue_component/vue_component.js::_vc_line_preview_html",
+"file": "themes/themes/doctype/vue_component/vue_component.js",
+"kind": "function",
+"name": "_vc_line_preview_html",
+"qualname": "_vc_line_preview_html",
+"sig": "(widthClass, colorClass)",
+"hash": "1baf1972a5",
+"exported": false,
+"calls": [
+"themes/themes/doctype/vue_component/vue_component.js::_vc_line_width_px"
+],
+"label": "",
+"label_source": "none"
+},
+{
+"id": "themes/themes/doctype/vue_component/vue_component.js::_vc_element_class_cell_html",
+"file": "themes/themes/doctype/vue_component/vue_component.js",
+"kind": "function",
+"name": "_vc_element_class_cell_html",
+"qualname": "_vc_element_class_cell_html",
+"sig": "(first, dataGroup)",
+"hash": "e59087a919",
+"exported": false,
+"calls": [
+"themes/themes/doctype/vue_component/vue_component.js::_vc_width_select_html"
+],
+"label": "",
+"label_source": "none"
+},
+{
+"id": "themes/themes/doctype/vue_component/vue_component.js::_vc_chrome_table_head_html",
+"file": "themes/themes/doctype/vue_component/vue_component.js",
+"kind": "function",
+"name": "_vc_chrome_table_head_html",
+"qualname": "_vc_chrome_table_head_html",
+"sig": "()",
+"hash": "9e533d25db",
+"exported": false,
+"calls": [],
+"label": "",
+"label_source": "none"
+},
+{
+"id": "themes/themes/doctype/vue_component/vue_component.js::_vc_table_row_swatch_html",
+"file": "themes/themes/doctype/vue_component/vue_component.js",
+"kind": "function",
+"name": "_vc_table_row_swatch_html",
+"qualname": "_vc_table_row_swatch_html",
+"sig": "(effectiveClass, fgType)",
+"hash": "8966a0083b",
+"exported": false,
+"calls": [
+"themes/themes/doctype/vue_component/vue_component.js::_vc_fg_tonal_class"
+],
+"label": "",
+"label_source": "none"
+},
+{
+"id": "themes/themes/doctype/vue_component/vue_component.js::_vc_build_tables_section_html",
+"file": "themes/themes/doctype/vue_component/vue_component.js",
+"kind": "function",
+"name": "_vc_build_tables_section_html",
+"qualname": "_vc_build_tables_section_html",
+"sig": "(frm)",
+"hash": "6141dad88c",
+"exported": false,
+"calls": [
+"themes/themes/doctype/vue_component/vue_component.js::_vc_chrome_table_head_html",
+"themes/themes/doctype/vue_component/vue_component.js::_vc_line_preview_html",
+"themes/themes/doctype/vue_component/vue_component.js::_vc_table_row_swatch_html",
+"themes/themes/doctype/vue_component/vue_component.js::_vc_width_select_html"
+],
 "label": "",
 "label_source": "none"
 },
@@ -15165,12 +15598,15 @@
 "name": "_vc_bind_colours_events",
 "qualname": "_vc_bind_colours_events",
 "sig": "(frm, $wrapper)",
-"hash": "5a1eec614b",
+"hash": "9454305177",
 "exported": false,
 "calls": [
 "themes/themes/doctype/vue_component/vue_component.js::_vc_group_by_key",
+"themes/themes/doctype/vue_component/vue_component.js::_vc_open_doc_picker",
 "themes/themes/doctype/vue_component/vue_component.js::_vc_open_preview",
 "themes/themes/doctype/vue_component/vue_component.js::_vc_open_swatch_picker",
+"themes/themes/doctype/vue_component/vue_component.js::_vc_refresh_from_file",
+"themes/themes/doctype/vue_component/vue_component.js::_vc_render_colours",
 "themes/themes/doctype/vue_component/vue_component.js::_vc_set_group"
 ],
 "label": "",
@@ -15193,21 +15629,38 @@
 "label_source": "none"
 },
 {
+"id": "themes/themes/doctype/vue_component/vue_component.js::_vc_open_doc_picker",
+"file": "themes/themes/doctype/vue_component/vue_component.js",
+"kind": "function",
+"name": "_vc_open_doc_picker",
+"qualname": "_vc_open_doc_picker",
+"sig": "(frm, valueField, fgTypeField, lockKind)",
+"hash": "f474e0d112",
+"exported": false,
+"calls": [
+"themes/themes/doctype/vue_component/vue_component.js::_vc_preview_theme",
+"themes/themes/doctype/vue_component/vue_component.js::_vc_render_colours"
+],
+"label": "",
+"label_source": "none"
+},
+{
 "id": "themes/themes/doctype/vue_component/vue_component.js::_vc_render_colours",
 "file": "themes/themes/doctype/vue_component/vue_component.js",
 "kind": "function",
 "name": "_vc_render_colours",
 "qualname": "_vc_render_colours",
 "sig": "(frm)",
-"hash": "7dc30ba412",
+"hash": "3d83c4b999",
 "exported": false,
 "calls": [
 "themes/themes/doctype/vue_component/vue_component.js::_vc_bind_colours_events",
-"themes/themes/doctype/vue_component/vue_component.js::_vc_class_cell_html",
+"themes/themes/doctype/vue_component/vue_component.js::_vc_build_tables_section_html",
+"themes/themes/doctype/vue_component/vue_component.js::_vc_chrome_table_head_html",
+"themes/themes/doctype/vue_component/vue_component.js::_vc_element_class_cell_html",
+"themes/themes/doctype/vue_component/vue_component.js::_vc_element_swatch_html",
 "themes/themes/doctype/vue_component/vue_component.js::_vc_ensure_styles",
-"themes/themes/doctype/vue_component/vue_component.js::_vc_fg_tonal_class",
 "themes/themes/doctype/vue_component/vue_component.js::_vc_groups",
-"themes/themes/doctype/vue_component/vue_component.js::_vc_preview_bg_class",
 "themes/themes/doctype/vue_component/vue_component.js::_vc_preview_theme",
 "themes/themes/doctype/vue_component/vue_component.js::_vc_show_revert"
 ],
@@ -15278,7 +15731,7 @@
 "name": "VueComponent",
 "qualname": "VueComponent",
 "sig": "(Document)",
-"hash": "16fa9972d7",
+"hash": "f9650da7ce",
 "extends": [
 "Document"
 ],
@@ -15293,7 +15746,7 @@
 "name": "validate",
 "qualname": "VueComponent.validate",
 "sig": "(self)",
-"hash": "7c21108465",
+"hash": "16fdce3c4d",
 "calls": [
 "themes/component_api.py::_used_by",
 "themes/utils/component_summary.py::build_summary",
@@ -15436,6 +15889,65 @@
 "label_source": "none"
 },
 {
+"id": "themes/utils/component_css_writer.py::_table_bg_decls",
+"file": "themes/utils/component_css_writer.py",
+"kind": "function",
+"name": "_table_bg_decls",
+"qualname": "_table_bg_decls",
+"sig": "(bg_cls: str, fg_type: str) -> list[str]",
+"hash": "8c4f4d4fa0",
+"calls": [],
+"label": "",
+"label_source": "none"
+},
+{
+"id": "themes/utils/component_css_writer.py::_table_border_value",
+"file": "themes/utils/component_css_writer.py",
+"kind": "function",
+"name": "_table_border_value",
+"qualname": "_table_border_value",
+"sig": "(width_cls: str, color_cls: str, default_width_var: str, default_color_var: str) -> str | None",
+"hash": "5f2b8c61f4",
+"calls": [],
+"label": "",
+"label_source": "none"
+},
+{
+"id": "themes/utils/component_css_writer.py::_table_prefix",
+"file": "themes/utils/component_css_writer.py",
+"kind": "function",
+"name": "_table_prefix",
+"qualname": "_table_prefix",
+"sig": "(parent: dict) -> str | None",
+"hash": "fd12ba0b61",
+"calls": [],
+"label": "",
+"label_source": "none"
+},
+{
+"id": "themes/utils/component_css_writer.py::table_css_for",
+"file": "themes/utils/component_css_writer.py",
+"kind": "function",
+"name": "table_css_for",
+"qualname": "table_css_for",
+"sig": "(parent: dict) -> str",
+"hash": "23a82320a2",
+"calls": [
+"themes/utils/component_css_writer.py::_table_bg_decls",
+"themes/utils/component_css_writer.py::_table_border_value",
+"themes/utils/component_css_writer.py::_table_prefix"
+],
+"tested_by": [
+"themes/tests/test_component_css_writer.py::TestTableCssWriter.test_bad_bg_class_ignored",
+"themes/tests/test_component_css_writer.py::TestTableCssWriter.test_col_divider_last_child_reset",
+"themes/tests/test_component_css_writer.py::TestTableCssWriter.test_empty_colours_no_css",
+"themes/tests/test_component_css_writer.py::TestTableCssWriter.test_row_divider_width_and_colour",
+"themes/tests/test_component_css_writer.py::TestTableCssWriter.test_row_divider_width_only_default_colour"
+],
+"label": "",
+"label_source": "none"
+},
+{
 "id": "themes/utils/component_css_writer.py::generate_component_css",
 "file": "themes/utils/component_css_writer.py",
 "kind": "function",
@@ -15464,9 +15976,10 @@
 "name": "publish_component_css",
 "qualname": "publish_component_css",
 "sig": "() -> dict",
-"hash": "2e22d6e578",
+"hash": "5ec144294a",
 "calls": [
 "themes/utils/component_css_writer.py::generate_component_css",
+"themes/utils/component_css_writer.py::table_css_for",
 "themes/utils/css_publish.py::write_published_css"
 ],
 "label": "",
@@ -15536,13 +16049,42 @@
 "label_source": "none"
 },
 {
+"id": "themes/utils/component_scan.py::_selector_from_class_tokens",
+"file": "themes/utils/component_scan.py",
+"kind": "function",
+"name": "_selector_from_class_tokens",
+"qualname": "_selector_from_class_tokens",
+"sig": "(tokens: list[str]) -> str",
+"hash": "1c2dc6f467",
+"calls": [],
+"label": "",
+"label_source": "none"
+},
+{
+"id": "themes/utils/component_scan.py::inherit_table_usage",
+"file": "themes/utils/component_scan.py",
+"kind": "function",
+"name": "inherit_table_usage",
+"qualname": "inherit_table_usage",
+"sig": "(scans: list[dict]) -> None",
+"hash": "a86aa09c9f",
+"calls": [],
+"tested_by": [
+"themes/tests/test_component_scan.py::TestComponentScan.test_inherit_does_not_overwrite_owner",
+"themes/tests/test_component_scan.py::TestComponentScan.test_inherit_table_usage_chain",
+"themes/tests/test_component_scan.py::TestComponentScan.test_inherit_table_usage_direct"
+],
+"label": "If a component does not own a table, copy the table selector from a component it uses.",
+"label_source": "docstring"
+},
+{
 "id": "themes/utils/component_scan.py::_TemplateParser",
 "file": "themes/utils/component_scan.py",
 "kind": "class",
 "name": "_TemplateParser",
 "qualname": "_TemplateParser",
 "sig": "(HTMLParser)",
-"hash": "728c0c2fbe",
+"hash": "c69a5887da",
 "extends": [
 "HTMLParser"
 ],
@@ -15557,7 +16099,7 @@
 "name": "__init__",
 "qualname": "_TemplateParser.__init__",
 "sig": "(self, line_offset: int) -> None",
-"hash": "abdd3e8e3c",
+"hash": "76503b2328",
 "calls": [],
 "label": "",
 "label_source": "none"
@@ -15597,8 +16139,9 @@
 "name": "_on_tag",
 "qualname": "_TemplateParser._on_tag",
 "sig": "(self, tag: str, attrs: list[tuple[str, str | None]]) -> None",
-"hash": "6acd9841a6",
+"hash": "4fffbe5099",
 "calls": [
+"themes/utils/component_scan.py::_selector_from_class_tokens",
 "themes/utils/component_scan.py::kebab_to_pascal"
 ],
 "label": "",
@@ -15611,11 +16154,16 @@
 "name": "scan_vue_source",
 "qualname": "scan_vue_source",
 "sig": "(source: str) -> dict",
-"hash": "d7dccea1ef",
+"hash": "5dc0644ce6",
 "calls": [
 "themes/utils/component_scan.py::_TemplateParser",
 "themes/utils/component_scan.py::extract_purpose",
 "themes/utils/component_scan.py::extract_template"
+],
+"tested_by": [
+"themes/tests/test_component_scan.py::TestComponentScan.test_no_table",
+"themes/tests/test_component_scan.py::TestComponentScan.test_table_theme_only_class",
+"themes/tests/test_component_scan.py::TestComponentScan.test_table_with_selector"
 ],
 "label": "",
 "label_source": "none"
@@ -18083,11 +18631,10 @@
 "name": "get_context",
 "qualname": "get_context",
 "sig": "(context)",
-"hash": "7bfacea80d",
+"hash": "1559a2dd09",
 "calls": [],
-"label": "Require login for theme editor routes; allow public preview access",
-"label_source": "generated",
-"label_hash": "7bfacea80d"
+"label": "Require login for theme editor routes; preview stays public.",
+"label_source": "docstring"
 }
 ]
 }
