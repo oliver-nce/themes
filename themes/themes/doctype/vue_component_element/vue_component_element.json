@@ -1,0 +1,144 @@
+{
+ "actions": [],
+ "creation": "2026-10-31 00:00:00.000000",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "element_key",
+  "tag",
+  "line",
+  "selector_class",
+  "scanned_selector",
+  "source_classes",
+  "binding",
+  "is_dynamic",
+  "element_status",
+  "column_break_overrides",
+  "keep_default",
+  "override_bg_class",
+  "override_fg_type",
+  "override_text_class",
+  "override_border_width_class",
+  "override_border_color_class"
+ ],
+ "fields": [
+  {
+   "columns": 2,
+   "fieldname": "element_key",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Element",
+   "read_only": 1
+  },
+  {
+   "columns": 1,
+   "fieldname": "tag",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Tag",
+   "read_only": 1
+  },
+  {
+   "fieldname": "line",
+   "fieldtype": "Int",
+   "label": "Line",
+   "read_only": 1
+  },
+  {
+   "columns": 2,
+   "description": "CSS class used to target this element. Edit only if the scanned class is not unique.",
+   "fieldname": "selector_class",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Selector Class"
+  },
+  {
+   "fieldname": "scanned_selector",
+   "fieldtype": "Data",
+   "hidden": 1,
+   "label": "Scanned Selector",
+   "read_only": 1
+  },
+  {
+   "fieldname": "source_classes",
+   "fieldtype": "Small Text",
+   "label": "Theme Classes In File",
+   "read_only": 1
+  },
+  {
+   "fieldname": "binding",
+   "fieldtype": "Small Text",
+   "label": "Dynamic Binding",
+   "read_only": 1
+  },
+  {
+   "default": "0",
+   "fieldname": "is_dynamic",
+   "fieldtype": "Check",
+   "label": "Dynamic",
+   "read_only": 1
+  },
+  {
+   "columns": 1,
+   "default": "Present",
+   "fieldname": "element_status",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Status",
+   "options": "Present\nMissing",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_overrides",
+   "fieldtype": "Column Break"
+  },
+  {
+   "columns": 1,
+   "default": "0",
+   "fieldname": "keep_default",
+   "fieldtype": "Check",
+   "in_list_view": 1,
+   "label": "Keep Theme Default"
+  },
+  {
+   "columns": 2,
+   "fieldname": "override_bg_class",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Background"
+  },
+  {
+   "fieldname": "override_fg_type",
+   "fieldtype": "Select",
+   "label": "Text Pairing",
+   "options": "\nmono\ntonal"
+  },
+  {
+   "fieldname": "override_text_class",
+   "fieldtype": "Data",
+   "label": "Text Colour"
+  },
+  {
+   "fieldname": "override_border_width_class",
+   "fieldtype": "Select",
+   "label": "Border Width",
+   "options": "\ntheme-border-thin\ntheme-border\ntheme-border-strong"
+  },
+  {
+   "fieldname": "override_border_color_class",
+   "fieldtype": "Data",
+   "label": "Border Colour"
+  }
+ ],
+ "istable": 1,
+ "modified": "2026-10-31 00:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Themes",
+ "name": "Vue Component Element",
+ "owner": "Administrator",
+ "permissions": [],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}

@@ -2,7 +2,7 @@
 "_meta": {
 "description": "The single authoritative code index of this project: every function, class, method, route, test, Vue component, CSS section and doc section with a label, plus each file's purpose. Query it with the shared code-index tool (find / show / callers); do not read this file whole. Generated: never edit by hand; hand-written notes live in code_index/project.json.",
 "generator": "_Project support files/code-index/codeindex.py",
-"count": 953,
+"count": 1081,
 "project_sha256": "c1707ccb8aaec9b91d0aa78e39eb932e84ef71623b3c29b8142fc15c6ec095cd",
 "headers_sha256": "0bcafd20a0d2b1b44e38827d47e5a7845fc6a0b34c6342b9866433a9a5350574"
 },
@@ -1378,26 +1378,21 @@
 "themes/utils/desk_css_writer.py"
 ]
 },
+"themes/component_api.py": {
+"purpose": "Whitelisted API for Vue Component: rescan, refresh, preview and publish CSS.",
+"depends_on": [
+"themes/utils/component_css_writer.py",
+"themes/utils/component_scan.py",
+"themes/utils/component_summary.py",
+"themes/utils/component_sync.py",
+"themes/utils/site_theme_config_helpers.py"
+]
+},
 "themes/config/__init__.py": {
 "purpose": ""
 },
 "themes/hooks.py": {
-"purpose": "Frappe app hooks that include published theme CSS, register the theme editor routes, and call after_install.",
-"read_when": "When changing included stylesheets, theme editor routes, or the install hook.",
-"gotchas": [
-"The CSS hash is read at hooks import time, so it must be DB-free and never raise; problems fall back to the bare path.",
-"Never monkey-patch frappe.get_hooks; a previous approach broke boot."
-],
-"keywords": [
-"app_include_css",
-"website_route_rules",
-"after_install",
-"nce_theme.css",
-"cache-buster",
-"desk_theme_loader",
-"theme-editor",
-"frappe.get_hooks"
-]
+"purpose": "Frappe app hooks that include published theme CSS, register the theme editor routes, and call after_install."
 },
 "themes/init_desk_theme.py": {
 "purpose": "Ensures the Default NCE Desk Theme exists, sets base_desk_theme when missing, and publishes nce_desk_theme.css.",
@@ -1816,6 +1811,24 @@
 "themes/tests/__init__.py": {
 "purpose": ""
 },
+"themes/tests/fixtures/vue/dynamic_float.vue": {
+"purpose": ""
+},
+"themes/tests/fixtures/vue/nested_templates.vue": {
+"purpose": ""
+},
+"themes/tests/fixtures/vue/no_selector.vue": {
+"purpose": ""
+},
+"themes/tests/fixtures/vue/no_template.vue": {
+"purpose": ""
+},
+"themes/tests/fixtures/vue/static_theme.vue": {
+"purpose": "Shows a card."
+},
+"themes/tests/fixtures/vue/with_purpose.vue": {
+"purpose": "Renders things."
+},
 "themes/tests/frappe_stub.py": {
 "purpose": "Installs a minimal frappe module mock so unit tests can run outside a bench.",
 "read_when": "When a test imports frappe and fails because no bench is running.",
@@ -1942,6 +1955,30 @@
 "depends_on": [
 "themes/tests/frappe_stub.py",
 "themes/utils/theme_color_utils.py"
+]
+},
+"themes/tests/test_component_css_writer.py": {
+"purpose": "Unit tests for themes.utils.component_css_writer.",
+"depends_on": [
+"themes/utils/component_css_writer.py"
+]
+},
+"themes/tests/test_component_scan.py": {
+"purpose": "Unit tests for themes.utils.component_scan.",
+"depends_on": [
+"themes/utils/component_scan.py"
+]
+},
+"themes/tests/test_component_summary.py": {
+"purpose": "Unit tests for themes.utils.component_summary.",
+"depends_on": [
+"themes/utils/component_summary.py"
+]
+},
+"themes/tests/test_component_sync.py": {
+"purpose": "Unit tests for themes.utils.component_sync.",
+"depends_on": [
+"themes/utils/component_sync.py"
 ]
 },
 "themes/tests/test_css_snapshots.py": {
@@ -2080,6 +2117,12 @@
 "themes/utils/site_theme_config_helpers.py"
 ]
 },
+"themes/themes/doctype/theme_component_settings/__init__.py": {
+"purpose": ""
+},
+"themes/themes/doctype/theme_component_settings/theme_component_settings.py": {
+"purpose": "Settings for the Vue Component scan (extra apps to exclude)."
+},
 "themes/themes/doctype/theme_settings/__init__.py": {
 "purpose": ""
 },
@@ -2103,6 +2146,30 @@
 "depends_on": [
 "themes/utils/theme_color_utils.py"
 ]
+},
+"themes/themes/doctype/vue_component/__init__.py": {
+"purpose": ""
+},
+"themes/themes/doctype/vue_component/vue_component.js": {
+"purpose": ""
+},
+"themes/themes/doctype/vue_component/vue_component.py": {
+"purpose": "Vue Component: one scanned .vue file and the colour overrides chosen for its UI elements.",
+"depends_on": [
+"themes/component_api.py",
+"themes/utils/component_css_writer.py",
+"themes/utils/component_summary.py",
+"themes/utils/component_sync.py"
+]
+},
+"themes/themes/doctype/vue_component/vue_component_list.js": {
+"purpose": ""
+},
+"themes/themes/doctype/vue_component_element/__init__.py": {
+"purpose": ""
+},
+"themes/themes/doctype/vue_component_element/vue_component_element.py": {
+"purpose": "Child row of Vue Component: one themed UI element found in a .vue template."
 },
 "themes/themes/page/desk_theme_editor/desk_theme_editor.js": {
 "purpose": "Desk page that redirects the legacy desk theme editor to the Vue settings route.",
@@ -2169,6 +2236,29 @@
 "git commit",
 "_FALLBACK_PAYLOAD"
 ]
+},
+"themes/utils/component_css_writer.py": {
+"purpose": "Generate published CSS for Vue Component colour overrides.",
+"depends_on": [
+"themes/utils/component_sync.py",
+"themes/utils/css_publish.py"
+]
+},
+"themes/utils/component_scan.py": {
+"purpose": "Scan .vue files for themed template elements and component usage.",
+"depends_on": [
+"themes/utils/component_sync.py"
+]
+},
+"themes/utils/component_summary.py": {
+"purpose": "Rule-built summary text for Vue Component records.",
+"depends_on": [
+"themes/utils/component_scan.py",
+"themes/utils/component_sync.py"
+]
+},
+"themes/utils/component_sync.py": {
+"purpose": "Merge scanned Vue elements with saved overrides and shared colour constants."
 },
 "themes/utils/css_publish.py": {
 "purpose": "Shared writer that saves published theme CSS and an 8-character SHA-1 hash sidecar for cache busting.",
@@ -12665,6 +12755,177 @@
 "label_hash": "5df033748f"
 },
 {
+"id": "themes/component_api.py::_excluded_apps",
+"file": "themes/component_api.py",
+"kind": "function",
+"name": "_excluded_apps",
+"qualname": "_excluded_apps",
+"sig": "() -> set[str]",
+"hash": "a45e01a811",
+"calls": [],
+"label": "",
+"label_source": "none"
+},
+{
+"id": "themes/component_api.py::_app_root",
+"file": "themes/component_api.py",
+"kind": "function",
+"name": "_app_root",
+"qualname": "_app_root",
+"sig": "(app: str) -> Path",
+"hash": "a4a5a98c64",
+"calls": [],
+"label": "",
+"label_source": "none"
+},
+{
+"id": "themes/component_api.py::_vue_file",
+"file": "themes/component_api.py",
+"kind": "function",
+"name": "_vue_file",
+"qualname": "_vue_file",
+"sig": "(doc) -> Path | None",
+"hash": "c513e8b2f2",
+"calls": [
+"themes/component_api.py::_app_root"
+],
+"label": "Resolved .vue path for a record, or None when the file is gone.",
+"label_source": "docstring"
+},
+{
+"id": "themes/component_api.py::_set_rows",
+"file": "themes/component_api.py",
+"kind": "function",
+"name": "_set_rows",
+"qualname": "_set_rows",
+"sig": "(doc, rows: list[dict]) -> None",
+"hash": "67a6d769bb",
+"calls": [],
+"label": "",
+"label_source": "none"
+},
+{
+"id": "themes/component_api.py::_apply_scan",
+"file": "themes/component_api.py",
+"kind": "function",
+"name": "_apply_scan",
+"qualname": "_apply_scan",
+"sig": "(doc, scan: dict | None) -> None",
+"hash": "0ed94ed013",
+"calls": [
+"themes/component_api.py::_set_rows",
+"themes/utils/component_sync.py::merge_elements"
+],
+"label": "",
+"label_source": "none"
+},
+{
+"id": "themes/component_api.py::_used_by",
+"file": "themes/component_api.py",
+"kind": "function",
+"name": "_used_by",
+"qualname": "_used_by",
+"sig": "(component_name: str, exclude_name: str) -> list[str]",
+"hash": "8f63f3a0d7",
+"calls": [],
+"label": "",
+"label_source": "none"
+},
+{
+"id": "themes/component_api.py::_refresh_all_summaries",
+"file": "themes/component_api.py",
+"kind": "function",
+"name": "_refresh_all_summaries",
+"qualname": "_refresh_all_summaries",
+"sig": "() -> None",
+"hash": "0c5a6074a4",
+"calls": [
+"themes/component_api.py::_used_by",
+"themes/utils/component_summary.py::build_summary"
+],
+"label": "",
+"label_source": "none"
+},
+{
+"id": "themes/component_api.py::rescan_all",
+"file": "themes/component_api.py",
+"kind": "function",
+"name": "rescan_all",
+"qualname": "rescan_all",
+"sig": "() -> dict",
+"hash": "92b8050238",
+"calls": [
+"themes/component_api.py::_app_root",
+"themes/component_api.py::_apply_scan",
+"themes/component_api.py::_excluded_apps",
+"themes/component_api.py::_refresh_all_summaries",
+"themes/utils/component_css_writer.py::publish_component_css",
+"themes/utils/component_scan.py::iter_vue_files",
+"themes/utils/component_scan.py::scan_vue_file"
+],
+"label": "",
+"label_source": "none"
+},
+{
+"id": "themes/component_api.py::refresh_component",
+"file": "themes/component_api.py",
+"kind": "function",
+"name": "refresh_component",
+"qualname": "refresh_component",
+"sig": "(name: str) -> dict",
+"hash": "a6fbbd1d94",
+"calls": [
+"themes/component_api.py::_apply_scan",
+"themes/component_api.py::_refresh_all_summaries",
+"themes/component_api.py::_vue_file",
+"themes/utils/component_scan.py::scan_vue_file"
+],
+"label": "",
+"label_source": "none"
+},
+{
+"id": "themes/component_api.py::get_preview_theme",
+"file": "themes/component_api.py",
+"kind": "function",
+"name": "get_preview_theme",
+"qualname": "get_preview_theme",
+"sig": "() -> dict",
+"hash": "4eb31ba053",
+"calls": [
+"themes/utils/site_theme_config_helpers.py::get_site_default_theme_name"
+],
+"label": "",
+"label_source": "none"
+},
+{
+"id": "themes/component_api.py::preview_declarations",
+"file": "themes/component_api.py",
+"kind": "function",
+"name": "preview_declarations",
+"qualname": "preview_declarations",
+"sig": "(rows) -> dict",
+"hash": "9891d9f7c7",
+"calls": [
+"themes/utils/component_css_writer.py::declarations_for"
+],
+"label": "",
+"label_source": "none"
+},
+{
+"id": "themes/component_api.py::publish_css",
+"file": "themes/component_api.py",
+"kind": "function",
+"name": "publish_css",
+"qualname": "publish_css",
+"sig": "() -> dict",
+"hash": "d28ea72ea6",
+"calls": [
+"themes/utils/component_css_writer.py::publish_component_css"
+],
+"label": "",
+"label_source": "none"
+},
+{
 "id": "themes/hooks.py::_css_url",
 "file": "themes/hooks.py",
 "kind": "function",
@@ -13124,6 +13385,97 @@
 "label_hash": "300db072fb"
 },
 {
+"id": "themes/tests/fixtures/vue/dynamic_float.vue::dynamic_float",
+"file": "themes/tests/fixtures/vue/dynamic_float.vue",
+"kind": "component",
+"name": "dynamic_float",
+"qualname": "dynamic_float",
+"sig": "",
+"hash": "b76b2acd39",
+"calls": [],
+"tested_by": [
+"themes/tests/test_component_scan.py::TestComponentScan.test_dynamic_float"
+],
+"label": "",
+"label_source": "none"
+},
+{
+"id": "themes/tests/fixtures/vue/nested_templates.vue::nested_templates",
+"file": "themes/tests/fixtures/vue/nested_templates.vue",
+"kind": "component",
+"name": "nested_templates",
+"qualname": "nested_templates",
+"sig": "",
+"hash": "99da0c75d4",
+"calls": [],
+"tested_by": [
+"themes/tests/test_component_scan.py::TestComponentScan.test_nested_templates"
+],
+"label": "",
+"label_source": "none"
+},
+{
+"id": "themes/tests/fixtures/vue/no_selector.vue::no_selector",
+"file": "themes/tests/fixtures/vue/no_selector.vue",
+"kind": "component",
+"name": "no_selector",
+"qualname": "no_selector",
+"sig": "",
+"hash": "3fa3dbe46c",
+"calls": [],
+"tested_by": [
+"themes/tests/test_component_scan.py::TestComponentScan.test_no_selector"
+],
+"label": "",
+"label_source": "none"
+},
+{
+"id": "themes/tests/fixtures/vue/no_template.vue::no_template",
+"file": "themes/tests/fixtures/vue/no_template.vue",
+"kind": "component",
+"name": "no_template",
+"qualname": "no_template",
+"sig": "",
+"hash": "a2a3f459e2",
+"calls": [],
+"tested_by": [
+"themes/tests/test_component_scan.py::TestComponentScan.test_no_template"
+],
+"label": "",
+"label_source": "none"
+},
+{
+"id": "themes/tests/fixtures/vue/static_theme.vue::static_theme",
+"file": "themes/tests/fixtures/vue/static_theme.vue",
+"kind": "component",
+"name": "static_theme",
+"qualname": "static_theme",
+"sig": "",
+"hash": "dd931ca859",
+"calls": [],
+"tested_by": [
+"themes/tests/test_component_scan.py::TestComponentScan.test_static_theme",
+"themes/tests/test_component_scan.py::TestComponentScan.test_card_line_number"
+],
+"label": "Shows a card.",
+"label_source": "docstring"
+},
+{
+"id": "themes/tests/fixtures/vue/with_purpose.vue::with_purpose",
+"file": "themes/tests/fixtures/vue/with_purpose.vue",
+"kind": "component",
+"name": "with_purpose",
+"qualname": "with_purpose",
+"sig": "",
+"hash": "63d4830e53",
+"calls": [],
+"tested_by": [
+"themes/tests/test_component_scan.py::TestComponentScan.test_with_purpose"
+],
+"label": "Renders things.",
+"label_source": "docstring"
+},
+{
 "id": "themes/tests/golden/desk_default.css::all",
 "file": "themes/tests/golden/desk_default.css",
 "kind": "css-section",
@@ -13326,6 +13678,792 @@
 "themes/utils/theme_color_utils.py::_hex_to_oklch"
 ],
 "label": "Bright brand greens must lighten smoothly toward stop 50.",
+"label_source": "name"
+},
+{
+"id": "themes/tests/test_component_css_writer.py::TestComponentCssWriter.test_bg_mono",
+"file": "themes/tests/test_component_css_writer.py",
+"kind": "test",
+"name": "test_bg_mono",
+"qualname": "TestComponentCssWriter.test_bg_mono",
+"sig": "(self) -> None",
+"hash": "fe50f45c56",
+"calls": [
+"themes/utils/component_css_writer.py::declarations_for"
+],
+"label": "bg mono",
+"label_source": "name"
+},
+{
+"id": "themes/tests/test_component_css_writer.py::TestComponentCssWriter.test_bg_tonal",
+"file": "themes/tests/test_component_css_writer.py",
+"kind": "test",
+"name": "test_bg_tonal",
+"qualname": "TestComponentCssWriter.test_bg_tonal",
+"sig": "(self) -> None",
+"hash": "5484c8724d",
+"calls": [
+"themes/utils/component_css_writer.py::declarations_for"
+],
+"label": "bg tonal",
+"label_source": "name"
+},
+{
+"id": "themes/tests/test_component_css_writer.py::TestComponentCssWriter.test_bg_primary_no_shade",
+"file": "themes/tests/test_component_css_writer.py",
+"kind": "test",
+"name": "test_bg_primary_no_shade",
+"qualname": "TestComponentCssWriter.test_bg_primary_no_shade",
+"sig": "(self) -> None",
+"hash": "655266bb62",
+"calls": [
+"themes/utils/component_css_writer.py::declarations_for"
+],
+"label": "bg primary no shade",
+"label_source": "name"
+},
+{
+"id": "themes/tests/test_component_css_writer.py::TestComponentCssWriter.test_text_replaces_bg_color",
+"file": "themes/tests/test_component_css_writer.py",
+"kind": "test",
+"name": "test_text_replaces_bg_color",
+"qualname": "TestComponentCssWriter.test_text_replaces_bg_color",
+"sig": "(self) -> None",
+"hash": "83480a0896",
+"calls": [
+"themes/utils/component_css_writer.py::declarations_for"
+],
+"label": "text replaces bg color",
+"label_source": "name"
+},
+{
+"id": "themes/tests/test_component_css_writer.py::TestComponentCssWriter.test_border_width_and_colour",
+"file": "themes/tests/test_component_css_writer.py",
+"kind": "test",
+"name": "test_border_width_and_colour",
+"qualname": "TestComponentCssWriter.test_border_width_and_colour",
+"sig": "(self) -> None",
+"hash": "7a83b8f551",
+"calls": [
+"themes/utils/component_css_writer.py::declarations_for"
+],
+"label": "border width and colour",
+"label_source": "name"
+},
+{
+"id": "themes/tests/test_component_css_writer.py::TestComponentCssWriter.test_keep_default_skipped",
+"file": "themes/tests/test_component_css_writer.py",
+"kind": "test",
+"name": "test_keep_default_skipped",
+"qualname": "TestComponentCssWriter.test_keep_default_skipped",
+"sig": "(self) -> None",
+"hash": "a65dc83d2c",
+"calls": [
+"themes/utils/component_css_writer.py::generate_component_css"
+],
+"label": "keep default skipped",
+"label_source": "name"
+},
+{
+"id": "themes/tests/test_component_css_writer.py::TestComponentCssWriter.test_missing_skipped",
+"file": "themes/tests/test_component_css_writer.py",
+"kind": "test",
+"name": "test_missing_skipped",
+"qualname": "TestComponentCssWriter.test_missing_skipped",
+"sig": "(self) -> None",
+"hash": "b374be9eb7",
+"calls": [
+"themes/utils/component_css_writer.py::generate_component_css"
+],
+"label": "missing skipped",
+"label_source": "name"
+},
+{
+"id": "themes/tests/test_component_css_writer.py::TestComponentCssWriter.test_bad_selector_skipped",
+"file": "themes/tests/test_component_css_writer.py",
+"kind": "test",
+"name": "test_bad_selector_skipped",
+"qualname": "TestComponentCssWriter.test_bad_selector_skipped",
+"sig": "(self) -> None",
+"hash": "032da06025",
+"calls": [
+"themes/utils/component_css_writer.py::generate_component_css"
+],
+"label": "bad selector skipped",
+"label_source": "name"
+},
+{
+"id": "themes/tests/test_component_css_writer.py::TestComponentCssWriter.test_invalid_bg_class_emits_nothing",
+"file": "themes/tests/test_component_css_writer.py",
+"kind": "test",
+"name": "test_invalid_bg_class_emits_nothing",
+"qualname": "TestComponentCssWriter.test_invalid_bg_class_emits_nothing",
+"sig": "(self) -> None",
+"hash": "9e4317b48e",
+"calls": [
+"themes/utils/component_css_writer.py::declarations_for",
+"themes/utils/component_css_writer.py::generate_component_css"
+],
+"label": "invalid bg class emits nothing",
+"label_source": "name"
+},
+{
+"id": "themes/tests/test_component_css_writer.py::TestComponentCssWriter.test_two_rows_same_selector_one_rule",
+"file": "themes/tests/test_component_css_writer.py",
+"kind": "test",
+"name": "test_two_rows_same_selector_one_rule",
+"qualname": "TestComponentCssWriter.test_two_rows_same_selector_one_rule",
+"sig": "(self) -> None",
+"hash": "3110e43d6c",
+"calls": [
+"themes/utils/component_css_writer.py::generate_component_css"
+],
+"label": "two rows same selector one rule",
+"label_source": "name"
+},
+{
+"id": "themes/tests/test_component_css_writer.py::TestComponentCssWriter.test_same_input_twice_equal",
+"file": "themes/tests/test_component_css_writer.py",
+"kind": "test",
+"name": "test_same_input_twice_equal",
+"qualname": "TestComponentCssWriter.test_same_input_twice_equal",
+"sig": "(self) -> None",
+"hash": "20145e2971",
+"calls": [
+"themes/utils/component_css_writer.py::generate_component_css"
+],
+"label": "same input twice equal",
+"label_source": "name"
+},
+{
+"id": "themes/tests/test_component_css_writer.py::TestComponentCssWriter.test_empty_input_header_only",
+"file": "themes/tests/test_component_css_writer.py",
+"kind": "test",
+"name": "test_empty_input_header_only",
+"qualname": "TestComponentCssWriter.test_empty_input_header_only",
+"sig": "(self) -> None",
+"hash": "461632ff10",
+"calls": [
+"themes/utils/component_css_writer.py::generate_component_css"
+],
+"label": "empty input header only",
+"label_source": "name"
+},
+{
+"id": "themes/tests/test_component_css_writer.py::TestComponentCssWriter.test_selector_tripled",
+"file": "themes/tests/test_component_css_writer.py",
+"kind": "test",
+"name": "test_selector_tripled",
+"qualname": "TestComponentCssWriter.test_selector_tripled",
+"sig": "(self) -> None",
+"hash": "a3d9196ebe",
+"calls": [
+"themes/utils/component_css_writer.py::generate_component_css"
+],
+"label": "selector tripled",
+"label_source": "name"
+},
+{
+"id": "themes/tests/test_component_scan.py::TestComponentScan.test_static_theme",
+"file": "themes/tests/test_component_scan.py",
+"kind": "test",
+"name": "test_static_theme",
+"qualname": "TestComponentScan.test_static_theme",
+"sig": "(self) -> None",
+"hash": "301aa5ad9e",
+"calls": [
+"themes/utils/component_scan.py::scan_vue_file"
+],
+"label": "static theme",
+"label_source": "name"
+},
+{
+"id": "themes/tests/test_component_scan.py::TestComponentScan.test_dynamic_float",
+"file": "themes/tests/test_component_scan.py",
+"kind": "test",
+"name": "test_dynamic_float",
+"qualname": "TestComponentScan.test_dynamic_float",
+"sig": "(self) -> None",
+"hash": "ae3e7d99de",
+"calls": [
+"themes/utils/component_scan.py::scan_vue_file"
+],
+"label": "dynamic float",
+"label_source": "name"
+},
+{
+"id": "themes/tests/test_component_scan.py::TestComponentScan.test_no_selector",
+"file": "themes/tests/test_component_scan.py",
+"kind": "test",
+"name": "test_no_selector",
+"qualname": "TestComponentScan.test_no_selector",
+"sig": "(self) -> None",
+"hash": "500cdc9916",
+"calls": [
+"themes/utils/component_scan.py::scan_vue_file"
+],
+"label": "no selector",
+"label_source": "name"
+},
+{
+"id": "themes/tests/test_component_scan.py::TestComponentScan.test_nested_templates",
+"file": "themes/tests/test_component_scan.py",
+"kind": "test",
+"name": "test_nested_templates",
+"qualname": "TestComponentScan.test_nested_templates",
+"sig": "(self) -> None",
+"hash": "c6857b691a",
+"calls": [
+"themes/utils/component_scan.py::scan_vue_file"
+],
+"label": "nested templates",
+"label_source": "name"
+},
+{
+"id": "themes/tests/test_component_scan.py::TestComponentScan.test_with_purpose",
+"file": "themes/tests/test_component_scan.py",
+"kind": "test",
+"name": "test_with_purpose",
+"qualname": "TestComponentScan.test_with_purpose",
+"sig": "(self) -> None",
+"hash": "86a2036215",
+"calls": [
+"themes/utils/component_scan.py::scan_vue_file"
+],
+"label": "with purpose",
+"label_source": "name"
+},
+{
+"id": "themes/tests/test_component_scan.py::TestComponentScan.test_no_template",
+"file": "themes/tests/test_component_scan.py",
+"kind": "test",
+"name": "test_no_template",
+"qualname": "TestComponentScan.test_no_template",
+"sig": "(self) -> None",
+"hash": "268f1bc47a",
+"calls": [
+"themes/utils/component_scan.py::scan_vue_file"
+],
+"label": "no template",
+"label_source": "name"
+},
+{
+"id": "themes/tests/test_component_scan.py::TestComponentScan.test_card_line_number",
+"file": "themes/tests/test_component_scan.py",
+"kind": "test",
+"name": "test_card_line_number",
+"qualname": "TestComponentScan.test_card_line_number",
+"sig": "(self) -> None",
+"hash": "f3f561137f",
+"calls": [
+"themes/utils/component_scan.py::scan_vue_file"
+],
+"label": "card line number",
+"label_source": "name"
+},
+{
+"id": "themes/tests/test_component_scan.py::TestComponentScan.test_iter_vue_files",
+"file": "themes/tests/test_component_scan.py",
+"kind": "test",
+"name": "test_iter_vue_files",
+"qualname": "TestComponentScan.test_iter_vue_files",
+"sig": "(self) -> None",
+"hash": "bf74febd91",
+"calls": [
+"themes/utils/component_scan.py::iter_vue_files"
+],
+"label": "iter vue files",
+"label_source": "name"
+},
+{
+"id": "themes/tests/test_component_summary.py::TestDescribeThemeClasses.test_theme_bg_primary",
+"file": "themes/tests/test_component_summary.py",
+"kind": "test",
+"name": "test_theme_bg_primary",
+"qualname": "TestDescribeThemeClasses.test_theme_bg_primary",
+"sig": "(self) -> None",
+"hash": "78f7ce0a0c",
+"calls": [
+"themes/utils/component_summary.py::describe_theme_classes"
+],
+"label": "theme bg primary",
+"label_source": "name"
+},
+{
+"id": "themes/tests/test_component_summary.py::TestDescribeThemeClasses.test_theme_bg_primary_300",
+"file": "themes/tests/test_component_summary.py",
+"kind": "test",
+"name": "test_theme_bg_primary_300",
+"qualname": "TestDescribeThemeClasses.test_theme_bg_primary_300",
+"sig": "(self) -> None",
+"hash": "6e90c2b7e4",
+"calls": [
+"themes/utils/component_summary.py::describe_theme_classes"
+],
+"label": "theme bg primary 300",
+"label_source": "name"
+},
+{
+"id": "themes/tests/test_component_summary.py::TestDescribeThemeClasses.test_theme_bg_surface",
+"file": "themes/tests/test_component_summary.py",
+"kind": "test",
+"name": "test_theme_bg_surface",
+"qualname": "TestDescribeThemeClasses.test_theme_bg_surface",
+"sig": "(self) -> None",
+"hash": "0478b6ea00",
+"calls": [
+"themes/utils/component_summary.py::describe_theme_classes"
+],
+"label": "theme bg surface",
+"label_source": "name"
+},
+{
+"id": "themes/tests/test_component_summary.py::TestDescribeThemeClasses.test_theme_text_fg_tonal",
+"file": "themes/tests/test_component_summary.py",
+"kind": "test",
+"name": "test_theme_text_fg_tonal",
+"qualname": "TestDescribeThemeClasses.test_theme_text_fg_tonal",
+"sig": "(self) -> None",
+"hash": "b8cf3d3843",
+"calls": [
+"themes/utils/component_summary.py::describe_theme_classes"
+],
+"label": "theme text fg tonal",
+"label_source": "name"
+},
+{
+"id": "themes/tests/test_component_summary.py::TestDescribeThemeClasses.test_theme_text_fg",
+"file": "themes/tests/test_component_summary.py",
+"kind": "test",
+"name": "test_theme_text_fg",
+"qualname": "TestDescribeThemeClasses.test_theme_text_fg",
+"sig": "(self) -> None",
+"hash": "d2b9532410",
+"calls": [
+"themes/utils/component_summary.py::describe_theme_classes"
+],
+"label": "theme text fg",
+"label_source": "name"
+},
+{
+"id": "themes/tests/test_component_summary.py::TestDescribeThemeClasses.test_theme_text_role_shade",
+"file": "themes/tests/test_component_summary.py",
+"kind": "test",
+"name": "test_theme_text_role_shade",
+"qualname": "TestDescribeThemeClasses.test_theme_text_role_shade",
+"sig": "(self) -> None",
+"hash": "bf9390e10f",
+"calls": [
+"themes/utils/component_summary.py::describe_theme_classes"
+],
+"label": "theme text role shade",
+"label_source": "name"
+},
+{
+"id": "themes/tests/test_component_summary.py::TestDescribeThemeClasses.test_theme_text_other",
+"file": "themes/tests/test_component_summary.py",
+"kind": "test",
+"name": "test_theme_text_other",
+"qualname": "TestDescribeThemeClasses.test_theme_text_other",
+"sig": "(self) -> None",
+"hash": "938ac06c08",
+"calls": [
+"themes/utils/component_summary.py::describe_theme_classes"
+],
+"label": "theme text other",
+"label_source": "name"
+},
+{
+"id": "themes/tests/test_component_summary.py::TestDescribeThemeClasses.test_theme_border_thin",
+"file": "themes/tests/test_component_summary.py",
+"kind": "test",
+"name": "test_theme_border_thin",
+"qualname": "TestDescribeThemeClasses.test_theme_border_thin",
+"sig": "(self) -> None",
+"hash": "60248e8378",
+"calls": [
+"themes/utils/component_summary.py::describe_theme_classes"
+],
+"label": "theme border thin",
+"label_source": "name"
+},
+{
+"id": "themes/tests/test_component_summary.py::TestDescribeThemeClasses.test_theme_border",
+"file": "themes/tests/test_component_summary.py",
+"kind": "test",
+"name": "test_theme_border",
+"qualname": "TestDescribeThemeClasses.test_theme_border",
+"sig": "(self) -> None",
+"hash": "d450b1b83b",
+"calls": [
+"themes/utils/component_summary.py::describe_theme_classes"
+],
+"label": "theme border",
+"label_source": "name"
+},
+{
+"id": "themes/tests/test_component_summary.py::TestDescribeThemeClasses.test_theme_border_strong",
+"file": "themes/tests/test_component_summary.py",
+"kind": "test",
+"name": "test_theme_border_strong",
+"qualname": "TestDescribeThemeClasses.test_theme_border_strong",
+"sig": "(self) -> None",
+"hash": "81bb98dfcf",
+"calls": [
+"themes/utils/component_summary.py::describe_theme_classes"
+],
+"label": "theme border strong",
+"label_source": "name"
+},
+{
+"id": "themes/tests/test_component_summary.py::TestDescribeThemeClasses.test_theme_border_colour",
+"file": "themes/tests/test_component_summary.py",
+"kind": "test",
+"name": "test_theme_border_colour",
+"qualname": "TestDescribeThemeClasses.test_theme_border_colour",
+"sig": "(self) -> None",
+"hash": "5e9b747ee6",
+"calls": [
+"themes/utils/component_summary.py::describe_theme_classes"
+],
+"label": "theme border colour",
+"label_source": "name"
+},
+{
+"id": "themes/tests/test_component_summary.py::TestDescribeThemeClasses.test_theme_border_other",
+"file": "themes/tests/test_component_summary.py",
+"kind": "test",
+"name": "test_theme_border_other",
+"qualname": "TestDescribeThemeClasses.test_theme_border_other",
+"sig": "(self) -> None",
+"hash": "07a00ad3d9",
+"calls": [
+"themes/utils/component_summary.py::describe_theme_classes"
+],
+"label": "theme border other",
+"label_source": "name"
+},
+{
+"id": "themes/tests/test_component_summary.py::TestDescribeThemeClasses.test_theme_rounded",
+"file": "themes/tests/test_component_summary.py",
+"kind": "test",
+"name": "test_theme_rounded",
+"qualname": "TestDescribeThemeClasses.test_theme_rounded",
+"sig": "(self) -> None",
+"hash": "e8c94ad005",
+"calls": [
+"themes/utils/component_summary.py::describe_theme_classes"
+],
+"label": "theme rounded",
+"label_source": "name"
+},
+{
+"id": "themes/tests/test_component_summary.py::TestDescribeThemeClasses.test_theme_rounded_size",
+"file": "themes/tests/test_component_summary.py",
+"kind": "test",
+"name": "test_theme_rounded_size",
+"qualname": "TestDescribeThemeClasses.test_theme_rounded_size",
+"sig": "(self) -> None",
+"hash": "bc0511801f",
+"calls": [
+"themes/utils/component_summary.py::describe_theme_classes"
+],
+"label": "theme rounded size",
+"label_source": "name"
+},
+{
+"id": "themes/tests/test_component_summary.py::TestDescribeThemeClasses.test_theme_shadow",
+"file": "themes/tests/test_component_summary.py",
+"kind": "test",
+"name": "test_theme_shadow",
+"qualname": "TestDescribeThemeClasses.test_theme_shadow",
+"sig": "(self) -> None",
+"hash": "778c17e772",
+"calls": [
+"themes/utils/component_summary.py::describe_theme_classes"
+],
+"label": "theme shadow",
+"label_source": "name"
+},
+{
+"id": "themes/tests/test_component_summary.py::TestDescribeThemeClasses.test_unknown_ignored",
+"file": "themes/tests/test_component_summary.py",
+"kind": "test",
+"name": "test_unknown_ignored",
+"qualname": "TestDescribeThemeClasses.test_unknown_ignored",
+"sig": "(self) -> None",
+"hash": "40f576e7fd",
+"calls": [
+"themes/utils/component_summary.py::describe_theme_classes"
+],
+"label": "unknown ignored",
+"label_source": "name"
+},
+{
+"id": "themes/tests/test_component_summary.py::TestDescribeThemeClasses.test_duplicate_phrase_once",
+"file": "themes/tests/test_component_summary.py",
+"kind": "test",
+"name": "test_duplicate_phrase_once",
+"qualname": "TestDescribeThemeClasses.test_duplicate_phrase_once",
+"sig": "(self) -> None",
+"hash": "27be2d2968",
+"calls": [
+"themes/utils/component_summary.py::describe_theme_classes"
+],
+"label": "duplicate phrase once",
+"label_source": "name"
+},
+{
+"id": "themes/tests/test_component_summary.py::TestElementNoun.test_select_fd_input",
+"file": "themes/tests/test_component_summary.py",
+"kind": "test",
+"name": "test_select_fd_input",
+"qualname": "TestElementNoun.test_select_fd_input",
+"sig": "(self) -> None",
+"hash": "25dc8e55b3",
+"calls": [
+"themes/utils/component_summary.py::element_noun"
+],
+"label": "select fd input",
+"label_source": "name"
+},
+{
+"id": "themes/tests/test_component_summary.py::TestElementNoun.test_span_reqd",
+"file": "themes/tests/test_component_summary.py",
+"kind": "test",
+"name": "test_span_reqd",
+"qualname": "TestElementNoun.test_span_reqd",
+"sig": "(self) -> None",
+"hash": "ec9e2d33f3",
+"calls": [
+"themes/utils/component_summary.py::element_noun"
+],
+"label": "span reqd",
+"label_source": "name"
+},
+{
+"id": "themes/tests/test_component_summary.py::TestElementNoun.test_p_desc",
+"file": "themes/tests/test_component_summary.py",
+"kind": "test",
+"name": "test_p_desc",
+"qualname": "TestElementNoun.test_p_desc",
+"sig": "(self) -> None",
+"hash": "1d8dcba836",
+"calls": [
+"themes/utils/component_summary.py::element_noun"
+],
+"label": "p desc",
+"label_source": "name"
+},
+{
+"id": "themes/tests/test_component_summary.py::TestElementNoun.test_div_footer",
+"file": "themes/tests/test_component_summary.py",
+"kind": "test",
+"name": "test_div_footer",
+"qualname": "TestElementNoun.test_div_footer",
+"sig": "(self) -> None",
+"hash": "3e5a3b7787",
+"calls": [
+"themes/utils/component_summary.py::element_noun"
+],
+"label": "div footer",
+"label_source": "name"
+},
+{
+"id": "themes/tests/test_component_summary.py::TestElementNoun.test_panel_table_component",
+"file": "themes/tests/test_component_summary.py",
+"kind": "test",
+"name": "test_panel_table_component",
+"qualname": "TestElementNoun.test_panel_table_component",
+"sig": "(self) -> None",
+"hash": "903f3d73bf",
+"calls": [
+"themes/utils/component_summary.py::element_noun"
+],
+"label": "panel table component",
+"label_source": "name"
+},
+{
+"id": "themes/tests/test_component_summary.py::TestBuildSummary.test_build_summary_exact",
+"file": "themes/tests/test_component_summary.py",
+"kind": "test",
+"name": "test_build_summary_exact",
+"qualname": "TestBuildSummary.test_build_summary_exact",
+"sig": "(self) -> None",
+"hash": "423abbc016",
+"calls": [
+"themes/utils/component_summary.py::build_summary"
+],
+"label": "build summary exact",
+"label_source": "name"
+},
+{
+"id": "themes/tests/test_component_summary.py::TestBuildSummary.test_build_summary_deterministic",
+"file": "themes/tests/test_component_summary.py",
+"kind": "test",
+"name": "test_build_summary_deterministic",
+"qualname": "TestBuildSummary.test_build_summary_deterministic",
+"sig": "(self) -> None",
+"hash": "5cb8445a3a",
+"calls": [
+"themes/utils/component_summary.py::build_summary"
+],
+"label": "build summary deterministic",
+"label_source": "name"
+},
+{
+"id": "themes/tests/test_component_sync.py::TestComponentSync.test_new_row_empty_overrides",
+"file": "themes/tests/test_component_sync.py",
+"kind": "test",
+"name": "test_new_row_empty_overrides",
+"qualname": "TestComponentSync.test_new_row_empty_overrides",
+"sig": "(self) -> None",
+"hash": "2743bc1bc6",
+"calls": [
+"themes/utils/component_sync.py::has_override",
+"themes/utils/component_sync.py::merge_elements"
+],
+"label": "new row empty overrides",
+"label_source": "name"
+},
+{
+"id": "themes/tests/test_component_sync.py::TestComponentSync.test_existing_keeps_overrides_after_rescan",
+"file": "themes/tests/test_component_sync.py",
+"kind": "test",
+"name": "test_existing_keeps_overrides_after_rescan",
+"qualname": "TestComponentSync.test_existing_keeps_overrides_after_rescan",
+"sig": "(self) -> None",
+"hash": "1120f99b79",
+"calls": [
+"themes/utils/component_sync.py::merge_elements"
+],
+"label": "existing keeps overrides after rescan",
+"label_source": "name"
+},
+{
+"id": "themes/tests/test_component_sync.py::TestComponentSync.test_edited_selector_survives_rescan",
+"file": "themes/tests/test_component_sync.py",
+"kind": "test",
+"name": "test_edited_selector_survives_rescan",
+"qualname": "TestComponentSync.test_edited_selector_survives_rescan",
+"sig": "(self) -> None",
+"hash": "a051ac9c33",
+"calls": [
+"themes/utils/component_sync.py::merge_elements"
+],
+"label": "edited selector survives rescan",
+"label_source": "name"
+},
+{
+"id": "themes/tests/test_component_sync.py::TestComponentSync.test_vanished_row_missing_last",
+"file": "themes/tests/test_component_sync.py",
+"kind": "test",
+"name": "test_vanished_row_missing_last",
+"qualname": "TestComponentSync.test_vanished_row_missing_last",
+"sig": "(self) -> None",
+"hash": "275486c9bd",
+"calls": [
+"themes/utils/component_sync.py::merge_elements"
+],
+"label": "vanished row missing last",
+"label_source": "name"
+},
+{
+"id": "themes/tests/test_component_sync.py::TestComponentSync.test_new_row_inherits_group_overrides",
+"file": "themes/tests/test_component_sync.py",
+"kind": "test",
+"name": "test_new_row_inherits_group_overrides",
+"qualname": "TestComponentSync.test_new_row_inherits_group_overrides",
+"sig": "(self) -> None",
+"hash": "586f2ab235",
+"calls": [
+"themes/utils/component_sync.py::merge_elements"
+],
+"label": "new row inherits group overrides",
+"label_source": "name"
+},
+{
+"id": "themes/tests/test_component_sync.py::TestComponentSync.test_normalise_groups_copies_first_row",
+"file": "themes/tests/test_component_sync.py",
+"kind": "test",
+"name": "test_normalise_groups_copies_first_row",
+"qualname": "TestComponentSync.test_normalise_groups_copies_first_row",
+"sig": "(self) -> None",
+"hash": "7115e6c9ad",
+"calls": [
+"themes/utils/component_sync.py::normalise_groups"
+],
+"label": "normalise groups copies first row",
+"label_source": "name"
+},
+{
+"id": "themes/tests/test_component_sync.py::TestComponentSync.test_needs_attention_all_keep_default",
+"file": "themes/tests/test_component_sync.py",
+"kind": "test",
+"name": "test_needs_attention_all_keep_default",
+"qualname": "TestComponentSync.test_needs_attention_all_keep_default",
+"sig": "(self) -> None",
+"hash": "903f17a195",
+"calls": [
+"themes/utils/component_sync.py::needs_attention"
+],
+"label": "needs attention all keep default",
+"label_source": "name"
+},
+{
+"id": "themes/tests/test_component_sync.py::TestComponentSync.test_needs_attention_untouched_row",
+"file": "themes/tests/test_component_sync.py",
+"kind": "test",
+"name": "test_needs_attention_untouched_row",
+"qualname": "TestComponentSync.test_needs_attention_untouched_row",
+"sig": "(self) -> None",
+"hash": "7067bdb3f2",
+"calls": [
+"themes/utils/component_sync.py::needs_attention"
+],
+"label": "needs attention untouched row",
+"label_source": "name"
+},
+{
+"id": "themes/tests/test_component_sync.py::TestComponentSync.test_needs_attention_empty_selector_with_keep_default",
+"file": "themes/tests/test_component_sync.py",
+"kind": "test",
+"name": "test_needs_attention_empty_selector_with_keep_default",
+"qualname": "TestComponentSync.test_needs_attention_empty_selector_with_keep_default",
+"sig": "(self) -> None",
+"hash": "5a22e0d0a0",
+"calls": [
+"themes/utils/component_sync.py::needs_attention"
+],
+"label": "needs attention empty selector with keep default",
+"label_source": "name"
+},
+{
+"id": "themes/tests/test_component_sync.py::TestComponentSync.test_needs_attention_file_missing",
+"file": "themes/tests/test_component_sync.py",
+"kind": "test",
+"name": "test_needs_attention_file_missing",
+"qualname": "TestComponentSync.test_needs_attention_file_missing",
+"sig": "(self) -> None",
+"hash": "911df2dc9d",
+"calls": [
+"themes/utils/component_sync.py::needs_attention"
+],
+"label": "needs attention file missing",
+"label_source": "name"
+},
+{
+"id": "themes/tests/test_component_sync.py::TestComponentSync.test_needs_attention_only_missing_rows",
+"file": "themes/tests/test_component_sync.py",
+"kind": "test",
+"name": "test_needs_attention_only_missing_rows",
+"qualname": "TestComponentSync.test_needs_attention_only_missing_rows",
+"sig": "(self) -> None",
+"hash": "322038f34a",
+"calls": [
+"themes/utils/component_sync.py::needs_attention"
+],
+"label": "needs attention only missing rows",
 "label_source": "name"
 },
 {
@@ -13659,6 +14797,21 @@
 "label_hash": "5bf8de2d22"
 },
 {
+"id": "themes/themes/doctype/theme_component_settings/theme_component_settings.py::ThemeComponentSettings",
+"file": "themes/themes/doctype/theme_component_settings/theme_component_settings.py",
+"kind": "class",
+"name": "ThemeComponentSettings",
+"qualname": "ThemeComponentSettings",
+"sig": "(Document)",
+"hash": "bd30abe252",
+"extends": [
+"Document"
+],
+"calls": [],
+"label": "",
+"label_source": "none"
+},
+{
 "id": "themes/themes/doctype/theme_settings/theme_settings.py::_hex_to_rgb",
 "file": "themes/themes/doctype/theme_settings/theme_settings.py",
 "kind": "function",
@@ -13796,6 +14949,377 @@
 "label_source": "header"
 },
 {
+"id": "themes/themes/doctype/vue_component/vue_component.js::form.on Vue Component.refresh",
+"file": "themes/themes/doctype/vue_component/vue_component.js",
+"kind": "method",
+"name": "refresh",
+"qualname": "form.on Vue Component.refresh",
+"sig": "(frm)",
+"hash": "b6e8f98c1d",
+"exported": false,
+"calls": [
+"themes/themes/doctype/vue_component/vue_component.js::_vc_render_colours"
+],
+"wired_by": [
+"themes/themes/doctype/vue_component/vue_component.js"
+],
+"label": "",
+"label_source": "none"
+},
+{
+"id": "themes/themes/doctype/vue_component/vue_component.js::form.on Vue Component.after_save",
+"file": "themes/themes/doctype/vue_component/vue_component.js",
+"kind": "method",
+"name": "after_save",
+"qualname": "form.on Vue Component.after_save",
+"sig": "(frm)",
+"hash": "2635e4852d",
+"exported": false,
+"calls": [
+"themes/themes/doctype/vue_component/vue_component.js::_vc_reload_css"
+],
+"wired_by": [
+"themes/themes/doctype/vue_component/vue_component.js"
+],
+"label": "",
+"label_source": "none"
+},
+{
+"id": "themes/themes/doctype/vue_component/vue_component.js::_vc_reload_css",
+"file": "themes/themes/doctype/vue_component/vue_component.js",
+"kind": "function",
+"name": "_vc_reload_css",
+"qualname": "_vc_reload_css",
+"sig": "()",
+"hash": "f12ef0e04c",
+"exported": false,
+"calls": [],
+"label": "",
+"label_source": "none"
+},
+{
+"id": "themes/themes/doctype/vue_component/vue_component.js::_vc_preview_theme",
+"file": "themes/themes/doctype/vue_component/vue_component.js",
+"kind": "function",
+"name": "_vc_preview_theme",
+"qualname": "_vc_preview_theme",
+"sig": "(cb)",
+"hash": "9b9d842fcd",
+"exported": false,
+"calls": [],
+"label": "",
+"label_source": "none"
+},
+{
+"id": "themes/themes/doctype/vue_component/vue_component.js::_vc_groups",
+"file": "themes/themes/doctype/vue_component/vue_component.js",
+"kind": "function",
+"name": "_vc_groups",
+"qualname": "_vc_groups",
+"sig": "(rows)",
+"hash": "125c60081b",
+"exported": false,
+"calls": [],
+"label": "",
+"label_source": "none"
+},
+{
+"id": "themes/themes/doctype/vue_component/vue_component.js::_vc_groups.present",
+"file": "themes/themes/doctype/vue_component/vue_component.js",
+"kind": "function",
+"name": "present",
+"qualname": "_vc_groups.present",
+"sig": "(rows || [])",
+"hash": "5b3db069c7",
+"exported": false,
+"calls": [],
+"label": "",
+"label_source": "none"
+},
+{
+"id": "themes/themes/doctype/vue_component/vue_component.js::_vc_set_group",
+"file": "themes/themes/doctype/vue_component/vue_component.js",
+"kind": "function",
+"name": "_vc_set_group",
+"qualname": "_vc_set_group",
+"sig": "(frm, group, values)",
+"hash": "61d3bb9a52",
+"exported": false,
+"calls": [
+"themes/themes/doctype/vue_component/vue_component.js::_vc_render_colours"
+],
+"label": "",
+"label_source": "none"
+},
+{
+"id": "themes/themes/doctype/vue_component/vue_component.js::_vc_fg_tonal_class",
+"file": "themes/themes/doctype/vue_component/vue_component.js",
+"kind": "function",
+"name": "_vc_fg_tonal_class",
+"qualname": "_vc_fg_tonal_class",
+"sig": "(bgClass)",
+"hash": "47bafd0fd3",
+"exported": false,
+"calls": [],
+"label": "",
+"label_source": "none"
+},
+{
+"id": "themes/themes/doctype/vue_component/vue_component.js::_vc_preview_bg_class",
+"file": "themes/themes/doctype/vue_component/vue_component.js",
+"kind": "function",
+"name": "_vc_preview_bg_class",
+"qualname": "_vc_preview_bg_class",
+"sig": "(first)",
+"hash": "3efd7d4940",
+"exported": false,
+"calls": [],
+"label": "",
+"label_source": "none"
+},
+{
+"id": "themes/themes/doctype/vue_component/vue_component.js::_vc_class_cell_html",
+"file": "themes/themes/doctype/vue_component/vue_component.js",
+"kind": "function",
+"name": "_vc_class_cell_html",
+"qualname": "_vc_class_cell_html",
+"sig": "(first)",
+"hash": "d6c70374b6",
+"exported": false,
+"calls": [],
+"label": "",
+"label_source": "none"
+},
+{
+"id": "themes/themes/doctype/vue_component/vue_component.js::_vc_show_revert",
+"file": "themes/themes/doctype/vue_component/vue_component.js",
+"kind": "function",
+"name": "_vc_show_revert",
+"qualname": "_vc_show_revert",
+"sig": "(saved)",
+"hash": "3f6d0e3f7b",
+"exported": false,
+"calls": [],
+"label": "",
+"label_source": "none"
+},
+{
+"id": "themes/themes/doctype/vue_component/vue_component.js::_vc_ensure_styles",
+"file": "themes/themes/doctype/vue_component/vue_component.js",
+"kind": "function",
+"name": "_vc_ensure_styles",
+"qualname": "_vc_ensure_styles",
+"sig": "()",
+"hash": "e5d1281c3f",
+"exported": false,
+"calls": [],
+"label": "",
+"label_source": "none"
+},
+{
+"id": "themes/themes/doctype/vue_component/vue_component.js::_vc_group_by_key",
+"file": "themes/themes/doctype/vue_component/vue_component.js",
+"kind": "function",
+"name": "_vc_group_by_key",
+"qualname": "_vc_group_by_key",
+"sig": "(frm, key)",
+"hash": "0bf92a4b46",
+"exported": false,
+"calls": [
+"themes/themes/doctype/vue_component/vue_component.js::_vc_groups"
+],
+"label": "",
+"label_source": "none"
+},
+{
+"id": "themes/themes/doctype/vue_component/vue_component.js::_vc_bind_colours_events",
+"file": "themes/themes/doctype/vue_component/vue_component.js",
+"kind": "function",
+"name": "_vc_bind_colours_events",
+"qualname": "_vc_bind_colours_events",
+"sig": "(frm, $wrapper)",
+"hash": "5a1eec614b",
+"exported": false,
+"calls": [
+"themes/themes/doctype/vue_component/vue_component.js::_vc_group_by_key",
+"themes/themes/doctype/vue_component/vue_component.js::_vc_open_preview",
+"themes/themes/doctype/vue_component/vue_component.js::_vc_open_swatch_picker",
+"themes/themes/doctype/vue_component/vue_component.js::_vc_set_group"
+],
+"label": "",
+"label_source": "none"
+},
+{
+"id": "themes/themes/doctype/vue_component/vue_component.js::_vc_open_swatch_picker",
+"file": "themes/themes/doctype/vue_component/vue_component.js",
+"kind": "function",
+"name": "_vc_open_swatch_picker",
+"qualname": "_vc_open_swatch_picker",
+"sig": "(frm, group, kind)",
+"hash": "cad3db4a60",
+"exported": false,
+"calls": [
+"themes/themes/doctype/vue_component/vue_component.js::_vc_preview_theme",
+"themes/themes/doctype/vue_component/vue_component.js::_vc_render_colours"
+],
+"label": "",
+"label_source": "none"
+},
+{
+"id": "themes/themes/doctype/vue_component/vue_component.js::_vc_render_colours",
+"file": "themes/themes/doctype/vue_component/vue_component.js",
+"kind": "function",
+"name": "_vc_render_colours",
+"qualname": "_vc_render_colours",
+"sig": "(frm)",
+"hash": "7dc30ba412",
+"exported": false,
+"calls": [
+"themes/themes/doctype/vue_component/vue_component.js::_vc_bind_colours_events",
+"themes/themes/doctype/vue_component/vue_component.js::_vc_class_cell_html",
+"themes/themes/doctype/vue_component/vue_component.js::_vc_ensure_styles",
+"themes/themes/doctype/vue_component/vue_component.js::_vc_fg_tonal_class",
+"themes/themes/doctype/vue_component/vue_component.js::_vc_groups",
+"themes/themes/doctype/vue_component/vue_component.js::_vc_preview_bg_class",
+"themes/themes/doctype/vue_component/vue_component.js::_vc_preview_theme",
+"themes/themes/doctype/vue_component/vue_component.js::_vc_show_revert"
+],
+"label": "",
+"label_source": "none"
+},
+{
+"id": "themes/themes/doctype/vue_component/vue_component.js::_vc_render_colours.missingCount",
+"file": "themes/themes/doctype/vue_component/vue_component.js",
+"kind": "function",
+"name": "missingCount",
+"qualname": "_vc_render_colours.missingCount",
+"sig": "(frm.doc.elements || [])",
+"hash": "ac004a8ea1",
+"exported": false,
+"calls": [],
+"label": "",
+"label_source": "none"
+},
+{
+"id": "themes/themes/doctype/vue_component/vue_component.js::_vc_override_payload",
+"file": "themes/themes/doctype/vue_component/vue_component.js",
+"kind": "function",
+"name": "_vc_override_payload",
+"qualname": "_vc_override_payload",
+"sig": "(row)",
+"hash": "257e5b0e3f",
+"exported": false,
+"calls": [],
+"label": "",
+"label_source": "none"
+},
+{
+"id": "themes/themes/doctype/vue_component/vue_component.js::_vc_sample",
+"file": "themes/themes/doctype/vue_component/vue_component.js",
+"kind": "function",
+"name": "_vc_sample",
+"qualname": "_vc_sample",
+"sig": "(row, decl)",
+"hash": "d8107648c9",
+"exported": false,
+"calls": [],
+"label": "",
+"label_source": "none"
+},
+{
+"id": "themes/themes/doctype/vue_component/vue_component.js::_vc_open_preview",
+"file": "themes/themes/doctype/vue_component/vue_component.js",
+"kind": "function",
+"name": "_vc_open_preview",
+"qualname": "_vc_open_preview",
+"sig": "(frm)",
+"hash": "c0c032dc48",
+"exported": false,
+"calls": [
+"themes/themes/doctype/vue_component/vue_component.js::_vc_groups",
+"themes/themes/doctype/vue_component/vue_component.js::_vc_override_payload",
+"themes/themes/doctype/vue_component/vue_component.js::_vc_preview_theme",
+"themes/themes/doctype/vue_component/vue_component.js::_vc_sample"
+],
+"label": "",
+"label_source": "none"
+},
+{
+"id": "themes/themes/doctype/vue_component/vue_component.py::VueComponent",
+"file": "themes/themes/doctype/vue_component/vue_component.py",
+"kind": "class",
+"name": "VueComponent",
+"qualname": "VueComponent",
+"sig": "(Document)",
+"hash": "16fa9972d7",
+"extends": [
+"Document"
+],
+"calls": [],
+"label": "",
+"label_source": "none"
+},
+{
+"id": "themes/themes/doctype/vue_component/vue_component.py::VueComponent.validate",
+"file": "themes/themes/doctype/vue_component/vue_component.py",
+"kind": "method",
+"name": "validate",
+"qualname": "VueComponent.validate",
+"sig": "(self)",
+"hash": "7c21108465",
+"calls": [
+"themes/component_api.py::_used_by",
+"themes/utils/component_summary.py::build_summary",
+"themes/utils/component_sync.py::needs_attention",
+"themes/utils/component_sync.py::normalise_groups"
+],
+"label": "",
+"label_source": "none"
+},
+{
+"id": "themes/themes/doctype/vue_component/vue_component.py::VueComponent.on_update",
+"file": "themes/themes/doctype/vue_component/vue_component.py",
+"kind": "method",
+"name": "on_update",
+"qualname": "VueComponent.on_update",
+"sig": "(self)",
+"hash": "eb8997173d",
+"calls": [
+"themes/utils/component_css_writer.py::publish_component_css"
+],
+"label": "",
+"label_source": "none"
+},
+{
+"id": "themes/themes/doctype/vue_component/vue_component.py::VueComponent.after_delete",
+"file": "themes/themes/doctype/vue_component/vue_component.py",
+"kind": "method",
+"name": "after_delete",
+"qualname": "VueComponent.after_delete",
+"sig": "(self)",
+"hash": "9b7238d3a5",
+"calls": [
+"themes/utils/component_css_writer.py::publish_component_css"
+],
+"label": "",
+"label_source": "none"
+},
+{
+"id": "themes/themes/doctype/vue_component_element/vue_component_element.py::VueComponentElement",
+"file": "themes/themes/doctype/vue_component_element/vue_component_element.py",
+"kind": "class",
+"name": "VueComponentElement",
+"qualname": "VueComponentElement",
+"sig": "(Document)",
+"hash": "6e9072ec92",
+"extends": [
+"Document"
+],
+"calls": [],
+"label": "",
+"label_source": "none"
+},
+{
 "id": "themes/utils/bundle_base_desk_theme.py::bundle_base_desk_theme_to_app",
 "file": "themes/utils/bundle_base_desk_theme.py",
 "kind": "function",
@@ -13850,6 +15374,451 @@
 "label": "Generate Python module source for bundled default theme with JSON fallback",
 "label_source": "generated",
 "label_hash": "e82c1aaf73"
+},
+{
+"id": "themes/utils/component_css_writer.py::_valid_text_override",
+"file": "themes/utils/component_css_writer.py",
+"kind": "function",
+"name": "_valid_text_override",
+"qualname": "_valid_text_override",
+"sig": "(row: dict) -> bool",
+"hash": "d586fe9ef7",
+"calls": [],
+"label": "",
+"label_source": "none"
+},
+{
+"id": "themes/utils/component_css_writer.py::declarations_for",
+"file": "themes/utils/component_css_writer.py",
+"kind": "function",
+"name": "declarations_for",
+"qualname": "declarations_for",
+"sig": "(row: dict) -> list[str]",
+"hash": "4964197390",
+"calls": [
+"themes/utils/component_css_writer.py::_valid_text_override"
+],
+"tested_by": [
+"themes/tests/test_component_css_writer.py::TestComponentCssWriter.test_bg_mono",
+"themes/tests/test_component_css_writer.py::TestComponentCssWriter.test_bg_primary_no_shade",
+"themes/tests/test_component_css_writer.py::TestComponentCssWriter.test_bg_tonal",
+"themes/tests/test_component_css_writer.py::TestComponentCssWriter.test_border_width_and_colour",
+"themes/tests/test_component_css_writer.py::TestComponentCssWriter.test_invalid_bg_class_emits_nothing"
+],
+"label": "",
+"label_source": "none"
+},
+{
+"id": "themes/utils/component_css_writer.py::generate_component_css",
+"file": "themes/utils/component_css_writer.py",
+"kind": "function",
+"name": "generate_component_css",
+"qualname": "generate_component_css",
+"sig": "(rows: list[dict]) -> str",
+"hash": "0081b69438",
+"calls": [
+"themes/utils/component_css_writer.py::declarations_for",
+"themes/utils/component_sync.py::has_override"
+],
+"tested_by": [
+"themes/tests/test_component_css_writer.py::TestComponentCssWriter.test_bad_selector_skipped",
+"themes/tests/test_component_css_writer.py::TestComponentCssWriter.test_empty_input_header_only",
+"themes/tests/test_component_css_writer.py::TestComponentCssWriter.test_invalid_bg_class_emits_nothing",
+"themes/tests/test_component_css_writer.py::TestComponentCssWriter.test_keep_default_skipped",
+"themes/tests/test_component_css_writer.py::TestComponentCssWriter.test_missing_skipped"
+],
+"label": "",
+"label_source": "none"
+},
+{
+"id": "themes/utils/component_css_writer.py::publish_component_css",
+"file": "themes/utils/component_css_writer.py",
+"kind": "function",
+"name": "publish_component_css",
+"qualname": "publish_component_css",
+"sig": "() -> dict",
+"hash": "2e22d6e578",
+"calls": [
+"themes/utils/component_css_writer.py::generate_component_css",
+"themes/utils/css_publish.py::write_published_css"
+],
+"label": "",
+"label_source": "none"
+},
+{
+"id": "themes/utils/component_scan.py::iter_vue_files",
+"file": "themes/utils/component_scan.py",
+"kind": "function",
+"name": "iter_vue_files",
+"qualname": "iter_vue_files",
+"sig": "(root: Path) -> list[Path]",
+"hash": "ec3d8c6cb4",
+"calls": [],
+"tested_by": [
+"themes/tests/test_component_scan.py::TestComponentScan.test_iter_vue_files"
+],
+"label": "",
+"label_source": "none"
+},
+{
+"id": "themes/utils/component_scan.py::extract_template",
+"file": "themes/utils/component_scan.py",
+"kind": "function",
+"name": "extract_template",
+"qualname": "extract_template",
+"sig": "(source: str) -> tuple[str, int]",
+"hash": "580340c3e3",
+"calls": [],
+"label": "",
+"label_source": "none"
+},
+{
+"id": "themes/utils/component_scan.py::extract_purpose",
+"file": "themes/utils/component_scan.py",
+"kind": "function",
+"name": "extract_purpose",
+"qualname": "extract_purpose",
+"sig": "(source: str) -> str",
+"hash": "03ff5b53f1",
+"calls": [],
+"label": "",
+"label_source": "none"
+},
+{
+"id": "themes/utils/component_scan.py::source_hash",
+"file": "themes/utils/component_scan.py",
+"kind": "function",
+"name": "source_hash",
+"qualname": "source_hash",
+"sig": "(source: str) -> str",
+"hash": "d47e217493",
+"calls": [],
+"label": "",
+"label_source": "none"
+},
+{
+"id": "themes/utils/component_scan.py::kebab_to_pascal",
+"file": "themes/utils/component_scan.py",
+"kind": "function",
+"name": "kebab_to_pascal",
+"qualname": "kebab_to_pascal",
+"sig": "(name: str) -> str",
+"hash": "6521ce8ae5",
+"calls": [],
+"label": "",
+"label_source": "none"
+},
+{
+"id": "themes/utils/component_scan.py::_TemplateParser",
+"file": "themes/utils/component_scan.py",
+"kind": "class",
+"name": "_TemplateParser",
+"qualname": "_TemplateParser",
+"sig": "(HTMLParser)",
+"hash": "728c0c2fbe",
+"extends": [
+"HTMLParser"
+],
+"calls": [],
+"label": "",
+"label_source": "none"
+},
+{
+"id": "themes/utils/component_scan.py::_TemplateParser.__init__",
+"file": "themes/utils/component_scan.py",
+"kind": "method",
+"name": "__init__",
+"qualname": "_TemplateParser.__init__",
+"sig": "(self, line_offset: int) -> None",
+"hash": "abdd3e8e3c",
+"calls": [],
+"label": "",
+"label_source": "none"
+},
+{
+"id": "themes/utils/component_scan.py::_TemplateParser.handle_starttag",
+"file": "themes/utils/component_scan.py",
+"kind": "method",
+"name": "handle_starttag",
+"qualname": "_TemplateParser.handle_starttag",
+"sig": "(self, tag: str, attrs: list[tuple[str, str | None]]) -> None",
+"hash": "f68ec04132",
+"calls": [
+"themes/utils/component_scan.py::_TemplateParser._on_tag"
+],
+"label": "",
+"label_source": "none"
+},
+{
+"id": "themes/utils/component_scan.py::_TemplateParser.handle_startendtag",
+"file": "themes/utils/component_scan.py",
+"kind": "method",
+"name": "handle_startendtag",
+"qualname": "_TemplateParser.handle_startendtag",
+"sig": "(self, tag: str, attrs: list[tuple[str, str | None]]) -> None",
+"hash": "e8f8323152",
+"calls": [
+"themes/utils/component_scan.py::_TemplateParser._on_tag"
+],
+"label": "",
+"label_source": "none"
+},
+{
+"id": "themes/utils/component_scan.py::_TemplateParser._on_tag",
+"file": "themes/utils/component_scan.py",
+"kind": "method",
+"name": "_on_tag",
+"qualname": "_TemplateParser._on_tag",
+"sig": "(self, tag: str, attrs: list[tuple[str, str | None]]) -> None",
+"hash": "6acd9841a6",
+"calls": [
+"themes/utils/component_scan.py::kebab_to_pascal"
+],
+"label": "",
+"label_source": "none"
+},
+{
+"id": "themes/utils/component_scan.py::scan_vue_source",
+"file": "themes/utils/component_scan.py",
+"kind": "function",
+"name": "scan_vue_source",
+"qualname": "scan_vue_source",
+"sig": "(source: str) -> dict",
+"hash": "d7dccea1ef",
+"calls": [
+"themes/utils/component_scan.py::_TemplateParser",
+"themes/utils/component_scan.py::extract_purpose",
+"themes/utils/component_scan.py::extract_template"
+],
+"label": "",
+"label_source": "none"
+},
+{
+"id": "themes/utils/component_scan.py::scan_vue_file",
+"file": "themes/utils/component_scan.py",
+"kind": "function",
+"name": "scan_vue_file",
+"qualname": "scan_vue_file",
+"sig": "(path: Path) -> dict",
+"hash": "ed8666319a",
+"calls": [
+"themes/utils/component_scan.py::scan_vue_source",
+"themes/utils/component_scan.py::source_hash"
+],
+"tested_by": [
+"themes/tests/test_component_scan.py::TestComponentScan.test_card_line_number",
+"themes/tests/test_component_scan.py::TestComponentScan.test_dynamic_float",
+"themes/tests/test_component_scan.py::TestComponentScan.test_nested_templates",
+"themes/tests/test_component_scan.py::TestComponentScan.test_no_selector",
+"themes/tests/test_component_scan.py::TestComponentScan.test_no_template"
+],
+"label": "",
+"label_source": "none"
+},
+{
+"id": "themes/utils/component_summary.py::_role_shade_phrase",
+"file": "themes/utils/component_summary.py",
+"kind": "function",
+"name": "_role_shade_phrase",
+"qualname": "_role_shade_phrase",
+"sig": "(role: str, shade: str | None, suffix: str) -> str",
+"hash": "96e3a27880",
+"calls": [],
+"label": "",
+"label_source": "none"
+},
+{
+"id": "themes/utils/component_summary.py::_phrase_for_token",
+"file": "themes/utils/component_summary.py",
+"kind": "function",
+"name": "_phrase_for_token",
+"qualname": "_phrase_for_token",
+"sig": "(token: str) -> str | None",
+"hash": "7ba4de7733",
+"calls": [
+"themes/utils/component_summary.py::_role_shade_phrase"
+],
+"label": "",
+"label_source": "none"
+},
+{
+"id": "themes/utils/component_summary.py::describe_theme_classes",
+"file": "themes/utils/component_summary.py",
+"kind": "function",
+"name": "describe_theme_classes",
+"qualname": "describe_theme_classes",
+"sig": "(tokens: list[str]) -> str",
+"hash": "416052a27e",
+"calls": [
+"themes/utils/component_summary.py::_phrase_for_token"
+],
+"tested_by": [
+"themes/tests/test_component_summary.py::TestDescribeThemeClasses.test_duplicate_phrase_once",
+"themes/tests/test_component_summary.py::TestDescribeThemeClasses.test_theme_bg_primary",
+"themes/tests/test_component_summary.py::TestDescribeThemeClasses.test_theme_bg_primary_300",
+"themes/tests/test_component_summary.py::TestDescribeThemeClasses.test_theme_bg_surface",
+"themes/tests/test_component_summary.py::TestDescribeThemeClasses.test_theme_border"
+],
+"label": "",
+"label_source": "none"
+},
+{
+"id": "themes/utils/component_summary.py::element_noun",
+"file": "themes/utils/component_summary.py",
+"kind": "function",
+"name": "element_noun",
+"qualname": "element_noun",
+"sig": "(tag: str, selector: str) -> str",
+"hash": "bfcc948c23",
+"calls": [
+"themes/utils/component_scan.py::kebab_to_pascal"
+],
+"tested_by": [
+"themes/tests/test_component_summary.py::TestElementNoun.test_div_footer",
+"themes/tests/test_component_summary.py::TestElementNoun.test_p_desc",
+"themes/tests/test_component_summary.py::TestElementNoun.test_panel_table_component",
+"themes/tests/test_component_summary.py::TestElementNoun.test_select_fd_input",
+"themes/tests/test_component_summary.py::TestElementNoun.test_span_reqd"
+],
+"label": "",
+"label_source": "none"
+},
+{
+"id": "themes/utils/component_summary.py::build_summary",
+"file": "themes/utils/component_summary.py",
+"kind": "function",
+"name": "build_summary",
+"qualname": "build_summary",
+"sig": "(comp: dict, rows: list[dict], used_by: list[str]) -> str",
+"hash": "fc6dfad00b",
+"calls": [
+"themes/utils/component_summary.py::describe_theme_classes",
+"themes/utils/component_summary.py::element_noun",
+"themes/utils/component_sync.py::group_key",
+"themes/utils/component_sync.py::has_override"
+],
+"tested_by": [
+"themes/tests/test_component_summary.py::TestBuildSummary.test_build_summary_deterministic",
+"themes/tests/test_component_summary.py::TestBuildSummary.test_build_summary_exact"
+],
+"label": "",
+"label_source": "none"
+},
+{
+"id": "themes/utils/component_sync.py::group_key",
+"file": "themes/utils/component_sync.py",
+"kind": "function",
+"name": "group_key",
+"qualname": "group_key",
+"sig": "(row: dict) -> str",
+"hash": "835344c201",
+"calls": [],
+"label": "",
+"label_source": "none"
+},
+{
+"id": "themes/utils/component_sync.py::has_override",
+"file": "themes/utils/component_sync.py",
+"kind": "function",
+"name": "has_override",
+"qualname": "has_override",
+"sig": "(row: dict) -> bool",
+"hash": "797def5b7d",
+"calls": [],
+"tested_by": [
+"themes/tests/test_component_sync.py::TestComponentSync.test_new_row_empty_overrides"
+],
+"label": "",
+"label_source": "none"
+},
+{
+"id": "themes/utils/component_sync.py::_group_sort_key",
+"file": "themes/utils/component_sync.py",
+"kind": "function",
+"name": "_group_sort_key",
+"qualname": "_group_sort_key",
+"sig": "(row: dict) -> tuple[int, int]",
+"hash": "47bedfc6a6",
+"calls": [],
+"wired_by": [
+"themes/utils/component_sync.py::_canonical_by_group"
+],
+"label": "",
+"label_source": "none"
+},
+{
+"id": "themes/utils/component_sync.py::_canonical_by_group",
+"file": "themes/utils/component_sync.py",
+"kind": "function",
+"name": "_canonical_by_group",
+"qualname": "_canonical_by_group",
+"sig": "(rows: list[dict]) -> dict[str, dict]",
+"hash": "620856cdb9",
+"calls": [
+"themes/utils/component_sync.py::group_key"
+],
+"label": "",
+"label_source": "none"
+},
+{
+"id": "themes/utils/component_sync.py::normalise_groups",
+"file": "themes/utils/component_sync.py",
+"kind": "function",
+"name": "normalise_groups",
+"qualname": "normalise_groups",
+"sig": "(rows: list[dict]) -> list[dict]",
+"hash": "13cce07807",
+"calls": [
+"themes/utils/component_sync.py::_canonical_by_group",
+"themes/utils/component_sync.py::group_key"
+],
+"tested_by": [
+"themes/tests/test_component_sync.py::TestComponentSync.test_normalise_groups_copies_first_row"
+],
+"label": "",
+"label_source": "none"
+},
+{
+"id": "themes/utils/component_sync.py::merge_elements",
+"file": "themes/utils/component_sync.py",
+"kind": "function",
+"name": "merge_elements",
+"qualname": "merge_elements",
+"sig": "(existing: list[dict], scanned: list[dict]) -> list[dict]",
+"hash": "04ae75e3a8",
+"calls": [
+"themes/utils/component_sync.py::normalise_groups"
+],
+"tested_by": [
+"themes/tests/test_component_sync.py::TestComponentSync.test_edited_selector_survives_rescan",
+"themes/tests/test_component_sync.py::TestComponentSync.test_existing_keeps_overrides_after_rescan",
+"themes/tests/test_component_sync.py::TestComponentSync.test_new_row_empty_overrides",
+"themes/tests/test_component_sync.py::TestComponentSync.test_new_row_inherits_group_overrides",
+"themes/tests/test_component_sync.py::TestComponentSync.test_vanished_row_missing_last"
+],
+"label": "",
+"label_source": "none"
+},
+{
+"id": "themes/utils/component_sync.py::needs_attention",
+"file": "themes/utils/component_sync.py",
+"kind": "function",
+"name": "needs_attention",
+"qualname": "needs_attention",
+"sig": "(rows: list[dict], file_status: str) -> bool",
+"hash": "17eba9c767",
+"calls": [
+"themes/utils/component_sync.py::has_override"
+],
+"tested_by": [
+"themes/tests/test_component_sync.py::TestComponentSync.test_needs_attention_all_keep_default",
+"themes/tests/test_component_sync.py::TestComponentSync.test_needs_attention_empty_selector_with_keep_default",
+"themes/tests/test_component_sync.py::TestComponentSync.test_needs_attention_file_missing",
+"themes/tests/test_component_sync.py::TestComponentSync.test_needs_attention_only_missing_rows",
+"themes/tests/test_component_sync.py::TestComponentSync.test_needs_attention_untouched_row"
+],
+"label": "",
+"label_source": "none"
 },
 {
 "id": "themes/utils/css_publish.py::css_hash_for",
