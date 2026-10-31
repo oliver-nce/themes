@@ -45,6 +45,7 @@ def _css_url(css_filename: str) -> str:
 
 app_include_css = [
     _css_url("nce_theme.css"),
+    _css_url("nce_component_overrides.css"),
     "/assets/themes/css/nce_desk_theme.css",
     "/assets/themes/dist/theme-swatch-picker.css",
 ]

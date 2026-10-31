@@ -1,0 +1,171 @@
+{
+ "actions": [],
+ "autoname": "hash",
+ "creation": "2026-10-31 00:00:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "component_name",
+  "app",
+  "file_path",
+  "component_key",
+  "column_break_status",
+  "status",
+  "needs_attention",
+  "element_count",
+  "last_scanned",
+  "source_hash",
+  "purpose",
+  "uses_components",
+  "section_summary",
+  "summary",
+  "tab_colours",
+  "colours_html",
+  "tab_elements",
+  "elements"
+ ],
+ "fields": [
+  {
+   "bold": 1,
+   "fieldname": "component_name",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Component",
+   "read_only": 1
+  },
+  {
+   "fieldname": "app",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "App",
+   "read_only": 1
+  },
+  {
+   "fieldname": "file_path",
+   "fieldtype": "Data",
+   "label": "File Path",
+   "read_only": 1
+  },
+  {
+   "fieldname": "component_key",
+   "fieldtype": "Data",
+   "hidden": 1,
+   "label": "Component Key",
+   "read_only": 1,
+   "unique": 1
+  },
+  {
+   "fieldname": "column_break_status",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "Present",
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "in_standard_filter": 1,
+   "label": "File Status",
+   "options": "Present\nMissing",
+   "read_only": 1
+  },
+  {
+   "default": "0",
+   "fieldname": "needs_attention",
+   "fieldtype": "Check",
+   "in_standard_filter": 1,
+   "label": "Work To Do",
+   "read_only": 1
+  },
+  {
+   "fieldname": "element_count",
+   "fieldtype": "Int",
+   "in_list_view": 1,
+   "label": "Elements",
+   "read_only": 1
+  },
+  {
+   "fieldname": "last_scanned",
+   "fieldtype": "Datetime",
+   "label": "Last Scanned",
+   "read_only": 1
+  },
+  {
+   "fieldname": "source_hash",
+   "fieldtype": "Data",
+   "hidden": 1,
+   "label": "Source Hash",
+   "read_only": 1
+  },
+  {
+   "fieldname": "purpose",
+   "fieldtype": "Small Text",
+   "hidden": 1,
+   "label": "Purpose",
+   "read_only": 1
+  },
+  {
+   "fieldname": "uses_components",
+   "fieldtype": "Small Text",
+   "hidden": 1,
+   "label": "Components Used",
+   "read_only": 1
+  },
+  {
+   "fieldname": "section_summary",
+   "fieldtype": "Section Break",
+   "label": "Summary"
+  },
+  {
+   "description": "Built by fixed rules from the .vue file on every refresh. Not written by AI.",
+   "fieldname": "summary",
+   "fieldtype": "Long Text",
+   "label": "Summary",
+   "read_only": 1
+  },
+  {
+   "fieldname": "tab_colours",
+   "fieldtype": "Tab Break",
+   "label": "Colours"
+  },
+  {
+   "fieldname": "colours_html",
+   "fieldtype": "HTML",
+   "label": "Colours Panel"
+  },
+  {
+   "fieldname": "tab_elements",
+   "fieldtype": "Tab Break",
+   "label": "Elements"
+  },
+  {
+   "fieldname": "elements",
+   "fieldtype": "Table",
+   "label": "Elements",
+   "options": "Vue Component Element"
+  }
+ ],
+ "modified": "2026-10-31 00:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Themes",
+ "name": "Vue Component",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "search_fields": "component_name,app,file_path",
+ "show_title_field_in_link": 1,
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "title_field": "component_name",
+ "track_changes": 1
+}
