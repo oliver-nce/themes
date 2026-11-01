@@ -656,107 +656,21 @@ import {
 	weightDisplayLabel,
 } from "@/utils/fontWeight"
 import { PREVIEW_POPUP_FEATURES } from "@/utils/previewWindow"
+import {
+	DENSITY_PRESET_IDS,
+	DENSITY_PRESET_KEYS,
+	DENSITY_PRESETS,
+	DESK_THEME_DEFAULTS,
+	DESK_THEME_FIELDS,
+	densityPresetTokenEqual,
+	type DensityPresetId,
+	type DeskThemeFormKey,
+} from "@/domain/deskThemeForm"
 
-const ALL_FIELDS = [
-	"theme_name",
-	"primary_color",
-	"brand_color",
-	"bg_color",
-	"fg_color",
-	"text_color",
-	"text_muted",
-	"text_light",
-	"border_color",
-	"dark_border_color",
-	"control_bg",
-	"control_bg_on_gray",
-	"btn_default_bg",
-	"surface_gray_2",
-	"subtle_fg",
-	"heading_color",
-	"btn_height",
-	"radius",
-	"input_height",
-	"checkbox_size",
-	"border_radius",
-	"g_bar_color",
-	"g_bar_border",
-	"g_progress_color",
-	"g_header_background",
-	"g_row_color",
-	// Typography
-	"font_family",
-	"font_weight_body",
-	"font_weight_bold",
-	"font_weight_medium",
-	"font_size",
-	"text_xs",
-	"text_sm",
-	"text_lg",
-	"text_scale_mode",
-	"spacing",
-	"padding_xs",
-	"padding_sm",
-	"padding_md",
-	"margin_xs",
-	"margin_sm",
-	"list_row_height",
-	"page_max_width",
-	"page_head_height",
-	"density",
-] as const
-
+const ALL_FIELDS = DESK_THEME_FIELDS
 const PAYLOAD_FIELDS = ALL_FIELDS.filter((k) => k !== "theme_name")
-type FormKey = (typeof ALL_FIELDS)[number]
-
-const DEFAULTS: Record<FormKey, string> = {
-	theme_name: "Default",
-	primary_color: "#2490EF",
-	brand_color: "#0089FF",
-	bg_color: "#f5f5f6",
-	fg_color: "#ffffff",
-	text_color: "#1f272e",
-	text_muted: "#687178",
-	text_light: "#b0bac0",
-	border_color: "#d1d8dd",
-	dark_border_color: "#8d99a6",
-	control_bg: "#f7fafc",
-	control_bg_on_gray: "#ffffff",
-	btn_default_bg: "#f7fafc",
-	surface_gray_2: "#f3f3f3",
-	subtle_fg: "#f3f3f3",
-	heading_color: "#0f0f0f",
-	btn_height: "28px",
-	radius: "8px",
-	input_height: "28px",
-	checkbox_size: "14px",
-	border_radius: "6px",
-	g_bar_color: "#2490EF",
-	g_bar_border: "#007be0",
-	g_progress_color: "#0070cc",
-	g_header_background: "#f3f3f3",
-	g_row_color: "#f8f8f8",
-	// Typography
-	font_family: "System Default",
-	font_weight_body: "420",
-	font_weight_bold: "600",
-	font_weight_medium: "500",
-	font_size: "14px",
-	text_xs: "12px",
-	text_sm: "13px",
-	text_lg: "16px",
-	text_scale_mode: "auto",
-	spacing: ".25rem",
-	padding_xs: "5px",
-	padding_sm: "7px",
-	padding_md: "15px",
-	margin_xs: "5px",
-	margin_sm: "10px",
-	list_row_height: "30px",
-	page_max_width: "900px",
-	page_head_height: "48px",
-	density: "default",
-}
+type FormKey = DeskThemeFormKey
+const DEFAULTS = DESK_THEME_DEFAULTS
 
 const COLOR_FIELDS = new Set(
 	PAYLOAD_FIELDS.filter(
@@ -1106,68 +1020,13 @@ function canonicalPayload(source: Record<string, any>): Record<string, any> {
 const suppressTextScaleAuto = ref(false)
 const suppressDensityAuto = ref(false)
 
-const DENSITY_PRESET_IDS = ["compact", "default", "comfortable"] as const
-type DensityPresetId = (typeof DENSITY_PRESET_IDS)[number]
 type DensityMode = DensityPresetId | "custom"
-
-const DENSITY_PRESET_KEYS = [
-	"spacing",
-	"padding_xs",
-	"padding_sm",
-	"padding_md",
-	"margin_xs",
-	"margin_sm",
-	"list_row_height",
-	"input_height",
-] as const satisfies readonly FormKey[]
-
-const DENSITY_PRESETS: Record<DensityPresetId, Record<(typeof DENSITY_PRESET_KEYS)[number], string>> = {
-	compact: {
-		spacing: ".2rem",
-		padding_xs: "3px",
-		padding_sm: "5px",
-		padding_md: "10px",
-		margin_xs: "3px",
-		margin_sm: "6px",
-		list_row_height: "26px",
-		input_height: "24px",
-	},
-	default: {
-		spacing: ".25rem",
-		padding_xs: "5px",
-		padding_sm: "7px",
-		padding_md: "15px",
-		margin_xs: "5px",
-		margin_sm: "10px",
-		list_row_height: "30px",
-		input_height: "28px",
-	},
-	comfortable: {
-		spacing: ".3rem",
-		padding_xs: "7px",
-		padding_sm: "10px",
-		padding_md: "20px",
-		margin_xs: "7px",
-		margin_sm: "14px",
-		list_row_height: "36px",
-		input_height: "32px",
-	},
-}
 
 const densityPresetOptions = [
 	{ id: "compact" as const, label: "Compact" },
 	{ id: "default" as const, label: "Default" },
 	{ id: "comfortable" as const, label: "Comfortable" },
 ]
-
-function densityPresetTokenEqual(
-	key: (typeof DENSITY_PRESET_KEYS)[number],
-	a: string,
-	b: string,
-): boolean {
-	if (key === "spacing") return parseFloat(a) === parseFloat(b)
-	return a === b
-}
 
 function densityPresetMatches(presetId: DensityPresetId): boolean {
 	const preset = DENSITY_PRESETS[presetId]

@@ -686,7 +686,7 @@ Site Theme Editor for colours, typography, layout, live CSS variables, and base 
 <script setup lang="ts">
 import { ref, reactive, watch, computed, onUnmounted, onMounted, nextTick } from "vue"
 import { useThemeManagement } from "@/composables/useThemeManagement"
-import { generateShades, generateNeutralShades, neutral600Hex, effectiveRoleHex, pickFgMono, pickFgTonal, brandShadeForeground, resolveNeutralIntoPayload, isDark, type ColorShade } from "@/utils/color-shades"
+import { effectiveRoleHex, resolveNeutralIntoPayload } from "@/utils/color-shades"
 import { STATUS_COLOR_DEFAULTS, STATUS_COLOR_KEYS } from "@/composables/useThemeDefaults"
 import EditorSection from "@/components/EditorSection.vue"
 import BrandColorPicker, { type BrandPaletteMode, type FgPreviewMode } from "@/components/BrandColorPicker.vue"
@@ -699,8 +699,20 @@ import ShadowDirectionDial from "@/components/ShadowDirectionDial.vue"
 import ThemeClassCatalogPanel from "@/components/ThemeClassCatalogPanel.vue"
 import ThemeEditorHeader from "@/components/ThemeEditorHeader.vue"
 import ThemeDialog from "@/components/ThemeDialog.vue"
-import { buildThemeShadow } from "@/utils/shadowBuild"
 import { fontStack as fontCSS } from "@/utils/fonts"
+import {
+	WEB_THEME_DEFAULTS,
+	WEB_THEME_FIELDS,
+	parseFlipShade,
+	type WebThemeFormKey,
+} from "@/domain/webThemeForm"
+import {
+	computeThemeCssVariables,
+	isCorporateBrandPaletteMode,
+	normalizeBrandPaletteMode,
+	normalizeTableWidthTier,
+	roleShadeAdjustments,
+} from "@/utils/themeCssVariables"
 import {
 	BODY_WEIGHT_MAX,
 	BODY_WEIGHT_MIN,
@@ -710,16 +722,10 @@ import {
 import { PREVIEW_POPUP_FEATURES } from "@/utils/previewWindow"
 import {
 	BORDER_RADIUS_MAP,
-	BORDER_WIDTH_MAP,
-	COLOR_VAR_MAP,
-	CURATED_SHADES,
 	FONT_OPTIONS,
 	GAMMA_SAT_ROLE_FIELDS,
 	LINE_HEIGHT_MAP,
 	RETIRED_FONT_ALIASES,
-	SHADE_PREVIEW_FIELDS,
-	SPACING_SCALE_MAP,
-	TRANSITION_MAP,
 } from "@/domain/theme-tokens"
 
 /*
@@ -757,14 +763,10 @@ function openPreview() {
 	}
 }
 
-// ─── AGENT:live-css-vars ─── computeCSSVariables, applyLiveThemeVars, pushToPreview
+// ─── AGENT:live-css-vars ─── computeCSSVariables (wrapper), resetBrandPaletteAdjustments, pushToPreview
 
-function isCorporateBrandPaletteMode(mode: unknown): boolean {
-	return mode !== "flexible"
-}
-
-function normalizeBrandPaletteMode(mode: unknown): BrandPaletteMode {
-	return mode === "flexible" ? "flexible" : "corporate"
+function computeCSSVariables(): Record<string, string> {
+	return computeThemeCssVariables(form, DEFAULTS)
 }
 
 function resetBrandPaletteAdjustments() {
@@ -772,202 +774,6 @@ function resetBrandPaletteAdjustments() {
 		form[`${field}_gamma` as FormKey] = 0
 		form[`${field}_saturation` as FormKey] = 100
 	}
-}
-
-function roleShadeAdjustments(field: string) {
-	if (isCorporateBrandPaletteMode(form.brand_palette_mode)) {
-		return { gamma: 0, saturation: 100 }
-	}
-	return {
-		gamma: Number(form[`${field}_gamma` as FormKey] ?? 0),
-		saturation: Number(form[`${field}_saturation` as FormKey] ?? 100),
-	}
-}
-
-function tableHeaderForeground(header: string): string {
-	const target = header.trim().toLowerCase()
-	const corporateBrand = isCorporateBrandPaletteMode(form.brand_palette_mode)
-	for (const field of ["primary_color", "secondary_color"] as const) {
-		const base = form[field] as string
-		if (!base) continue
-		const adjust = roleShadeAdjustments(field)
-		const shades = generateShades(base, corporateBrand ? undefined : adjust)
-		const match = shades.find((s) => s.hex.toLowerCase() === target)
-		if (!match) continue
-		const oppField = field === "primary_color" ? "secondary_color" : "primary_color"
-		const oppBase = form[oppField] as string
-		const oppShades = oppBase
-			? generateShades(oppBase, corporateBrand ? undefined : roleShadeAdjustments(oppField))
-			: []
-		const flipMono = form[`${field}_fg_flip_mono` as FormKey] as number | null
-		return brandShadeForeground(match.shade, shades, "mono", flipMono, null, oppShades)
-	}
-	return pickFgMono(header)
-}
-
-function applyTableCssVars(vars: Record<string, string>) {
-	const row = (form.row_color as string) || (form.surface_color as string)
-	if (row) vars["--nce-color-row"] = row
-	if (form.row_alt_color) vars["--nce-color-row-alt"] = form.row_alt_color as string
-	const header =
-		(form.table_header_bg_color as string) || (form.secondary_color as string)
-	if (header) {
-		vars["--nce-color-table-header"] = header
-		vars["--nce-color-table-header-fg"] = tableHeaderForeground(header)
-	}
-	const rowDiv =
-		(form.table_row_divider_color as string) || (form.border_color as string)
-	if (rowDiv) vars["--nce-color-table-row-divider"] = rowDiv
-	const colDiv =
-		(form.table_col_divider_color as string) || (form.border_color as string)
-	if (colDiv) vars["--nce-color-table-col-divider"] = colDiv
-	vars["--nce-border-width-table-row"] = tableWidthTierCssVar(
-		form.table_row_divider_width as string
-	)
-	vars["--nce-border-width-table-col"] = tableWidthTierCssVar(
-		form.table_col_divider_width as string
-	)
-}
-
-function normalizeTableWidthTier(raw: unknown): "thin" | "normal" | "strong" {
-	const legacy: Record<string, "thin" | "normal" | "strong"> = {
-		"0.5px": "thin",
-		"1px": "normal",
-		"2px": "strong",
-		"3px": "strong",
-	}
-	const s = String(raw || "thin").trim().toLowerCase()
-	if (s === "normal" || s === "strong" || s === "thin") return s
-	return legacy[s] || "thin"
-}
-
-function tableWidthTierCssVar(raw: unknown): string {
-	const tier = normalizeTableWidthTier(raw)
-	if (tier === "strong") return "var(--nce-border-width-strong)"
-	if (tier === "normal") return "var(--nce-border-width)"
-	return "var(--nce-border-width-thin)"
-}
-
-function computeCSSVariables(): Record<string, string> {
-	const vars: Record<string, string> = {}
-	const corporateBrand = isCorporateBrandPaletteMode(form.brand_palette_mode)
-	for (const [field, cssVar] of Object.entries(COLOR_VAR_MAP)) {
-		const hex = form[field as FormKey]
-		if (!hex) continue
-		if (GAMMA_SAT_ROLE_FIELDS.has(field)) {
-			if (corporateBrand) {
-				vars[cssVar] = hex
-			} else {
-				const { gamma, saturation } = roleShadeAdjustments(field)
-				vars[cssVar] = effectiveRoleHex(hex, gamma, saturation)
-			}
-		} else {
-			vars[cssVar] = hex
-		}
-	}
-	// Neutral: always emit from warmth alone
-	const nWarmth = Number(form.neutral_color_warmth ?? 0)
-	vars["--nce-color-neutral"] = neutral600Hex(nWarmth)
-	const ff = form.font_family
-	if (ff) vars["--nce-font-family"] = fontCSS(ff)
-
-	const hf = form.heading_font_family
-	if (hf) vars["--nce-font-heading"] = fontCSS(hf)
-
-	if (form.font_size) vars["--nce-font-size"] = form.font_size
-	if (form.font_weight_body) vars["--nce-font-weight"] = form.font_weight_body
-	if (form.line_height) vars["--nce-line-height"] = LINE_HEIGHT_MAP[form.line_height] || "1.5"
-	if (form.border_radius) vars["--nce-border-radius"] = BORDER_RADIUS_MAP[form.border_radius] || "0.375rem"
-	if (form.border_width_thin) vars["--nce-border-width-thin"] = BORDER_WIDTH_MAP[form.border_width_thin] || "0.5px"
-	if (form.border_width) vars["--nce-border-width"] = BORDER_WIDTH_MAP[form.border_width] || "1px"
-	if (form.border_width_strong) vars["--nce-border-width-strong"] = BORDER_WIDTH_MAP[form.border_width_strong] || "2px"
-	if (form.spacing_scale) {
-		vars["--nce-spacing-base"] = SPACING_SCALE_MAP[form.spacing_scale] || "1rem"
-	}
-	if (form.shadow_color) vars["--nce-shadow-color"] = form.shadow_color
-	if (form.shadow) {
-		vars["--nce-shadow"] = buildThemeShadow(
-			form.shadow,
-			form.shadow_color || "#000000",
-			form.shadow_opacity ?? DEFAULTS.shadow_opacity,
-			form.shadow_direction ?? DEFAULTS.shadow_direction,
-		)
-	}
-	if (form.transition_speed) vars["--nce-transition-speed"] = TRANSITION_MAP[form.transition_speed] || "200ms"
-	if (form.sidebar_width) vars["--nce-sidebar-width"] = form.sidebar_width
-	if (form.container_max_width) {
-		vars["--nce-container-max-width"] = form.container_max_width === "full" ? "100%" : form.container_max_width
-	}
-	applyTableCssVars(vars)
-	// Shade scales for brand/status colors (live preview)
-	for (const [field, varPrefix] of SHADE_PREVIEW_FIELDS) {
-		const hex = form[field as FormKey]
-		if (!hex) continue
-		const hasAdjust = GAMMA_SAT_ROLE_FIELDS.has(field)
-		const { gamma, saturation } = hasAdjust
-			? roleShadeAdjustments(field)
-			: { gamma: 0, saturation: 100 }
-		const roleHex =
-			hasAdjust && !corporateBrand && (gamma !== 0 || saturation !== 100)
-				? effectiveRoleHex(hex, gamma, saturation)
-				: hex
-		const shades = generateShades(hex, hasAdjust ? { gamma, saturation } : undefined)
-		const isBrand = field === "primary_color" || field === "secondary_color"
-		let oppShades: ColorShade[] = []
-		if (field === "primary_color" && form.secondary_color) {
-			const oppAdj = roleShadeAdjustments("secondary_color")
-			oppShades = generateShades(form.secondary_color, oppAdj)
-		} else if (field === "secondary_color" && form.primary_color) {
-			const oppAdj = roleShadeAdjustments("primary_color")
-			oppShades = generateShades(form.primary_color, oppAdj)
-		}
-		if (isBrand) {
-			const flipMono = form[`${field}_fg_flip_mono` as FormKey] as number | null
-			const flipTonal = form[`${field}_fg_flip_tonal` as FormKey] as number | null
-			const poleDark = form[`${field}_fg_pole_tonal_dark` as FormKey] as number | null
-			const poleLight = form[`${field}_fg_pole_tonal_light` as FormKey] as number | null
-			vars[`--nce-${varPrefix}-fg`] = brandShadeForeground(
-				600, shades, "mono", flipMono, null, oppShades,
-			)
-			vars[`--nce-${varPrefix}-fg-tonal`] = brandShadeForeground(
-				600, shades, "tonal", flipTonal, null, oppShades, poleDark, poleLight,
-			)
-		} else {
-			vars[`--nce-${varPrefix}-fg`] = pickFgMono(roleHex)
-			vars[`--nce-${varPrefix}-fg-tonal`] = pickFgTonal(roleHex)
-		}
-		for (const s of shades) {
-			vars[`--nce-${varPrefix}-${s.shade}`] = s.hex
-			vars[`--${varPrefix}-${s.shade}`] = s.hex
-			if (CURATED_SHADES.includes(s.shade as (typeof CURATED_SHADES)[number])) {
-				if (isBrand) {
-					const flipMono = form[`${field}_fg_flip_mono` as FormKey] as number | null
-					const flipTonal = form[`${field}_fg_flip_tonal` as FormKey] as number | null
-					const poleDark = form[`${field}_fg_pole_tonal_dark` as FormKey] as number | null
-					const poleLight = form[`${field}_fg_pole_tonal_light` as FormKey] as number | null
-					vars[`--nce-${varPrefix}-${s.shade}-fg`] = brandShadeForeground(
-						s.shade, shades, "mono", flipMono, null, oppShades,
-					)
-					vars[`--nce-${varPrefix}-${s.shade}-fg-tonal`] = brandShadeForeground(
-						s.shade, shades, "tonal", flipTonal, null, oppShades, poleDark, poleLight,
-					)
-				} else {
-					vars[`--nce-${varPrefix}-${s.shade}-fg`] = pickFgMono(s.hex)
-					vars[`--nce-${varPrefix}-${s.shade}-fg-tonal`] = pickFgTonal(s.hex)
-				}
-			}
-		}
-	}
-	const nWarmth2 = Number(form.neutral_color_warmth ?? 0)
-	const n600 = neutral600Hex(nWarmth2)
-	vars["--nce-color-neutral-fg"] = pickFgMono(n600)
-	vars["--nce-color-neutral-fg-tonal"] = pickFgTonal(n600)
-	for (const s of generateNeutralShades(nWarmth2)) {
-		vars[`--nce-color-neutral-${s.shade}`] = s.hex
-		vars[`--nce-color-neutral-${s.shade}-fg`] = pickFgMono(s.hex)
-		vars[`--nce-color-neutral-${s.shade}-fg-tonal`] = pickFgTonal(s.hex)
-	}
-	return vars
 }
 
 function pushToPreview() {
@@ -994,129 +800,15 @@ const tabs = [
 	{ id: "system", label: "System" },
 ]
 
-const ALL_FIELDS = [
-	"theme_name",
-	"primary_color",
-	"primary_color_gamma",
-	"primary_color_saturation",
-	"secondary_color",
-	"secondary_color_gamma",
-	"secondary_color_saturation",
-	"primary_color_fg_flip_mono",
-	"primary_color_fg_flip_tonal",
-	"primary_color_fg_pole_tonal_dark",
-	"primary_color_fg_pole_tonal_light",
-	"secondary_color_fg_flip_mono",
-	"secondary_color_fg_flip_tonal",
-	"secondary_color_fg_pole_tonal_dark",
-	"secondary_color_fg_pole_tonal_light",
-	"brand_palette_mode",
-	"neutral_color_warmth",
-	"accent_color",
-	"success_color",
-	"info_color",
-	"warning_color",
-	"danger_color",
-	"text_color",
-	"heading_color",
-	"muted_color",
-	"link_color",
-	"focus_color",
-	"background_color",
-	"surface_color",
-	"border_color",
-	"row_color",
-	"row_alt_color",
-	"table_header_bg_color",
-	"table_row_divider_color",
-	"table_col_divider_color",
-	"table_row_divider_width",
-	"table_col_divider_width",
-	"font_family",
-	"heading_font_family",
-	"font_size",
-	"line_height",
-	"font_weight_body",
-	"border_radius",
-	"border_width_thin",
-	"border_width",
-	"border_width_strong",
-	"spacing_scale",
-	"shadow",
-	"shadow_color",
-	"shadow_opacity",
-	"shadow_direction",
-	"sidebar_width",
-	"container_max_width",
-	"transition_speed",
-	"dark_mode",
-	"custom_css",
-	"tailwind_overrides",
-] as const
+const ALL_FIELDS = WEB_THEME_FIELDS
+type FormKey = WebThemeFormKey
+const DEFAULTS = WEB_THEME_DEFAULTS
 
 const PAYLOAD_FIELDS = [
 	...ALL_FIELDS.filter((k) => k !== "theme_name"),
 	"neutral_color",
 	"neutral_color_shades",
 ] as const
-
-type FormKey = (typeof ALL_FIELDS)[number]
-
-const DEFAULTS: Record<FormKey, any> = {
-	theme_name: "Default",
-	primary_color: "#3B82F6",
-	primary_color_gamma: 0,
-	primary_color_saturation: 100,
-	secondary_color: "#10B981",
-	secondary_color_gamma: 0,
-	secondary_color_saturation: 100,
-	primary_color_fg_flip_mono: null,
-	primary_color_fg_flip_tonal: null,
-	primary_color_fg_pole_tonal_dark: null,
-	primary_color_fg_pole_tonal_light: null,
-	secondary_color_fg_flip_mono: null,
-	secondary_color_fg_flip_tonal: null,
-	secondary_color_fg_pole_tonal_dark: null,
-	secondary_color_fg_pole_tonal_light: null,
-	brand_palette_mode: "corporate",
-	neutral_color_warmth: 0,
-	...STATUS_COLOR_DEFAULTS,
-	text_color: "#1F2937",
-	heading_color: "#111827",
-	muted_color: "#6B7280",
-	link_color: "#3B82F6",
-	focus_color: "#3B82F6",
-	background_color: "#FFFFFF",
-	surface_color: "#F9FAFB",
-	border_color: "#E5E7EB",
-	row_color: "#F9FAFB",
-	row_alt_color: "#F3F4F6",
-	table_header_bg_color: "#10B981",
-	table_row_divider_color: "#E5E7EB",
-	table_col_divider_color: "#E5E7EB",
-	table_row_divider_width: "thin",
-	table_col_divider_width: "thin",
-	font_family: "Inter",
-	heading_font_family: "Inter",
-	font_size: "14px",
-	line_height: "normal",
-	font_weight_body: "400",
-	border_radius: "md",
-	border_width_thin: "0.5px",
-	border_width: "1px",
-	border_width_strong: "2px",
-	spacing_scale: "normal",
-	shadow: "md",
-	shadow_color: "#000000",
-	shadow_opacity: 100,
-	shadow_direction: 180,
-	sidebar_width: "240px",
-	container_max_width: "1280px",
-	transition_speed: "normal",
-	dark_mode: false,
-	custom_css: "",
-	tailwind_overrides: "",
-}
 
 const form = reactive<Record<FormKey, any>>({ ...DEFAULTS })
 
@@ -1125,8 +817,8 @@ const brandPaletteMode = computed(
 )
 const isCorporateBrandPalette = computed(() => brandPaletteMode.value === "corporate")
 
-const primaryShadeAdjust = computed(() => roleShadeAdjustments("primary_color"))
-const secondaryShadeAdjust = computed(() => roleShadeAdjustments("secondary_color"))
+const primaryShadeAdjust = computed(() => roleShadeAdjustments(form, "primary_color"))
+const secondaryShadeAdjust = computed(() => roleShadeAdjustments(form, "secondary_color"))
 
 function onBrandPaletteModeChange(event: Event) {
 	const checked = (event.target as HTMLInputElement).checked
@@ -1411,12 +1103,6 @@ function applyPayloadToForm(payload: Record<string, any>) {
 	}
 	form.brand_palette_mode = normalizeBrandPaletteMode(form.brand_palette_mode)
 	migrateFgFlipFields(payload)
-}
-
-function parseFlipShade(raw: unknown): number | null {
-	if (raw === null || raw === undefined || raw === "") return null
-	const n = Number(raw)
-	return Number.isFinite(n) ? Math.round(n) : null
 }
 
 function migrateFgFlipFields(payload: Record<string, any>) {
