@@ -15,14 +15,18 @@ Landing page that links to the Desk Theme Editor and the live Desk Theme Preview
 				<div class="card-desc">Configure Desk CSS variables served site-wide via nce_desk_theme.css.</div>
 			</router-link>
 
-			<router-link to="/desk-themes/preview" class="home-card">
+			<a href="/desk-themes/preview" class="home-card" @click.prevent="openPreviewPopup('/desk-themes/preview')">
 				<div class="card-icon">👁️</div>
 				<div class="card-label">Desk Theme Preview</div>
 				<div class="card-desc">Preview Desk chrome changes on live Frappe pages.</div>
-			</router-link>
+			</a>
 		</div>
 	</div>
 </template>
+
+<script setup lang="ts">
+import { openPreviewPopup } from "@/utils/previewWindow"
+</script>
 
 <style scoped>
 .home-page {

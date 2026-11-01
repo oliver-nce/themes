@@ -15,14 +15,18 @@ Landing page that links to the site Theme Editor and the Theme Preview.
 				<div class="card-desc">Configure site-wide colours, typography, and layout variables.</div>
 			</router-link>
 
-			<router-link to="/themes/preview" class="home-card">
+			<a href="/themes/preview" class="home-card" @click.prevent="openPreviewPopup('/themes/preview')">
 				<div class="card-icon">👁️</div>
 				<div class="card-label">Theme Preview</div>
 				<div class="card-desc">See how your theme looks on real pages.</div>
-			</router-link>
+			</a>
 		</div>
 	</div>
 </template>
+
+<script setup lang="ts">
+import { openPreviewPopup } from "@/utils/previewWindow"
+</script>
 
 <style scoped>
 .home-page {

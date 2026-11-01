@@ -19,8 +19,16 @@ Theme editor shell with sidebar links for web and desk theme pages.
 					</div>
 					<div class="space-y-1">
 						<template v-for="link in section.links" :key="link.to ?? link.action">
+							<a
+								v-if="link.to && link.popup"
+								:href="link.to"
+								class="block px-3 py-2 rounded-md text-sm font-medium text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800"
+								@click.prevent="openPreviewPopup(link.to)"
+							>
+								{{ link.label }}
+							</a>
 							<router-link
-								v-if="link.to"
+								v-else-if="link.to"
 								:to="link.to"
 								class="block px-3 py-2 rounded-md text-sm font-medium text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800"
 								active-class="bg-blue-50 text-blue-700 dark:bg-blue-900 dark:text-blue-200"
@@ -50,6 +58,7 @@ Theme editor shell with sidebar links for web and desk theme pages.
 <script setup lang="ts">
 import { computed, ref } from "vue"
 import { useRoute } from "vue-router"
+import { openPreviewPopup } from "@/utils/previewWindow"
 
 const route = useRoute()
 const isStandalone = computed(() => !!route.meta.standalone)
@@ -60,14 +69,14 @@ const navSections = [
 		label: "Themes",
 		links: [
 			{ label: "Theme Editor", to: "/themes/theme-settings" },
-			{ label: "Theme Preview", to: "/themes/preview" },
+			{ label: "Theme Preview", to: "/themes/preview", popup: true },
 		],
 	},
 	{
 		label: "Desk Themes",
 		links: [
 			{ label: "Desk Theme Editor", to: "/desk-themes/theme-settings" },
-			{ label: "Desk Theme Preview", to: "/desk-themes/preview" },
+			{ label: "Desk Theme Preview", to: "/desk-themes/preview", popup: true },
 		],
 	},
 	{

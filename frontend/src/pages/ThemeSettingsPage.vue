@@ -904,7 +904,7 @@ function openPreview() {
 	previewWin = window.open(
 		"/themes/preview",
 		"themes-preview",
-		"width=1200,height=900,scrollbars=yes",
+		"popup=yes,width=1200,height=900,left=100,top=60,scrollbars=yes,resizable=yes",
 	)
 	if (previewWin) {
 		previewWin.addEventListener("load", () => pushToPreview())

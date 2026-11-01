@@ -1219,9 +1219,17 @@ function computeCSSVariables(): Record<string, string> {
 	return deskPayloadToCssVars(buildPayloadFromForm())
 }
 
+// Live updates go over a BroadcastChannel so any open preview window gets them,
+// however it was opened (editor button, sidebar link, home card) or reloaded.
+const previewChannel = new BroadcastChannel("nce-desk-theme-preview")
+previewChannel.onmessage = (event) => {
+	if (event.data?.type === "nce-desk-preview-ready") pushToPreview()
+}
+
 function pushToPreview() {
-	if (!previewWin || previewWin.closed) return
-	previewWin.postMessage({ type: "nce-desk-theme-update", variables: computeCSSVariables() }, "*")
+	const message = { type: "nce-desk-theme-update", variables: computeCSSVariables() }
+	previewChannel.postMessage(message)
+	if (previewWin && !previewWin.closed) previewWin.postMessage(message, "*")
 }
 
 function openPreview() {
@@ -1230,11 +1238,23 @@ function openPreview() {
 		pushToPreview()
 		return
 	}
-	previewWin = window.open("/desk-themes/preview", "desk-themes-preview", "width=1200,height=900,scrollbars=yes")
+	previewWin = window.open("/desk-themes/preview", "desk-themes-preview", "popup=yes,width=1200,height=900,left=100,top=60,scrollbars=yes,resizable=yes")
 	if (previewWin) previewWin.addEventListener("load", () => pushToPreview())
 }
 
+// A reloaded preview window asks the editor for the current (possibly unsaved) values.
+function handlePreviewReady(event: MessageEvent) {
+	if (event.data?.type !== "nce-desk-preview-ready") return
+	;(event.source as Window | null)?.postMessage(
+		{ type: "nce-desk-theme-update", variables: computeCSSVariables() },
+		"*",
+	)
+}
+window.addEventListener("message", handlePreviewReady)
+
 onUnmounted(() => {
+	window.removeEventListener("message", handlePreviewReady)
+	previewChannel.close()
 	if (previewWin && !previewWin.closed) previewWin.close()
 })
 
