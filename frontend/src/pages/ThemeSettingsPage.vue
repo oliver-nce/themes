@@ -842,9 +842,7 @@ Site Theme Editor for colours, typography, layout, live CSS variables, and base 
 
 <script setup lang="ts">
 import { ref, reactive, watch, computed, onUnmounted, onMounted, nextTick } from "vue"
-import { useRoute } from "vue-router"
-import { createResource } from "frappe-ui"
-import { useThemeEditor, type ThemeAvailabilityStatus } from "@/composables/useThemeEditor"
+import { useThemeManagement } from "@/composables/useThemeManagement"
 import { generateShades, generateNeutralShades, neutral600Hex, effectiveRoleHex, pickFgMono, pickFgTonal, brandShadeForeground, resolveNeutralIntoPayload, isDark, type ColorShade } from "@/utils/color-shades"
 import { STATUS_COLOR_DEFAULTS, STATUS_COLOR_KEYS } from "@/composables/useThemeDefaults"
 import EditorSection from "@/components/EditorSection.vue"
@@ -886,7 +884,8 @@ import {
  * Script:   grep "AGENT:" below for logic sections
  *
  * Related files:
- *   composables/useThemeEditor.ts  — load/save/dirty/list CRUD wiring
+ *   composables/useThemeManagement.ts — dialogs, permissions, CRUD (shared with Desk page)
+ *   composables/useThemeEditor.ts     — load/save/dirty/list wiring (used by useThemeManagement)
  *   domain/theme-tokens.ts         — token maps (generated from theme_tokens.py)
  *   utils/color-shades.ts          — OKLCH preview math (keep in sync with theme_color_utils.py)
  *   themes/api.py                    — whitelisted save/get/restore endpoints
@@ -894,12 +893,6 @@ import {
  */
 
 // ─── AGENT:preview-window ─── openPreview, postMessage to ThemePreviewPage popup
-
-const route = useRoute()
-
-function themeFromQuery(): string {
-	return String(route.query.theme || "").trim()
-}
 
 let previewWin: Window | null = null
 
@@ -1405,48 +1398,12 @@ const lineHeightCSS = computed(
 	() => LINE_HEIGHT_MAP[form.line_height] || "1.5",
 )
 
-// ─── AGENT:dialog-state ─── confirmDialog, saveAsDialog, renameDialog, deleteDialog, systemTab
-
-const confirmDialog = reactive({
-	open: false,
-	title: "",
-	message: "",
-	action: "" as "" | "switch" | "restore",
-	pendingTheme: "",
-	busy: false,
-})
+// ─── AGENT:save-base-theme-dialog ─── confirm before bundling base_theme.json (web page only)
 
 const saveBaseThemeDialog = reactive({
 	open: false,
 	busy: false,
 	error: "",
-})
-
-const saveAsDialog = reactive({
-	open: false,
-	name: "",
-	error: "",
-	busy: false,
-})
-
-const renameDialog = reactive({
-	open: false,
-	name: "",
-	error: "",
-	busy: false,
-})
-
-const deleteDialog = reactive({
-	open: false,
-	error: "",
-	busy: false,
-})
-
-const systemTab = reactive({
-	password: "",
-	error: "",
-	success: "",
-	busy: false,
 })
 
 function themeOptionLabel(t: {
@@ -1659,15 +1616,7 @@ function migrateFgFlipFields(payload: Record<string, any>) {
 	}
 }
 
-function tryLoadThemeFromQuery(themes: any[]): boolean {
-	const q = themeFromQuery()
-	if (!q || !themes?.length) return false
-	if (!themes.some((t) => t.name === q)) return false
-	loadTheme(q)
-	return true
-}
-
-// ─── AGENT:useThemeEditor ─── load/save/dirty/list via composable (shared with Desk page)
+// ─── AGENT:theme-management ─── useThemeManagement (dialogs, permissions, CRUD; shared with Desk page)
 
 const {
 	saving,
@@ -1685,14 +1634,44 @@ const {
 	isDirty,
 	themesList,
 	editorResource,
-	saveResource,
-	renameThemeResource,
-	deleteThemeResource,
-	createThemeResource,
-	baseThemePayloadResource,
-	saveAsBaseThemeResource,
 	loadTheme,
-} = useThemeEditor(
+	confirmDialog,
+	saveAsDialog,
+	renameDialog,
+	deleteDialog,
+	systemTab,
+	siteBaseThemeName,
+	themeSelectWidth,
+	canChangeStatus,
+	canRenameTheme,
+	canDeleteTheme,
+	showRenameButton,
+	showDeleteButton,
+	canSetAsDefaultTheme,
+	canSaveAsDefaultTheme,
+	setDefaultBusy,
+	requestSetAsDefaultTheme,
+	openConfirmDialog,
+	closeConfirmDialog,
+	confirmSaveAndContinue,
+	confirmDiscardAndContinue,
+	onThemeChange,
+	revertChanges,
+	handleSave,
+	setThemeStatus,
+	openSaveAsDialog,
+	closeSaveAsDialog,
+	submitSaveAs,
+	openRenameDialog,
+	closeRenameDialog,
+	submitRename,
+	openDeleteDialog,
+	closeDeleteDialog,
+	submitDelete,
+	restoreToBaseConfirmed,
+	saveAsBaseTheme,
+	tryLoadThemeFromQuery,
+} = useThemeManagement(
 	{
 		list: "themes.api.list_themes",
 		getEditor: "themes.api.get_theme_editor",
@@ -1708,7 +1687,6 @@ const {
 		buildPayloadFromForm,
 		canonicalPayload,
 		applyLiveThemeVars: () => applyLiveThemeVars(),
-		tryLoadThemeFromQuery,
 		defaultSavedStatus: "Active",
 		notFoundMessage: "Theme not found.",
 		loadErrorMessage: "Failed to load theme. Check permissions.",
@@ -1716,295 +1694,20 @@ const {
 		onEditorLoaded: (data) => {
 			if (data.theme_name) form.theme_name = data.theme_name as string
 		},
-		onCreateSuccess: (data) => {
-			saveAsDialog.open = false
-			saveAsDialog.busy = false
-			themesList.reload()
-			if (data?.theme) loadTheme(data.theme as string)
-		},
-		onCreateError: (err) => {
-			saveAsDialog.error = err?.message || "Could not create theme."
-			saveAsDialog.busy = false
-		},
+	},
+	{
+		noun: "theme",
+		untitledName: "Theme",
+		setBaseUrl: "themes.api.set_base_theme",
+		themeOptionLabel,
+		switchConfirmMessage: (p, themes) =>
+			`Save your changes before switching to "${themes.find((t) => t.name === p)?.theme_name || p}"?`,
+		pickAfterDelete: (themes) =>
+			themes.find((t) => t.is_default_theme || t.is_base_theme)?.name || themes[0]?.name,
 	},
 )
 
-// ─── AGENT:permissions ─── canChangeStatus, canRenameTheme, canDeleteTheme, canSaveAsDefaultTheme
-
-const siteBaseThemeName = computed(() => {
-	const row = themesList.data?.find((t: any) => t.name === siteBaseTheme.value)
-	return row?.theme_name || siteBaseTheme.value || ""
-})
-
-const themeSelectWidth = computed(() => {
-	const labels = (themesList.data || []).map((t: any) => themeOptionLabel(t))
-	const chars = Math.max(20, ...labels.map((l: string) => l.length), 0)
-	return `${Math.min(Math.max(chars * 0.62, 14), 26)}rem`
-})
-
-const canChangeStatus = computed(
-	() =>
-		editorLoaded.value &&
-		!loadingTheme.value &&
-		!saving.value &&
-		!statusSaving.value &&
-		!isDirty.value,
-)
-
-const canRenameTheme = computed(
-	() =>
-		canChangeStatus.value &&
-		(editorMeta.is_default_theme || savedThemeStatus.value === "Inactive"),
-)
-
-const canDeleteTheme = computed(
-	() =>
-		canChangeStatus.value &&
-		savedThemeStatus.value === "Inactive" &&
-		!editorMeta.is_default_theme,
-)
-
-const showRenameButton = computed(() => editorLoaded.value)
-
-const showDeleteButton = computed(
-	() => editorLoaded.value && !editorMeta.is_default_theme,
-)
-
-const canSetAsDefaultTheme = computed(
-	() => canChangeStatus.value && !editorMeta.is_default_theme,
-)
-
-const setDefaultBusy = ref(false)
-
-const setDefaultThemeResource = createResource({
-	url: "themes.api.set_base_theme",
-	auto: false,
-})
-
-async function requestSetAsDefaultTheme() {
-	if (!canSetAsDefaultTheme.value || !editingTheme.value) return
-	setDefaultBusy.value = true
-	switchError.value = ""
-	try {
-		const data = await setDefaultThemeResource.submit({ theme: editingTheme.value })
-		siteBaseTheme.value = data?.theme || editingTheme.value
-		editorMeta.is_default_theme = true
-		if (data?.css_hash) editorMeta.css_hash = data.css_hash
-		themesList.reload()
-		await loadTheme(editingTheme.value)
-	} catch (err: any) {
-		switchError.value = err?.message || "Could not set Default theme."
-	} finally {
-		setDefaultBusy.value = false
-	}
-}
-
-const canSaveAsDefaultTheme = computed(
-	() => editorLoaded.value && editorMeta.is_default_theme && !loadingTheme.value,
-)
-
-// ─── AGENT:theme-switch-dialog ─── unsaved-changes confirm when switching themes (not restore)
-
-function openConfirmDialog(action: "switch" | "restore", pendingTheme = "") {
-	confirmDialog.action = action
-	confirmDialog.pendingTheme = pendingTheme
-	confirmDialog.title = "Unsaved changes"
-	if (action === "switch") {
-		const name =
-			themesList.data?.find((t: any) => t.name === pendingTheme)?.theme_name || pendingTheme
-		confirmDialog.message = `Save your changes before switching to "${name}"?`
-	} else {
-		confirmDialog.message = "Save your changes before restoring from the base theme?"
-	}
-	confirmDialog.open = true
-}
-
-function closeConfirmDialog() {
-	if (confirmDialog.busy) return
-	confirmDialog.open = false
-	confirmDialog.action = ""
-	confirmDialog.pendingTheme = ""
-}
-
-async function confirmSaveAndContinue() {
-	confirmDialog.busy = true
-	try {
-		await handleSave()
-		if (confirmDialog.action === "switch") {
-			await loadTheme(confirmDialog.pendingTheme)
-		} else if (confirmDialog.action === "restore") {
-			await restoreToBaseConfirmed()
-		}
-		closeConfirmDialog()
-	} catch {
-		// keep dialog open
-	} finally {
-		confirmDialog.busy = false
-	}
-}
-
-async function confirmDiscardAndContinue() {
-	const action = confirmDialog.action
-	const pendingTheme = confirmDialog.pendingTheme
-	closeConfirmDialog()
-	if (action === "switch") {
-		await loadTheme(pendingTheme)
-		return
-	}
-	revertChanges()
-	await restoreToBaseConfirmed()
-}
-
-function onThemeChange() {
-	const next = selectedTheme.value
-	const current = editingTheme.value
-	if (!next || next === current) return
-	if (isDirty.value) {
-		selectedTheme.value = current
-		openConfirmDialog("switch", next)
-		return
-	}
-	loadTheme(next)
-}
-
-// ─── AGENT:save-revert ─── handleSave, revertChanges, setThemeStatus
-
-function revertChanges() {
-	applyPayloadToForm(savedSnapshot.value)
-}
-
-async function handleSave() {
-	saving.value = true
-	try {
-		const payload = buildPayloadFromForm()
-		await saveResource.submit({ theme: editingTheme.value, payload })
-	} catch (err) {
-		console.error("Save error:", err)
-		throw err
-	} finally {
-		saving.value = false
-	}
-}
-
-async function setThemeStatus(next: ThemeAvailabilityStatus) {
-	if (!canChangeStatus.value || next === savedThemeStatus.value) return
-	statusSaving.value = true
-	switchError.value = ""
-	try {
-		await saveResource.submit({
-			theme: editingTheme.value,
-			payload: savedSnapshot.value,
-			status: next,
-		})
-	} catch (err: any) {
-		switchError.value = err?.message || "Could not update theme availability."
-	} finally {
-		statusSaving.value = false
-	}
-}
-
-// ─── AGENT:crud-dialogs ─── save-as-new, rename, delete theme modals
-
-function openSaveAsDialog() {
-	saveAsDialog.name = `${editorMeta.theme_name || "Theme"} copy`
-	saveAsDialog.error = ""
-	saveAsDialog.open = true
-}
-
-function closeSaveAsDialog() {
-	if (saveAsDialog.busy) return
-	saveAsDialog.open = false
-	saveAsDialog.name = ""
-	saveAsDialog.error = ""
-}
-
-async function submitSaveAs() {
-	const name = saveAsDialog.name.trim()
-	if (!name) {
-		saveAsDialog.error = "Enter a theme name."
-		return
-	}
-	saveAsDialog.busy = true
-	saveAsDialog.error = ""
-	try {
-		const payload = buildPayloadFromForm()
-		await createThemeResource.submit({ theme_name: name, payload })
-	} catch {
-		// onError sets saveAsDialog.error
-	}
-}
-
-function openRenameDialog() {
-	if (!canRenameTheme.value) return
-	renameDialog.name = editorMeta.theme_name || ""
-	renameDialog.error = ""
-	renameDialog.open = true
-}
-
-function closeRenameDialog() {
-	if (renameDialog.busy) return
-	renameDialog.open = false
-	renameDialog.name = ""
-	renameDialog.error = ""
-}
-
-async function submitRename() {
-	const name = renameDialog.name.trim()
-	if (!name) {
-		renameDialog.error = "Enter a theme name."
-		return
-	}
-	renameDialog.busy = true
-	renameDialog.error = ""
-	try {
-		const data = await renameThemeResource.submit({
-			theme: editingTheme.value,
-			theme_name: name,
-		})
-		renameDialog.open = false
-		renameDialog.name = ""
-		renameDialog.error = ""
-		await themesList.reload()
-		await loadTheme(data?.theme || editingTheme.value)
-	} catch (err: any) {
-		renameDialog.error = err?.message || "Could not rename theme."
-	} finally {
-		renameDialog.busy = false
-	}
-}
-
-function openDeleteDialog() {
-	if (!canDeleteTheme.value) return
-	deleteDialog.error = ""
-	deleteDialog.open = true
-}
-
-function closeDeleteDialog() {
-	if (deleteDialog.busy) return
-	deleteDialog.open = false
-	deleteDialog.error = ""
-}
-
-async function submitDelete() {
-	deleteDialog.busy = true
-	deleteDialog.error = ""
-	const deleted = editingTheme.value
-	try {
-		await deleteThemeResource.submit({ theme: deleted })
-		deleteDialog.open = false
-		deleteDialog.error = ""
-		editingTheme.value = ""
-		await themesList.reload()
-		const base =
-			themesList.data?.find((t: any) => t.is_default_theme || t.is_base_theme)?.name ||
-			themesList.data?.[0]?.name
-		if (base) await loadTheme(base)
-	} catch (err: any) {
-		deleteDialog.error = err?.message || "Could not delete theme."
-	} finally {
-		deleteDialog.busy = false
-	}
-}
+const submitSaveAsBaseTheme = saveAsBaseTheme
 
 // ─── AGENT:restore-to-app-fixture ─── loads data/base_theme.json into editor (unsaved preview)
 
@@ -2022,42 +1725,7 @@ async function requestRestoreToBase() {
 	await restoreToBaseConfirmed()
 }
 
-async function restoreToBaseConfirmed() {
-	switchError.value = ""
-	try {
-		const data = await baseThemePayloadResource.submit({})
-		applyPayloadToForm(data?.payload || {})
-		applyLiveThemeVars()
-	} catch (err: any) {
-		switchError.value = err?.message || "Could not load base theme."
-	}
-}
-
 // ─── AGENT:save-default-to-app ─── bundle base_theme.json + publish nce_theme.css (System tab)
-
-async function submitSaveAsBaseTheme() {
-	systemTab.busy = true
-	systemTab.error = ""
-	systemTab.success = ""
-	try {
-		const data = await saveAsBaseThemeResource.submit({
-			theme: editingTheme.value,
-			password: systemTab.password,
-		})
-		systemTab.password = ""
-		systemTab.success =
-			"Base theme saved and bundled into the app. Commit and push the themes app to ship it on new installs."
-		siteBaseTheme.value = data?.theme || editingTheme.value
-		editorMeta.is_default_theme = true
-		if (data?.css_hash) editorMeta.css_hash = data.css_hash
-		themesList.reload()
-	} catch (err: any) {
-		systemTab.error = err?.message || "Could not save as base theme."
-		throw err
-	} finally {
-		systemTab.busy = false
-	}
-}
 
 function requestSaveAsBaseTheme() {
 	if (!canSaveAsDefaultTheme.value || !systemTab.password) return

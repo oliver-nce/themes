@@ -775,15 +775,13 @@ Desk Theme Editor for NCE Desk Theme colours, shape, typography, Gantt, and live
 
 <script setup lang="ts">
 import { ref, reactive, watch, computed, onUnmounted, onMounted } from "vue"
-import { useRoute } from "vue-router"
-import { createResource } from "frappe-ui"
 import EditorSection, { type PanelHelpContent } from "@/components/EditorSection.vue"
 import FontSelectField from "@/components/FontSelectField.vue"
 import PasswordField from "@/components/PasswordField.vue"
 import SizeSlider from "@/components/SizeSlider.vue"
 import SwatchPicker from "@/components/SwatchPicker.vue"
 import { applyDeskThemeVars, deskPayloadToCssVars } from "@/composables/useDeskTheme"
-import { useThemeEditor, type ThemeAvailabilityStatus } from "@/composables/useThemeEditor"
+import { useThemeManagement } from "@/composables/useThemeManagement"
 import { fontStack as fontCSS } from "@/utils/fonts"
 import {
 	BODY_WEIGHT_MAX,
@@ -907,7 +905,6 @@ const COLOR_FIELDS = new Set(
 	),
 )
 
-const route = useRoute()
 let previewWin: Window | null = null
 
 const activeTab = ref("colors")
@@ -1170,31 +1167,6 @@ const ganttColors = [
 
 const form = reactive<Record<FormKey, string>>({ ...DEFAULTS })
 
-const systemTab = reactive({ password: "", busy: false, error: "", success: "" })
-const confirmDialog = reactive({
-	open: false,
-	busy: false,
-	title: "",
-	message: "",
-	action: "" as "" | "switch" | "restore",
-	pendingTheme: "",
-})
-const saveAsDialog = reactive({ open: false, name: "", error: "", busy: false })
-const renameDialog = reactive({ open: false, name: "", error: "", busy: false })
-const deleteDialog = reactive({ open: false, error: "", busy: false })
-
-function themeFromQuery(): string {
-	return String(route.query.theme || "").trim()
-}
-
-function tryLoadThemeFromQuery(themes: any[]): boolean {
-	const q = themeFromQuery()
-	if (!q || !themes?.length) return false
-	if (!themes.some((t) => t.name === q)) return false
-	loadTheme(q)
-	return true
-}
-
 function themeOptionLabel(t: any): string {
 	let label = t.theme_name || t.name
 	if (t.is_default_theme ?? t.is_base_theme) label += " (Default)"
@@ -1438,6 +1410,8 @@ watch(
 	},
 )
 
+// ─── AGENT:theme-management ─── useThemeManagement (dialogs, permissions, CRUD; shared with web page)
+
 const {
 	loadingTheme,
 	saving,
@@ -1454,14 +1428,44 @@ const {
 	isDirty,
 	savedSnapshot,
 	themesList,
-	saveResource,
-	renameThemeResource,
-	deleteThemeResource,
-	createThemeResource,
-	baseThemePayloadResource,
-	saveAsBaseThemeResource,
 	loadTheme,
-} = useThemeEditor(
+	confirmDialog,
+	saveAsDialog,
+	renameDialog,
+	deleteDialog,
+	systemTab,
+	siteBaseThemeName,
+	themeSelectWidth,
+	canChangeStatus,
+	canRenameTheme,
+	canDeleteTheme,
+	showRenameButton,
+	showDeleteButton,
+	canSetAsDefaultTheme,
+	canSaveAsDefaultTheme,
+	setDefaultBusy,
+	requestSetAsDefaultTheme,
+	openConfirmDialog,
+	closeConfirmDialog,
+	confirmSaveAndContinue,
+	confirmDiscardAndContinue,
+	onThemeChange,
+	revertChanges,
+	handleSave,
+	setThemeStatus,
+	openSaveAsDialog,
+	closeSaveAsDialog,
+	submitSaveAs,
+	openRenameDialog,
+	closeRenameDialog,
+	submitRename,
+	openDeleteDialog,
+	closeDeleteDialog,
+	submitDelete,
+	restoreToBaseConfirmed,
+	saveAsBaseTheme,
+	tryLoadThemeFromQuery,
+} = useThemeManagement(
 	{
 		list: "themes.api.list_desk_themes",
 		getEditor: "themes.api.get_desk_theme_editor",
@@ -1477,7 +1481,6 @@ const {
 		buildPayloadFromForm,
 		canonicalPayload,
 		applyLiveThemeVars: () => applyDeskThemeVars(computeCSSVariables()),
-		tryLoadThemeFromQuery,
 		pickInitialTheme: (data) =>
 			(data.find((t) => t.is_default_theme || t.is_base_theme)?.name as string | undefined) ||
 			(data.find((t) => t.is_active)?.name as string | undefined) ||
@@ -1489,255 +1492,19 @@ const {
 		onEditorLoaded: (data) => {
 			if (data.theme_name) form.theme_name = data.theme_name as string
 		},
-		onCreateSuccess: (data) => {
-			saveAsDialog.open = false
-			saveAsDialog.busy = false
-			themesList.reload()
-			if (data?.theme) loadTheme(data.theme as string)
-		},
-		onCreateError: (err) => {
-			saveAsDialog.error = err?.message || "Could not create desk theme."
-			saveAsDialog.busy = false
-		},
+	},
+	{
+		noun: "desk theme",
+		untitledName: "Desk Theme",
+		setBaseUrl: "themes.api.set_base_desk_theme",
+		themeOptionLabel,
+		switchConfirmMessage: () => "Save your changes before switching desk themes?",
+		pickAfterDelete: (themes) =>
+			themes.find((t) => t.is_active)?.name ||
+			themes.find((t) => t.is_default_theme || t.is_base_theme)?.name ||
+			themes[0]?.name,
 	},
 )
-
-const siteBaseThemeName = computed(() => {
-	const row = themesList.data?.find((t: any) => t.name === siteBaseTheme.value)
-	return row?.theme_name || siteBaseTheme.value || ""
-})
-
-const themeSelectWidth = computed(() => {
-	const labels = (themesList.data || []).map((t: any) => themeOptionLabel(t))
-	const chars = Math.max(20, ...labels.map((l: string) => l.length), 0)
-	return `${Math.min(Math.max(chars * 0.62, 14), 26)}rem`
-})
-
-const canChangeStatus = computed(
-	() => editorLoaded.value && !loadingTheme.value && !saving.value && !statusSaving.value && !isDirty.value,
-)
-
-const canRenameTheme = computed(
-	() =>
-		canChangeStatus.value &&
-		(editorMeta.is_default_theme || savedThemeStatus.value === "Inactive"),
-)
-
-const canDeleteTheme = computed(
-	() =>
-		canChangeStatus.value &&
-		savedThemeStatus.value === "Inactive" &&
-		!editorMeta.is_default_theme,
-)
-
-const showRenameButton = computed(() => editorLoaded.value)
-
-const showDeleteButton = computed(
-	() => editorLoaded.value && !editorMeta.is_default_theme,
-)
-
-const canSetAsDefaultTheme = computed(
-	() => canChangeStatus.value && !editorMeta.is_default_theme,
-)
-
-const setDefaultBusy = ref(false)
-
-const setDefaultThemeResource = createResource({
-	url: "themes.api.set_base_desk_theme",
-	auto: false,
-})
-
-async function requestSetAsDefaultTheme() {
-	if (!canSetAsDefaultTheme.value || !editingTheme.value) return
-	setDefaultBusy.value = true
-	switchError.value = ""
-	try {
-		const data = await setDefaultThemeResource.submit({ theme: editingTheme.value })
-		siteBaseTheme.value = data?.theme || editingTheme.value
-		editorMeta.is_default_theme = true
-		if (data?.css_hash) editorMeta.css_hash = data.css_hash
-		themesList.reload()
-		await loadTheme(editingTheme.value)
-	} catch (err: any) {
-		switchError.value = err?.message || "Could not set Default desk theme."
-	} finally {
-		setDefaultBusy.value = false
-	}
-}
-
-const canSaveAsDefaultTheme = computed(
-	() => editorLoaded.value && editorMeta.is_default_theme && !loadingTheme.value,
-)
-
-function openConfirmDialog(action: "switch" | "restore", pendingTheme = "") {
-	confirmDialog.action = action
-	confirmDialog.pendingTheme = pendingTheme
-	confirmDialog.title = "Unsaved changes"
-	confirmDialog.message =
-		action === "switch"
-			? `Save your changes before switching desk themes?`
-			: "Save your changes before restoring from the base desk theme?"
-	confirmDialog.open = true
-}
-
-function closeConfirmDialog() {
-	if (confirmDialog.busy) return
-	confirmDialog.open = false
-	confirmDialog.action = ""
-	confirmDialog.pendingTheme = ""
-}
-
-async function confirmSaveAndContinue() {
-	confirmDialog.busy = true
-	try {
-		await handleSave()
-		if (confirmDialog.action === "switch") await loadTheme(confirmDialog.pendingTheme)
-		else if (confirmDialog.action === "restore") await restoreToBaseConfirmed()
-		closeConfirmDialog()
-	} finally {
-		confirmDialog.busy = false
-	}
-}
-
-async function confirmDiscardAndContinue() {
-	const action = confirmDialog.action
-	const pendingTheme = confirmDialog.pendingTheme
-	closeConfirmDialog()
-	if (action === "switch") {
-		await loadTheme(pendingTheme)
-		return
-	}
-	revertChanges()
-	await restoreToBaseConfirmed()
-}
-
-function onThemeChange() {
-	const next = selectedTheme.value
-	const current = editingTheme.value
-	if (!next || next === current) return
-	if (isDirty.value) {
-		selectedTheme.value = current
-		openConfirmDialog("switch", next)
-		return
-	}
-	loadTheme(next)
-}
-
-function revertChanges() {
-	applyPayloadToForm(savedSnapshot.value)
-}
-
-async function handleSave() {
-	saving.value = true
-	try {
-		await saveResource.submit({ theme: editingTheme.value, payload: buildPayloadFromForm() })
-	} finally {
-		saving.value = false
-	}
-}
-
-async function setThemeStatus(next: ThemeAvailabilityStatus) {
-	if (!canChangeStatus.value || next === savedThemeStatus.value) return
-	statusSaving.value = true
-	switchError.value = ""
-	try {
-		await saveResource.submit({ theme: editingTheme.value, payload: savedSnapshot.value, status: next })
-	} catch (err: any) {
-		switchError.value = err?.message || "Could not update desk theme availability."
-	} finally {
-		statusSaving.value = false
-	}
-}
-
-function openSaveAsDialog() {
-	saveAsDialog.name = `${editorMeta.theme_name || "Desk Theme"} copy`
-	saveAsDialog.error = ""
-	saveAsDialog.open = true
-}
-
-function closeSaveAsDialog() {
-	if (saveAsDialog.busy) return
-	saveAsDialog.open = false
-	saveAsDialog.name = ""
-	saveAsDialog.error = ""
-}
-
-async function submitSaveAs() {
-	const name = saveAsDialog.name.trim()
-	if (!name) {
-		saveAsDialog.error = "Enter a desk theme name."
-		return
-	}
-	saveAsDialog.busy = true
-	saveAsDialog.error = ""
-	try {
-		await createThemeResource.submit({ theme_name: name, payload: buildPayloadFromForm() })
-	} catch {
-		// onError
-	}
-}
-
-function openRenameDialog() {
-	if (!canRenameTheme.value) return
-	renameDialog.name = editorMeta.theme_name || ""
-	renameDialog.error = ""
-	renameDialog.open = true
-}
-
-function closeRenameDialog() {
-	if (renameDialog.busy) return
-	renameDialog.open = false
-}
-
-async function submitRename() {
-	const name = renameDialog.name.trim()
-	if (!name) {
-		renameDialog.error = "Enter a theme name."
-		return
-	}
-	renameDialog.busy = true
-	try {
-		const data = await renameThemeResource.submit({ theme: editingTheme.value, theme_name: name })
-		renameDialog.open = false
-		await themesList.reload()
-		await loadTheme(data?.theme || editingTheme.value)
-	} catch (err: any) {
-		renameDialog.error = err?.message || "Could not rename desk theme."
-	} finally {
-		renameDialog.busy = false
-	}
-}
-
-function openDeleteDialog() {
-	if (!canDeleteTheme.value) return
-	deleteDialog.error = ""
-	deleteDialog.open = true
-}
-
-function closeDeleteDialog() {
-	if (deleteDialog.busy) return
-	deleteDialog.open = false
-}
-
-async function submitDelete() {
-	deleteDialog.busy = true
-	const deleted = editingTheme.value
-	try {
-		await deleteThemeResource.submit({ theme: deleted })
-		deleteDialog.open = false
-		editingTheme.value = ""
-		await themesList.reload()
-		const pick =
-			themesList.data?.find((t: any) => t.is_active)?.name ||
-			themesList.data?.find((t: any) => t.is_default_theme || t.is_base_theme)?.name ||
-			themesList.data?.[0]?.name
-		if (pick) await loadTheme(pick)
-	} catch (err: any) {
-		deleteDialog.error = err?.message || "Could not delete desk theme."
-	} finally {
-		deleteDialog.busy = false
-	}
-}
 
 function requestRestoreToBase() {
 	if (!siteBaseTheme.value || editingTheme.value === siteBaseTheme.value) return
@@ -1748,38 +1515,12 @@ function requestRestoreToBase() {
 	restoreToBaseConfirmed()
 }
 
-async function restoreToBaseConfirmed() {
-	switchError.value = ""
-	try {
-		const data = await baseThemePayloadResource.submit({})
-		applyPayloadToForm(data?.payload || {})
-		applyLiveThemeVars()
-	} catch (err: any) {
-		switchError.value = err?.message || "Could not load base desk theme."
-	}
-}
-
 async function submitSaveAsBaseTheme() {
 	if (!canSaveAsDefaultTheme.value || !systemTab.password) return
-	systemTab.busy = true
-	systemTab.error = ""
-	systemTab.success = ""
 	try {
-		const data = await saveAsBaseThemeResource.submit({
-			theme: editingTheme.value,
-			password: systemTab.password,
-		})
-		systemTab.password = ""
-		systemTab.success =
-			"Base desk theme saved and bundled into the app. Commit and push the themes app to ship it on new installs."
-		siteBaseTheme.value = data?.theme || editingTheme.value
-		editorMeta.is_default_theme = true
-		if (data?.css_hash) editorMeta.css_hash = data.css_hash
-		themesList.reload()
-	} catch (err: any) {
-		systemTab.error = err?.message || "Could not save as base desk theme."
-	} finally {
-		systemTab.busy = false
+		await saveAsBaseTheme()
+	} catch {
+		/* shown in systemTab.error */
 	}
 }
 
