@@ -3,8 +3,8 @@
 
 Paired module: themes.utils.css_writer (Web site tokens → --nce-* classes and vars).
 
-Shared with css_writer: css_publish.write_published_css() + assets_json cache bust —
-publish tail only. Content generation is intentionally different: flat DESK_CSS_VARS on :root,
+Shared with css_writer: css_publish.publish_css() for the publish tail. Content generation
+is intentionally different: flat DESK_CSS_VARS on :root,
 no OKLCH shade scale or theme-bg-* class layer.
 
 See themes/CODE_INDEX.json and plans/REFACTORING_PLAN.md for consolidation notes.
@@ -13,11 +13,10 @@ See themes/CODE_INDEX.json and plans/REFACTORING_PLAN.md for consolidation notes
 from __future__ import annotations
 
 import json
-import os
 
 import frappe
 
-from themes.utils.css_publish import write_published_css
+from themes.utils.css_publish import publish_css, read_published_css_hash
 from themes.utils.theme_tokens import FONT_REGISTRY, FONT_SUBSETS, FONT_BASE_URL
 
 DESK_CSS_VARS = (
@@ -231,17 +230,7 @@ def read_desk_css_hash() -> str | None:
 
 
 def _read_desk_css_hash() -> str | None:
-    try:
-        path = os.path.join(
-            frappe.get_app_path("themes"),
-            "public",
-            "css",
-            "nce_desk_theme.css.hash",
-        )
-        with open(path) as f:
-            return f.read().strip() or None
-    except OSError:
-        return None
+    return read_published_css_hash("nce_desk_theme.css")
 
 
 def publish_desk_theme(theme_name: str | None = None) -> dict:
@@ -262,8 +251,5 @@ def publish_desk_theme(theme_name: str | None = None) -> dict:
         pluck="name",
     )
     css = generate_desk_css(base_name, active_names)
-    css_hash = write_published_css("nce_desk_theme.css", css)
-    frappe.db.set_single_value("Site Theme Config", "desk_css_hash", css_hash)
-    frappe.cache.delete_value("assets_json")
-    frappe.clear_cache()
+    css_hash = publish_css("nce_desk_theme.css", css, "desk_css_hash")
     return {"status": "ok", "theme": base_name, "css_hash": css_hash, "bytes": len(css)}

@@ -9,8 +9,7 @@ AGENT NAVIGATION — key emitters:
 
 Paired module: themes.utils.desk_css_writer (Desk chrome → native --*-color vars).
 
-Shared with desk_css_writer: css_publish.write_published_css(), SHA-1 css_hash,
-cache.delete_value("assets_json"), frappe.clear_cache() — publish tail only; content
+Shared with desk_css_writer: css_publish.publish_css() for the publish tail; content
 generation differs (OKLCH shade classes vs flat Desk var blocks).
 
 Token tables live in theme_tokens.py; color math in theme_color_utils.py. Keep in sync with
@@ -18,9 +17,8 @@ frontend/src/utils/color-shades.ts and src/widget/constants.ts.
 
 """
 import json
-import os
 import frappe
-from themes.utils.css_publish import write_published_css
+from themes.utils.css_publish import publish_css, write_public_css_file
 from themes.utils.theme_color_utils import (
     _build_shadow, _generate_shades, generate_neutral_shades,
     _effective_role_hex,
@@ -673,13 +671,7 @@ def generate_site_css(default_payload: dict, active_themes: list[tuple[str, dict
 
 def _write_fonts_css() -> str:
     """Write the all-curated-fonts stylesheet consumed only by the editor page."""
-    app_path = frappe.get_app_path("themes")
-    css_dir = os.path.join(app_path, "public", "css")
-    os.makedirs(css_dir, exist_ok=True)
-    path = os.path.join(css_dir, "fonts.css")
-    with open(path, "w") as f:
-        f.write(generate_fonts_css())
-    return path
+    return write_public_css_file("fonts.css", generate_fonts_css())
 
 
 def publish_theme(theme_name: str) -> dict:
@@ -716,8 +708,5 @@ def publish_theme(theme_name: str) -> dict:
 
     css = generate_site_css(default_payload, active_themes)
     _write_fonts_css()
-    css_hash = write_published_css("nce_theme.css", css)
-    frappe.db.set_single_value("Site Theme Config", "css_hash", css_hash)
-    frappe.cache.delete_value("assets_json")
-    frappe.clear_cache()
+    css_hash = publish_css("nce_theme.css", css, "css_hash")
     return {"status": "ok", "theme": default_name, "css_hash": css_hash, "bytes": len(css)}

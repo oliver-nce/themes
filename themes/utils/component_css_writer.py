@@ -253,7 +253,7 @@ def generate_component_css(rows: list[dict]) -> str:
 def publish_component_css() -> dict:
 	import frappe
 
-	from themes.utils.css_publish import write_published_css
+	from themes.utils.css_publish import publish_css
 
 	_parent_fields = [
 		"name",
@@ -322,7 +322,5 @@ def publish_component_css() -> dict:
 	if table_blocks:
 		body_parts.append("\n\n".join(table_blocks))
 	css = HEADER + ("\n\n".join(body_parts) + "\n" if body_parts else "")
-	css_hash = write_published_css("nce_component_overrides.css", css)
-	frappe.cache.delete_value("assets_json")
-	frappe.clear_cache()
+	css_hash = publish_css("nce_component_overrides.css", css)
 	return {"status": "ok", "css_hash": css_hash, "rules": css.count(" › ")}
