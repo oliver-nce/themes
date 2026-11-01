@@ -2,9 +2,9 @@
 "_meta": {
 "description": "The single authoritative code index of this project: every function, class, method, route, test, Vue component, CSS section and doc section with a label, plus each file's purpose. Query it with the shared code-index tool (find / show / callers); do not read this file whole. Generated: never edit by hand; hand-written notes live in code_index/project.json.",
 "generator": "_Project support files/code-index/codeindex.py",
-"count": 1165,
+"count": 1291,
 "project_sha256": "69ed9bd33e3667cacec4984d7aaf00e86d1167071b7c0f7916ee05d2458bf936",
-"headers_sha256": "31529b67f3ec15d0584a8e9cdd1be1f1aa26b7734af97541964c9390fb31da77"
+"headers_sha256": "54919e07df405c8b24e958bf79f11e94af652034c0d812d127bfaa7bbaf2f73e"
 },
 "files": {
 "AGENTS.md": {
@@ -565,7 +565,20 @@
 ]
 },
 "frontend/src/components/DeskStyleSamples.vue": {
-"purpose": "Sample elements for each Desk Theme Editor style, driven live by Desk CSS variables."
+"purpose": "Sample elements for each Desk Theme Editor style, driven live by Desk CSS variables.",
+"read_when": "When extending Desk preview swatches, controls, list, form, or Gantt samples tied to CSS vars.",
+"gotchas": [],
+"keywords": [
+"DeskStyleSamples",
+"vars",
+"desk-samples",
+"surfaceSwatches",
+"--bg-color",
+"listRows",
+"ganttRows",
+"preview-surface",
+"section-label"
+]
 },
 "frontend/src/components/EditorSection.vue": {
 "purpose": "Collapsible editor panel with a title, hint, header actions, and a help dialog.",
@@ -810,6 +823,18 @@
 "saveAsBase"
 ]
 },
+"frontend/src/design-mode/DesignDialog.vue": {
+"purpose": ""
+},
+"frontend/src/design-mode/design-dialog.css": {
+"purpose": ""
+},
+"frontend/src/design-mode/index.ts": {
+"purpose": "Design Mode dialog bundle: mounts DesignDialog.vue in an isolated shadow root and exposes window.nceDesignDialog.",
+"depends_on": [
+"frontend/src/design-mode/DesignDialog.vue"
+]
+},
 "frontend/src/domain/theme-tokens.ts": {
 "purpose": "GENERATED from themes/utils/theme_tokens.py — do not edit by hand."
 },
@@ -846,19 +871,74 @@
 },
 "frontend/src/pages/DeskThemeHomePage.vue": {
 "purpose": "Landing page that links to the Desk Theme Editor and the live Desk Theme Preview.",
+"read_when": "When editing Desk Themes home copy, cards, or how desk preview opens from the router home.",
+"gotchas": [],
+"keywords": [
+"Desk Themes",
+"DeskThemeHomePage",
+"openPreviewPopup",
+"desk-themes/preview",
+"theme-settings",
+"nce_desk_theme.css",
+"home-card"
+],
 "depends_on": [
 "frontend/src/utils/previewWindow.ts"
 ]
 },
 "frontend/src/pages/DeskThemePreviewPage.vue": {
 "purpose": "Iframe preview that applies Desk Theme Editor CSS variables onto live Frappe Desk pages.",
+"read_when": "When changing live Desk preview, editor theme sync, samples toggle, or iframe view-only lock.",
+"gotchas": [
+"Iframe is view-only: open list records and return, but no other navigation or edits.",
+"Routes are compared by Frappe route, not URL (v16 list paths differ under /app and /desk).",
+"After reload with no editor message yet, initial vars come from saved theme via get_active_desk_theme_editor."
+],
+"keywords": [
+"DeskThemePreviewPage",
+"lockLivePage",
+"nce-desk-theme-update",
+"BroadcastChannel",
+"applyVarsToIframe",
+"SAMPLES_PATH",
+"DeskStyleSamples",
+"get_active_desk_theme_editor",
+"desk-preview-frame",
+"nce-desk-preview-ready"
+],
 "depends_on": [
 "frontend/src/components/DeskStyleSamples.vue",
 "frontend/src/composables/useDeskTheme.ts"
 ]
 },
 "frontend/src/pages/DeskThemeSettingsPage.vue": {
-"purpose": "Desk Theme Editor for NCE Desk Theme colours, shape, typography, Gantt, and live preview.",
+"purpose": "Desk theme editor for NCE Desk Theme colours, shape, typography, Gantt, density, and live desk preview.",
+"read_when": "Open when editing Frappe Desk NCE desk themes, toggling Active/Inactive, restoring base, or syncing preview via BroadcastChannel.",
+"gotchas": [
+"Palette (editor only) swatches are not published to Desk CSS.",
+"Changing primary or brand palette colours does not recolour Desk directly.",
+"Density presets and Scale with body size are editor-only and not published to Desk CSS.",
+"Border tokens affect structural lines; flat Desk design removes borders from individual inputs.",
+"Save as base desk theme bundles into the app; commit and push after running.",
+"Legacy border_radius affects only older Desk elements still using --border-radius."
+],
+"keywords": [
+"Desk Theme Editor",
+"NCE Desk Theme",
+"useDeskTheme",
+"deskPayloadToCssVars",
+"BroadcastChannel",
+"nce-desk-theme-preview",
+"density preset",
+"Gantt chart",
+"themes.api.save_desk_theme",
+"Restore to Base Desk Theme",
+"font_weight_body",
+"text_scale_mode",
+"deskPanelHelp",
+"Open Preview",
+"list_desk_themes"
+],
 "depends_on": [
 "frontend/src/components/EditorSection.vue",
 "frontend/src/components/FontSelectField.vue",
@@ -870,7 +950,21 @@
 ]
 },
 "frontend/src/pages/HomePage.vue": {
-"purpose": "Landing page that links to the site Theme Editor and the Theme Preview.",
+"purpose": "Themes app landing page with cards linking to the site Theme Editor and Theme Preview popup.",
+"read_when": "Open from router home route when choosing between /themes/theme-settings and opening theme preview in a popup.",
+"gotchas": [],
+"keywords": [
+"Themes",
+"Theme Editor",
+"Theme Preview",
+"theme-settings",
+"openPreviewPopup",
+"router-link",
+"Site theming",
+"card-grid",
+"home-page",
+"/themes/preview"
+],
 "depends_on": [
 "frontend/src/utils/previewWindow.ts"
 ]
@@ -890,7 +984,33 @@
 ]
 },
 "frontend/src/pages/ThemeSettingsPage.vue": {
-"purpose": "Site Theme Editor for colours, typography, layout, live CSS variables, and base theme publishing.",
+"purpose": "Site NCE theme editor for brand colours, typography, layout, tables, shadows, CSS publish, and live --nce variables.",
+"read_when": "Open when editing site NCE themes, previewing nce_theme.css variables, or bundling save as base theme.",
+"gotchas": [
+"domain/theme-tokens.ts is generated from theme_tokens.py; do not edit by hand.",
+"Corporate brand palette mode forces gamma and saturation adjustments to defaults on save.",
+"Restore to Base Theme saves dirty edits first instead of showing the unsaved confirm dialog.",
+"Shadow opacity slider uses direct alpha (96% maps to rgba alpha 0.96).",
+"Retired font picker names map to Public Sans when loading saved themes.",
+"Saving as base theme writes bundled files; commit and push the themes app after running."
+],
+"keywords": [
+"Theme Editor",
+"computeCSSVariables",
+"brand_palette_mode",
+"nce_theme.css",
+"useThemeEditor",
+"themes.api.save_theme",
+"BrandColorPicker",
+"neutral_color_warmth",
+"theme-table",
+"tailwind_overrides",
+"set_base_theme",
+"nce-theme-update",
+"COLOR_VAR_MAP",
+"ThemeClassCatalogPanel",
+"Restore to Base Theme"
+],
 "depends_on": [
 "frontend/src/components/BrandColorPicker.vue",
 "frontend/src/components/EditorSection.vue",
@@ -1004,7 +1124,19 @@
 ]
 },
 "frontend/src/utils/previewWindow.ts": {
-"purpose": "Opens theme preview routes in a popup window instead of navigating the current page."
+"purpose": "Opens theme preview routes in a popup window instead of navigating the current page.",
+"read_when": "When adding or changing links that should open web or desk theme preview in a sized popup.",
+"gotchas": [],
+"keywords": [
+"openPreviewPopup",
+"FEATURES",
+"desk-themes-preview",
+"themes-preview",
+"window.open",
+"popup preview",
+"theme preview",
+"desk-themes"
+]
 },
 "frontend/src/utils/shadowBuild.ts": {
 "purpose": "Builds the --nce-shadow value and the compass dial angle for theme shadows.",
@@ -1070,17 +1202,7 @@
 ]
 },
 "frontend/src/widget/adapters/standalone-adapter.ts": {
-"purpose": "Standalone adapter that opens the theme swatch picker on plain DOM theme and value fields.",
-"read_when": "When changing how a non-Desk page reads and writes theme swatch fields.",
-"gotchas": [],
-"keywords": [
-"openStandaloneThemeSwatchPicker",
-"themeFieldEl",
-"valueFieldEl",
-"setFieldValue",
-"themeSwatchPicker",
-"dispatchEvent"
-],
+"purpose": "Copyright (c) 2026 Oliver Reid.",
 "depends_on": [
 "frontend/src/widget/theme-swatch-picker-core.ts"
 ]
@@ -1139,16 +1261,6 @@
 },
 "frontend/src/widget/index.ts": {
 "purpose": "Widget entry that exports the swatch picker API and mounts it on window and frappe.ui.",
-"read_when": "When changing what the theme swatch picker bundle exports or mounts on window.",
-"gotchas": [],
-"keywords": [
-"mountStandaloneThemeSwatchPicker",
-"mountDeskThemeSwatchPicker",
-"themeSwatchPicker",
-"parseThemeClass",
-"composeThemeClass",
-"isOpen"
-],
 "depends_on": [
 "frontend/src/widget/adapters/desk-adapter.ts",
 "frontend/src/widget/adapters/standalone-adapter.ts",
@@ -1225,6 +1337,9 @@
 "entryFileNames",
 "dev server"
 ]
+},
+"frontend/vite.design.config.js": {
+"purpose": "Vite build that emits the Design Mode dialog as one self-contained IIFE (Vue bundled in)."
 },
 "frontend/vite.widget.config.js": {
 "purpose": "Vite library build that emits the theme swatch picker as ES and UMD bundles.",
@@ -1305,17 +1420,9 @@
 ]
 },
 "themes/boot.py": {
-"purpose": "Desk boot hook that exposes the current desk theme CSS URL each session.",
-"read_when": "When the desk is not picking up a freshly published theme stylesheet.",
-"gotchas": [],
-"keywords": [
-"extend_bootinfo",
-"desk_theme_css_url",
-"bootinfo",
-"publish hash",
-"bench restart"
-],
+"purpose": "Desk boot extensions — fresh theme CSS URLs without bench restart.",
 "depends_on": [
+"themes/component_api.py",
 "themes/utils/desk_css_writer.py"
 ]
 },
@@ -1326,6 +1433,7 @@
 "themes/utils/component_scan.py",
 "themes/utils/component_summary.py",
 "themes/utils/component_sync.py",
+"themes/utils/design_mode.py",
 "themes/utils/site_theme_config_helpers.py"
 ]
 },
@@ -1451,6 +1559,9 @@
 "themes/patches/v1_0/add_base_desk_theme_field.py"
 ]
 },
+"themes/patches/v1_0/clear_design_mode_protected.py": {
+"purpose": ""
+},
 "themes/patches/v1_0/collapse_theme_versions_to_nce_theme.py": {
 "purpose": "Copies Theme Version JSON onto NCE Theme and clears the active_version pointer.",
 "read_when": "When theme payloads still live on Theme Version instead of NCE Theme.theme_json.",
@@ -1465,6 +1576,12 @@
 ],
 "depends_on": [
 "themes/utils/css_writer.py"
+]
+},
+"themes/patches/v1_0/design_mode_defaults.py": {
+"purpose": "",
+"depends_on": [
+"themes/utils/design_mode.py"
 ]
 },
 "themes/patches/v1_0/migrate_theme_settings_to_nce_theme.py": {
@@ -1573,42 +1690,31 @@
 ]
 },
 "themes/public/css/nce_component_overrides.css": {
-"purpose": "Published CSS file holding Vue Component colour override rules generated from Desk records.",
-"read_when": "When verifying component override output or why the file is empty before publish.",
-"gotchas": [
-"Do not edit manually; change overrides in Desk Vue Component and republish."
-],
-"keywords": [
-"nce_component_overrides",
-"Vue Component",
-"colour overrides",
-"Generated by Themes",
-"app_include_css",
-"publish_component_css"
-]
+"purpose": "Generated by Themes — Vue Component colour overrides."
 },
 "themes/public/css/nce_desk_theme.css": {
-"purpose": "Generated by themes.utils.desk_css_writer — do not edit"
-},
-"themes/public/css/nce_theme.css": {
-"purpose": "Compiled NCE web theme CSS with --nce-color tokens, theme-* utilities, tables, typography, and data-nce-theme variable scopes.",
-"read_when": "When mapping theme-* classes to tokens, shade fg pairing, or default vs nce theme overrides on :root.",
+"purpose": "Published generated CSS that sets Desk :root variables, Public Sans fonts, and a few list form weight rules.",
+"read_when": "Verifying Desk look after desk theme publish or comparing live tokens to desk_css_writer golden output.",
 "gotchas": [
-"theme-bg-themed is the Dynamic-shade escape hatch using oklch relative color on --bg"
+"Generated by themes.utils.desk_css_writer — do not edit"
 ],
 "keywords": [
-"nce-color-primary",
-"theme-bg-primary",
-"data-nce-theme",
-"theme-table",
-"Source Sans 3",
-"fg-tonal",
-"theme-bg-themed",
-"Shade scales",
+"nce_desk_theme",
+"desk_css_writer",
 "Public Sans",
-"theme-text-heading",
-"canonical variables"
+"--bg-color",
+"--text-color",
+":root",
+"data-theme",
+"font-face",
+"app_include_css"
 ]
+},
+"themes/public/css/nce_theme.css": {
+"purpose": "── Self-hosted variable fonts (active body + heading) ──"
+},
+"themes/public/design_mode/design-dialog.js": {
+"purpose": ""
 },
 "themes/public/frontend/assets/themes-DeskThemeHomePage-QkUd8kaN.js": {
 "purpose": ""
@@ -1669,7 +1775,19 @@
 "purpose": ""
 },
 "themes/public/frontend/assets/themes4.css": {
-"purpose": ""
+"purpose": "Vite-built scoped CSS for the themes app home page layout, title, and navigation card grid.",
+"read_when": "Debugging missing or wrong Home page spacing, cards, or scoped data-v- styles in the built frontend.",
+"gotchas": [],
+"keywords": [
+"home-page",
+"home-card",
+"card-grid",
+"data-v-0e2234ce",
+"home-title",
+"card-desc",
+"themes frontend",
+"vite chunk"
+]
 },
 "themes/public/frontend/assets/themes5.css": {
 "purpose": ""
@@ -1681,7 +1799,23 @@
 "purpose": ""
 },
 "themes/public/frontend/assets/themes8.css": {
-"purpose": ""
+"purpose": "Built scoped CSS for the Themes frontend home page layout, title text, and navigation card grid.",
+"read_when": "When changing home page spacing, card hover, or typography in the compiled themes frontend bundle.",
+"gotchas": [],
+"keywords": [
+"home-page",
+"home-title",
+"home-subtitle",
+"card-grid",
+"home-card",
+"card-icon",
+"card-label",
+"card-desc",
+"data-v-2d00a1ec",
+"border-radius",
+"frontend asset",
+"themes home"
+]
 },
 "themes/public/frontend/index.html": {
 "purpose": "Built Vite HTML shell for the Themes Vue app, loading the bundled themes.js and themes.css assets.",
@@ -1696,6 +1830,9 @@
 "#app",
 "built shell"
 ]
+},
+"themes/public/js/design_mode.js": {
+"purpose": "Design Mode: hover a Vue part and click Edit to change its colours."
 },
 "themes/public/js/desk_theme_loader.js": {
 "purpose": "Injects the published desk theme stylesheet from the boot CSS URL each Desk session.",
@@ -1897,6 +2034,12 @@
 "themes/utils/theme_color_utils.py"
 ]
 },
+"themes/tests/test_design_mode.py": {
+"purpose": "Unit tests for themes.utils.design_mode.",
+"depends_on": [
+"themes/utils/design_mode.py"
+]
+},
 "themes/tests/test_theme_service_default.py": {
 "purpose": "Tests that is_default alone marks the Default theme and that promote moves the flag and the config pointer.",
 "read_when": "When changing promotion to Default or whether the Default theme can be renamed.",
@@ -2055,7 +2198,26 @@
 "purpose": ""
 },
 "themes/themes/doctype/vue_component/vue_component.js": {
-"purpose": ""
+"purpose": "Vue Component DocType form script for the Colours tab, table tokens, swatch pickers, preview, and rescan from file.",
+"read_when": "When editing element overrides, table chrome pickers, or refresh or preview behaviour on the Vue Component form.",
+"gotchas": [
+"Row 1 in the table preview is alternate or odd; row 2 is main or even, matching theme-table striping.",
+"Empty table slots use the assigned theme Tables tokens like the Theme Editor."
+],
+"keywords": [
+"Vue Component",
+"colours_html",
+"themeSwatchPicker",
+"VC_TABLE_ROW_SLOTS",
+"nce_component_overrides",
+"refresh_component",
+"preview_declarations",
+"override_bg_class",
+"keep_default",
+"vc-colours-wrap",
+"components_inside",
+"get_preview_theme"
+]
 },
 "themes/themes/doctype/vue_component/vue_component.py": {
 "purpose": "Server-side Vue Component DocType: validates theme class overrides, normalises elements, summary, and publishes CSS.",
@@ -2080,7 +2242,21 @@
 ]
 },
 "themes/themes/doctype/vue_component/vue_component_list.js": {
-"purpose": ""
+"purpose": "Registers Vue Component list view filters, status indicators, and the Rescan all toolbar action.",
+"read_when": "When changing which components appear in the list or how Rescan and attention badges behave.",
+"gotchas": [],
+"keywords": [
+"Vue Component",
+"listview_settings",
+"is_root",
+"needs_attention",
+"get_indicator",
+"Rescan",
+"rescan_all",
+"component_api",
+"Work to do",
+"add_fields"
+]
 },
 "themes/themes/doctype/vue_component_element/__init__.py": {
 "purpose": ""
@@ -2165,25 +2341,7 @@
 ]
 },
 "themes/utils/component_css_writer.py": {
-"purpose": "Generates published nce_component_overrides.css from Vue Component element and table override settings.",
-"read_when": "Open when previewing component override CSS, publishing overrides, or parsing theme-* classes.",
-"gotchas": [
-"Generated header warns edits belong in Desk Vue Component, not the CSS file.",
-"Selectors repeat class three times for specificity over utility stacks.",
-"Invalid selector_class or theme classes produce no rule block."
-],
-"keywords": [
-"generate_component_css",
-"publish_component_css",
-"nce_component_overrides.css",
-"declarations_for",
-"table_css_for",
-"theme-bg-",
-"BG_RE",
-"write_published_css",
-"has_override",
-"override_fg_type"
-],
+"purpose": "Generate published CSS for Vue Component colour overrides.",
 "depends_on": [
 "themes/utils/component_sync.py",
 "themes/utils/css_publish.py"
@@ -2306,6 +2464,12 @@
 "brand_palette_mode",
 "neutral_color_warmth",
 "primary_color"
+]
+},
+"themes/utils/design_mode.py": {
+"purpose": "Design Mode helpers: the CSS-class maps sent to the page and table value cleaning.",
+"depends_on": [
+"themes/utils/component_sync.py"
 ]
 },
 "themes/utils/desk_css_writer.py": {
@@ -5766,41 +5930,59 @@
 "name": "App",
 "qualname": "App",
 "sig": "",
-"hash": "289ba17c47",
+"hash": "debf2e21e4",
 "calls": [],
 "label": "Theme editor shell with sidebar links for web and desk theme pages.",
 "label_source": "docstring"
 },
 {
-"id": "frontend/src/App.vue::vueComponentsErrorMessage",
+"id": "frontend/src/App.vue::callApi",
 "file": "frontend/src/App.vue",
 "kind": "function",
-"name": "vueComponentsErrorMessage",
-"qualname": "vueComponentsErrorMessage",
-"sig": "(data: Record<string, unknown>) -> string",
-"hash": "2e613852ac",
+"name": "callApi",
+"qualname": "callApi",
+"sig": "(method: string, body: Record<string, unknown> = {})",
+"hash": "95c7502bc1",
 "exported": false,
 "calls": [],
-"label": "Formats Frappe API error fields into an alert message when Vue Components cannot open.",
-"label_source": "header"
+"label": "",
+"label_source": "none"
 },
 {
-"id": "frontend/src/App.vue::openVueComponents",
+"id": "frontend/src/App.vue::loadDesignMode",
 "file": "frontend/src/App.vue",
 "kind": "function",
-"name": "openVueComponents",
-"qualname": "openVueComponents",
+"name": "loadDesignMode",
+"qualname": "loadDesignMode",
 "sig": "()",
-"hash": "e2a7759be0",
+"hash": "fd845d0ff3",
 "exported": false,
 "calls": [
-"frontend/src/App.vue::vueComponentsErrorMessage"
+"frontend/src/App.vue::callApi"
 ],
 "wired_by": [
 "frontend/src/App.vue::App"
 ],
-"label": "POSTs themes.component_api.open_vue_components then navigates a new tab to the returned Desk URL.",
-"label_source": "header"
+"label": "",
+"label_source": "none"
+},
+{
+"id": "frontend/src/App.vue::toggleDesignMode",
+"file": "frontend/src/App.vue",
+"kind": "function",
+"name": "toggleDesignMode",
+"qualname": "toggleDesignMode",
+"sig": "()",
+"hash": "0d10b51885",
+"exported": false,
+"calls": [
+"frontend/src/App.vue::callApi"
+],
+"wired_by": [
+"frontend/src/App.vue::App"
+],
+"label": "",
+"label_source": "none"
 },
 {
 "id": "frontend/src/components/BrandColorPicker.vue::BrandColorPicker",
@@ -6470,8 +6652,8 @@
 "sig": "",
 "hash": "588eff8fe8",
 "calls": [],
-"label": "Sample elements for each Desk Theme Editor style, driven live by Desk CSS variables.",
-"label_source": "docstring"
+"label": "Applies vars as inline CSS on mock Desk sections for DeskThemePreviewPage style samples view.",
+"label_source": "header"
 },
 {
 "id": "frontend/src/components/EditorSection.vue::EditorSection",
@@ -7760,6 +7942,411 @@
 "label_hash": "898f645ccc"
 },
 {
+"id": "frontend/src/design-mode/DesignDialog.vue::DesignDialog",
+"file": "frontend/src/design-mode/DesignDialog.vue",
+"kind": "component",
+"name": "DesignDialog",
+"qualname": "DesignDialog",
+"sig": "",
+"hash": "d3f0812fc0",
+"calls": [],
+"label": "",
+"label_source": "none"
+},
+{
+"id": "frontend/src/design-mode/DesignDialog.vue::PickKind",
+"file": "frontend/src/design-mode/DesignDialog.vue",
+"kind": "type",
+"name": "PickKind",
+"qualname": "PickKind",
+"sig": "",
+"hash": "f0c9452f2e",
+"exported": false,
+"calls": [],
+"label": "",
+"label_source": "none"
+},
+{
+"id": "frontend/src/design-mode/DesignDialog.vue::DialogModel",
+"file": "frontend/src/design-mode/DesignDialog.vue",
+"kind": "type",
+"name": "DialogModel",
+"qualname": "DialogModel",
+"sig": "",
+"hash": "b16d9effb2",
+"exported": false,
+"calls": [],
+"label": "",
+"label_source": "none"
+},
+{
+"id": "frontend/src/design-mode/DesignDialog.vue::DialogHandlers",
+"file": "frontend/src/design-mode/DesignDialog.vue",
+"kind": "type",
+"name": "DialogHandlers",
+"qualname": "DialogHandlers",
+"sig": "",
+"hash": "7ebc9bd436",
+"exported": false,
+"calls": [],
+"label": "",
+"label_source": "none"
+},
+{
+"id": "frontend/src/design-mode/DesignDialog.vue::BORDER_WIDTH_OPTIONS",
+"file": "frontend/src/design-mode/DesignDialog.vue",
+"kind": "const",
+"name": "BORDER_WIDTH_OPTIONS",
+"qualname": "BORDER_WIDTH_OPTIONS",
+"sig": "",
+"hash": "a0b6b6e876",
+"exported": false,
+"calls": [],
+"label": "",
+"label_source": "none"
+},
+{
+"id": "frontend/src/design-mode/DesignDialog.vue::TABLE_BG_ROWS",
+"file": "frontend/src/design-mode/DesignDialog.vue",
+"kind": "const",
+"name": "TABLE_BG_ROWS",
+"qualname": "TABLE_BG_ROWS",
+"sig": "",
+"hash": "eaa6e64f19",
+"exported": false,
+"calls": [],
+"label": "",
+"label_source": "none"
+},
+{
+"id": "frontend/src/design-mode/DesignDialog.vue::TABLE_LINE_ROWS",
+"file": "frontend/src/design-mode/DesignDialog.vue",
+"kind": "const",
+"name": "TABLE_LINE_ROWS",
+"qualname": "TABLE_LINE_ROWS",
+"sig": "",
+"hash": "a00411cabd",
+"exported": false,
+"calls": [],
+"label": "",
+"label_source": "none"
+},
+{
+"id": "frontend/src/design-mode/DesignDialog.vue::draftStr",
+"file": "frontend/src/design-mode/DesignDialog.vue",
+"kind": "function",
+"name": "draftStr",
+"qualname": "draftStr",
+"sig": "(field: string) -> string",
+"hash": "5c9bbe703b",
+"exported": false,
+"calls": [],
+"label": "",
+"label_source": "none"
+},
+{
+"id": "frontend/src/design-mode/DesignDialog.vue::themeLabel",
+"file": "frontend/src/design-mode/DesignDialog.vue",
+"kind": "function",
+"name": "themeLabel",
+"qualname": "themeLabel",
+"sig": "(field: string) -> string",
+"hash": "976a6577aa",
+"exported": false,
+"calls": [],
+"label": "",
+"label_source": "none"
+},
+{
+"id": "frontend/src/design-mode/DesignDialog.vue::themeCss",
+"file": "frontend/src/design-mode/DesignDialog.vue",
+"kind": "function",
+"name": "themeCss",
+"qualname": "themeCss",
+"sig": "(field: string) -> string",
+"hash": "1c86ff6a9e",
+"exported": false,
+"calls": [],
+"label": "",
+"label_source": "none"
+},
+{
+"id": "frontend/src/design-mode/DesignDialog.vue::themeText",
+"file": "frontend/src/design-mode/DesignDialog.vue",
+"kind": "function",
+"name": "themeText",
+"qualname": "themeText",
+"sig": "(field: string) -> string",
+"hash": "729eec7ea0",
+"exported": false,
+"calls": [
+"frontend/src/design-mode/DesignDialog.vue::themeLabel"
+],
+"label": "",
+"label_source": "none"
+},
+{
+"id": "frontend/src/design-mode/DesignDialog.vue::widthOptionLabel",
+"file": "frontend/src/design-mode/DesignDialog.vue",
+"kind": "function",
+"name": "widthOptionLabel",
+"qualname": "widthOptionLabel",
+"sig": "(field: string, value: string, label: string) -> string",
+"hash": "489d602ffc",
+"exported": false,
+"calls": [
+"frontend/src/design-mode/DesignDialog.vue::themeLabel"
+],
+"label": "",
+"label_source": "none"
+},
+{
+"id": "frontend/src/design-mode/DesignDialog.vue::bgClassText",
+"file": "frontend/src/design-mode/DesignDialog.vue",
+"kind": "function",
+"name": "bgClassText",
+"qualname": "bgClassText",
+"sig": "(bgField: string, fgField: string) -> string",
+"hash": "81eed3538d",
+"exported": false,
+"calls": [
+"frontend/src/design-mode/DesignDialog.vue::draftStr",
+"frontend/src/design-mode/DesignDialog.vue::themeText"
+],
+"label": "",
+"label_source": "none"
+},
+{
+"id": "frontend/src/design-mode/DesignDialog.vue::clampPosition",
+"file": "frontend/src/design-mode/DesignDialog.vue",
+"kind": "function",
+"name": "clampPosition",
+"qualname": "clampPosition",
+"sig": "(left: number, top: number)",
+"hash": "6a27df5b00",
+"exported": false,
+"calls": [],
+"label": "",
+"label_source": "none"
+},
+{
+"id": "frontend/src/design-mode/DesignDialog.vue::onMove",
+"file": "frontend/src/design-mode/DesignDialog.vue",
+"kind": "function",
+"name": "onMove",
+"qualname": "onMove",
+"sig": "(ev: MouseEvent)",
+"hash": "c9216ad812",
+"exported": false,
+"calls": [
+"frontend/src/design-mode/DesignDialog.vue::clampPosition"
+],
+"wired_by": [
+"frontend/src/design-mode/DesignDialog.vue::DesignDialog",
+"frontend/src/design-mode/DesignDialog.vue::onUp",
+"frontend/src/design-mode/DesignDialog.vue::startDrag"
+],
+"label": "",
+"label_source": "none"
+},
+{
+"id": "frontend/src/design-mode/DesignDialog.vue::onUp",
+"file": "frontend/src/design-mode/DesignDialog.vue",
+"kind": "function",
+"name": "onUp",
+"qualname": "onUp",
+"sig": "()",
+"hash": "e796aecff4",
+"exported": false,
+"calls": [],
+"wired_by": [
+"frontend/src/design-mode/DesignDialog.vue::DesignDialog",
+"frontend/src/design-mode/DesignDialog.vue::startDrag"
+],
+"label": "",
+"label_source": "none"
+},
+{
+"id": "frontend/src/design-mode/DesignDialog.vue::startDrag",
+"file": "frontend/src/design-mode/DesignDialog.vue",
+"kind": "function",
+"name": "startDrag",
+"qualname": "startDrag",
+"sig": "(e: MouseEvent)",
+"hash": "99428f8309",
+"exported": false,
+"calls": [],
+"wired_by": [
+"frontend/src/design-mode/DesignDialog.vue::DesignDialog"
+],
+"label": "",
+"label_source": "none"
+},
+{
+"id": "frontend/src/design-mode/DesignDialog.vue::onKeep",
+"file": "frontend/src/design-mode/DesignDialog.vue",
+"kind": "function",
+"name": "onKeep",
+"qualname": "onKeep",
+"sig": "(e: Event)",
+"hash": "b46d85491a",
+"exported": false,
+"calls": [],
+"wired_by": [
+"frontend/src/design-mode/DesignDialog.vue::DesignDialog"
+],
+"label": "",
+"label_source": "none"
+},
+{
+"id": "frontend/src/design-mode/design-dialog.css::all",
+"file": "frontend/src/design-mode/design-dialog.css",
+"kind": "css-section",
+"name": "all",
+"qualname": "all",
+"sig": "",
+"hash": "62d785d594",
+"calls": [],
+"label": "design-dialog.css (the whole file)",
+"label_source": "title"
+},
+{
+"id": "frontend/src/design-mode/index.ts::PickKind",
+"file": "frontend/src/design-mode/index.ts",
+"kind": "type",
+"name": "PickKind",
+"qualname": "PickKind",
+"sig": "",
+"hash": "f0c9452f2e",
+"exported": false,
+"calls": [],
+"label": "",
+"label_source": "none"
+},
+{
+"id": "frontend/src/design-mode/index.ts::DesignDialogHandlers",
+"file": "frontend/src/design-mode/index.ts",
+"kind": "type",
+"name": "DesignDialogHandlers",
+"qualname": "DesignDialogHandlers",
+"sig": "",
+"hash": "9870338703",
+"exported": true,
+"calls": [],
+"label": "",
+"label_source": "none"
+},
+{
+"id": "frontend/src/design-mode/index.ts::DesignDialogOpenOptions",
+"file": "frontend/src/design-mode/index.ts",
+"kind": "type",
+"name": "DesignDialogOpenOptions",
+"qualname": "DesignDialogOpenOptions",
+"sig": "",
+"hash": "ae9f749d96",
+"exported": true,
+"calls": [],
+"label": "",
+"label_source": "none"
+},
+{
+"id": "frontend/src/design-mode/index.ts::DesignDialogHandle",
+"file": "frontend/src/design-mode/index.ts",
+"kind": "type",
+"name": "DesignDialogHandle",
+"qualname": "DesignDialogHandle",
+"sig": "",
+"hash": "22d7fd75d3",
+"exported": true,
+"calls": [],
+"label": "",
+"label_source": "none"
+},
+{
+"id": "frontend/src/design-mode/index.ts::themeCssHref",
+"file": "frontend/src/design-mode/index.ts",
+"kind": "function",
+"name": "themeCssHref",
+"qualname": "themeCssHref",
+"sig": "() -> string",
+"hash": "4a07062d33",
+"exported": false,
+"calls": [],
+"label": "",
+"label_source": "none"
+},
+{
+"id": "frontend/src/design-mode/index.ts::STOP",
+"file": "frontend/src/design-mode/index.ts",
+"kind": "const",
+"name": "STOP",
+"qualname": "STOP",
+"sig": "",
+"hash": "39cf5c989e",
+"exported": false,
+"calls": [],
+"label": "",
+"label_source": "none"
+},
+{
+"id": "frontend/src/design-mode/index.ts::close",
+"file": "frontend/src/design-mode/index.ts",
+"kind": "function",
+"name": "close",
+"qualname": "close",
+"sig": "() -> void",
+"hash": "d1ad8b93ab",
+"exported": true,
+"calls": [],
+"wired_by": [
+"frontend/src/design-mode/index.ts"
+],
+"label": "",
+"label_source": "none"
+},
+{
+"id": "frontend/src/design-mode/index.ts::isOpen",
+"file": "frontend/src/design-mode/index.ts",
+"kind": "function",
+"name": "isOpen",
+"qualname": "isOpen",
+"sig": "() -> boolean",
+"hash": "a8f73c330e",
+"exported": true,
+"calls": [],
+"label": "",
+"label_source": "none"
+},
+{
+"id": "frontend/src/design-mode/index.ts::open",
+"file": "frontend/src/design-mode/index.ts",
+"kind": "function",
+"name": "open",
+"qualname": "open",
+"sig": "(opts: DesignDialogOpenOptions) -> DesignDialogHandle",
+"hash": "be754d2138",
+"exported": true,
+"calls": [
+"frontend/src/design-mode/index.ts::close",
+"frontend/src/design-mode/index.ts::themeCssHref"
+],
+"label": "",
+"label_source": "none"
+},
+{
+"id": "frontend/src/design-mode/index.ts::Window",
+"file": "frontend/src/design-mode/index.ts",
+"kind": "type",
+"name": "Window",
+"qualname": "Window",
+"sig": "",
+"hash": "442343c3a6",
+"exported": false,
+"calls": [],
+"label": "",
+"label_source": "none"
+},
+{
 "id": "frontend/src/index.css::all",
 "file": "frontend/src/index.css",
 "kind": "css-section",
@@ -7780,8 +8367,8 @@
 "sig": "",
 "hash": "f38ea16e41",
 "calls": [],
-"label": "Landing page that links to the Desk Theme Editor and the live Desk Theme Preview.",
-"label_source": "docstring"
+"label": "Desk home with cards to the editor route and popup desk preview via openPreviewPopup.",
+"label_source": "header"
 },
 {
 "id": "frontend/src/pages/DeskThemePreviewPage.vue::DeskThemePreviewPage",
@@ -7792,8 +8379,8 @@
 "sig": "",
 "hash": "6dd9ba0dff",
 "calls": [],
-"label": "Iframe preview that applies Desk Theme Editor CSS variables onto live Frappe Desk pages.",
-"label_source": "docstring"
+"label": "Toolbar to pick samples or live Desk URLs; syncs editor CSS vars to samples or iframe.",
+"label_source": "header"
 },
 {
 "id": "frontend/src/pages/DeskThemePreviewPage.vue::SAMPLES_PATH",
@@ -7805,8 +8392,8 @@
 "hash": "4ed2a3be80",
 "exported": false,
 "calls": [],
-"label": "",
-"label_source": "none"
+"label": "Internal target value that shows DeskStyleSamples instead of the live iframe.",
+"label_source": "header"
 },
 {
 "id": "frontend/src/pages/DeskThemePreviewPage.vue::applyVarsToIframe",
@@ -7820,9 +8407,8 @@
 "calls": [
 "frontend/src/composables/useDeskTheme.ts::applyDeskThemeVars"
 ],
-"label": "Apply CSS variables to preview iframe",
-"label_source": "generated",
-"label_hash": "312c869a06"
+"label": "Writes theme CSS variables onto the iframe documentElement using applyDeskThemeVars.",
+"label_source": "header"
 },
 {
 "id": "frontend/src/pages/DeskThemePreviewPage.vue::SAVE_LABELS",
@@ -7834,8 +8420,8 @@
 "hash": "66e651e3a4",
 "exported": false,
 "calls": [],
-"label": "",
-"label_source": "none"
+"label": "Lowercase labels identifying Save and Update buttons to hide during preview.",
+"label_source": "header"
 },
 {
 "id": "frontend/src/pages/DeskThemePreviewPage.vue::FORM_CONTROLS",
@@ -7847,8 +8433,8 @@
 "hash": "5874e6304d",
 "exported": false,
 "calls": [],
-"label": "",
-"label_source": "none"
+"label": "DOM selector for fields and rich editors blocked from editing in form view.",
+"label_source": "header"
 },
 {
 "id": "frontend/src/pages/DeskThemePreviewPage.vue::INERT_AREAS",
@@ -7860,8 +8446,8 @@
 "hash": "eac94cfdb7",
 "exported": false,
 "calls": [],
-"label": "",
-"label_source": "none"
+"label": "Sidebar and dock regions disabled for pointer events in the preview iframe.",
+"label_source": "header"
 },
 {
 "id": "frontend/src/pages/DeskThemePreviewPage.vue::LIST_TOOLS",
@@ -7873,8 +8459,8 @@
 "hash": "d41b1ed07d",
 "exported": false,
 "calls": [],
-"label": "",
-"label_source": "none"
+"label": "List filters and popovers still usable on list view under the preview lock.",
+"label_source": "header"
 },
 {
 "id": "frontend/src/pages/DeskThemePreviewPage.vue::SAFE_UI",
@@ -7886,8 +8472,8 @@
 "hash": "c5260fafa9",
 "exported": false,
 "calls": [],
-"label": "",
-"label_source": "none"
+"label": "Tabs, nav links, and dropdown toggles allowed to stay clickable in preview.",
+"label_source": "header"
 },
 {
 "id": "frontend/src/pages/DeskThemePreviewPage.vue::DeskWindow",
@@ -7899,8 +8485,8 @@
 "hash": "231054b740",
 "exported": false,
 "calls": [],
-"label": "",
-"label_source": "none"
+"label": "Iframe window type including optional frappe routing helpers.",
+"label_source": "header"
 },
 {
 "id": "frontend/src/pages/DeskThemePreviewPage.vue::controlLabel",
@@ -7912,8 +8498,8 @@
 "hash": "63527e69d2",
 "exported": false,
 "calls": [],
-"label": "",
-"label_source": "none"
+"label": "Reads data-label or text from a control for save-button matching.",
+"label_source": "header"
 },
 {
 "id": "frontend/src/pages/DeskThemePreviewPage.vue::trimPath",
@@ -7925,8 +8511,8 @@
 "hash": "6ea1d0a434",
 "exported": false,
 "calls": [],
-"label": "",
-"label_source": "none"
+"label": "Normalizes paths by removing trailing slashes for link equality checks.",
+"label_source": "header"
 },
 {
 "id": "frontend/src/pages/DeskThemePreviewPage.vue::lockLivePage",
@@ -7949,8 +8535,8 @@
 "frontend/src/pages/DeskThemePreviewPage.vue::lockLivePage.lockSaveButtons",
 "frontend/src/pages/DeskThemePreviewPage.vue::lockLivePage.routeKey"
 ],
-"label": "The iframe shows a real Desk page in view-only mode: the user may open records from the list and come back, but nothing else navigates or edits.",
-"label_source": "docstring"
+"label": "One-time setup of view-only click, input, route guard, and save hiding on iframe load.",
+"label_source": "header"
 },
 {
 "id": "frontend/src/pages/DeskThemePreviewPage.vue::lockLivePage.getRoute",
@@ -7962,8 +8548,8 @@
 "hash": "381432f1f0",
 "exported": false,
 "calls": [],
-"label": "",
-"label_source": "none"
+"label": "Returns current Frappe route array from the iframe window.",
+"label_source": "header"
 },
 {
 "id": "frontend/src/pages/DeskThemePreviewPage.vue::lockLivePage.routeKey",
@@ -7975,8 +8561,8 @@
 "hash": "5fb8c9724c",
 "exported": false,
 "calls": [],
-"label": "",
-"label_source": "none"
+"label": "Serializes a route array for comparing allowed navigation state.",
+"label_source": "header"
 },
 {
 "id": "frontend/src/pages/DeskThemePreviewPage.vue::lockLivePage.adoptBase",
@@ -7991,8 +8577,8 @@
 "frontend/src/pages/DeskThemePreviewPage.vue::lockLivePage.getRoute",
 "frontend/src/pages/DeskThemePreviewPage.vue::lockLivePage.routeKey"
 ],
-"label": "",
-"label_source": "none"
+"label": "Records first iframe route and doctype as the baseline for allowed browsing.",
+"label_source": "header"
 },
 {
 "id": "frontend/src/pages/DeskThemePreviewPage.vue::lockLivePage.isAllowedRoute",
@@ -8006,8 +8592,8 @@
 "calls": [
 "frontend/src/pages/DeskThemePreviewPage.vue::lockLivePage.routeKey"
 ],
-"label": "",
-"label_source": "none"
+"label": "Allows same doctype List/Form hops or exact base route only.",
+"label_source": "header"
 },
 {
 "id": "frontend/src/pages/DeskThemePreviewPage.vue::lockLivePage.slug",
@@ -8019,8 +8605,8 @@
 "hash": "5daa81fc2a",
 "exported": false,
 "calls": [],
-"label": "",
-"label_source": "none"
+"label": "Resolves doctype slug via frappe router or a fallback hyphen slug.",
+"label_source": "header"
 },
 {
 "id": "frontend/src/pages/DeskThemePreviewPage.vue::lockLivePage.isAllowedLink",
@@ -8035,8 +8621,8 @@
 "frontend/src/pages/DeskThemePreviewPage.vue::lockLivePage.slug",
 "frontend/src/pages/DeskThemePreviewPage.vue::trimPath"
 ],
-"label": "",
-"label_source": "none"
+"label": "Permits in-app anchor hrefs matching base path or doctype slug rules.",
+"label_source": "header"
 },
 {
 "id": "frontend/src/pages/DeskThemePreviewPage.vue::lockLivePage.isFormView",
@@ -8048,8 +8634,8 @@
 "hash": "ff2a94b536",
 "exported": false,
 "calls": [],
-"label": "",
-"label_source": "none"
+"label": "Detects Form route to tune which clicks and edits are blocked.",
+"label_source": "header"
 },
 {
 "id": "frontend/src/pages/DeskThemePreviewPage.vue::lockLivePage.block",
@@ -8061,8 +8647,8 @@
 "hash": "bb6cad7196",
 "exported": false,
 "calls": [],
-"label": "",
-"label_source": "none"
+"label": "Prevents default and stops propagation for disallowed preview interactions.",
+"label_source": "header"
 },
 {
 "id": "frontend/src/pages/DeskThemePreviewPage.vue::lockLivePage.blockEditing",
@@ -8077,8 +8663,8 @@
 "frontend/src/pages/DeskThemePreviewPage.vue::lockLivePage.block",
 "frontend/src/pages/DeskThemePreviewPage.vue::lockLivePage.isFormView"
 ],
-"label": "",
-"label_source": "none"
+"label": "Blocks editing events on form layout unless preview browsing rules allow them.",
+"label_source": "header"
 },
 {
 "id": "frontend/src/pages/DeskThemePreviewPage.vue::lockLivePage.lockSaveButtons",
@@ -8092,8 +8678,8 @@
 "calls": [
 "frontend/src/pages/DeskThemePreviewPage.vue::controlLabel"
 ],
-"label": "",
-"label_source": "none"
+"label": "Hides Save/Update actions and shows a disabled Cannot Save stub.",
+"label_source": "header"
 },
 {
 "id": "frontend/src/pages/DeskThemePreviewPage.vue::onFrameLoad",
@@ -8111,9 +8697,8 @@
 "wired_by": [
 "frontend/src/pages/DeskThemePreviewPage.vue::DeskThemePreviewPage"
 ],
-"label": "Reapply saved theme variables when preview iframe loads",
-"label_source": "generated-stale",
-"label_hash": "ab40bba9d0"
+"label": "Reapplies stored vars and runs lockLivePage when the Desk iframe loads.",
+"label_source": "header"
 },
 {
 "id": "frontend/src/pages/DeskThemePreviewPage.vue::handleMessage",
@@ -8130,9 +8715,8 @@
 "wired_by": [
 "frontend/src/pages/DeskThemePreviewPage.vue::DeskThemePreviewPage"
 ],
-"label": "Receive and apply theme updates from preview window",
-"label_source": "generated",
-"label_hash": "fa7caf4bde"
+"label": "Accepts nce-desk-theme-update from window or BroadcastChannel and refreshes iframe vars.",
+"label_source": "header"
 },
 {
 "id": "frontend/src/pages/DeskThemeSettingsPage.vue::DeskThemeSettingsPage",
@@ -8143,8 +8727,8 @@
 "sig": "",
 "hash": "407154f651",
 "calls": [],
-"label": "Desk Theme Editor for NCE Desk Theme colours, shape, typography, Gantt, and live preview.",
-"label_source": "docstring"
+"label": "Route page for the Desk Theme Editor: tabbed form, CRUD toolbar, preview popup, and themes.api desk endpoints via useThemeEditor.",
+"label_source": "header"
 },
 {
 "id": "frontend/src/pages/DeskThemeSettingsPage.vue::ALL_FIELDS",
@@ -8156,7 +8740,7 @@
 "hash": "8061669f8a",
 "exported": false,
 "calls": [],
-"label": "Complete list of theme_name and payload keys bound in the desk theme form.",
+"label": "Lists every reactive form key including theme_name and all desk colour, shape, layout, typography, and Gantt tokens.",
 "label_source": "header"
 },
 {
@@ -8169,7 +8753,7 @@
 "hash": "ecbdcb566b",
 "exported": false,
 "calls": [],
-"label": "ALL_FIELDS minus theme_name; keys sent when saving desk theme payload.",
+"label": "Subset of ALL_FIELDS persisted on save, excluding theme_name.",
 "label_source": "header"
 },
 {
@@ -8182,7 +8766,7 @@
 "hash": "af72b70378",
 "exported": false,
 "calls": [],
-"label": "Union type of every desk theme editor form field name.",
+"label": "Union type of keys allowed on the desk theme editor form.",
 "label_source": "header"
 },
 {
@@ -8195,7 +8779,7 @@
 "hash": "497a826d33",
 "exported": false,
 "calls": [],
-"label": "Factory default strings for each form field before load or restore.",
+"label": "Fallback string values for every form field when loading or canonicalizing payloads.",
 "label_source": "header"
 },
 {
@@ -8208,7 +8792,7 @@
 "hash": "63e6359ae8",
 "exported": false,
 "calls": [],
-"label": "Payload keys normalized to uppercase hex in canonicalPayload for dirty checks.",
+"label": "Payload keys treated as colours and uppercased hex in canonicalPayload.",
 "label_source": "header"
 },
 {
@@ -8221,7 +8805,7 @@
 "hash": "7d94ff90df",
 "exported": false,
 "calls": [],
-"label": "Body font choices shown in FontSelectField on the typography tab.",
+"label": "Curated body font names shown in FontSelectField on the typography tab.",
 "label_source": "header"
 },
 {
@@ -8234,7 +8818,7 @@
 "hash": "949253fb00",
 "exported": false,
 "calls": [],
-"label": "Lower bound for body and bold weight SizeSlider controls.",
+"label": "Lower bound (100) for body and bold weight sliders.",
 "label_source": "header"
 },
 {
@@ -8247,7 +8831,7 @@
 "hash": "22233cdf41",
 "exported": false,
 "calls": [],
-"label": "Upper bound for body and bold weight SizeSlider controls.",
+"label": "Upper bound (900) for body and bold weight sliders.",
 "label_source": "header"
 },
 {
@@ -8260,7 +8844,7 @@
 "hash": "f6f693e0d5",
 "exported": false,
 "calls": [],
-"label": "Parses weight strings and clamps to BODY_WEIGHT_MIN and BODY_WEIGHT_MAX.",
+"label": "Parses and clamps font weight inputs to the allowed slider range for display labels.",
 "label_source": "header"
 },
 {
@@ -8273,7 +8857,7 @@
 "hash": "496d11cd94",
 "exported": false,
 "calls": [],
-"label": "Adds Light, Regular, Medium, Semi-bold, or Bold hint beside weight sliders.",
+"label": "Turns a numeric weight into a short Light through Bold caption beside sliders.",
 "label_source": "header"
 },
 {
@@ -8288,7 +8872,7 @@
 "calls": [
 "frontend/src/composables/useDeskTheme.ts::deskFontStack"
 ],
-"label": "Typography preview font-family via deskFontStack with system UI fallback.",
+"label": "Builds a CSS font-family stack for typography preview using deskFontStack with system fallback.",
 "label_source": "header"
 },
 {
@@ -8301,7 +8885,7 @@
 "hash": "3277c30da3",
 "exported": false,
 "calls": [],
-"label": "Panel help text linking each control group to Desk CSS variables for EditorSection.",
+"label": "PanelHelpContent map wired into EditorSection help dialogs explaining Desk CSS variable targets.",
 "label_source": "header"
 },
 {
@@ -8314,7 +8898,7 @@
 "hash": "c28aed2b09",
 "exported": false,
 "calls": [],
-"label": "Returns trimmed theme query param for deep-linking a specific desk theme.",
+"label": "Reads the theme query parameter from vue-router for deep-linking a desk theme.",
 "label_source": "header"
 },
 {
@@ -8329,7 +8913,7 @@
 "calls": [
 "frontend/src/pages/DeskThemeSettingsPage.vue::themeFromQuery"
 ],
-"label": "Loads theme from query when name exists; used on mount and by useThemeEditor.",
+"label": "Loads a desk theme by name when the URL theme query matches a list row.",
 "label_source": "header"
 },
 {
@@ -8342,7 +8926,7 @@
 "hash": "080891e41a",
 "exported": false,
 "calls": [],
-"label": "Builds theme dropdown label with Default and active markers from list row.",
+"label": "Formats theme dropdown options with Default and active markers from list metadata.",
 "label_source": "header"
 },
 {
@@ -8358,7 +8942,7 @@
 "frontend/src/composables/useDeskTheme.ts::deskPayloadToCssVars",
 "frontend/src/pages/DeskThemeSettingsPage.vue::buildPayloadFromForm"
 ],
-"label": "Builds Desk CSS var map from current form via deskPayloadToCssVars.",
+"label": "Builds live Desk CSS variables from the current form via deskPayloadToCssVars.",
 "label_source": "header"
 },
 {
@@ -8376,8 +8960,8 @@
 "wired_by": [
 "frontend/src/pages/DeskThemeSettingsPage.vue::DeskThemeSettingsPage"
 ],
-"label": "Sends nce-desk-theme-update postMessage to open desk-themes preview window.",
-"label_source": "header-stale"
+"label": "Posts nce-desk-theme-update variables to BroadcastChannel and the open preview window.",
+"label_source": "header"
 },
 {
 "id": "frontend/src/pages/DeskThemeSettingsPage.vue::openPreview",
@@ -8394,8 +8978,8 @@
 "wired_by": [
 "frontend/src/pages/DeskThemeSettingsPage.vue::DeskThemeSettingsPage"
 ],
-"label": "Opens or focuses /desk-themes/preview and pushes latest CSS variables.",
-"label_source": "header-stale"
+"label": "Opens or focuses /desk-themes/preview popup and pushes current CSS variables.",
+"label_source": "header"
 },
 {
 "id": "frontend/src/pages/DeskThemeSettingsPage.vue::handlePreviewReady",
@@ -8412,8 +8996,8 @@
 "wired_by": [
 "frontend/src/pages/DeskThemeSettingsPage.vue::DeskThemeSettingsPage"
 ],
-"label": "A reloaded preview window asks the editor for the current (possibly unsaved) values.",
-"label_source": "docstring"
+"label": "Answers nce-desk-preview-ready postMessage with unsaved editor CSS variables.",
+"label_source": "header"
 },
 {
 "id": "frontend/src/pages/DeskThemeSettingsPage.vue::buildPayloadFromForm",
@@ -8425,7 +9009,7 @@
 "hash": "f34e0a5270",
 "exported": false,
 "calls": [],
-"label": "Serializes PAYLOAD_FIELDS from reactive form for save and preview.",
+"label": "Copies PAYLOAD_FIELDS from reactive form into a save payload object.",
 "label_source": "header"
 },
 {
@@ -8438,7 +9022,7 @@
 "hash": "8179ecf312",
 "exported": false,
 "calls": [],
-"label": "Fills missing keys from DEFAULTS and uppercases hex colours for saved snapshot compare.",
+"label": "Normalizes a source record to defaults, uppercasing colour hex fields for dirty comparison.",
 "label_source": "header"
 },
 {
@@ -8451,7 +9035,7 @@
 "hash": "e82849adbf",
 "exported": false,
 "calls": [],
-"label": "Named density preset identifiers compact, default, and comfortable.",
+"label": "Allowed compact, default, and comfortable density preset identifiers.",
 "label_source": "header"
 },
 {
@@ -8464,7 +9048,7 @@
 "hash": "6b15387f1a",
 "exported": false,
 "calls": [],
-"label": "Type of the three built-in density preset ids.",
+"label": "Type for the three named desk density presets.",
 "label_source": "header"
 },
 {
@@ -8477,7 +9061,7 @@
 "hash": "4e6377d4b3",
 "exported": false,
 "calls": [],
-"label": "Preset id or custom when spacing tokens no longer match a preset.",
+"label": "Density preset id or custom when fine-tuned spacing no longer matches a preset.",
 "label_source": "header"
 },
 {
@@ -8490,7 +9074,7 @@
 "hash": "0e74191701",
 "exported": false,
 "calls": [],
-"label": "Spacing, padding, margin, list row, and input fields changed by density presets.",
+"label": "Form keys overwritten together when applying a density preset.",
 "label_source": "header"
 },
 {
@@ -8503,7 +9087,7 @@
 "hash": "9702e2d149",
 "exported": false,
 "calls": [],
-"label": "Token values for compact, default, and comfortable layout density bundles.",
+"label": "Token values for compact, default, and comfortable density bundles.",
 "label_source": "header"
 },
 {
@@ -8516,7 +9100,7 @@
 "hash": "0f3c7f0e96",
 "exported": false,
 "calls": [],
-"label": "Compares spacing floats or exact strings when checking preset match.",
+"label": "Compares spacing rem floats and other preset tokens for equality checks.",
 "label_source": "header"
 },
 {
@@ -8531,7 +9115,7 @@
 "calls": [
 "frontend/src/pages/DeskThemeSettingsPage.vue::densityPresetTokenEqual"
 ],
-"label": "True when all DENSITY_PRESET_KEYS equal the chosen preset row.",
+"label": "Returns whether current form values match a named density preset.",
 "label_source": "header"
 },
 {
@@ -8546,7 +9130,7 @@
 "calls": [
 "frontend/src/pages/DeskThemeSettingsPage.vue::densityPresetMatches"
 ],
-"label": "Picks matching preset id or custom from current layout token values.",
+"label": "Derives custom or preset density mode from current spacing and size fields.",
 "label_source": "header"
 },
 {
@@ -8559,7 +9143,7 @@
 "hash": "6d1caf2f25",
 "exported": false,
 "calls": [],
-"label": "Coerces unknown density strings to a valid preset or custom mode.",
+"label": "Coerces saved density strings to a valid DensityMode with default fallback.",
 "label_source": "header"
 },
 {
@@ -8575,7 +9159,7 @@
 "wired_by": [
 "frontend/src/pages/DeskThemeSettingsPage.vue::DeskThemeSettingsPage"
 ],
-"label": "Sets form density id and copies preset values into layout fields.",
+"label": "Sets form.density and copies coordinated spacing, padding, margin, list, and input tokens.",
 "label_source": "header"
 },
 {
@@ -8588,7 +9172,7 @@
 "hash": "92af1a1614",
 "exported": false,
 "calls": [],
-"label": "Reads numeric px from font_size defaulting to 14 for text scale math.",
+"label": "Parses font_size px for auto text scale ratio math.",
 "label_source": "header"
 },
 {
@@ -8603,7 +9187,7 @@
 "calls": [
 "frontend/src/pages/DeskThemeSettingsPage.vue::parseBodySizePx"
 ],
-"label": "Updates text_xs, text_sm, text_lg from body size using 12/13/16 over 14.",
+"label": "Recomputes text_xs, text_sm, and text_lg from body size when auto mode is on.",
 "label_source": "header"
 },
 {
@@ -8619,7 +9203,7 @@
 "wired_by": [
 "frontend/src/pages/DeskThemeSettingsPage.vue::DeskThemeSettingsPage"
 ],
-"label": "Toggles text_scale_mode between auto and manual from typography checkbox.",
+"label": "Sets text_scale_mode to auto or manual from the typography toggle.",
 "label_source": "header"
 },
 {
@@ -8635,7 +9219,7 @@
 "frontend/src/pages/DeskThemeSettingsPage.vue::inferDensityFromForm",
 "frontend/src/pages/DeskThemeSettingsPage.vue::normalizeDensityMode"
 ],
-"label": "Hydrates form from API payload, inferring density and fixing text_scale_mode.",
+"label": "Resets form to defaults then merges API payload, inferring density and text scale modes.",
 "label_source": "header"
 },
 {
@@ -8650,7 +9234,7 @@
 "calls": [
 "frontend/src/pages/DeskThemeSettingsPage.vue::themeOptionLabel"
 ],
-"label": "Theme option label strings used to size the theme select dropdown width.",
+"label": "Maps themesList rows through themeOptionLabel to size the theme select min width.",
 "label_source": "header"
 },
 {
@@ -8666,7 +9250,7 @@
 "wired_by": [
 "frontend/src/pages/DeskThemeSettingsPage.vue::DeskThemeSettingsPage"
 ],
-"label": "Submits set_base_desk_theme for current theme then reloads editor state.",
+"label": "Calls themes.api.set_base_desk_theme to make the edited theme the site base desk theme.",
 "label_source": "header"
 },
 {
@@ -8679,7 +9263,7 @@
 "hash": "aff4fa6def",
 "exported": false,
 "calls": [],
-"label": "Shows unsaved-changes modal before switching themes or restore to base.",
+"label": "Opens unsaved-changes modal before switching themes or restoring from base.",
 "label_source": "header"
 },
 {
@@ -8695,7 +9279,7 @@
 "wired_by": [
 "frontend/src/pages/DeskThemeSettingsPage.vue::DeskThemeSettingsPage"
 ],
-"label": "Closes confirm modal when not busy saving.",
+"label": "Dismisses the unsaved-changes modal unless a confirm action is in progress.",
 "label_source": "header"
 },
 {
@@ -8715,7 +9299,7 @@
 "wired_by": [
 "frontend/src/pages/DeskThemeSettingsPage.vue::DeskThemeSettingsPage"
 ],
-"label": "Saves then completes pending theme switch or base restore from dialog.",
+"label": "Saves then loads pending theme or runs restore after confirm dialog.",
 "label_source": "header"
 },
 {
@@ -8735,7 +9319,7 @@
 "wired_by": [
 "frontend/src/pages/DeskThemeSettingsPage.vue::DeskThemeSettingsPage"
 ],
-"label": "Reverts or reloads theme then completes switch or base restore without saving.",
+"label": "Discards edits and switches theme or restores base per confirm dialog action.",
 "label_source": "header"
 },
 {
@@ -8753,7 +9337,7 @@
 "wired_by": [
 "frontend/src/pages/DeskThemeSettingsPage.vue::DeskThemeSettingsPage"
 ],
-"label": "Theme select handler that confirms when dirty before loadTheme.",
+"label": "Theme select handler that prompts when dirty before loadTheme.",
 "label_source": "header"
 },
 {
@@ -8771,7 +9355,7 @@
 "wired_by": [
 "frontend/src/pages/DeskThemeSettingsPage.vue::DeskThemeSettingsPage"
 ],
-"label": "Restores form fields from last saved snapshot via applyPayloadToForm.",
+"label": "Reloads last saved snapshot into the form via applyPayloadToForm.",
 "label_source": "header"
 },
 {
@@ -8789,7 +9373,7 @@
 "wired_by": [
 "frontend/src/pages/DeskThemeSettingsPage.vue::DeskThemeSettingsPage"
 ],
-"label": "Posts buildPayloadFromForm to themes.api.save_desk_theme for editingTheme.",
+"label": "Submits buildPayloadFromForm to themes.api.save_desk_theme for the editing theme.",
 "label_source": "header"
 },
 {
@@ -8805,7 +9389,7 @@
 "wired_by": [
 "frontend/src/pages/DeskThemeSettingsPage.vue::DeskThemeSettingsPage"
 ],
-"label": "Updates Active or Inactive on saved snapshot when form is not dirty.",
+"label": "Updates Active or Inactive availability via save_desk_theme with saved snapshot payload.",
 "label_source": "header"
 },
 {
@@ -8821,7 +9405,7 @@
 "wired_by": [
 "frontend/src/pages/DeskThemeSettingsPage.vue::DeskThemeSettingsPage"
 ],
-"label": "Opens create-new-theme dialog prefilled with copy of current theme name.",
+"label": "Opens create-new-desk-theme dialog prefilled with a copy name.",
 "label_source": "header"
 },
 {
@@ -8837,7 +9421,7 @@
 "wired_by": [
 "frontend/src/pages/DeskThemeSettingsPage.vue::DeskThemeSettingsPage"
 ],
-"label": "Closes save-as dialog unless create submit is running.",
+"label": "Closes save-as dialog when not busy creating a theme.",
 "label_source": "header"
 },
 {
@@ -8855,7 +9439,7 @@
 "wired_by": [
 "frontend/src/pages/DeskThemeSettingsPage.vue::DeskThemeSettingsPage"
 ],
-"label": "Creates desk theme via create_desk_theme with trimmed saveAsDialog name.",
+"label": "Creates a new NCE Desk Theme from current form via themes.api.create_desk_theme.",
 "label_source": "header"
 },
 {
@@ -8871,7 +9455,7 @@
 "wired_by": [
 "frontend/src/pages/DeskThemeSettingsPage.vue::DeskThemeSettingsPage"
 ],
-"label": "Opens rename dialog when canRenameTheme allows editing display name.",
+"label": "Opens rename modal when canRenameTheme allows renaming display name.",
 "label_source": "header"
 },
 {
@@ -8887,7 +9471,7 @@
 "wired_by": [
 "frontend/src/pages/DeskThemeSettingsPage.vue::DeskThemeSettingsPage"
 ],
-"label": "Closes rename dialog unless rename API call is in flight.",
+"label": "Closes rename dialog when rename request is not running.",
 "label_source": "header"
 },
 {
@@ -8903,7 +9487,7 @@
 "wired_by": [
 "frontend/src/pages/DeskThemeSettingsPage.vue::DeskThemeSettingsPage"
 ],
-"label": "Calls rename_desk_theme then reloads list and current theme.",
+"label": "Renames desk theme through themes.api.rename_desk_theme and reloads editor.",
 "label_source": "header"
 },
 {
@@ -8935,7 +9519,7 @@
 "wired_by": [
 "frontend/src/pages/DeskThemeSettingsPage.vue::DeskThemeSettingsPage"
 ],
-"label": "Closes delete dialog unless delete submit is running.",
+"label": "Closes delete dialog unless delete submit is in progress.",
 "label_source": "header"
 },
 {
@@ -8951,7 +9535,7 @@
 "wired_by": [
 "frontend/src/pages/DeskThemeSettingsPage.vue::DeskThemeSettingsPage"
 ],
-"label": "Deletes current theme via API and loads another from refreshed list.",
+"label": "Deletes desk theme via API then loads another theme from the refreshed list.",
 "label_source": "header"
 },
 {
@@ -8970,7 +9554,7 @@
 "wired_by": [
 "frontend/src/pages/DeskThemeSettingsPage.vue::DeskThemeSettingsPage"
 ],
-"label": "Starts restore from site base desk theme with confirm if form is dirty.",
+"label": "Prompts or loads base desk payload from themes.api.get_base_desk_theme_payload when not on base.",
 "label_source": "header"
 },
 {
@@ -8986,7 +9570,7 @@
 "frontend/src/pages/DeskThemeSettingsPage.vue::applyLiveThemeVars",
 "frontend/src/pages/DeskThemeSettingsPage.vue::applyPayloadToForm"
 ],
-"label": "Loads get_base_desk_theme_payload into form and applyLiveThemeVars.",
+"label": "Applies base payload to form and refreshes live Desk CSS on document root.",
 "label_source": "header"
 },
 {
@@ -9002,7 +9586,7 @@
 "wired_by": [
 "frontend/src/pages/DeskThemeSettingsPage.vue::DeskThemeSettingsPage"
 ],
-"label": "Password-gated save_as_base_desk_theme bundling Default desk theme into the app.",
+"label": "Password-gated themes.api.save_as_base_desk_theme bundling Default desk theme into the app.",
 "label_source": "header"
 },
 {
@@ -9018,7 +9602,7 @@
 "frontend/src/composables/useDeskTheme.ts::applyDeskThemeVars",
 "frontend/src/pages/DeskThemeSettingsPage.vue::computeCSSVariables"
 ],
-"label": "Applies computeCSSVariables to document root through applyDeskThemeVars while editing.",
+"label": "Applies computeCSSVariables to documentElement through applyDeskThemeVars while editing.",
 "label_source": "header"
 },
 {
@@ -9030,8 +9614,8 @@
 "sig": "",
 "hash": "e197af7473",
 "calls": [],
-"label": "Landing page that links to the site Theme Editor and the Theme Preview.",
-"label_source": "docstring"
+"label": "Router home view with cards to theme-settings and preview opened via openPreviewPopup instead of full navigation.",
+"label_source": "header"
 },
 {
 "id": "frontend/src/pages/ThemePreviewPage.vue::ThemePreviewPage",
@@ -9100,8 +9684,8 @@
 "sig": "",
 "hash": "d92f9294b4",
 "calls": [],
-"label": "Site Theme Editor for colours, typography, layout, live CSS variables, and base theme publishing.",
-"label_source": "docstring"
+"label": "Router site Theme Editor page: tabbed NCE theme form, live root CSS vars, preview popup, and themes.api CRUD wiring.",
+"label_source": "header"
 },
 {
 "id": "frontend/src/pages/ThemeSettingsPage.vue::themeFromQuery",
@@ -9113,7 +9697,7 @@
 "hash": "c28aed2b09",
 "exported": false,
 "calls": [],
-"label": "Returns trimmed theme name from route query for deep-link loading on mount.",
+"label": "Returns trimmed theme name from route query for deep-linked editor loads.",
 "label_source": "header"
 },
 {
@@ -9131,8 +9715,8 @@
 "wired_by": [
 "frontend/src/pages/ThemeSettingsPage.vue::ThemeSettingsPage"
 ],
-"label": "Opens or focuses the /themes/preview popup and sends live variable updates.",
-"label_source": "header-stale"
+"label": "Opens or focuses /themes/preview popup and pushes current computed CSS variables.",
+"label_source": "header"
 },
 {
 "id": "frontend/src/pages/ThemeSettingsPage.vue::isCorporateBrandPaletteMode",
@@ -9144,7 +9728,7 @@
 "hash": "197c41de1b",
 "exported": false,
 "calls": [],
-"label": "Treats every mode except flexible as corporate brand palette behaviour.",
+"label": "True when brand_palette_mode is not flexible, locking gamma and saturation behaviour.",
 "label_source": "header"
 },
 {
@@ -9157,7 +9741,7 @@
 "hash": "f632ad74c2",
 "exported": false,
 "calls": [],
-"label": "Coerces stored palette mode to corporate or flexible for form and API.",
+"label": "Coerces saved palette mode to corporate or flexible for form and payload.",
 "label_source": "header"
 },
 {
@@ -9170,7 +9754,7 @@
 "hash": "a95b344546",
 "exported": false,
 "calls": [],
-"label": "Clears per-role gamma and sets saturation to 100 on brand colour fields.",
+"label": "Zeros gamma and resets saturation to 100 for all GAMMA_SAT_ROLE_FIELDS when corporate mode is chosen.",
 "label_source": "header"
 },
 {
@@ -9185,7 +9769,7 @@
 "calls": [
 "frontend/src/pages/ThemeSettingsPage.vue::isCorporateBrandPaletteMode"
 ],
-"label": "Supplies zero adjustments in corporate mode else reads gamma and saturation from form.",
+"label": "Supplies gamma and saturation for a brand role, or zeros in corporate palette mode.",
 "label_source": "header"
 },
 {
@@ -9204,7 +9788,7 @@
 "frontend/src/utils/color-shades.ts::generateShades",
 "frontend/src/utils/color-shades.ts::pickFgMono"
 ],
-"label": "Resolves table header text colour from brand flip rules or mono contrast on header hex.",
+"label": "Picks table header text colour from brand shade logic or pickFgMono on the header hex.",
 "label_source": "header"
 },
 {
@@ -9220,7 +9804,7 @@
 "frontend/src/pages/ThemeSettingsPage.vue::tableHeaderForeground",
 "frontend/src/pages/ThemeSettingsPage.vue::tableWidthTierCssVar"
 ],
-"label": "Merges row, header, divider colours and table border width tiers into the var map.",
+"label": "Adds row, header, divider, and tiered border width variables for theme-table live preview.",
 "label_source": "header"
 },
 {
@@ -9233,7 +9817,7 @@
 "hash": "418f9f5ea6",
 "exported": false,
 "calls": [],
-"label": "Normalizes legacy px widths and tier names to thin, normal, or strong.",
+"label": "Maps legacy px divider widths and strings to thin, normal, or strong tiers.",
 "label_source": "header"
 },
 {
@@ -9248,7 +9832,7 @@
 "calls": [
 "frontend/src/pages/ThemeSettingsPage.vue::normalizeTableWidthTier"
 ],
-"label": "Points table divider tiers at the matching --nce-border-width CSS variables.",
+"label": "Maps a width tier to the matching --nce-border-width CSS variable reference.",
 "label_source": "header"
 },
 {
@@ -9274,7 +9858,7 @@
 "frontend/src/utils/color-shades.ts::pickFgTonal",
 "frontend/src/utils/shadowBuild.ts::buildThemeShadow"
 ],
-"label": "Builds the full live --nce-* variable set including shades, neutral, shadow, and tables.",
+"label": "Builds full --nce live variable map including shades, neutrals, shadows, and table tokens.",
 "label_source": "header"
 },
 {
@@ -9292,7 +9876,7 @@
 "wired_by": [
 "frontend/src/pages/ThemeSettingsPage.vue::applyLiveThemeVars"
 ],
-"label": "Posts nce-theme-update with computed variables to the preview window.",
+"label": "postMessage nce-theme-update with computeCSSVariables to the open preview window.",
 "label_source": "header"
 },
 {
@@ -9305,7 +9889,7 @@
 "hash": "d1813a3e0a",
 "exported": false,
 "calls": [],
-"label": "Canonical list of every editable theme field bound on the reactive form.",
+"label": "Every site theme form key including brand flip poles, layout, advanced CSS, and dark_mode.",
 "label_source": "header"
 },
 {
@@ -9318,7 +9902,7 @@
 "hash": "fe37b09c0b",
 "exported": false,
 "calls": [],
-"label": "API field list: all form keys except theme_name plus neutral colour exports.",
+"label": "Persisted theme fields plus neutral_color and neutral_color_shades derived on save.",
 "label_source": "header"
 },
 {
@@ -9331,7 +9915,7 @@
 "hash": "af72b70378",
 "exported": false,
 "calls": [],
-"label": "Type of allowed keys on the theme editor reactive form object.",
+"label": "Union of allowed keys on the site theme editor reactive form.",
 "label_source": "header"
 },
 {
@@ -9344,7 +9928,7 @@
 "hash": "d1f6d0d8f5",
 "exported": false,
 "calls": [],
-"label": "Factory defaults for the form including status colours and layout tokens.",
+"label": "Initial and fallback values for all site theme fields including STATUS_COLOR_DEFAULTS spread.",
 "label_source": "header"
 },
 {
@@ -9362,7 +9946,7 @@
 "wired_by": [
 "frontend/src/pages/ThemeSettingsPage.vue::ThemeSettingsPage"
 ],
-"label": "Checkbox handler toggling corporate versus flexible and resetting shade tweaks.",
+"label": "Checkbox handler toggling corporate versus flexible brand palette and resetting adjustments.",
 "label_source": "header"
 },
 {
@@ -9378,7 +9962,7 @@
 "wired_by": [
 "frontend/src/pages/ThemeSettingsPage.vue::ThemeSettingsPage"
 ],
-"label": "Resets accent and status swatches to shared STATUS_COLOR_DEFAULTS.",
+"label": "Resets accent and status colour fields to STATUS_COLOR_DEFAULTS from Use defaults button.",
 "label_source": "header"
 },
 {
@@ -9391,7 +9975,7 @@
 "hash": "89c4ae4bae",
 "exported": false,
 "calls": [],
-"label": "Rewrites retired saved font names to Public Sans when loading themes.",
+"label": "Maps retired font aliases to Public Sans when loading saved themes.",
 "label_source": "header"
 },
 {
@@ -9404,7 +9988,7 @@
 "hash": "949253fb00",
 "exported": false,
 "calls": [],
-"label": "Lower bound 100 for the body weight range slider.",
+"label": "Minimum slider value for site theme body font weight.",
 "label_source": "header"
 },
 {
@@ -9417,7 +10001,7 @@
 "hash": "22233cdf41",
 "exported": false,
 "calls": [],
-"label": "Upper bound 900 for the body weight range slider.",
+"label": "Maximum slider value for site theme body font weight.",
 "label_source": "header"
 },
 {
@@ -9430,7 +10014,7 @@
 "hash": "f6f693e0d5",
 "exported": false,
 "calls": [],
-"label": "Parses body weight and clamps it between slider min and max.",
+"label": "Parses and bounds body weight for slider display and canonical payload.",
 "label_source": "header"
 },
 {
@@ -9446,7 +10030,7 @@
 "wired_by": [
 "frontend/src/pages/ThemeSettingsPage.vue::ThemeSettingsPage"
 ],
-"label": "Updates form.font_weight_body from the body weight range input.",
+"label": "Updates form.font_weight_body from the typography tab range input event.",
 "label_source": "header"
 },
 {
@@ -9459,7 +10043,7 @@
 "hash": "24c0466699",
 "exported": false,
 "calls": [],
-"label": "Clamps shadow opacity percent between 0 and 100 with a default fallback.",
+"label": "Bounds shadow opacity percent between 0 and 100 for form and save.",
 "label_source": "header"
 },
 {
@@ -9477,7 +10061,7 @@
 "wired_by": [
 "frontend/src/pages/ThemeSettingsPage.vue::ThemeSettingsPage"
 ],
-"label": "Stores clamped shadow opacity from the layout tab slider.",
+"label": "Writes clamped shadow opacity from the layout tab slider.",
 "label_source": "header"
 },
 {
@@ -9490,7 +10074,7 @@
 "hash": "de0bebf94d",
 "exported": false,
 "calls": [],
-"label": "Clamps shadow direction angle between 0 and 360 degrees.",
+"label": "Bounds shadow direction degrees between 0 and 360.",
 "label_source": "header"
 },
 {
@@ -9503,7 +10087,7 @@
 "hash": "25a342b682",
 "exported": false,
 "calls": [],
-"label": "Maps border_radius choice keys to rem values for corner previews.",
+"label": "Maps border_radius tokens to rem strings for live --nce-border-radius preview.",
 "label_source": "header"
 },
 {
@@ -9516,7 +10100,7 @@
 "hash": "b829247853",
 "exported": false,
 "calls": [],
-"label": "Maps line height tokens to numeric CSS line-height multipliers.",
+"label": "Maps line_height tokens to unitless CSS line-height values.",
 "label_source": "header"
 },
 {
@@ -9529,7 +10113,7 @@
 "hash": "7146ecac14",
 "exported": false,
 "calls": [],
-"label": "Maps curated font labels to CSS generic family fallbacks.",
+"label": "Maps curated font names to generic CSS families for fontCSS stacks.",
 "label_source": "header"
 },
 {
@@ -9542,7 +10126,7 @@
 "hash": "97085adf5b",
 "exported": false,
 "calls": [],
-"label": "Formats a font pick as a CSS stack or system UI fallback for preview vars.",
+"label": "Returns quoted font stack with generic fallback or system UI stack for System Default.",
 "label_source": "header"
 },
 {
@@ -9555,7 +10139,7 @@
 "hash": "73acf2097b",
 "exported": false,
 "calls": [],
-"label": "Formats theme dropdown text, marking the site default with a suffix.",
+"label": "Formats theme select options, marking the site default theme with a Default suffix.",
 "label_source": "header"
 },
 {
@@ -9573,7 +10157,7 @@
 "frontend/src/utils/color-shades.ts::effectiveRoleHex",
 "frontend/src/utils/color-shades.ts::resolveNeutralIntoPayload"
 ],
-"label": "Builds save payload, baking flexible gammas and resolving neutral warmth fields.",
+"label": "Serializes form to API payload with corporate gamma rules and resolveNeutralIntoPayload.",
 "label_source": "header"
 },
 {
@@ -9592,7 +10176,7 @@
 "frontend/src/pages/ThemeSettingsPage.vue::normalizeBrandPaletteMode",
 "frontend/src/utils/color-shades.ts::resolveNeutralIntoPayload"
 ],
-"label": "Normalizes snapshots for dirty detection with upper hex and clamped numbers.",
+"label": "Normalizes loaded or saved payloads for dirty checking including neutrals and flip fields.",
 "label_source": "header"
 },
 {
@@ -9615,7 +10199,7 @@
 "frontend/src/pages/ThemeSettingsPage.vue::normalizeTableWidthTier",
 "frontend/src/utils/color-shades.ts::effectiveRoleHex"
 ],
-"label": "Hydrates the form from API data, migrates flips, and splits effective brand hex.",
+"label": "Hydrates form from API payload with migrations, table tiers, fonts, and effectiveRoleHex unpack.",
 "label_source": "header"
 },
 {
@@ -9628,7 +10212,7 @@
 "hash": "d33c8659b4",
 "exported": false,
 "calls": [],
-"label": "Parses integer shade indices for flip and pole fields or yields null.",
+"label": "Parses nullable numeric shade indices for brand foreground flip and pole fields.",
 "label_source": "header"
 },
 {
@@ -9643,7 +10227,7 @@
 "calls": [
 "frontend/src/pages/ThemeSettingsPage.vue::parseFlipShade"
 ],
-"label": "Backfills primary and secondary flip and pole fields from legacy dual keys.",
+"label": "Backfills mono and tonal flip and pole fields from legacy dual-key payload shapes.",
 "label_source": "header"
 },
 {
@@ -9658,7 +10242,7 @@
 "calls": [
 "frontend/src/pages/ThemeSettingsPage.vue::themeFromQuery"
 ],
-"label": "Selects loadTheme when query theme matches a row in the themes list.",
+"label": "Loads theme by name when URL theme query matches themesList after mount.",
 "label_source": "header"
 },
 {
@@ -9673,7 +10257,7 @@
 "calls": [
 "frontend/src/pages/ThemeSettingsPage.vue::themeOptionLabel"
 ],
-"label": "Builds theme dropdown label strings used to size the theme select control.",
+"label": "Maps themesList through themeOptionLabel to compute theme select dropdown width.",
 "label_source": "header"
 },
 {
@@ -9689,7 +10273,7 @@
 "wired_by": [
 "frontend/src/pages/ThemeSettingsPage.vue::ThemeSettingsPage"
 ],
-"label": "Calls set_base_theme for the open theme then reloads editor metadata.",
+"label": "Submits themes.api.set_base_theme to promote edited theme to site base default.",
 "label_source": "header"
 },
 {
@@ -9702,7 +10286,7 @@
 "hash": "a90e6a4212",
 "exported": false,
 "calls": [],
-"label": "Shows unsaved-changes dialog before theme switch or restore from base.",
+"label": "Shows unsaved-changes dialog before theme switch or base restore actions.",
 "label_source": "header"
 },
 {
@@ -9718,7 +10302,7 @@
 "wired_by": [
 "frontend/src/pages/ThemeSettingsPage.vue::ThemeSettingsPage"
 ],
-"label": "Dismisses the unsaved-changes dialog when not busy saving.",
+"label": "Closes confirm dialog when not busy unless save-and-continue is running.",
 "label_source": "header"
 },
 {
@@ -9738,7 +10322,7 @@
 "wired_by": [
 "frontend/src/pages/ThemeSettingsPage.vue::ThemeSettingsPage"
 ],
-"label": "Saves the form then completes the pending switch or base restore.",
+"label": "Saves then switches theme or restores base per pending confirm dialog action.",
 "label_source": "header"
 },
 {
@@ -9758,7 +10342,7 @@
 "wired_by": [
 "frontend/src/pages/ThemeSettingsPage.vue::ThemeSettingsPage"
 ],
-"label": "Abandons edits and loads the pending theme or restores base payload.",
+"label": "Reverts or switches without save then completes restore when action was restore.",
 "label_source": "header"
 },
 {
@@ -9776,7 +10360,7 @@
 "wired_by": [
 "frontend/src/pages/ThemeSettingsPage.vue::ThemeSettingsPage"
 ],
-"label": "Theme select change handler that guards dirty state with the confirm dialog.",
+"label": "Select change handler blocking loadTheme when isDirty until user confirms.",
 "label_source": "header"
 },
 {
@@ -9794,7 +10378,7 @@
 "wired_by": [
 "frontend/src/pages/ThemeSettingsPage.vue::ThemeSettingsPage"
 ],
-"label": "Restores the last saved snapshot into the form via applyPayloadToForm.",
+"label": "Restores form from savedSnapshot through applyPayloadToForm.",
 "label_source": "header"
 },
 {
@@ -9812,7 +10396,7 @@
 "wired_by": [
 "frontend/src/pages/ThemeSettingsPage.vue::ThemeSettingsPage"
 ],
-"label": "Submits current payload to themes.api.save_theme through the editor resource.",
+"label": "Persists buildPayloadFromForm via themes.api.save_theme for editingTheme.",
 "label_source": "header"
 },
 {
@@ -9828,7 +10412,7 @@
 "wired_by": [
 "frontend/src/pages/ThemeSettingsPage.vue::ThemeSettingsPage"
 ],
-"label": "Persists Active or Inactive availability on the saved snapshot when clean.",
+"label": "Updates Active or Inactive panel availability using saved snapshot on save_theme.",
 "label_source": "header"
 },
 {
@@ -9844,7 +10428,7 @@
 "wired_by": [
 "frontend/src/pages/ThemeSettingsPage.vue::ThemeSettingsPage"
 ],
-"label": "Opens create-theme modal prefilled with a copy of the current name.",
+"label": "Opens modal to create a new theme copied from current editor settings.",
 "label_source": "header"
 },
 {
@@ -9860,7 +10444,7 @@
 "wired_by": [
 "frontend/src/pages/ThemeSettingsPage.vue::ThemeSettingsPage"
 ],
-"label": "Closes save-as modal and clears name unless creation is running.",
+"label": "Dismisses save-as-new theme modal when create is not in flight.",
 "label_source": "header"
 },
 {
@@ -9878,7 +10462,7 @@
 "wired_by": [
 "frontend/src/pages/ThemeSettingsPage.vue::ThemeSettingsPage"
 ],
-"label": "Creates a new theme from the current form payload after name validation.",
+"label": "Creates theme via themes.api.create_theme with trimmed name and current payload.",
 "label_source": "header"
 },
 {
@@ -9894,7 +10478,7 @@
 "wired_by": [
 "frontend/src/pages/ThemeSettingsPage.vue::ThemeSettingsPage"
 ],
-"label": "Opens rename modal when policy allows renaming the open theme.",
+"label": "Opens rename modal prefilled when inactive or default theme may be renamed.",
 "label_source": "header"
 },
 {
@@ -9910,7 +10494,7 @@
 "wired_by": [
 "frontend/src/pages/ThemeSettingsPage.vue::ThemeSettingsPage"
 ],
-"label": "Closes rename dialog unless a rename request is in flight.",
+"label": "Closes rename theme modal unless rename submit is busy.",
 "label_source": "header"
 },
 {
@@ -9926,7 +10510,7 @@
 "wired_by": [
 "frontend/src/pages/ThemeSettingsPage.vue::ThemeSettingsPage"
 ],
-"label": "Calls rename_theme then refreshes the list and reloads the theme.",
+"label": "Calls themes.api.rename_theme then reloads list and editor for returned name.",
 "label_source": "header"
 },
 {
@@ -9942,7 +10526,7 @@
 "wired_by": [
 "frontend/src/pages/ThemeSettingsPage.vue::ThemeSettingsPage"
 ],
-"label": "Opens delete confirmation when inactive non-default themes may be removed.",
+"label": "Opens delete modal for inactive non-base themes allowed by canDeleteTheme.",
 "label_source": "header"
 },
 {
@@ -9958,7 +10542,7 @@
 "wired_by": [
 "frontend/src/pages/ThemeSettingsPage.vue::ThemeSettingsPage"
 ],
-"label": "Closes delete dialog unless deletion is running.",
+"label": "Closes delete theme modal when deletion is not submitting.",
 "label_source": "header"
 },
 {
@@ -9974,7 +10558,7 @@
 "wired_by": [
 "frontend/src/pages/ThemeSettingsPage.vue::ThemeSettingsPage"
 ],
-"label": "Deletes the theme via API and loads the site default or first list entry.",
+"label": "Deletes theme via API then loads default or first remaining theme from list.",
 "label_source": "header"
 },
 {
@@ -9993,7 +10577,7 @@
 "wired_by": [
 "frontend/src/pages/ThemeSettingsPage.vue::ThemeSettingsPage"
 ],
-"label": "Auto-saves dirty edits then loads bundled base theme JSON into the editor.",
+"label": "Saves if dirty then loads app base_theme.json payload into editor without confirm dialog.",
 "label_source": "header"
 },
 {
@@ -10009,7 +10593,7 @@
 "frontend/src/pages/ThemeSettingsPage.vue::applyLiveThemeVars",
 "frontend/src/pages/ThemeSettingsPage.vue::applyPayloadToForm"
 ],
-"label": "Fetches get_base_theme_payload and applies it with live CSS refresh.",
+"label": "Fetches get_base_theme_payload, applies to form, and refreshes live CSS variables.",
 "label_source": "header"
 },
 {
@@ -10022,7 +10606,7 @@
 "hash": "95a02e476f",
 "exported": false,
 "calls": [],
-"label": "Password submit for save_as_base_theme bundling app base and published CSS.",
+"label": "Password submit to save_as_base_theme bundling Default theme and nce_theme.css into app.",
 "label_source": "header"
 },
 {
@@ -10038,7 +10622,7 @@
 "wired_by": [
 "frontend/src/pages/ThemeSettingsPage.vue::ThemeSettingsPage"
 ],
-"label": "Opens confirmation before bundling when editing the default theme with password.",
+"label": "Opens save-as-base confirmation when System tab password is entered.",
 "label_source": "header"
 },
 {
@@ -10054,7 +10638,7 @@
 "wired_by": [
 "frontend/src/pages/ThemeSettingsPage.vue::ThemeSettingsPage"
 ],
-"label": "Closes save-as-base confirm unless the bundled save is running.",
+"label": "Closes base-theme bundle confirmation modal unless confirm is busy.",
 "label_source": "header"
 },
 {
@@ -10073,7 +10657,7 @@
 "wired_by": [
 "frontend/src/pages/ThemeSettingsPage.vue::ThemeSettingsPage"
 ],
-"label": "Saves editor changes then runs bundled base theme publish after confirm.",
+"label": "Saves editor then runs submitSaveAsBaseTheme after user confirms bundle dialog.",
 "label_source": "header"
 },
 {
@@ -10088,7 +10672,7 @@
 "calls": [
 "frontend/src/pages/ThemeSettingsPage.vue::computeCSSVariables"
 ],
-"label": "Writes computed variables on documentElement and debounces preview postMessage.",
+"label": "Sets computed --nce variables on documentElement and debounces pushToPreview for popup sync.",
 "label_source": "header"
 },
 {
@@ -11212,8 +11796,8 @@
 "hash": "c5f88a1af5",
 "exported": false,
 "calls": [],
-"label": "",
-"label_source": "none"
+"label": "window.open feature string for popup size, position, and scrollbars.",
+"label_source": "header"
 },
 {
 "id": "frontend/src/utils/previewWindow.ts::openPreviewPopup",
@@ -11230,8 +11814,8 @@
 "frontend/src/pages/DeskThemeHomePage.vue::DeskThemeHomePage",
 "frontend/src/pages/HomePage.vue::HomePage"
 ],
-"label": "",
-"label_source": "none"
+"label": "Opens a preview URL in a named popup window and focuses it; App and home pages call this for preview links.",
+"label_source": "header"
 },
 {
 "id": "frontend/src/utils/shadowBuild.ts::shadowColorToRgb",
@@ -11659,11 +12243,11 @@
 "name": "mountStandaloneThemeSwatchPicker",
 "qualname": "mountStandaloneThemeSwatchPicker",
 "sig": "( win: Window & { themeSwatchPicker?: unknown }, ) -> void",
-"hash": "0e86f64afa",
+"hash": "70f40a5be2",
 "exported": true,
 "calls": [],
 "label": "Mount theme swatch picker interface for standalone environments",
-"label_source": "generated",
+"label_source": "generated-stale",
 "label_hash": "0e86f64afa"
 },
 {
@@ -12146,11 +12730,11 @@
 "name": "api",
 "qualname": "api",
 "sig": "",
-"hash": "57b8087a98",
+"hash": "03b9b8678b",
 "exported": false,
 "calls": [],
 "label": "Public API for theme swatch picker open, close, and utility functions",
-"label_source": "generated",
+"label_source": "generated-stale",
 "label_hash": "57b8087a98"
 },
 {
@@ -13183,16 +13767,29 @@
 "name": "extend_bootinfo",
 "qualname": "extend_bootinfo",
 "sig": "(bootinfo)",
-"hash": "5df033748f",
+"hash": "85e4bc56de",
 "calls": [
+"themes/component_api.py::can_design",
+"themes/component_api.py::design_mode_enabled",
 "themes/utils/desk_css_writer.py::get_desk_theme_css_url"
 ],
 "wired_by": [
 "themes/hooks.py"
 ],
-"label": "Expose desk CSS URL with current publish hash to session",
-"label_source": "generated",
-"label_hash": "5df033748f"
+"label": "Expose a desk CSS URL with the current publish hash (read each session).",
+"label_source": "docstring"
+},
+{
+"id": "themes/component_api.py::_is_frappe_branded",
+"file": "themes/component_api.py",
+"kind": "function",
+"name": "_is_frappe_branded",
+"qualname": "_is_frappe_branded",
+"sig": "(app: str) -> bool",
+"hash": "47873623bf",
+"calls": [],
+"label": "",
+"label_source": "none"
 },
 {
 "id": "themes/component_api.py::_excluded_apps",
@@ -13201,10 +13798,12 @@
 "name": "_excluded_apps",
 "qualname": "_excluded_apps",
 "sig": "() -> set[str]",
-"hash": "a45e01a811",
-"calls": [],
-"label": "Builds the app set skipped during full rescan from settings and sync defaults.",
-"label_source": "header"
+"hash": "da2f0da614",
+"calls": [
+"themes/component_api.py::_is_frappe_branded"
+],
+"label": "Builds the app set skipped during rescan from ALWAYS_EXCLUDED_APPS plus Theme Component Settings excluded_apps.",
+"label_source": "header-stale"
 },
 {
 "id": "themes/component_api.py::_app_root",
@@ -13215,7 +13814,7 @@
 "sig": "(app: str) -> Path",
 "hash": "a4a5a98c64",
 "calls": [],
-"label": "Returns the filesystem parent path for an installed Frappe app name.",
+"label": "Resolves the filesystem parent of a Frappe app path for walking .vue files.",
 "label_source": "header"
 },
 {
@@ -13229,7 +13828,7 @@
 "calls": [
 "themes/component_api.py::_app_root"
 ],
-"label": "Resolves and validates the on-disk .vue path for one Vue Component record.",
+"label": "Resolves doc file_path under the app root or None if missing; blocks paths outside the app folder.",
 "label_source": "header"
 },
 {
@@ -13241,7 +13840,7 @@
 "sig": "(doc, rows: list[dict]) -> None",
 "hash": "67a6d769bb",
 "calls": [],
-"label": "Replaces the elements child table from scan merge rows using allowed fields only.",
+"label": "Replaces the Vue Component elements child table from dict rows limited to ELEMENT_FIELDS.",
 "label_source": "header"
 },
 {
@@ -13251,13 +13850,13 @@
 "name": "_apply_scan",
 "qualname": "_apply_scan",
 "sig": "(doc, scan: dict | None) -> None",
-"hash": "2923b444bd",
+"hash": "d008bfe59f",
 "calls": [
 "themes/component_api.py::_set_rows",
 "themes/utils/component_sync.py::merge_elements"
 ],
-"label": "Writes scan metadata and merged element rows, or marks the component Missing.",
-"label_source": "header"
+"label": "Maps scan results onto the doc or Missing status and merges scanned elements via component_sync merge_elements.",
+"label_source": "header-stale"
 },
 {
 "id": "themes/component_api.py::_used_by",
@@ -13268,7 +13867,7 @@
 "sig": "(component_name: str, exclude_name: str) -> list[str]",
 "hash": "8f63f3a0d7",
 "calls": [],
-"label": "Lists other Present components whose uses_components list includes this name.",
+"label": "Lists Present Vue Component names whose uses_components include a given component_name; VueComponent.validate calls this.",
 "label_source": "header"
 },
 {
@@ -13282,8 +13881,8 @@
 "calls": [
 "themes/utils/component_scan.py::mark_roots"
 ],
-"label": "",
-"label_source": "none"
+"label": "Loads all Vue Component usage rows, runs mark_roots, and writes is_root without bumping modified.",
+"label_source": "header"
 },
 {
 "id": "themes/component_api.py::vue_component_permission_query",
@@ -13297,8 +13896,8 @@
 "wired_by": [
 "themes/hooks.py"
 ],
-"label": "",
-"label_source": "none"
+"label": "Returns SQL so list views only show root Vue Components; registered in hooks permission_query_conditions.",
+"label_source": "header"
 },
 {
 "id": "themes/component_api.py::_refresh_all_summaries",
@@ -13312,7 +13911,7 @@
 "themes/component_api.py::_used_by",
 "themes/utils/component_summary.py::build_summary"
 ],
-"label": "Rebuilds every Vue Component summary via build_summary after scan or refresh.",
+"label": "Rebuilds every Vue Component summary field via build_summary and _used_by without update_modified.",
 "label_source": "header"
 },
 {
@@ -13334,8 +13933,8 @@
 "themes/utils/component_scan.py::iter_vue_files",
 "themes/utils/component_scan.py::scan_vue_file"
 ],
-"label": "Whitelisted full-site Vue rescan, summary refresh, and component overrides CSS publish.",
-"label_source": "header-stale"
+"label": "System Manager whitelisted full-site .vue rescan, inherit tables, mark roots, refresh summaries, and publish CSS.",
+"label_source": "header"
 },
 {
 "id": "themes/component_api.py::refresh_component",
@@ -13353,8 +13952,8 @@
 "themes/utils/component_scan.py::inherit_table_usage",
 "themes/utils/component_scan.py::scan_vue_file"
 ],
-"label": "Whitelisted rescan of one Vue Component with table inheritance from child records.",
-"label_source": "header-stale"
+"label": "Rescan one record from disk, inherit table data from child rows, save, reapply root flags and summaries.",
+"label_source": "header"
 },
 {
 "id": "themes/component_api.py::components_inside",
@@ -13365,8 +13964,8 @@
 "sig": "(name: str) -> list[dict]",
 "hash": "7f718aff66",
 "calls": [],
-"label": "",
-"label_source": "none"
+"label": "Returns name and component_name for Vue Component rows referenced in the parent uses_components list.",
+"label_source": "header"
 },
 {
 "id": "themes/component_api.py::get_preview_theme",
@@ -13379,7 +13978,7 @@
 "calls": [
 "themes/utils/site_theme_config_helpers.py::get_site_default_theme_name"
 ],
-"label": "Whitelisted default NCE Theme name and slug for the component colour preview UI.",
+"label": "Returns site default NCE Theme name and slug for the theme editor preview UI.",
 "label_source": "header"
 },
 {
@@ -13389,12 +13988,13 @@
 "name": "preview_declarations",
 "qualname": "preview_declarations",
 "sig": "(rows) -> dict",
-"hash": "9891d9f7c7",
+"hash": "fd45530d8f",
 "calls": [
+"themes/component_api.py::_require_design",
 "themes/utils/component_css_writer.py::declarations_for"
 ],
-"label": "Whitelisted CSS declaration strings per element key for live override preview.",
-"label_source": "header"
+"label": "Maps element override row keys to joined CSS declaration strings from declarations_for for live preview.",
+"label_source": "header-stale"
 },
 {
 "id": "themes/component_api.py::publish_css",
@@ -13407,7 +14007,7 @@
 "calls": [
 "themes/utils/component_css_writer.py::publish_component_css"
 ],
-"label": "Whitelisted republish of nce_component_overrides.css from saved Vue Component rows.",
+"label": "Whitelisted entry point that runs publish_component_css for nce_component_overrides.css.",
 "label_source": "header"
 },
 {
@@ -13421,8 +14021,197 @@
 "calls": [
 "themes/component_api.py::rescan_all"
 ],
-"label": "Whitelisted bootstrap of DocTypes and initial rescan, then returns the Vue Component list URL.",
+"label": "Ensures DocTypes exist, runs rescan_all when empty, and returns the Desk vue-component list URL.",
 "label_source": "header"
+},
+{
+"id": "themes/component_api.py::can_design",
+"file": "themes/component_api.py",
+"kind": "function",
+"name": "can_design",
+"qualname": "can_design",
+"sig": "(user: str | None=None) -> bool",
+"hash": "b80bfde03e",
+"calls": [],
+"label": "Administrator, System Manager, or anyone who can write Vue Component.",
+"label_source": "docstring"
+},
+{
+"id": "themes/component_api.py::design_mode_enabled",
+"file": "themes/component_api.py",
+"kind": "function",
+"name": "design_mode_enabled",
+"qualname": "design_mode_enabled",
+"sig": "() -> bool",
+"hash": "7b851089ba",
+"calls": [],
+"label": "",
+"label_source": "none"
+},
+{
+"id": "themes/component_api.py::_require_design",
+"file": "themes/component_api.py",
+"kind": "function",
+"name": "_require_design",
+"qualname": "_require_design",
+"sig": "() -> None",
+"hash": "b2d696f00f",
+"calls": [
+"themes/component_api.py::can_design"
+],
+"label": "",
+"label_source": "none"
+},
+{
+"id": "themes/component_api.py::get_design_mode_status",
+"file": "themes/component_api.py",
+"kind": "function",
+"name": "get_design_mode_status",
+"qualname": "get_design_mode_status",
+"sig": "() -> dict",
+"hash": "9e261eb250",
+"calls": [
+"themes/component_api.py::can_design",
+"themes/component_api.py::design_mode_enabled"
+],
+"label": "",
+"label_source": "none"
+},
+{
+"id": "themes/component_api.py::set_design_mode_enabled",
+"file": "themes/component_api.py",
+"kind": "function",
+"name": "set_design_mode_enabled",
+"qualname": "set_design_mode_enabled",
+"sig": "(enabled) -> dict",
+"hash": "2075aed278",
+"calls": [
+"themes/component_api.py::rescan_all"
+],
+"label": "",
+"label_source": "none"
+},
+{
+"id": "themes/component_api.py::_protected_classes",
+"file": "themes/component_api.py",
+"kind": "function",
+"name": "_protected_classes",
+"qualname": "_protected_classes",
+"sig": "() -> set[str]",
+"hash": "9cb0381e7f",
+"calls": [
+"themes/utils/design_mode.py::parse_protected"
+],
+"label": "",
+"label_source": "none"
+},
+{
+"id": "themes/component_api.py::get_design_mode_map",
+"file": "themes/component_api.py",
+"kind": "function",
+"name": "get_design_mode_map",
+"qualname": "get_design_mode_map",
+"sig": "() -> dict",
+"hash": "502756411f",
+"calls": [
+"themes/component_api.py::_protected_classes",
+"themes/component_api.py::_require_design",
+"themes/component_api.py::get_preview_theme",
+"themes/utils/design_mode.py::build_selector_map",
+"themes/utils/design_mode.py::build_table_map"
+],
+"label": "",
+"label_source": "none"
+},
+{
+"id": "themes/component_api.py::_components_with_selector",
+"file": "themes/component_api.py",
+"kind": "function",
+"name": "_components_with_selector",
+"qualname": "_components_with_selector",
+"sig": "(selector: str) -> list[str]",
+"hash": "03919b7ecc",
+"calls": [],
+"label": "",
+"label_source": "none"
+},
+{
+"id": "themes/component_api.py::save_design_change",
+"file": "themes/component_api.py",
+"kind": "function",
+"name": "save_design_change",
+"qualname": "save_design_change",
+"sig": "(selector: str, values) -> dict",
+"hash": "4c8a150cf3",
+"calls": [
+"themes/component_api.py::_components_with_selector",
+"themes/component_api.py::_protected_classes",
+"themes/component_api.py::_require_design",
+"themes/utils/component_css_writer.py::publish_component_css"
+],
+"label": "",
+"label_source": "none"
+},
+{
+"id": "themes/component_api.py::revert_design_components",
+"file": "themes/component_api.py",
+"kind": "function",
+"name": "revert_design_components",
+"qualname": "revert_design_components",
+"sig": "(names) -> dict",
+"hash": "fce5139d79",
+"calls": [
+"themes/component_api.py::_require_design",
+"themes/utils/component_css_writer.py::publish_component_css"
+],
+"label": "",
+"label_source": "none"
+},
+{
+"id": "themes/component_api.py::_table_parent",
+"file": "themes/component_api.py",
+"kind": "function",
+"name": "_table_parent",
+"qualname": "_table_parent",
+"sig": "(name: str) -> dict",
+"hash": "449cc8dfdb",
+"calls": [],
+"label": "",
+"label_source": "none"
+},
+{
+"id": "themes/component_api.py::preview_design_table",
+"file": "themes/component_api.py",
+"kind": "function",
+"name": "preview_design_table",
+"qualname": "preview_design_table",
+"sig": "(name: str, values) -> dict",
+"hash": "f545944e87",
+"calls": [
+"themes/component_api.py::_require_design",
+"themes/component_api.py::_table_parent",
+"themes/utils/component_css_writer.py::table_css_for",
+"themes/utils/design_mode.py::clean_table_values"
+],
+"label": "",
+"label_source": "none"
+},
+{
+"id": "themes/component_api.py::save_design_table",
+"file": "themes/component_api.py",
+"kind": "function",
+"name": "save_design_table",
+"qualname": "save_design_table",
+"sig": "(name: str, values) -> dict",
+"hash": "51ec0eb487",
+"calls": [
+"themes/component_api.py::_require_design",
+"themes/component_api.py::_table_parent",
+"themes/utils/component_css_writer.py::publish_component_css",
+"themes/utils/design_mode.py::clean_table_values"
+],
+"label": "",
+"label_source": "none"
 },
 {
 "id": "themes/hooks.py::_css_url",
@@ -13433,7 +14222,7 @@
 "sig": "(css_filename: str) -> str",
 "hash": "767dfebc19",
 "calls": [],
-"label": "Builds /assets/themes/css URLs with optional .hash cache-buster at hooks import time.",
+"label": "At import, appends ?v= from public/css sidecar hash when present else bare /assets/themes/css/ URL.",
 "label_source": "header"
 },
 {
@@ -13588,6 +14377,18 @@
 "label_hash": "f1bde83357"
 },
 {
+"id": "themes/patches/v1_0/clear_design_mode_protected.py::execute",
+"file": "themes/patches/v1_0/clear_design_mode_protected.py",
+"kind": "function",
+"name": "execute",
+"qualname": "execute",
+"sig": "()",
+"hash": "d45ba4be11",
+"calls": [],
+"label": "",
+"label_source": "none"
+},
+{
 "id": "themes/patches/v1_0/collapse_theme_versions_to_nce_theme.py::execute",
 "file": "themes/patches/v1_0/collapse_theme_versions_to_nce_theme.py",
 "kind": "function",
@@ -13601,6 +14402,18 @@
 "label": "Consolidate Theme Version JSON data into NCE Theme and remove version pointers",
 "label_source": "generated",
 "label_hash": "f5813aeb9e"
+},
+{
+"id": "themes/patches/v1_0/design_mode_defaults.py::execute",
+"file": "themes/patches/v1_0/design_mode_defaults.py",
+"kind": "function",
+"name": "execute",
+"qualname": "execute",
+"sig": "()",
+"hash": "91d59d7f9e",
+"calls": [],
+"label": "",
+"label_source": "none"
 },
 {
 "id": "themes/patches/v1_0/migrate_theme_settings_to_nce_theme.py::execute",
@@ -13785,7 +14598,7 @@
 "name": "all",
 "qualname": "all",
 "sig": "",
-"hash": "5bd042b451",
+"hash": "330a8be684",
 "calls": [],
 "label": "nce_component_overrides.css (the whole file)",
 "label_source": "title"
@@ -13809,7 +14622,7 @@
 "name": "all",
 "qualname": "all",
 "sig": "",
-"hash": "dac97c38de",
+"hash": "717b46dec1",
 "calls": [],
 "label": "nce_theme.css (the whole file)",
 "label_source": "title"
@@ -13850,6 +14663,870 @@
 "calls": [],
 "label": "themes8.css (the whole file)",
 "label_source": "title"
+},
+{
+"id": "themes/public/js/design_mode.js::csrf",
+"file": "themes/public/js/design_mode.js",
+"kind": "function",
+"name": "csrf",
+"qualname": "csrf",
+"sig": "()",
+"hash": "b7787bd576",
+"exported": false,
+"calls": [],
+"label": "",
+"label_source": "none"
+},
+{
+"id": "themes/public/js/design_mode.js::esc",
+"file": "themes/public/js/design_mode.js",
+"kind": "function",
+"name": "esc",
+"qualname": "esc",
+"sig": "(s)",
+"hash": "bc06620186",
+"exported": false,
+"calls": [],
+"label": "",
+"label_source": "none"
+},
+{
+"id": "themes/public/js/design_mode.js::call",
+"file": "themes/public/js/design_mode.js",
+"kind": "function",
+"name": "call",
+"qualname": "call",
+"sig": "(method, args)",
+"hash": "ff332775f9",
+"exported": false,
+"calls": [
+"themes/public/js/design_mode.js::csrf"
+],
+"label": "",
+"label_source": "none"
+},
+{
+"id": "themes/public/js/design_mode.js::selectorFromMap",
+"file": "themes/public/js/design_mode.js",
+"kind": "function",
+"name": "selectorFromMap",
+"qualname": "selectorFromMap",
+"sig": "(map)",
+"hash": "c052ebe5c9",
+"exported": false,
+"calls": [],
+"label": "",
+"label_source": "none"
+},
+{
+"id": "themes/public/js/design_mode.js::pageHasParts",
+"file": "themes/public/js/design_mode.js",
+"kind": "function",
+"name": "pageHasParts",
+"qualname": "pageHasParts",
+"sig": "()",
+"hash": "648c251f99",
+"exported": false,
+"calls": [],
+"label": "",
+"label_source": "none"
+},
+{
+"id": "themes/public/js/design_mode.js::updateFab",
+"file": "themes/public/js/design_mode.js",
+"kind": "function",
+"name": "updateFab",
+"qualname": "updateFab",
+"sig": "()",
+"hash": "f141e1d248",
+"exported": false,
+"calls": [
+"themes/public/js/design_mode.js::pageHasParts"
+],
+"label": "",
+"label_source": "none"
+},
+{
+"id": "themes/public/js/design_mode.js::schedulePresence",
+"file": "themes/public/js/design_mode.js",
+"kind": "function",
+"name": "schedulePresence",
+"qualname": "schedulePresence",
+"sig": "()",
+"hash": "0b89cd6419",
+"exported": false,
+"calls": [
+"themes/public/js/design_mode.js::updateFab"
+],
+"wired_by": [
+"themes/public/js/design_mode.js::init"
+],
+"label": "",
+"label_source": "none"
+},
+{
+"id": "themes/public/js/design_mode.js::ensureFab",
+"file": "themes/public/js/design_mode.js",
+"kind": "function",
+"name": "ensureFab",
+"qualname": "ensureFab",
+"sig": "()",
+"hash": "cec31d95c6",
+"exported": false,
+"calls": [
+"themes/public/js/design_mode.js::ensureStyles",
+"themes/public/js/design_mode.js::turnOff",
+"themes/public/js/design_mode.js::turnOn"
+],
+"label": "",
+"label_source": "none"
+},
+{
+"id": "themes/public/js/design_mode.js::ensureRoot",
+"file": "themes/public/js/design_mode.js",
+"kind": "function",
+"name": "ensureRoot",
+"qualname": "ensureRoot",
+"sig": "()",
+"hash": "645ef05669",
+"exported": false,
+"calls": [],
+"label": "",
+"label_source": "none"
+},
+{
+"id": "themes/public/js/design_mode.js::toast",
+"file": "themes/public/js/design_mode.js",
+"kind": "function",
+"name": "toast",
+"qualname": "toast",
+"sig": "(text, kind)",
+"hash": "b4dc880906",
+"exported": false,
+"calls": [
+"themes/public/js/design_mode.js::ensureRoot"
+],
+"label": "",
+"label_source": "none"
+},
+{
+"id": "themes/public/js/design_mode.js::findTarget",
+"file": "themes/public/js/design_mode.js",
+"kind": "function",
+"name": "findTarget",
+"qualname": "findTarget",
+"sig": "(el)",
+"hash": "297dcca9c6",
+"exported": false,
+"calls": [],
+"label": "",
+"label_source": "none"
+},
+{
+"id": "themes/public/js/design_mode.js::label",
+"file": "themes/public/js/design_mode.js",
+"kind": "function",
+"name": "label",
+"qualname": "label",
+"sig": "(entry, selector)",
+"hash": "79507f1209",
+"exported": false,
+"calls": [],
+"label": "",
+"label_source": "none"
+},
+{
+"id": "themes/public/js/design_mode.js::reloadOverridesCss",
+"file": "themes/public/js/design_mode.js",
+"kind": "function",
+"name": "reloadOverridesCss",
+"qualname": "reloadOverridesCss",
+"sig": "(hash)",
+"hash": "13b81267ed",
+"exported": false,
+"calls": [],
+"label": "",
+"label_source": "none"
+},
+{
+"id": "themes/public/js/design_mode.js::ensureStyles",
+"file": "themes/public/js/design_mode.js",
+"kind": "function",
+"name": "ensureStyles",
+"qualname": "ensureStyles",
+"sig": "()",
+"hash": "e3d15db505",
+"exported": false,
+"calls": [],
+"label": "",
+"label_source": "none"
+},
+{
+"id": "themes/public/js/design_mode.js::clearSelMark",
+"file": "themes/public/js/design_mode.js",
+"kind": "function",
+"name": "clearSelMark",
+"qualname": "clearSelMark",
+"sig": "()",
+"hash": "ec32c73129",
+"exported": false,
+"calls": [],
+"label": "",
+"label_source": "none"
+},
+{
+"id": "themes/public/js/design_mode.js::markSel",
+"file": "themes/public/js/design_mode.js",
+"kind": "function",
+"name": "markSel",
+"qualname": "markSel",
+"sig": "(el, kind)",
+"hash": "4adca1a4cd",
+"exported": false,
+"calls": [
+"themes/public/js/design_mode.js::clearSelMark"
+],
+"label": "",
+"label_source": "none"
+},
+{
+"id": "themes/public/js/design_mode.js::hideOutline",
+"file": "themes/public/js/design_mode.js",
+"kind": "function",
+"name": "hideOutline",
+"qualname": "hideOutline",
+"sig": "()",
+"hash": "0e42997df8",
+"exported": false,
+"calls": [
+"themes/public/js/design_mode.js::clearIntent",
+"themes/public/js/design_mode.js::clearSelMark",
+"themes/public/js/design_mode.js::hideSiblings"
+],
+"label": "",
+"label_source": "none"
+},
+{
+"id": "themes/public/js/design_mode.js::selectorFor",
+"file": "themes/public/js/design_mode.js",
+"kind": "function",
+"name": "selectorFor",
+"qualname": "selectorFor",
+"sig": "(sel)",
+"hash": "b491f5284f",
+"exported": false,
+"calls": [],
+"label": "",
+"label_source": "none"
+},
+{
+"id": "themes/public/js/design_mode.js::hideSiblings",
+"file": "themes/public/js/design_mode.js",
+"kind": "function",
+"name": "hideSiblings",
+"qualname": "hideSiblings",
+"sig": "()",
+"hash": "1fe4b0f40a",
+"exported": false,
+"calls": [],
+"label": "",
+"label_source": "none"
+},
+{
+"id": "themes/public/js/design_mode.js::showSiblings",
+"file": "themes/public/js/design_mode.js",
+"kind": "function",
+"name": "showSiblings",
+"qualname": "showSiblings",
+"sig": "(cls, exceptEl)",
+"hash": "dac9ab62fe",
+"exported": false,
+"calls": [
+"themes/public/js/design_mode.js::hideSiblings"
+],
+"label": "",
+"label_source": "none"
+},
+{
+"id": "themes/public/js/design_mode.js::showOutlineFor",
+"file": "themes/public/js/design_mode.js",
+"kind": "function",
+"name": "showOutlineFor",
+"qualname": "showOutlineFor",
+"sig": "(el, labelText)",
+"hash": "eb124c0e10",
+"exported": false,
+"calls": [
+"themes/public/js/design_mode.js::markSel"
+],
+"label": "",
+"label_source": "none"
+},
+{
+"id": "themes/public/js/design_mode.js::showOutline",
+"file": "themes/public/js/design_mode.js",
+"kind": "function",
+"name": "showOutline",
+"qualname": "showOutline",
+"sig": "(hit)",
+"hash": "1042908e24",
+"exported": false,
+"calls": [
+"themes/public/js/design_mode.js::label",
+"themes/public/js/design_mode.js::showOutlineFor"
+],
+"label": "",
+"label_source": "none"
+},
+{
+"id": "themes/public/js/design_mode.js::findMappedTable",
+"file": "themes/public/js/design_mode.js",
+"kind": "function",
+"name": "findMappedTable",
+"qualname": "findMappedTable",
+"sig": "(el)",
+"hash": "4669a927bb",
+"exported": false,
+"calls": [],
+"label": "",
+"label_source": "none"
+},
+{
+"id": "themes/public/js/design_mode.js::candidateFor",
+"file": "themes/public/js/design_mode.js",
+"kind": "function",
+"name": "candidateFor",
+"qualname": "candidateFor",
+"sig": "(target)",
+"hash": "5be7865c16",
+"exported": false,
+"calls": [
+"themes/public/js/design_mode.js::findMappedTable",
+"themes/public/js/design_mode.js::findTarget",
+"themes/public/js/design_mode.js::label"
+],
+"label": "",
+"label_source": "none"
+},
+{
+"id": "themes/public/js/design_mode.js::clearIntent",
+"file": "themes/public/js/design_mode.js",
+"kind": "function",
+"name": "clearIntent",
+"qualname": "clearIntent",
+"sig": "()",
+"hash": "5d1f4f3ed0",
+"exported": false,
+"calls": [],
+"label": "",
+"label_source": "none"
+},
+{
+"id": "themes/public/js/design_mode.js::applySelection",
+"file": "themes/public/js/design_mode.js",
+"kind": "function",
+"name": "applySelection",
+"qualname": "applySelection",
+"sig": "(cand)",
+"hash": "c56679ea1f",
+"exported": false,
+"calls": [
+"themes/public/js/design_mode.js::hideOutline",
+"themes/public/js/design_mode.js::hideSiblings",
+"themes/public/js/design_mode.js::markSel",
+"themes/public/js/design_mode.js::positionEditButton",
+"themes/public/js/design_mode.js::selectorFor",
+"themes/public/js/design_mode.js::showOutlineFor",
+"themes/public/js/design_mode.js::showSiblings"
+],
+"label": "",
+"label_source": "none"
+},
+{
+"id": "themes/public/js/design_mode.js::positionEditButton",
+"file": "themes/public/js/design_mode.js",
+"kind": "function",
+"name": "positionEditButton",
+"qualname": "positionEditButton",
+"sig": "()",
+"hash": "e8f3ad4e0c",
+"exported": false,
+"calls": [],
+"label": "",
+"label_source": "none"
+},
+{
+"id": "themes/public/js/design_mode.js::swallow",
+"file": "themes/public/js/design_mode.js",
+"kind": "function",
+"name": "swallow",
+"qualname": "swallow",
+"sig": "(e)",
+"hash": "40a897498a",
+"exported": false,
+"calls": [],
+"wired_by": [
+"themes/public/js/design_mode.js::ensureFab",
+"themes/public/js/design_mode.js::turnOn"
+],
+"label": "",
+"label_source": "none"
+},
+{
+"id": "themes/public/js/design_mode.js::onEditClick",
+"file": "themes/public/js/design_mode.js",
+"kind": "function",
+"name": "onEditClick",
+"qualname": "onEditClick",
+"sig": "(e)",
+"hash": "71f4231ec9",
+"exported": false,
+"calls": [
+"themes/public/js/design_mode.js::openPopup",
+"themes/public/js/design_mode.js::openTablePopup"
+],
+"wired_by": [
+"themes/public/js/design_mode.js::turnOn"
+],
+"label": "",
+"label_source": "none"
+},
+{
+"id": "themes/public/js/design_mode.js::onMouseMoveFrame",
+"file": "themes/public/js/design_mode.js",
+"kind": "function",
+"name": "onMouseMoveFrame",
+"qualname": "onMouseMoveFrame",
+"sig": "()",
+"hash": "1b17c44bd3",
+"exported": false,
+"calls": [
+"themes/public/js/design_mode.js::applySelection",
+"themes/public/js/design_mode.js::candidateFor",
+"themes/public/js/design_mode.js::clearIntent"
+],
+"wired_by": [
+"themes/public/js/design_mode.js::onMouseMove"
+],
+"label": "",
+"label_source": "none"
+},
+{
+"id": "themes/public/js/design_mode.js::onMouseMove",
+"file": "themes/public/js/design_mode.js",
+"kind": "function",
+"name": "onMouseMove",
+"qualname": "onMouseMove",
+"sig": "(e)",
+"hash": "328aad3cb0",
+"exported": false,
+"calls": [],
+"wired_by": [
+"themes/public/js/design_mode.js::turnOff",
+"themes/public/js/design_mode.js::turnOn"
+],
+"label": "",
+"label_source": "none"
+},
+{
+"id": "themes/public/js/design_mode.js::loadDialog",
+"file": "themes/public/js/design_mode.js",
+"kind": "function",
+"name": "loadDialog",
+"qualname": "loadDialog",
+"sig": "()",
+"hash": "1b48c786f7",
+"exported": false,
+"calls": [],
+"label": "",
+"label_source": "none"
+},
+{
+"id": "themes/public/js/design_mode.js::dialogReady",
+"file": "themes/public/js/design_mode.js",
+"kind": "function",
+"name": "dialogReady",
+"qualname": "dialogReady",
+"sig": "()",
+"hash": "8b8ee221f9",
+"exported": false,
+"calls": [
+"themes/public/js/design_mode.js::loadDialog",
+"themes/public/js/design_mode.js::toast"
+],
+"label": "",
+"label_source": "none"
+},
+{
+"id": "themes/public/js/design_mode.js::onOutsideMouseDown",
+"file": "themes/public/js/design_mode.js",
+"kind": "function",
+"name": "onOutsideMouseDown",
+"qualname": "onOutsideMouseDown",
+"sig": "(e)",
+"hash": "2fa85f082f",
+"exported": false,
+"calls": [
+"themes/public/js/design_mode.js::cancelPopup"
+],
+"label": "",
+"label_source": "none"
+},
+{
+"id": "themes/public/js/design_mode.js::openPickerFor",
+"file": "themes/public/js/design_mode.js",
+"kind": "function",
+"name": "openPickerFor",
+"qualname": "openPickerFor",
+"sig": "(field, kind, fgField)",
+"hash": "7177f42c4c",
+"exported": false,
+"calls": [
+"themes/public/js/design_mode.js::onDraftChanged",
+"themes/public/js/design_mode.js::toast"
+],
+"label": "",
+"label_source": "none"
+},
+{
+"id": "themes/public/js/design_mode.js::onDraftChanged",
+"file": "themes/public/js/design_mode.js",
+"kind": "function",
+"name": "onDraftChanged",
+"qualname": "onDraftChanged",
+"sig": "()",
+"hash": "c496d99a5d",
+"exported": false,
+"calls": [
+"themes/public/js/design_mode.js::updatePreview",
+"themes/public/js/design_mode.js::updateTablePreview"
+],
+"label": "",
+"label_source": "none"
+},
+{
+"id": "themes/public/js/design_mode.js::openRecord",
+"file": "themes/public/js/design_mode.js",
+"kind": "function",
+"name": "openRecord",
+"qualname": "openRecord",
+"sig": "()",
+"hash": "8f1fa23539",
+"exported": false,
+"calls": [],
+"label": "",
+"label_source": "none"
+},
+{
+"id": "themes/public/js/design_mode.js::dialogHandlers",
+"file": "themes/public/js/design_mode.js",
+"kind": "function",
+"name": "dialogHandlers",
+"qualname": "dialogHandlers",
+"sig": "()",
+"hash": "3ee2f88eee",
+"exported": false,
+"calls": [
+"themes/public/js/design_mode.js::cancelPopup",
+"themes/public/js/design_mode.js::openPopup"
+],
+"label": "",
+"label_source": "none"
+},
+{
+"id": "themes/public/js/design_mode.js::elementPopupNotes",
+"file": "themes/public/js/design_mode.js",
+"kind": "function",
+"name": "elementPopupNotes",
+"qualname": "elementPopupNotes",
+"sig": "(entry)",
+"hash": "32c91ec7ee",
+"exported": false,
+"calls": [],
+"label": "",
+"label_source": "none"
+},
+{
+"id": "themes/public/js/design_mode.js::updatePreview",
+"file": "themes/public/js/design_mode.js",
+"kind": "function",
+"name": "updatePreview",
+"qualname": "updatePreview",
+"sig": "()",
+"hash": "b8a6663fca",
+"exported": false,
+"calls": [
+"themes/public/js/design_mode.js::call",
+"themes/public/js/design_mode.js::toast"
+],
+"label": "",
+"label_source": "none"
+},
+{
+"id": "themes/public/js/design_mode.js::updateTablePreview",
+"file": "themes/public/js/design_mode.js",
+"kind": "function",
+"name": "updateTablePreview",
+"qualname": "updateTablePreview",
+"sig": "()",
+"hash": "767beb7184",
+"exported": false,
+"calls": [
+"themes/public/js/design_mode.js::call",
+"themes/public/js/design_mode.js::toast"
+],
+"label": "",
+"label_source": "none"
+},
+{
+"id": "themes/public/js/design_mode.js::savePopup",
+"file": "themes/public/js/design_mode.js",
+"kind": "function",
+"name": "savePopup",
+"qualname": "savePopup",
+"sig": "()",
+"hash": "00b16cf72f",
+"exported": false,
+"calls": [
+"themes/public/js/design_mode.js::call",
+"themes/public/js/design_mode.js::cancelPopup",
+"themes/public/js/design_mode.js::reloadOverridesCss",
+"themes/public/js/design_mode.js::toast"
+],
+"label": "",
+"label_source": "none"
+},
+{
+"id": "themes/public/js/design_mode.js::revertPopup",
+"file": "themes/public/js/design_mode.js",
+"kind": "function",
+"name": "revertPopup",
+"qualname": "revertPopup",
+"sig": "()",
+"hash": "abfb197a95",
+"exported": false,
+"calls": [
+"themes/public/js/design_mode.js::call",
+"themes/public/js/design_mode.js::cancelPopup",
+"themes/public/js/design_mode.js::reloadOverridesCss",
+"themes/public/js/design_mode.js::toast"
+],
+"label": "",
+"label_source": "none"
+},
+{
+"id": "themes/public/js/design_mode.js::onScroll",
+"file": "themes/public/js/design_mode.js",
+"kind": "function",
+"name": "onScroll",
+"qualname": "onScroll",
+"sig": "()",
+"hash": "ca0c04b8e1",
+"exported": false,
+"calls": [
+"themes/public/js/design_mode.js::hideOutline"
+],
+"wired_by": [
+"themes/public/js/design_mode.js::turnOff",
+"themes/public/js/design_mode.js::turnOn"
+],
+"label": "",
+"label_source": "none"
+},
+{
+"id": "themes/public/js/design_mode.js::cancelPopup",
+"file": "themes/public/js/design_mode.js",
+"kind": "function",
+"name": "cancelPopup",
+"qualname": "cancelPopup",
+"sig": "()",
+"hash": "66bfa3d8ce",
+"exported": false,
+"calls": [
+"themes/public/js/design_mode.js::hideSiblings"
+],
+"label": "",
+"label_source": "none"
+},
+{
+"id": "themes/public/js/design_mode.js::cssColourToHex",
+"file": "themes/public/js/design_mode.js",
+"kind": "function",
+"name": "cssColourToHex",
+"qualname": "cssColourToHex",
+"sig": "(value)",
+"hash": "420b7d5587",
+"exported": false,
+"calls": [],
+"label": "",
+"label_source": "none"
+},
+{
+"id": "themes/public/js/design_mode.js::elementThemeDefaults",
+"file": "themes/public/js/design_mode.js",
+"kind": "function",
+"name": "elementThemeDefaults",
+"qualname": "elementThemeDefaults",
+"sig": "(el)",
+"hash": "e143d1b51c",
+"exported": false,
+"calls": [
+"themes/public/js/design_mode.js::cssColourToHex"
+],
+"label": "",
+"label_source": "none"
+},
+{
+"id": "themes/public/js/design_mode.js::openPopup",
+"file": "themes/public/js/design_mode.js",
+"kind": "function",
+"name": "openPopup",
+"qualname": "openPopup",
+"sig": "(hit, x, y)",
+"hash": "c1786ab3f2",
+"exported": false,
+"calls": [
+"themes/public/js/design_mode.js::cancelPopup",
+"themes/public/js/design_mode.js::dialogHandlers",
+"themes/public/js/design_mode.js::dialogReady",
+"themes/public/js/design_mode.js::elementPopupNotes",
+"themes/public/js/design_mode.js::elementThemeDefaults",
+"themes/public/js/design_mode.js::ensureRoot",
+"themes/public/js/design_mode.js::hideOutline",
+"themes/public/js/design_mode.js::showSiblings",
+"themes/public/js/design_mode.js::updatePreview"
+],
+"label": "",
+"label_source": "none"
+},
+{
+"id": "themes/public/js/design_mode.js::tableThemeDefaults",
+"file": "themes/public/js/design_mode.js",
+"kind": "function",
+"name": "tableThemeDefaults",
+"qualname": "tableThemeDefaults",
+"sig": "(selector)",
+"hash": "9d06302916",
+"exported": false,
+"calls": [],
+"label": "",
+"label_source": "none"
+},
+{
+"id": "themes/public/js/design_mode.js::openTablePopup",
+"file": "themes/public/js/design_mode.js",
+"kind": "function",
+"name": "openTablePopup",
+"qualname": "openTablePopup",
+"sig": "(selector, partHit, x, y)",
+"hash": "9f17f6b5a1",
+"exported": false,
+"calls": [
+"themes/public/js/design_mode.js::cancelPopup",
+"themes/public/js/design_mode.js::dialogHandlers",
+"themes/public/js/design_mode.js::dialogReady",
+"themes/public/js/design_mode.js::ensureRoot",
+"themes/public/js/design_mode.js::hideOutline",
+"themes/public/js/design_mode.js::showSiblings",
+"themes/public/js/design_mode.js::tableThemeDefaults",
+"themes/public/js/design_mode.js::updateTablePreview"
+],
+"label": "",
+"label_source": "none"
+},
+{
+"id": "themes/public/js/design_mode.js::onKeyDown",
+"file": "themes/public/js/design_mode.js",
+"kind": "function",
+"name": "onKeyDown",
+"qualname": "onKeyDown",
+"sig": "(e)",
+"hash": "e98f1729fd",
+"exported": false,
+"calls": [
+"themes/public/js/design_mode.js::cancelPopup",
+"themes/public/js/design_mode.js::turnOff"
+],
+"wired_by": [
+"themes/public/js/design_mode.js::init"
+],
+"label": "",
+"label_source": "none"
+},
+{
+"id": "themes/public/js/design_mode.js::turnOn",
+"file": "themes/public/js/design_mode.js",
+"kind": "function",
+"name": "turnOn",
+"qualname": "turnOn",
+"sig": "()",
+"hash": "0be78850f7",
+"exported": false,
+"calls": [
+"themes/public/js/design_mode.js::call",
+"themes/public/js/design_mode.js::ensureRoot",
+"themes/public/js/design_mode.js::ensureStyles",
+"themes/public/js/design_mode.js::loadDialog",
+"themes/public/js/design_mode.js::selectorFromMap",
+"themes/public/js/design_mode.js::toast",
+"themes/public/js/design_mode.js::updateFab"
+],
+"label": "",
+"label_source": "none"
+},
+{
+"id": "themes/public/js/design_mode.js::turnOff",
+"file": "themes/public/js/design_mode.js",
+"kind": "function",
+"name": "turnOff",
+"qualname": "turnOff",
+"sig": "()",
+"hash": "8608a3e199",
+"exported": false,
+"calls": [
+"themes/public/js/design_mode.js::cancelPopup",
+"themes/public/js/design_mode.js::clearIntent",
+"themes/public/js/design_mode.js::clearSelMark",
+"themes/public/js/design_mode.js::hideSiblings",
+"themes/public/js/design_mode.js::updateFab"
+],
+"label": "",
+"label_source": "none"
+},
+{
+"id": "themes/public/js/design_mode.js::hasSystemUserCookie",
+"file": "themes/public/js/design_mode.js",
+"kind": "function",
+"name": "hasSystemUserCookie",
+"qualname": "hasSystemUserCookie",
+"sig": "()",
+"hash": "b6ec9e5c64",
+"exported": false,
+"calls": [],
+"label": "",
+"label_source": "none"
+},
+{
+"id": "themes/public/js/design_mode.js::init",
+"file": "themes/public/js/design_mode.js",
+"kind": "function",
+"name": "init",
+"qualname": "init",
+"sig": "()",
+"hash": "620697da43",
+"exported": false,
+"calls": [
+"themes/public/js/design_mode.js::call",
+"themes/public/js/design_mode.js::ensureFab",
+"themes/public/js/design_mode.js::hasSystemUserCookie",
+"themes/public/js/design_mode.js::selectorFromMap",
+"themes/public/js/design_mode.js::updateFab"
+],
+"wired_by": [
+"themes/public/js/design_mode.js"
+],
+"label": "",
+"label_source": "none"
 },
 {
 "id": "themes/public/js/desk_theme_loader.js::syncDeskThemeCss",
@@ -14396,7 +16073,7 @@
 "name": "test_table_row_even",
 "qualname": "TestTableCssWriter.test_table_row_even",
 "sig": "(self) -> None",
-"hash": "667eef4ebe",
+"hash": "cb3d15aabb",
 "calls": [
 "themes/utils/component_css_writer.py::table_css_for"
 ],
@@ -14410,11 +16087,25 @@
 "name": "test_table_row_odd",
 "qualname": "TestTableCssWriter.test_table_row_odd",
 "sig": "(self) -> None",
-"hash": "be1eac7ecd",
+"hash": "303113e9c3",
 "calls": [
 "themes/utils/component_css_writer.py::table_css_for"
 ],
 "label": "table row odd",
+"label_source": "name"
+},
+{
+"id": "themes/tests/test_component_css_writer.py::TestTableCssWriter.test_table_row_scoped",
+"file": "themes/tests/test_component_css_writer.py",
+"kind": "test",
+"name": "test_table_row_scoped",
+"qualname": "TestTableCssWriter.test_table_row_scoped",
+"sig": "(self) -> None",
+"hash": "7ce30bc467",
+"calls": [
+"themes/utils/component_css_writer.py::table_css_for"
+],
+"label": "table row scoped",
 "label_source": "name"
 },
 {
@@ -14499,6 +16190,62 @@
 "themes/utils/component_css_writer.py::table_css_for"
 ],
 "label": "col divider last child reset",
+"label_source": "name"
+},
+{
+"id": "themes/tests/test_component_css_writer.py::TestThemeTableBundle.test_class_target",
+"file": "themes/tests/test_component_css_writer.py",
+"kind": "test",
+"name": "test_class_target",
+"qualname": "TestThemeTableBundle.test_class_target",
+"sig": "(self) -> None",
+"hash": "f36055ec34",
+"calls": [
+"themes/utils/component_css_writer.py::theme_table_bundle_for"
+],
+"label": "class target",
+"label_source": "name"
+},
+{
+"id": "themes/tests/test_component_css_writer.py::TestThemeTableBundle.test_scope_target",
+"file": "themes/tests/test_component_css_writer.py",
+"kind": "test",
+"name": "test_scope_target",
+"qualname": "TestThemeTableBundle.test_scope_target",
+"sig": "(self) -> None",
+"hash": "452254d7eb",
+"calls": [
+"themes/utils/component_css_writer.py::theme_table_bundle_for"
+],
+"label": "scope target",
+"label_source": "name"
+},
+{
+"id": "themes/tests/test_component_css_writer.py::TestThemeTableBundle.test_invalid_lines_empty",
+"file": "themes/tests/test_component_css_writer.py",
+"kind": "test",
+"name": "test_invalid_lines_empty",
+"qualname": "TestThemeTableBundle.test_invalid_lines_empty",
+"sig": "(self) -> None",
+"hash": "a2351a86da",
+"calls": [
+"themes/utils/component_css_writer.py::theme_table_bundle_for"
+],
+"label": "invalid lines empty",
+"label_source": "name"
+},
+{
+"id": "themes/tests/test_component_css_writer.py::TestThemeTableBundle.test_missing_status_empty",
+"file": "themes/tests/test_component_css_writer.py",
+"kind": "test",
+"name": "test_missing_status_empty",
+"qualname": "TestThemeTableBundle.test_missing_status_empty",
+"sig": "(self) -> None",
+"hash": "c717012532",
+"calls": [
+"themes/utils/component_css_writer.py::theme_table_bundle_for"
+],
+"label": "missing status empty",
 "label_source": "name"
 },
 {
@@ -14704,7 +16451,7 @@
 "name": "test_mark_roots_chain",
 "qualname": "TestComponentScan.test_mark_roots_chain",
 "sig": "(self) -> None",
-"hash": "ef52a90376",
+"hash": "fdade50bca",
 "calls": [
 "themes/utils/component_scan.py::mark_roots"
 ],
@@ -14765,6 +16512,90 @@
 "themes/utils/component_scan.py::mark_roots"
 ],
 "label": "mark roots isolated",
+"label_source": "name"
+},
+{
+"id": "themes/tests/test_component_scan.py::TestComponentScan.test_mark_roots_unscanned_child_is_not_a_parent",
+"file": "themes/tests/test_component_scan.py",
+"kind": "test",
+"name": "test_mark_roots_unscanned_child_is_not_a_parent",
+"qualname": "TestComponentScan.test_mark_roots_unscanned_child_is_not_a_parent",
+"sig": "(self) -> None",
+"hash": "9d8f8caaf9",
+"calls": [
+"themes/utils/component_scan.py::mark_roots"
+],
+"label": "mark roots unscanned child is not a parent",
+"label_source": "name"
+},
+{
+"id": "themes/tests/test_component_scan.py::TestThemeTableTargets.test_classed_table",
+"file": "themes/tests/test_component_scan.py",
+"kind": "test",
+"name": "test_classed_table",
+"qualname": "TestThemeTableTargets.test_classed_table",
+"sig": "(self) -> None",
+"hash": "5d1c43b289",
+"calls": [
+"themes/utils/component_scan.py::scan_vue_source"
+],
+"label": "classed table",
+"label_source": "name"
+},
+{
+"id": "themes/tests/test_component_scan.py::TestThemeTableTargets.test_theme_table_class_excluded",
+"file": "themes/tests/test_component_scan.py",
+"kind": "test",
+"name": "test_theme_table_class_excluded",
+"qualname": "TestThemeTableTargets.test_theme_table_class_excluded",
+"sig": "(self) -> None",
+"hash": "fe671801f6",
+"calls": [
+"themes/utils/component_scan.py::scan_vue_source"
+],
+"label": "theme table class excluded",
+"label_source": "name"
+},
+{
+"id": "themes/tests/test_component_scan.py::TestThemeTableTargets.test_unclassed_table_scope",
+"file": "themes/tests/test_component_scan.py",
+"kind": "test",
+"name": "test_unclassed_table_scope",
+"qualname": "TestThemeTableTargets.test_unclassed_table_scope",
+"sig": "(self) -> None",
+"hash": "cb32cb4362",
+"calls": [
+"themes/utils/component_scan.py::scan_vue_source"
+],
+"label": "unclassed table scope",
+"label_source": "name"
+},
+{
+"id": "themes/tests/test_component_scan.py::TestThemeTableTargets.test_generic_table_classes_scope",
+"file": "themes/tests/test_component_scan.py",
+"kind": "test",
+"name": "test_generic_table_classes_scope",
+"qualname": "TestThemeTableTargets.test_generic_table_classes_scope",
+"sig": "(self) -> None",
+"hash": "ceaf6c6587",
+"calls": [
+"themes/utils/component_scan.py::scan_vue_source"
+],
+"label": "generic table classes scope",
+"label_source": "name"
+},
+{
+"id": "themes/tests/test_component_scan.py::TestThemeTableTargets.test_two_classed_tables",
+"file": "themes/tests/test_component_scan.py",
+"kind": "test",
+"name": "test_two_classed_tables",
+"qualname": "TestThemeTableTargets.test_two_classed_tables",
+"sig": "(self) -> None",
+"hash": "f9ad1e9213",
+"calls": [
+"themes/utils/component_scan.py::scan_vue_source"
+],
+"label": "two classed tables",
 "label_source": "name"
 },
 {
@@ -15295,6 +17126,104 @@
 "label_source": "name"
 },
 {
+"id": "themes/tests/test_design_mode.py::TestDesignMode.test_parse_protected",
+"file": "themes/tests/test_design_mode.py",
+"kind": "test",
+"name": "test_parse_protected",
+"qualname": "TestDesignMode.test_parse_protected",
+"sig": "(self) -> None",
+"hash": "ae145c9abf",
+"calls": [
+"themes/utils/design_mode.py::parse_protected"
+],
+"label": "parse protected",
+"label_source": "name"
+},
+{
+"id": "themes/tests/test_design_mode.py::TestDesignMode.test_build_selector_map_groups_and_sorts",
+"file": "themes/tests/test_design_mode.py",
+"kind": "test",
+"name": "test_build_selector_map_groups_and_sorts",
+"qualname": "TestDesignMode.test_build_selector_map_groups_and_sorts",
+"sig": "(self) -> None",
+"hash": "ba30d50f70",
+"calls": [
+"themes/utils/design_mode.py::build_selector_map"
+],
+"label": "build selector map groups and sorts",
+"label_source": "name"
+},
+{
+"id": "themes/tests/test_design_mode.py::TestDesignMode.test_build_selector_map_protected_and_dynamic",
+"file": "themes/tests/test_design_mode.py",
+"kind": "test",
+"name": "test_build_selector_map_protected_and_dynamic",
+"qualname": "TestDesignMode.test_build_selector_map_protected_and_dynamic",
+"sig": "(self) -> None",
+"hash": "dc9a24bb7b",
+"calls": [
+"themes/utils/design_mode.py::build_selector_map"
+],
+"label": "build selector map protected and dynamic",
+"label_source": "name"
+},
+{
+"id": "themes/tests/test_design_mode.py::TestDesignMode.test_build_table_map_groups_and_mono_default",
+"file": "themes/tests/test_design_mode.py",
+"kind": "test",
+"name": "test_build_table_map_groups_and_mono_default",
+"qualname": "TestDesignMode.test_build_table_map_groups_and_mono_default",
+"sig": "(self) -> None",
+"hash": "cab6188ec1",
+"calls": [
+"themes/utils/design_mode.py::build_table_map"
+],
+"label": "build table map groups and mono default",
+"label_source": "name"
+},
+{
+"id": "themes/tests/test_design_mode.py::TestDesignMode.test_build_table_map_skips_bad_selector",
+"file": "themes/tests/test_design_mode.py",
+"kind": "test",
+"name": "test_build_table_map_skips_bad_selector",
+"qualname": "TestDesignMode.test_build_table_map_skips_bad_selector",
+"sig": "(self) -> None",
+"hash": "89fabbc785",
+"calls": [
+"themes/utils/design_mode.py::build_table_map"
+],
+"label": "build table map skips bad selector",
+"label_source": "name"
+},
+{
+"id": "themes/tests/test_design_mode.py::TestDesignMode.test_clean_table_values",
+"file": "themes/tests/test_design_mode.py",
+"kind": "test",
+"name": "test_clean_table_values",
+"qualname": "TestDesignMode.test_clean_table_values",
+"sig": "(self) -> None",
+"hash": "632bbf427c",
+"calls": [
+"themes/utils/design_mode.py::clean_table_values"
+],
+"label": "clean table values",
+"label_source": "name"
+},
+{
+"id": "themes/tests/test_design_mode.py::TestDesignMode.test_clean_table_values_none",
+"file": "themes/tests/test_design_mode.py",
+"kind": "test",
+"name": "test_clean_table_values_none",
+"qualname": "TestDesignMode.test_clean_table_values_none",
+"sig": "(self) -> None",
+"hash": "1ab0978938",
+"calls": [
+"themes/utils/design_mode.py::clean_table_values"
+],
+"label": "clean table values none",
+"label_source": "name"
+},
+{
 "id": "themes/tests/test_theme_service_default.py::TestDefaultThemeFlag.test_is_default_only_from_flag",
 "file": "themes/tests/test_theme_service_default.py",
 "kind": "test",
@@ -15750,7 +17679,7 @@
 "hash": "aa27d556e4",
 "exported": false,
 "calls": [],
-"label": "Lists Vue Component DocType field names snapshotted for table class revert and dirty checks.",
+"label": "Names all Vue Component doc fields stored for table bg, fg, and divider classes during revert.",
 "label_source": "header"
 },
 {
@@ -15763,7 +17692,7 @@
 "hash": "274fdc4ccd",
 "exported": false,
 "calls": [],
-"label": "Maps header and row background slots to labels, fields, fg types, and theme fallbacks for the Tables section.",
+"label": "Maps header and striped row labels to bg class fields, fg type fields, and theme fallbacks.",
 "label_source": "header"
 },
 {
@@ -15776,7 +17705,7 @@
 "hash": "12944c5f06",
 "exported": false,
 "calls": [],
-"label": "Maps divider line slots to width and colour DocType fields for the Tables line editor.",
+"label": "Maps divider line labels to width and color class fields for the Tables section.",
 "label_source": "header"
 },
 {
@@ -15797,8 +17726,8 @@
 "wired_by": [
 "themes/themes/doctype/vue_component/vue_component.js"
 ],
-"label": "On Vue Component form refresh, adds Rescan button, saves colour snapshots, and renders the Colours HTML panel.",
-"label_source": "header-stale"
+"label": "Runs on Vue Component form refresh: rescan button, saved snapshots, colours and inside panel.",
+"label_source": "header"
 },
 {
 "id": "themes/themes/doctype/vue_component/vue_component.js::form.on Vue Component.after_save",
@@ -15815,7 +17744,7 @@
 "wired_by": [
 "themes/themes/doctype/vue_component/vue_component.js"
 ],
-"label": "After save on Vue Component, busts cache on nce_component_overrides.css stylesheet links.",
+"label": "Runs after save to bust cache on nce_component_overrides.css stylesheets.",
 "label_source": "header"
 },
 {
@@ -15828,7 +17757,7 @@
 "hash": "52e12328fe",
 "exported": false,
 "calls": [],
-"label": "Calls themes.component_api.refresh_component for this record then reloads the form document.",
+"label": "Calls themes.component_api.refresh_component then reloads the open Vue Component doc.",
 "label_source": "header"
 },
 {
@@ -15841,7 +17770,7 @@
 "hash": "d30033fb2a",
 "exported": false,
 "calls": [],
-"label": "Builds a map of table class field values from a Vue Component doc for revert comparison.",
+"label": "Captures current table class field values from the doc for revert dirty checks.",
 "label_source": "header"
 },
 {
@@ -15854,7 +17783,7 @@
 "hash": "f12ef0e04c",
 "exported": false,
 "calls": [],
-"label": "Appends a cache-busting query to desk links whose href includes nce_component_overrides.css.",
+"label": "Appends a cache-bust query to every nce_component_overrides.css link in the page.",
 "label_source": "header"
 },
 {
@@ -15867,7 +17796,7 @@
 "hash": "9b9d842fcd",
 "exported": false,
 "calls": [],
-"label": "Fetches and caches default preview theme via get_preview_theme for swatch pickers and previews.",
+"label": "Loads default preview theme once via get_preview_theme for pickers and the panel.",
 "label_source": "header"
 },
 {
@@ -15880,7 +17809,7 @@
 "hash": "125c60081b",
 "exported": false,
 "calls": [],
-"label": "Groups Present element child rows by selector or element key sorted by template line.",
+"label": "Buckets Present child rows by selector key and orders groups by earliest line.",
 "label_source": "header"
 },
 {
@@ -15893,7 +17822,7 @@
 "hash": "5b3db069c7",
 "exported": false,
 "calls": [],
-"label": "Filters element rows to those with element_status Present before grouping.",
+"label": "Keeps only element rows with element_status Present before grouping by key.",
 "label_source": "header"
 },
 {
@@ -15908,7 +17837,7 @@
 "calls": [
 "themes/themes/doctype/vue_component/vue_component.js::_vc_render_colours"
 ],
-"label": "Writes override field values to every row in a group and re-renders Colours.",
+"label": "Applies field values to every row in one element group and refreshes the colours UI.",
 "label_source": "header"
 },
 {
@@ -15921,7 +17850,7 @@
 "hash": "47bafd0fd3",
 "exported": false,
 "calls": [],
-"label": "Derives a theme-text tonal foreground class from a theme-bg background class token.",
+"label": "Builds matching theme-text fg-tonal class from a theme-bg class string.",
 "label_source": "header"
 },
 {
@@ -15934,7 +17863,7 @@
 "hash": "3efd7d4940",
 "exported": false,
 "calls": [],
-"label": "Chooses preview background from override or first theme-bg in source_classes.",
+"label": "Chooses preview background from override_bg_class or source_classes theme-bg token.",
 "label_source": "header"
 },
 {
@@ -15947,7 +17876,7 @@
 "hash": "442b47c52d",
 "exported": false,
 "calls": [],
-"label": "Returns whether saved element overrides or table classes differ from theme defaults.",
+"label": "Decides whether Revert to Theme Defaults appears for element or table overrides.",
 "label_source": "header"
 },
 {
@@ -15960,7 +17889,7 @@
 "hash": "91cdfa98ab",
 "exported": false,
 "calls": [],
-"label": "Detects non-empty element overrides or keep_default flags in the saved snapshot.",
+"label": "Detects saved element rows with keep_default or any non-empty override field.",
 "label_source": "header"
 },
 {
@@ -15973,8 +17902,8 @@
 "hash": "c43d4f06b0",
 "exported": false,
 "calls": [],
-"label": "Injects vc-colours-style-v2 CSS for the custom Colours panel layout and previews.",
-"label_source": "header-stale"
+"label": "Creates or updates injected vc-colours-style-v2 rules for the custom colours tables.",
+"label_source": "header"
 },
 {
 "id": "themes/themes/doctype/vue_component/vue_component.js::_vc_render_inside",
@@ -15988,8 +17917,8 @@
 "calls": [
 "themes/themes/doctype/vue_component/vue_component.js::_vc_ensure_styles"
 ],
-"label": "",
-"label_source": "none"
+"label": "Fills inside_html with links to child Vue Components from components_inside API.",
+"label_source": "header"
 },
 {
 "id": "themes/themes/doctype/vue_component/vue_component.js::_vc_element_swatch_html",
@@ -16004,7 +17933,7 @@
 "themes/themes/doctype/vue_component/vue_component.js::_vc_fg_tonal_class",
 "themes/themes/doctype/vue_component/vue_component.js::_vc_preview_bg_class"
 ],
-"label": "Renders a small swatch span for an element group using overrides or inferred background.",
+"label": "Returns preview swatch markup for one grouped element using bg, text, or empty state.",
 "label_source": "header"
 },
 {
@@ -16017,7 +17946,7 @@
 "hash": "d57affe2d3",
 "exported": false,
 "calls": [],
-"label": "Builds a border width select for thin, normal, strong, or theme default classes.",
+"label": "Builds border width select with Theme default, thin, normal, and strong options.",
 "label_source": "header"
 },
 {
@@ -16030,7 +17959,7 @@
 "hash": "1169e92ed5",
 "exported": false,
 "calls": [],
-"label": "Maps theme-border width classes to pixel widths for line preview styling.",
+"label": "Converts theme-border width class names to pixel width for line previews.",
 "label_source": "header"
 },
 {
@@ -16045,7 +17974,7 @@
 "calls": [
 "themes/themes/doctype/vue_component/vue_component.js::_vc_line_width_px"
 ],
-"label": "Renders a horizontal line preview span with chosen width and colour class.",
+"label": "Renders a short horizontal line sample with chosen width and color class.",
 "label_source": "header"
 },
 {
@@ -16060,7 +17989,7 @@
 "calls": [
 "themes/themes/doctype/vue_component/vue_component.js::_vc_width_select_html"
 ],
-"label": "Builds Class column HTML with overrides, pick buttons, border controls, and Keep default.",
+"label": "Renders class column with bg display, text and border pickers, and Keep default.",
 "label_source": "header"
 },
 {
@@ -16073,7 +18002,7 @@
 "hash": "9e533d25db",
 "exported": false,
 "calls": [],
-"label": "Returns thead markup for Surface, Preview, Class columns in element and table editors.",
+"label": "Returns shared thead row for Surface, Preview, and Class columns.",
 "label_source": "header"
 },
 {
@@ -16088,7 +18017,7 @@
 "calls": [
 "themes/themes/doctype/vue_component/vue_component.js::_vc_fg_tonal_class"
 ],
-"label": "Renders table row background swatch HTML optionally with tonal foreground class.",
+"label": "Returns table row background swatch with optional tonal foreground class.",
 "label_source": "header"
 },
 {
@@ -16106,7 +18035,7 @@
 "themes/themes/doctype/vue_component/vue_component.js::_vc_table_row_swatch_html",
 "themes/themes/doctype/vue_component/vue_component.js::_vc_width_select_html"
 ],
-"label": "Builds Tables section with row pickers, mini table preview, and divider line controls.",
+"label": "Assembles Tables warnings, row pickers, mini preview grid, and divider line editors.",
 "label_source": "header"
 },
 {
@@ -16121,7 +18050,7 @@
 "calls": [
 "themes/themes/doctype/vue_component/vue_component.js::_vc_groups"
 ],
-"label": "Looks up one element group object by key from the current form elements list.",
+"label": "Looks up one element group by selector key for picker and change handlers.",
 "label_source": "header"
 },
 {
@@ -16142,7 +18071,7 @@
 "themes/themes/doctype/vue_component/vue_component.js::_vc_render_colours",
 "themes/themes/doctype/vue_component/vue_component.js::_vc_set_group"
 ],
-"label": "Delegates clicks and changes on Colours panel for pickers, revert, preview, refresh, and table fields.",
+"label": "Wires colours_html clicks and changes for pickers, revert, preview, refresh, and table fields.",
 "label_source": "header"
 },
 {
@@ -16158,7 +18087,7 @@
 "themes/themes/doctype/vue_component/vue_component.js::_vc_preview_theme",
 "themes/themes/doctype/vue_component/vue_component.js::_vc_render_colours"
 ],
-"label": "Opens ThemeSwatchPicker for a grouped element row to set bg, text, or border overrides.",
+"label": "Opens ThemeSwatchPicker for grouped element bg, text, or border override fields.",
 "label_source": "header"
 },
 {
@@ -16174,7 +18103,7 @@
 "themes/themes/doctype/vue_component/vue_component.js::_vc_preview_theme",
 "themes/themes/doctype/vue_component/vue_component.js::_vc_render_colours"
 ],
-"label": "Opens ThemeSwatchPicker on Vue Component DocType fields for table background or line colour.",
+"label": "Opens ThemeSwatchPicker on the parent doc for table bg or divider color fields.",
 "label_source": "header"
 },
 {
@@ -16197,7 +18126,7 @@
 "themes/themes/doctype/vue_component/vue_component.js::_vc_preview_theme",
 "themes/themes/doctype/vue_component/vue_component.js::_vc_show_revert"
 ],
-"label": "Fills colours_html with theme info, element table, optional Tables block, warnings, and binds events.",
+"label": "Rebuilds colours_html with theme bar, element table, optional Tables block, and warnings.",
 "label_source": "header"
 },
 {
@@ -16210,7 +18139,7 @@
 "hash": "ac004a8ea1",
 "exported": false,
 "calls": [],
-"label": "Counts element child rows marked Missing for the footer note on Colours.",
+"label": "Counts child elements marked Missing for the stale-elements footer note.",
 "label_source": "header"
 },
 {
@@ -16223,7 +18152,7 @@
 "hash": "257e5b0e3f",
 "exported": false,
 "calls": [],
-"label": "Normalises one element row into override fields sent to preview_declarations, honouring keep_default.",
+"label": "Normalizes one element row into preview API fields, clearing when keep_default is set.",
 "label_source": "header"
 },
 {
@@ -16236,7 +18165,7 @@
 "hash": "d8107648c9",
 "exported": false,
 "calls": [],
-"label": "Builds tag-appropriate sample HTML for preview dialog using classes and inline declaration.",
+"label": "Builds tag-appropriate sample HTML for preview dialog using computed CSS declarations.",
 "label_source": "header"
 },
 {
@@ -16254,7 +18183,7 @@
 "themes/themes/doctype/vue_component/vue_component.js::_vc_preview_theme",
 "themes/themes/doctype/vue_component/vue_component.js::_vc_sample"
 ],
-"label": "Calls preview_declarations and shows saved versus draft samples in a dialog with Save action.",
+"label": "Shows extra-large dialog comparing saved vs draft styles via preview_declarations then optional save.",
 "label_source": "header"
 },
 {
@@ -16446,6 +18375,38 @@
 "label_source": "header"
 },
 {
+"id": "themes/utils/component_css_writer.py::_bundle_selectors",
+"file": "themes/utils/component_css_writer.py",
+"kind": "function",
+"name": "_bundle_selectors",
+"qualname": "_bundle_selectors",
+"sig": "(target: str) -> tuple[str, str] | None",
+"hash": "534894b44c",
+"calls": [],
+"label": "(strong, weak) selector prefixes for one theme_table_targets line.",
+"label_source": "docstring"
+},
+{
+"id": "themes/utils/component_css_writer.py::theme_table_bundle_for",
+"file": "themes/utils/component_css_writer.py",
+"kind": "function",
+"name": "theme_table_bundle_for",
+"qualname": "theme_table_bundle_for",
+"sig": "(parent: dict) -> str",
+"hash": "c190f0c5cd",
+"calls": [
+"themes/utils/component_css_writer.py::_bundle_selectors"
+],
+"tested_by": [
+"themes/tests/test_component_css_writer.py::TestThemeTableBundle.test_class_target",
+"themes/tests/test_component_css_writer.py::TestThemeTableBundle.test_invalid_lines_empty",
+"themes/tests/test_component_css_writer.py::TestThemeTableBundle.test_missing_status_empty",
+"themes/tests/test_component_css_writer.py::TestThemeTableBundle.test_scope_target"
+],
+"label": "The theme-table rules, aimed at this component's tables that do not carry theme-table.",
+"label_source": "docstring"
+},
+{
 "id": "themes/utils/component_css_writer.py::_table_prefix",
 "file": "themes/utils/component_css_writer.py",
 "kind": "function",
@@ -16464,7 +18425,7 @@
 "name": "table_css_for",
 "qualname": "table_css_for",
 "sig": "(parent: dict) -> str",
-"hash": "23a82320a2",
+"hash": "6da5805627",
 "calls": [
 "themes/utils/component_css_writer.py::_table_bg_decls",
 "themes/utils/component_css_writer.py::_table_border_value",
@@ -16478,7 +18439,7 @@
 "themes/tests/test_component_css_writer.py::TestTableCssWriter.test_row_divider_width_only_default_colour"
 ],
 "label": "Emits thead, tbody stripe, and divider rules for a component table config.",
-"label_source": "header"
+"label_source": "header-stale"
 },
 {
 "id": "themes/utils/component_css_writer.py::generate_component_css",
@@ -16509,14 +18470,27 @@
 "name": "publish_component_css",
 "qualname": "publish_component_css",
 "sig": "() -> dict",
-"hash": "5ec144294a",
+"hash": "615f4d8b64",
 "calls": [
 "themes/utils/component_css_writer.py::generate_component_css",
 "themes/utils/component_css_writer.py::table_css_for",
+"themes/utils/component_css_writer.py::theme_table_bundle_for",
 "themes/utils/css_publish.py::write_published_css"
 ],
 "label": "Loads all Vue Component rows, writes nce_component_overrides.css, clears asset cache.",
-"label_source": "header"
+"label_source": "header-stale"
+},
+{
+"id": "themes/utils/component_scan.py::_is_generic_class",
+"file": "themes/utils/component_scan.py",
+"kind": "function",
+"name": "_is_generic_class",
+"qualname": "_is_generic_class",
+"sig": "(name: str) -> bool",
+"hash": "312cd9e7da",
+"calls": [],
+"label": "",
+"label_source": "none"
 },
 {
 "id": "themes/utils/component_scan.py::iter_vue_files",
@@ -16530,7 +18504,7 @@
 "tested_by": [
 "themes/tests/test_component_scan.py::TestComponentScan.test_iter_vue_files"
 ],
-"label": "Walks a directory tree collecting .vue paths while skipping build and vendor dirs.",
+"label": "Lists .vue paths under an app root, skipping node_modules, dist, and other SKIP_DIRS; rescan_all walks installed apps.",
 "label_source": "header"
 },
 {
@@ -16542,7 +18516,7 @@
 "sig": "(source: str) -> tuple[str, int]",
 "hash": "580340c3e3",
 "calls": [],
-"label": "Returns template inner HTML and line offset for parser positioning.",
+"label": "Returns inner template HTML and the line number where it starts for accurate element line reporting.",
 "label_source": "header"
 },
 {
@@ -16554,7 +18528,7 @@
 "sig": "(source: str) -> str",
 "hash": "03ff5b53f1",
 "calls": [],
-"label": "Reads purpose from HTML comment JSON or first comment line in the SFC.",
+"label": "Pulls the Vue Component purpose string from a leading comment JSON purpose field or first comment line.",
 "label_source": "header"
 },
 {
@@ -16566,7 +18540,7 @@
 "sig": "(source: str) -> str",
 "hash": "d47e217493",
 "calls": [],
-"label": "Short SHA-1 digest of file text for change detection on rescans.",
+"label": "Short SHA1 digest of full file text stored on Vue Component records to detect source changes.",
 "label_source": "header"
 },
 {
@@ -16578,7 +18552,7 @@
 "sig": "(name: str) -> str",
 "hash": "6521ce8ae5",
 "calls": [],
-"label": "Converts kebab-case tag names to PascalCase for child component tracking.",
+"label": "Turns kebab-case tag names into PascalCase child component names for uses_components and summaries.",
 "label_source": "header"
 },
 {
@@ -16590,7 +18564,7 @@
 "sig": "(tokens: list[str]) -> str",
 "hash": "1c2dc6f467",
 "calls": [],
-"label": "Picks last non-theme, non-utility class token as CSS override selector.",
+"label": "Chooses the rightmost class token that matches SELECTOR_RE and is not theme- or Tailwind utility-like.",
 "label_source": "header"
 },
 {
@@ -16607,7 +18581,7 @@
 "themes/tests/test_component_scan.py::TestComponentScan.test_inherit_table_usage_chain",
 "themes/tests/test_component_scan.py::TestComponentScan.test_inherit_table_usage_direct"
 ],
-"label": "Copies child table_selector onto parents that use a table-owning descendant.",
+"label": "Copies a child table_selector onto parents without owns_table via uses_components until stable; refresh and rescan_all.",
 "label_source": "header"
 },
 {
@@ -16617,7 +18591,7 @@
 "name": "mark_roots",
 "qualname": "mark_roots",
 "sig": "(scans: list[dict]) -> None",
-"hash": "cca6b73fe7",
+"hash": "1262b86176",
 "calls": [],
 "tested_by": [
 "themes/tests/test_component_scan.py::TestComponentScan.test_mark_roots_chain",
@@ -16636,13 +18610,13 @@
 "name": "_TemplateParser",
 "qualname": "_TemplateParser",
 "sig": "(HTMLParser)",
-"hash": "c69a5887da",
+"hash": "1705f505d2",
 "extends": [
 "HTMLParser"
 ],
 "calls": [],
-"label": "HTMLParser collecting themed elements, components, and table metadata from template.",
-"label_source": "header"
+"label": "HTMLParser subclass that accumulates themed element rows, table flags, root_class, and child component names from a template.",
+"label_source": "header-stale"
 },
 {
 "id": "themes/utils/component_scan.py::_TemplateParser.__init__",
@@ -16651,10 +18625,10 @@
 "name": "__init__",
 "qualname": "_TemplateParser.__init__",
 "sig": "(self, line_offset: int) -> None",
-"hash": "76503b2328",
+"hash": "f87a68ad28",
 "calls": [],
-"label": "Initializes parser state with template line offset for accurate source lines.",
-"label_source": "header"
+"label": "Stores template line_offset and empty collections for elements, uses_components, and table fields before feed.",
+"label_source": "header-stale"
 },
 {
 "id": "themes/utils/component_scan.py::_TemplateParser.handle_starttag",
@@ -16667,7 +18641,7 @@
 "calls": [
 "themes/utils/component_scan.py::_TemplateParser._on_tag"
 ],
-"label": "Delegates opening tags to shared themed element handler.",
+"label": "Forwards normal opening tags into _on_tag for scanning.",
 "label_source": "header"
 },
 {
@@ -16681,7 +18655,7 @@
 "calls": [
 "themes/utils/component_scan.py::_TemplateParser._on_tag"
 ],
-"label": "Delegates self-closing tags to shared themed element handler.",
+"label": "Forwards self-closing tags into _on_tag so void elements are scanned.",
 "label_source": "header"
 },
 {
@@ -16691,13 +18665,14 @@
 "name": "_on_tag",
 "qualname": "_TemplateParser._on_tag",
 "sig": "(self, tag: str, attrs: list[tuple[str, str | None]]) -> None",
-"hash": "4fffbe5099",
+"hash": "7207a23e15",
 "calls": [
+"themes/utils/component_scan.py::_is_generic_class",
 "themes/utils/component_scan.py::_selector_from_class_tokens",
 "themes/utils/component_scan.py::kebab_to_pascal"
 ],
-"label": "Records theme classes, dynamic bindings, tables, and child component tags.",
-"label_source": "header"
+"label": "Emits element dicts for theme colour bindings, records table ownership, root_class, and non-builtin child tags.",
+"label_source": "header-stale"
 },
 {
 "id": "themes/utils/component_scan.py::scan_vue_source",
@@ -16706,19 +18681,22 @@
 "name": "scan_vue_source",
 "qualname": "scan_vue_source",
 "sig": "(source: str) -> dict",
-"hash": "5dc0644ce6",
+"hash": "70c9ed30bc",
 "calls": [
 "themes/utils/component_scan.py::_TemplateParser",
+"themes/utils/component_scan.py::_is_generic_class",
 "themes/utils/component_scan.py::extract_purpose",
 "themes/utils/component_scan.py::extract_template"
 ],
 "tested_by": [
 "themes/tests/test_component_scan.py::TestComponentScan.test_no_table",
 "themes/tests/test_component_scan.py::TestComponentScan.test_table_theme_only_class",
-"themes/tests/test_component_scan.py::TestComponentScan.test_table_with_selector"
+"themes/tests/test_component_scan.py::TestComponentScan.test_table_with_selector",
+"themes/tests/test_component_scan.py::TestThemeTableTargets.test_classed_table",
+"themes/tests/test_component_scan.py::TestThemeTableTargets.test_generic_table_classes_scope"
 ],
-"label": "Parses template into elements list, purpose, table flags, and uses_components.",
-"label_source": "header"
+"label": "Runs extract_template and _TemplateParser to return elements, uses_components, purpose, and table metadata from a string.",
+"label_source": "header-stale"
 },
 {
 "id": "themes/utils/component_scan.py::scan_vue_file",
@@ -16739,7 +18717,7 @@
 "themes/tests/test_component_scan.py::TestComponentScan.test_no_selector",
 "themes/tests/test_component_scan.py::TestComponentScan.test_no_template"
 ],
-"label": "Reads a .vue path and returns scan_vue_source plus name and source_hash.",
+"label": "Reads a .vue path and merges scan_vue_source with component_name and source_hash for API rescan and refresh.",
 "label_source": "header"
 },
 {
@@ -17541,6 +19519,69 @@
 "label": "Load bundled base theme from data file or embedded fallback",
 "label_source": "generated",
 "label_hash": "150e97090a"
+},
+{
+"id": "themes/utils/design_mode.py::parse_protected",
+"file": "themes/utils/design_mode.py",
+"kind": "function",
+"name": "parse_protected",
+"qualname": "parse_protected",
+"sig": "(text: str | None) -> set[str]",
+"hash": "48537e39b2",
+"calls": [],
+"tested_by": [
+"themes/tests/test_design_mode.py::TestDesignMode.test_parse_protected"
+],
+"label": "",
+"label_source": "none"
+},
+{
+"id": "themes/utils/design_mode.py::build_selector_map",
+"file": "themes/utils/design_mode.py",
+"kind": "function",
+"name": "build_selector_map",
+"qualname": "build_selector_map",
+"sig": "(rows: list[dict], protected: set[str]) -> dict",
+"hash": "4e77215101",
+"calls": [],
+"tested_by": [
+"themes/tests/test_design_mode.py::TestDesignMode.test_build_selector_map_groups_and_sorts",
+"themes/tests/test_design_mode.py::TestDesignMode.test_build_selector_map_protected_and_dynamic"
+],
+"label": "Group element rows by selector_class for the page script.",
+"label_source": "docstring"
+},
+{
+"id": "themes/utils/design_mode.py::clean_table_values",
+"file": "themes/utils/design_mode.py",
+"kind": "function",
+"name": "clean_table_values",
+"qualname": "clean_table_values",
+"sig": "(values: dict | None) -> dict",
+"hash": "8ef18f432d",
+"calls": [],
+"tested_by": [
+"themes/tests/test_design_mode.py::TestDesignMode.test_clean_table_values",
+"themes/tests/test_design_mode.py::TestDesignMode.test_clean_table_values_none"
+],
+"label": "Keep only table fields; strip strings; empty fg type becomes mono.",
+"label_source": "docstring"
+},
+{
+"id": "themes/utils/design_mode.py::build_table_map",
+"file": "themes/utils/design_mode.py",
+"kind": "function",
+"name": "build_table_map",
+"qualname": "build_table_map",
+"sig": "(rows: list[dict]) -> dict",
+"hash": "1ccc2ab870",
+"calls": [],
+"tested_by": [
+"themes/tests/test_design_mode.py::TestDesignMode.test_build_table_map_groups_and_mono_default",
+"themes/tests/test_design_mode.py::TestDesignMode.test_build_table_map_skips_bad_selector"
+],
+"label": "Map table_selector → owning component, for components with owns_table=1.",
+"label_source": "docstring"
 },
 {
 "id": "themes/utils/desk_css_writer.py::_desk_font_stack",

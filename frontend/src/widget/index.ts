@@ -24,6 +24,7 @@ export {
 
 const api = {
 	open: openStandaloneThemeSwatchPicker,
+	openCore: open,
 	close,
 	isOpen,
 	parseThemeClass,

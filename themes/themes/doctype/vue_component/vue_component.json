@@ -17,11 +17,13 @@
   "source_hash",
   "purpose",
   "uses_components",
+  "is_root",
   "has_table",
   "owns_table",
   "root_class",
   "table_selector",
   "table_scope_class",
+  "theme_table_targets",
   "table_header_bg_class",
   "table_header_fg_type",
   "table_row_bg_class",
@@ -36,6 +38,7 @@
   "table_col_divider_color_class",
   "section_summary",
   "summary",
+  "inside_html",
   "tab_colours",
   "colours_html",
   "tab_elements",
@@ -128,6 +131,14 @@
    "read_only": 1
   },
   {
+   "default": "1",
+   "fieldname": "is_root",
+   "fieldtype": "Check",
+   "hidden": 1,
+   "label": "Top component",
+   "read_only": 1
+  },
+  {
    "default": "0",
    "fieldname": "has_table",
    "fieldtype": "Check",
@@ -162,6 +173,14 @@
    "fieldtype": "Data",
    "hidden": 1,
    "label": "Table Scope Class",
+   "read_only": 1
+  },
+  {
+   "description": "Tables in this file that get the theme's table settings. One per line: class:NAME or scope:NAME (a table without its own class inside .NAME).",
+   "fieldname": "theme_table_targets",
+   "fieldtype": "Small Text",
+   "hidden": 1,
+   "label": "Theme Table Targets",
    "read_only": 1
   },
   {
@@ -255,6 +274,11 @@
    "read_only": 1
   },
   {
+   "fieldname": "inside_html",
+   "fieldtype": "HTML",
+   "label": "Inside this component"
+  },
+  {
    "fieldname": "tab_colours",
    "fieldtype": "Tab Break",
    "label": "Colours"
@@ -276,7 +300,7 @@
    "options": "Vue Component Element"
   }
  ],
- "modified": "2026-10-31 12:30:00.000000",
+ "modified": "2026-11-01 15:00:00.000000",
  "modified_by": "Administrator",
  "module": "Themes",
  "name": "Vue Component",

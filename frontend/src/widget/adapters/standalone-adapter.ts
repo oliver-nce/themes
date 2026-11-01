@@ -1,6 +1,6 @@
 // Copyright (c) 2026 Oliver Reid. All rights reserved. Copying prohibited — see README.
 //
-import { open, close, type ThemeSwatchPickerCoreOpts } from "../theme-swatch-picker-core"
+import { open, close, isOpen, type ThemeSwatchPickerCoreOpts } from "../theme-swatch-picker-core"
 
 function fieldValue(el: HTMLElement): string {
 	if (el instanceof HTMLInputElement || el instanceof HTMLSelectElement) {
@@ -45,6 +45,8 @@ export function mountStandaloneThemeSwatchPicker(
 ): void {
 	win.themeSwatchPicker = {
 		open: openStandaloneThemeSwatchPicker,
+		openCore: open,
 		close,
+		isOpen,
 	}
 }

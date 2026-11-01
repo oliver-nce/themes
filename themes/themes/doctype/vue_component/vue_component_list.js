@@ -1,4 +1,5 @@
 frappe.listview_settings["Vue Component"] = {
+	filters: [["is_root", "=", 1]],
 	add_fields: ["needs_attention", "status"],
 	get_indicator(doc) {
 		if (cint(doc.needs_attention)) {

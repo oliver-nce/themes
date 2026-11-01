@@ -84,6 +84,44 @@ def _table_border_value(width_cls: str, color_cls: str, default_width_var: str, 
 	return f"var({width_var}) solid var({color_var})"
 
 
+def _bundle_selectors(target: str) -> tuple[str, str] | None:
+	"""(strong, weak) selector prefixes for one theme_table_targets line."""
+	kind, _, name = (target or "").strip().partition(":")
+	name = name.strip()
+	if not name or not SELECTOR_RE.match(name):
+		return None
+	if kind == "class":
+		return (f".{name}.{name}.{name}", f".{name}")
+	if kind == "scope":
+		return (f".{name}.{name}.{name} table", f".{name} table")
+	return None
+
+
+def theme_table_bundle_for(parent: dict) -> str:
+	"""The theme-table rules, aimed at this component's tables that do not carry theme-table."""
+	if (parent.get("status") or "").strip() != "Present":
+		return ""
+	blocks: list[str] = []
+	for line in (parent.get("theme_table_targets") or "").splitlines():
+		pair = _bundle_selectors(line)
+		if not pair:
+			continue
+		strong, weak = pair
+		col = "var(--nce-border-width-table-col) solid var(--nce-color-table-col-divider)"
+		row = "var(--nce-border-width-table-row) solid var(--nce-color-table-row-divider)"
+		blocks.append("\n".join([
+			f"/* {parent.get('component_name') or ''} › theme table {line.strip()} */",
+			f"{strong} {{\n\tborder-collapse: collapse;\n}}",
+			f"{strong} thead th, {strong} tfoot th, {strong} tfoot td {{\n\tbackground-color: var(--nce-color-table-header);\n\tcolor: var(--nce-color-table-header-fg, var(--nce-color-text));\n}}",
+			f"{weak} tbody tr:nth-child(even) {{\n\tbackground-color: var(--nce-color-row);\n}}",
+			f"{weak} tbody tr:nth-child(odd) {{\n\tbackground-color: var(--nce-color-row-alt);\n}}",
+			f"{strong} td {{\n\tborder-bottom: {row};\n\tborder-right: {col};\n}}",
+			f"{strong} th {{\n\tborder-right: {col};\n}}",
+			f"{strong} th:last-child, {strong} td:last-child {{\n\tborder-right: none;\n}}",
+		]))
+	return "\n\n".join(blocks)
+
+
 def _table_prefix(parent: dict) -> str | None:
 	sel = (parent.get("table_selector") or "").strip()
 	scope = (parent.get("table_scope_class") or "").strip()
@@ -107,6 +145,8 @@ def table_css_for(parent: dict) -> str:
 
 	component_name = parent.get("component_name") or ""
 	sel = (parent.get("table_selector") or "").strip()
+	scope = (parent.get("table_scope_class") or "").strip()
+	row_prefix = f".{scope} .{sel}" if scope else f".{sel}"
 	rules: list[str] = []
 
 	header_bg = (parent.get("table_header_bg_class") or "").strip()
@@ -120,14 +160,14 @@ def table_css_for(parent: dict) -> str:
 	row_fg = (parent.get("table_row_fg_type") or "mono").strip() or "mono"
 	row_decls = _table_bg_decls(row_bg, row_fg)
 	if row_decls:
-		target = f"{prefix} tbody tr:nth-child(even)"
+		target = f"{row_prefix} tbody tr:nth-child(even)"
 		rules.append(target + " {\n\t" + "\n\t".join(row_decls) + "\n}")
 
 	alt_bg = (parent.get("table_row_alt_bg_class") or "").strip()
 	alt_fg = (parent.get("table_row_alt_fg_type") or "mono").strip() or "mono"
 	alt_decls = _table_bg_decls(alt_bg, alt_fg)
 	if alt_decls:
-		target = f"{prefix} tbody tr:nth-child(odd)"
+		target = f"{row_prefix} tbody tr:nth-child(odd)"
 		rules.append(target + " {\n\t" + "\n\t".join(alt_decls) + "\n}")
 
 	header_line_w = (parent.get("table_header_line_class") or "").strip()
@@ -222,6 +262,7 @@ def publish_component_css() -> dict:
 		"has_table",
 		"table_selector",
 		"table_scope_class",
+		"theme_table_targets",
 		"table_header_bg_class",
 		"table_header_fg_type",
 		"table_row_bg_class",
@@ -255,22 +296,32 @@ def publish_component_css() -> dict:
 			continue
 		rows.append({**dict(r), "component_name": component_name})
 	element_css = generate_component_css(rows)
+	sorted_parents = sorted(
+		parents.values(),
+		key=lambda row: (row.get("component_name") if isinstance(row, dict) else row.component_name) or "",
+	)
+	bundle_blocks: list[str] = []
 	table_blocks: list[str] = []
-	for p in sorted(parents.values(), key=lambda row: (row.get("component_name") if isinstance(row, dict) else row.component_name) or ""):
+	for p in sorted_parents:
 		status = p.get("status") if isinstance(p, dict) else p.status
 		if status != "Present":
 			continue
 		parent_dict = dict(p) if isinstance(p, dict) else p.as_dict()
+		bundle = theme_table_bundle_for(parent_dict)
+		if bundle:
+			bundle_blocks.append(bundle)
 		block = table_css_for(parent_dict)
 		if block:
 			table_blocks.append(block)
+	body_parts: list[str] = []
+	if bundle_blocks:
+		body_parts.append("\n\n".join(bundle_blocks))
+	element_body = element_css[len(HEADER):].strip() if element_css.startswith(HEADER) else element_css.strip()
+	if element_body:
+		body_parts.append(element_body)
 	if table_blocks:
-		if element_css == HEADER:
-			css = HEADER + "\n\n" + "\n\n".join(table_blocks) + "\n"
-		else:
-			css = element_css.rstrip() + "\n\n" + "\n\n".join(table_blocks) + "\n"
-	else:
-		css = element_css
+		body_parts.append("\n\n".join(table_blocks))
+	css = HEADER + ("\n\n".join(body_parts) + "\n" if body_parts else "")
 	css_hash = write_published_css("nce_component_overrides.css", css)
 	frappe.cache.delete_value("assets_json")
 	frappe.clear_cache()

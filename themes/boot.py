@@ -12,3 +12,10 @@ def extend_bootinfo(bootinfo):
 	url = get_desk_theme_css_url()
 	if url:
 		bootinfo.desk_theme_css_url = url
+	try:
+		from themes.component_api import can_design, design_mode_enabled
+
+		if design_mode_enabled() and can_design():
+			bootinfo.nce_design_mode = {"enabled": True}
+	except Exception:
+		pass

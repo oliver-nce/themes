@@ -4,7 +4,10 @@
  "doctype": "DocType",
  "engine": "InnoDB",
  "field_order": [
-  "excluded_apps"
+  "excluded_apps",
+  "design_mode_section",
+  "design_mode_enabled",
+  "protected_classes"
  ],
  "fields": [
   {
@@ -12,10 +15,29 @@
    "fieldname": "excluded_apps",
    "fieldtype": "Small Text",
    "label": "Excluded Apps"
+  },
+  {
+   "fieldname": "design_mode_section",
+   "fieldtype": "Section Break",
+   "label": "Design Mode"
+  },
+  {
+   "default": "0",
+   "description": "When on, Administrators, System Managers and anyone who can edit Vue Components see a Design Mode button on pages that show scanned Vue parts.",
+   "fieldname": "design_mode_enabled",
+   "fieldtype": "Check",
+   "label": "Design Mode"
+  },
+  {
+   "default": "",
+   "description": "One class per line. Design Mode shows these but does not change them. Empty by default.",
+   "fieldname": "protected_classes",
+   "fieldtype": "Small Text",
+   "label": "Protected Classes"
   }
  ],
  "issingle": 1,
- "modified": "2026-10-31 00:00:00.000000",
+ "modified": "2026-11-01 14:00:00.000000",
  "modified_by": "Administrator",
  "module": "Themes",
  "name": "Theme Component Settings",

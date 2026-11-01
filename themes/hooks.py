@@ -51,9 +51,24 @@ app_include_css = [
 ]
 
 app_include_js = [
-    "/assets/themes/dist/theme-swatch-picker.umd.js",
+    "/assets/themes/dist/theme-swatch-picker.umd.js?v=20261101",
     "/assets/themes/js/desk_theme_loader.js",
+    "/assets/themes/js/design_mode.js?v=20261101n",
 ]
+
+web_include_js = [
+    "/assets/themes/dist/theme-swatch-picker.umd.js?v=20261101",
+    "/assets/themes/js/design_mode.js?v=20261101n",
+]
+web_include_css = [
+    _css_url("nce_theme.css"),
+    _css_url("nce_component_overrides.css"),
+    "/assets/themes/dist/theme-swatch-picker.css",
+]
+
+permission_query_conditions = {
+    "Vue Component": "themes.component_api.vue_component_permission_query",
+}
 
 extend_bootinfo = "themes.boot.extend_bootinfo"
 

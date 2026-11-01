@@ -62,6 +62,7 @@ frappe.ui.form.on("Vue Component", {
 		frm._vc_saved = JSON.parse(JSON.stringify(frm.doc.elements || []));
 		frm._vc_table_saved = _vc_table_saved_from_doc(frm.doc);
 		_vc_render_colours(frm);
+		_vc_render_inside(frm);
 	},
 	after_save(frm) {
 		_vc_reload_css();
@@ -214,7 +215,9 @@ function _vc_ensure_styles() {
 		".vc-colours-wrap .vc-table-preview th:last-child,.vc-colours-wrap .vc-table-preview td:last-child{border-right:none}" +
 		".vc-colours-wrap .vc-line-preview{display:block;width:48px;border-bottom-style:solid;border-bottom-color:var(--nce-color-table-row-divider,#d1d8dd)}" +
 		".vc-colours-wrap .vc-changed{background:var(--yellow-50)}" +
-		".vc-colours-wrap .vc-border-width,.vc-colours-wrap .vc-table-width{font-size:11px;height:24px;padding:2px 4px;max-width:120px;display:inline-block;width:auto}";
+		".vc-colours-wrap .vc-border-width,.vc-colours-wrap .vc-table-width{font-size:11px;height:24px;padding:2px 4px;max-width:120px;display:inline-block;width:auto}" +
+		".vc-inside .vc-inside-link{margin-right:12px}" +
+		".vc-inside .vc-section-title{margin:8px 0;font-weight:600;font-size:13px}";
 	let style = document.getElementById("vc-colours-style-v2");
 	if (!style) {
 		style = document.createElement("style");
@@ -222,6 +225,58 @@ function _vc_ensure_styles() {
 		document.head.appendChild(style);
 	}
 	style.textContent = css;
+}
+
+function _vc_render_inside(frm) {
+	if (frm.is_new() || !frm.fields_dict.inside_html) {
+		return;
+	}
+	const field = frm.fields_dict.inside_html;
+	const $wrapper = field.$wrapper;
+	_vc_ensure_styles();
+	frappe.call({
+		method: "themes.component_api.components_inside",
+		args: { name: frm.doc.name },
+		callback(r) {
+			const children = r.message || [];
+			if (!children.length) {
+				frm.toggle_display("inside_html", false);
+				$wrapper.empty();
+				return;
+			}
+			frm.toggle_display("inside_html", true);
+			const links = children
+				.map((child) => {
+					const docname = frappe.utils.escape_html(child.name);
+					const label = frappe.utils.escape_html(child.component_name);
+					return (
+						'<a href="#" class="vc-inside-link" data-name="' +
+						docname +
+						'">' +
+						label +
+						"</a>"
+					);
+				})
+				.join(" ");
+			$wrapper.html(
+				'<div class="vc-inside">' +
+					'<div class="vc-section-title">' +
+					__("Inside this component") +
+					"</div>" +
+					links +
+					"</div>"
+			);
+			$wrapper
+				.off("click.vc-inside")
+				.on("click.vc-inside", ".vc-inside-link", (e) => {
+					e.preventDefault();
+					const name = $(e.currentTarget).data("name");
+					if (name) {
+						frappe.set_route("Form", "Vue Component", name);
+					}
+				});
+		},
+	});
 }
 
 function _vc_element_swatch_html(first) {

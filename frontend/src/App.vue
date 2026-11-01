@@ -18,9 +18,46 @@ Theme editor shell with sidebar links for web and desk theme pages.
 						{{ section.label }}
 					</div>
 					<div class="space-y-1">
-						<template v-for="link in section.links" :key="link.to ?? link.action">
+						<template v-for="link in section.links" :key="link.to ?? link.toggle">
+							<div v-if="link.toggle" class="px-3 py-2">
+								<div class="flex items-center justify-between">
+									<span class="text-sm font-medium text-gray-600 dark:text-gray-300">{{ link.label }}</span>
+									<button
+										type="button"
+										role="switch"
+										:aria-checked="designMode.enabled"
+										:disabled="designMode.busy || !designMode.loaded"
+										class="relative inline-flex h-6 w-11 shrink-0 items-center rounded-full transition-colors disabled:opacity-50"
+										:class="designMode.enabled ? 'bg-gray-900' : 'bg-gray-300'"
+										@click="toggleDesignMode"
+									>
+										<span
+											class="inline-block h-5 w-5 rounded-full bg-white shadow transform transition-transform"
+											:class="designMode.enabled ? 'translate-x-5' : 'translate-x-0.5'"
+										></span>
+									</button>
+								</div>
+								<p class="mt-1 text-xs text-gray-500">
+									{{
+										designMode.busy
+											? designMode.enabled
+												? "Turning off…"
+												: "Scanning Vue files…"
+											: designMode.enabled
+												? "On"
+												: "Off"
+									}}
+								</p>
+								<p
+									v-if="designMode.message"
+									class="mt-1 text-xs"
+									:class="designMode.error ? 'text-red-600' : 'text-green-700'"
+								>
+									{{ designMode.message }}
+								</p>
+							</div>
 							<a
-								v-if="link.to && link.popup"
+								v-else-if="link.to && link.popup"
 								:href="link.to"
 								class="block px-3 py-2 rounded-md text-sm font-medium text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800"
 								@click.prevent="openPreviewPopup(link.to)"
@@ -35,15 +72,6 @@ Theme editor shell with sidebar links for web and desk theme pages.
 							>
 								{{ link.label }}
 							</router-link>
-							<button
-								v-else-if="link.action"
-								type="button"
-								class="block w-full text-left px-3 py-2 rounded-md text-sm font-medium text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800"
-								:disabled="openingVueComponents"
-								@click="openVueComponents"
-							>
-								{{ link.label }}
-							</button>
 						</template>
 					</div>
 				</div>
@@ -56,13 +84,20 @@ Theme editor shell with sidebar links for web and desk theme pages.
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from "vue"
+import { computed, onMounted, reactive } from "vue"
 import { useRoute } from "vue-router"
 import { openPreviewPopup } from "@/utils/previewWindow"
 
 const route = useRoute()
 const isStandalone = computed(() => !!route.meta.standalone)
-const openingVueComponents = ref(false)
+
+const designMode = reactive({
+	enabled: false,
+	loaded: false,
+	busy: false,
+	message: "",
+	error: false,
+})
 
 const navSections = [
 	{
@@ -81,69 +116,59 @@ const navSections = [
 	},
 	{
 		label: "Vue Implementations",
-		links: [{ label: "Apply to Vue Files", action: "vue-components" }],
+		links: [{ label: "Design Mode", toggle: "design-mode" }],
 	},
 ]
 
-function vueComponentsErrorMessage(data: Record<string, unknown>): string {
-	let detail = ""
-	if (data.exc_type) {
-		detail = String(data.exc_type)
-	} else if (data.exception) {
-		detail = String(data.exception)
-	} else if (data._server_messages) {
-		try {
-			const parsed = JSON.parse(String(data._server_messages)) as unknown[]
-			detail = parsed
-				.map((m) => {
-					if (typeof m === "string") {
-						const inner = JSON.parse(m) as { message?: string }
-						return inner.message ?? m
-					}
-					return String(m)
-				})
-				.join(" ")
-		} catch {
-			detail = String(data._server_messages)
-		}
-	}
-	return detail
-		? `Could not open Vue Components. ${detail}`
-		: "Could not open Vue Components."
+async function callApi(method: string, body: Record<string, unknown> = {}) {
+	const res = await fetch(`/api/method/themes.component_api.${method}`, {
+		method: "POST",
+		headers: {
+			"Content-Type": "application/json",
+			Accept: "application/json",
+			"X-Frappe-CSRF-Token": (window as Window & { csrf_token?: string }).csrf_token || "",
+		},
+		body: JSON.stringify(body),
+	})
+	const data = await res.json()
+	if (!res.ok || data.exc_type) throw new Error(data.exc_type || "Request failed")
+	return data.message
 }
 
-async function openVueComponents() {
-	const tab = window.open("about:blank", "_blank")
-	openingVueComponents.value = true
+async function loadDesignMode() {
 	try {
-		const res = await fetch("/api/method/themes.component_api.open_vue_components", {
-			method: "POST",
-			headers: {
-				"X-Frappe-CSRF-Token":
-					(window as Window & { csrf_token?: string }).csrf_token || "",
-				Accept: "application/json",
-			},
-		})
-		const data = (await res.json()) as Record<string, unknown> & {
-			message?: { url?: string }
-		}
-		const failed = !res.ok || data.exc_type || data.exception
-		if (failed) {
-			tab?.close()
-			window.alert(vueComponentsErrorMessage(data))
-			return
-		}
-		const url = data.message?.url || "/app/vue-component"
-		if (tab) {
-			tab.location.href = url
-		} else {
-			window.open(url, "_blank")
-		}
+		const status = await callApi("get_design_mode_status")
+		designMode.enabled = !!status?.enabled
+		designMode.loaded = true
 	} catch {
-		tab?.close()
-		window.alert("Could not open Vue Components.")
-	} finally {
-		openingVueComponents.value = false
+		designMode.message = "Could not read the Design Mode setting."
+		designMode.error = true
 	}
 }
+
+async function toggleDesignMode() {
+	const next = !designMode.enabled
+	designMode.busy = true
+	designMode.message = ""
+	designMode.error = false
+	try {
+		const res = await callApi("set_design_mode_enabled", { enabled: next ? 1 : 0 })
+		designMode.enabled = !!res?.enabled
+		if (res?.scan?.error) {
+			designMode.message = "On, but the scan failed: " + res.scan.error
+			designMode.error = true
+		} else if (res?.scan) {
+			designMode.message = `Scanned ${res.scan.found} Vue files (${res.scan.new} new). Reload a Vue page to see the button.`
+		} else {
+			designMode.message = "Off. The Design Mode button is hidden everywhere."
+		}
+	} catch (err) {
+		designMode.message = (err as Error)?.message || "Could not change Design Mode."
+		designMode.error = true
+	} finally {
+		designMode.busy = false
+	}
+}
+
+onMounted(loadDesignMode)
 </script>

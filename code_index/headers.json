@@ -642,41 +642,38 @@
    }
   },
   "frontend/src/App.vue": {
-   "body_hash": "966ed1f361b5dcfc281ef0502601f3fa0778c3bcbe36efaaaf49523351bea432",
+   "body_hash": "2be82c7def0fecf6964b5ad77ca9de4ea993a5facaf0300842f99581e6846e21",
    "header": {
     "format": 1,
     "gotchas": [
-     "Standalone pages such as preview render without the sidebar shell when route meta standalone is set."
+     "Standalone pages (e.g. preview) render without the shell when route.meta.standalone is set."
     ],
     "keywords": [
-     "Themes App",
-     "themes-app",
      "navSections",
+     "openPreviewPopup",
      "isStandalone",
-     "router-view",
-     "Desk Themes",
-     "Theme Editor",
+     "themes-app",
      "openVueComponents",
-     "vue-components",
-     "Apply to Vue Files",
-     "standalone",
-     "sidebar navigation"
+     "vueComponentsErrorMessage",
+     "theme-settings",
+     "desk-themes",
+     "route.meta.standalone"
     ],
     "purpose": "Theme editor shell with sidebar links for web and desk theme pages.",
-    "read_when": "When changing themes app layout, sidebar navigation, standalone preview routing, or Apply to Vue Files."
+    "read_when": "When changing Themes app layout, nav sections, preview popups, or Apply to Vue Files."
    },
    "labels": {
     "frontend/src/App.vue::App": {
-     "body_hash": "56ed0c97f3",
-     "label": "Root layout with sidebar nav to theme routes; omits shell for standalone router views."
+     "body_hash": "289ba17c47",
+     "label": "Root layout with sidebar nav and main router-view; standalone routes skip the shell."
     },
     "frontend/src/App.vue::openVueComponents": {
      "body_hash": "e2a7759be0",
-     "label": "POSTs themes.component_api.open_vue_components then navigates a new tab to the returned Desk URL."
+     "label": "POSTs themes.component_api.open_vue_components and sends a new tab to the returned Desk URL."
     },
     "frontend/src/App.vue::vueComponentsErrorMessage": {
      "body_hash": "2e613852ac",
-     "label": "Formats Frappe API error fields into an alert message when Vue Components cannot open."
+     "label": "Formats Frappe error JSON into alert text when Vue Components cannot open."
     }
    }
   },
@@ -719,6 +716,32 @@
     ],
     "purpose": "Labelled hex colour input with a native colour picker and an optional generated shade strip.",
     "read_when": "When changing the single-colour field or its optional shade strip."
+   }
+  },
+  "frontend/src/components/DeskStyleSamples.vue": {
+   "body_hash": "73ede15b527b261de98c484eae95a3c72e65f85589a048014b8f434b323c4bf6",
+   "header": {
+    "format": 1,
+    "gotchas": [],
+    "keywords": [
+     "DeskStyleSamples",
+     "vars",
+     "desk-samples",
+     "surfaceSwatches",
+     "--bg-color",
+     "listRows",
+     "ganttRows",
+     "preview-surface",
+     "section-label"
+    ],
+    "purpose": "Sample elements for each Desk Theme Editor style, driven live by Desk CSS variables.",
+    "read_when": "When extending Desk preview swatches, controls, list, form, or Gantt samples tied to CSS vars."
+   },
+   "labels": {
+    "frontend/src/components/DeskStyleSamples.vue::DeskStyleSamples": {
+     "body_hash": "588eff8fe8",
+     "label": "Applies vars as inline CSS on mock Desk sections for DeskThemePreviewPage style samples view."
+    }
    }
   },
   "frontend/src/components/EditorSection.vue": {
@@ -1098,317 +1121,448 @@
    }
   },
   "frontend/src/pages/DeskThemeHomePage.vue": {
-   "body_hash": "7a492757b6cbc016eb1cb798a2406f1f571ad26c2650d46275ee94fad2c9a85d",
+   "body_hash": "4ecd34114a9f8778425dabed4472b4b058b3d8f27925b45d01bc5c24b100056a",
    "header": {
     "format": 1,
     "gotchas": [],
     "keywords": [
      "Desk Themes",
-     "Desk Theme Editor",
-     "Desk Theme Preview",
+     "DeskThemeHomePage",
+     "openPreviewPopup",
+     "desk-themes/preview",
+     "theme-settings",
      "nce_desk_theme.css",
-     "Frappe Desk",
-     "navbar",
-     "Gantt"
+     "home-card"
     ],
     "purpose": "Landing page that links to the Desk Theme Editor and the live Desk Theme Preview.",
-    "read_when": "Changing the Desk Themes home cards or their routes to the editor and preview."
+    "read_when": "When editing Desk Themes home copy, cards, or how desk preview opens from the router home."
+   },
+   "labels": {
+    "frontend/src/pages/DeskThemeHomePage.vue::DeskThemeHomePage": {
+     "body_hash": "f38ea16e41",
+     "label": "Desk home with cards to the editor route and popup desk preview via openPreviewPopup."
+    }
    }
   },
   "frontend/src/pages/DeskThemePreviewPage.vue": {
-   "body_hash": "5f0b618de9dbf30b4a3f70bdd6e5eb152bce920583a043427c6b8adb24fe3e81",
-   "header": {
-    "format": 1,
-    "gotchas": [],
-    "keywords": [
-     "nce-desk-theme-update",
-     "LIVE DESK PREVIEW",
-     "applyDeskThemeVars",
-     "deskFrame",
-     "Frappe Desk preview",
-     "previewTargets",
-     "onFrameLoad"
-    ],
-    "purpose": "Iframe preview that applies Desk Theme Editor CSS variables onto live Frappe Desk pages.",
-    "read_when": "Changing the desk preview iframe targets or the nce-desk-theme-update message handler."
-   }
-  },
-  "frontend/src/pages/DeskThemeSettingsPage.vue": {
-   "body_hash": "67277f74fd5b98eed57d7baefc4d7e259707e0bd1c59d9eaaa03f9a3db521c0f",
+   "body_hash": "3c8a741610a6261a4457ea99c33cfffc51e6fd649c215463c547fa41cf453947",
    "header": {
     "format": 1,
     "gotchas": [
-     "Palette primary and brand colours set swatches only and are not published to Desk CSS.",
-     "Save or revert before changing Active/Inactive availability when the form is dirty.",
-     "Save as base desk theme requires password and commits bundled files for new installs."
+     "Iframe is view-only: open list records and return, but no other navigation or edits.",
+     "Routes are compared by Frappe route, not URL (v16 list paths differ under /app and /desk).",
+     "After reload with no editor message yet, initial vars come from saved theme via get_active_desk_theme_editor."
+    ],
+    "keywords": [
+     "DeskThemePreviewPage",
+     "lockLivePage",
+     "nce-desk-theme-update",
+     "BroadcastChannel",
+     "applyVarsToIframe",
+     "SAMPLES_PATH",
+     "DeskStyleSamples",
+     "get_active_desk_theme_editor",
+     "desk-preview-frame",
+     "nce-desk-preview-ready"
+    ],
+    "purpose": "Iframe preview that applies Desk Theme Editor CSS variables onto live Frappe Desk pages.",
+    "read_when": "When changing live Desk preview, editor theme sync, samples toggle, or iframe view-only lock."
+   },
+   "labels": {
+    "frontend/src/pages/DeskThemePreviewPage.vue::DeskThemePreviewPage": {
+     "body_hash": "6dd9ba0dff",
+     "label": "Toolbar to pick samples or live Desk URLs; syncs editor CSS vars to samples or iframe."
+    },
+    "frontend/src/pages/DeskThemePreviewPage.vue::DeskWindow": {
+     "body_hash": "231054b740",
+     "label": "Iframe window type including optional frappe routing helpers."
+    },
+    "frontend/src/pages/DeskThemePreviewPage.vue::FORM_CONTROLS": {
+     "body_hash": "5874e6304d",
+     "label": "DOM selector for fields and rich editors blocked from editing in form view."
+    },
+    "frontend/src/pages/DeskThemePreviewPage.vue::INERT_AREAS": {
+     "body_hash": "eac94cfdb7",
+     "label": "Sidebar and dock regions disabled for pointer events in the preview iframe."
+    },
+    "frontend/src/pages/DeskThemePreviewPage.vue::LIST_TOOLS": {
+     "body_hash": "d41b1ed07d",
+     "label": "List filters and popovers still usable on list view under the preview lock."
+    },
+    "frontend/src/pages/DeskThemePreviewPage.vue::SAFE_UI": {
+     "body_hash": "c5260fafa9",
+     "label": "Tabs, nav links, and dropdown toggles allowed to stay clickable in preview."
+    },
+    "frontend/src/pages/DeskThemePreviewPage.vue::SAMPLES_PATH": {
+     "body_hash": "4ed2a3be80",
+     "label": "Internal target value that shows DeskStyleSamples instead of the live iframe."
+    },
+    "frontend/src/pages/DeskThemePreviewPage.vue::SAVE_LABELS": {
+     "body_hash": "66e651e3a4",
+     "label": "Lowercase labels identifying Save and Update buttons to hide during preview."
+    },
+    "frontend/src/pages/DeskThemePreviewPage.vue::applyVarsToIframe": {
+     "body_hash": "312c869a06",
+     "label": "Writes theme CSS variables onto the iframe documentElement using applyDeskThemeVars."
+    },
+    "frontend/src/pages/DeskThemePreviewPage.vue::controlLabel": {
+     "body_hash": "63527e69d2",
+     "label": "Reads data-label or text from a control for save-button matching."
+    },
+    "frontend/src/pages/DeskThemePreviewPage.vue::handleMessage": {
+     "body_hash": "fa7caf4bde",
+     "label": "Accepts nce-desk-theme-update from window or BroadcastChannel and refreshes iframe vars."
+    },
+    "frontend/src/pages/DeskThemePreviewPage.vue::lockLivePage": {
+     "body_hash": "f8ed9e3953",
+     "label": "One-time setup of view-only click, input, route guard, and save hiding on iframe load."
+    },
+    "frontend/src/pages/DeskThemePreviewPage.vue::lockLivePage.adoptBase": {
+     "body_hash": "184b193515",
+     "label": "Records first iframe route and doctype as the baseline for allowed browsing."
+    },
+    "frontend/src/pages/DeskThemePreviewPage.vue::lockLivePage.block": {
+     "body_hash": "bb6cad7196",
+     "label": "Prevents default and stops propagation for disallowed preview interactions."
+    },
+    "frontend/src/pages/DeskThemePreviewPage.vue::lockLivePage.blockEditing": {
+     "body_hash": "98423ae68c",
+     "label": "Blocks editing events on form layout unless preview browsing rules allow them."
+    },
+    "frontend/src/pages/DeskThemePreviewPage.vue::lockLivePage.getRoute": {
+     "body_hash": "381432f1f0",
+     "label": "Returns current Frappe route array from the iframe window."
+    },
+    "frontend/src/pages/DeskThemePreviewPage.vue::lockLivePage.isAllowedLink": {
+     "body_hash": "e23c4efbbb",
+     "label": "Permits in-app anchor hrefs matching base path or doctype slug rules."
+    },
+    "frontend/src/pages/DeskThemePreviewPage.vue::lockLivePage.isAllowedRoute": {
+     "body_hash": "ee093ef475",
+     "label": "Allows same doctype List/Form hops or exact base route only."
+    },
+    "frontend/src/pages/DeskThemePreviewPage.vue::lockLivePage.isFormView": {
+     "body_hash": "ff2a94b536",
+     "label": "Detects Form route to tune which clicks and edits are blocked."
+    },
+    "frontend/src/pages/DeskThemePreviewPage.vue::lockLivePage.lockSaveButtons": {
+     "body_hash": "ce60c5c8a8",
+     "label": "Hides Save/Update actions and shows a disabled Cannot Save stub."
+    },
+    "frontend/src/pages/DeskThemePreviewPage.vue::lockLivePage.routeKey": {
+     "body_hash": "5fb8c9724c",
+     "label": "Serializes a route array for comparing allowed navigation state."
+    },
+    "frontend/src/pages/DeskThemePreviewPage.vue::lockLivePage.slug": {
+     "body_hash": "5daa81fc2a",
+     "label": "Resolves doctype slug via frappe router or a fallback hyphen slug."
+    },
+    "frontend/src/pages/DeskThemePreviewPage.vue::onFrameLoad": {
+     "body_hash": "9ac3da9ffd",
+     "label": "Reapplies stored vars and runs lockLivePage when the Desk iframe loads."
+    },
+    "frontend/src/pages/DeskThemePreviewPage.vue::trimPath": {
+     "body_hash": "6ea1d0a434",
+     "label": "Normalizes paths by removing trailing slashes for link equality checks."
+    }
+   }
+  },
+  "frontend/src/pages/DeskThemeSettingsPage.vue": {
+   "body_hash": "c4c88accc1b1e7fb8e36a2e4b81b8d06985a438dafde6076c73cf8d30c36d600",
+   "header": {
+    "format": 1,
+    "gotchas": [
+     "Palette (editor only) swatches are not published to Desk CSS.",
+     "Changing primary or brand palette colours does not recolour Desk directly.",
+     "Density presets and Scale with body size are editor-only and not published to Desk CSS.",
+     "Border tokens affect structural lines; flat Desk design removes borders from individual inputs.",
+     "Save as base desk theme bundles into the app; commit and push after running.",
+     "Legacy border_radius affects only older Desk elements still using --border-radius."
     ],
     "keywords": [
      "Desk Theme Editor",
-     "useThemeEditor",
-     "deskPanelHelp",
-     "DENSITY_PRESETS",
-     "nce-desk-theme-update",
-     "save_desk_theme",
-     "list_desk_themes",
-     "applyLiveThemeVars",
-     "SwatchPicker",
-     "SizeSlider",
+     "NCE Desk Theme",
+     "useDeskTheme",
+     "deskPayloadToCssVars",
+     "BroadcastChannel",
+     "nce-desk-theme-preview",
+     "density preset",
+     "Gantt chart",
+     "themes.api.save_desk_theme",
+     "Restore to Base Desk Theme",
+     "font_weight_body",
      "text_scale_mode",
-     "restore to base"
+     "deskPanelHelp",
+     "Open Preview",
+     "list_desk_themes"
     ],
-    "purpose": "Desk Theme Editor for NCE Desk Theme colours, shape, typography, Gantt, and live preview.",
-    "read_when": "When editing desk theme save flow, tabs, density presets, preview postMessage, or Active/Inactive status."
+    "purpose": "Desk theme editor for NCE Desk Theme colours, shape, typography, Gantt, density, and live desk preview.",
+    "read_when": "Open when editing Frappe Desk NCE desk themes, toggling Active/Inactive, restoring base, or syncing preview via BroadcastChannel."
    },
    "labels": {
     "frontend/src/pages/DeskThemeSettingsPage.vue::ALL_FIELDS": {
      "body_hash": "8061669f8a",
-     "label": "Complete list of theme_name and payload keys bound in the desk theme form."
+     "label": "Lists every reactive form key including theme_name and all desk colour, shape, layout, typography, and Gantt tokens."
     },
     "frontend/src/pages/DeskThemeSettingsPage.vue::BODY_WEIGHT_MAX": {
      "body_hash": "22233cdf41",
-     "label": "Upper bound for body and bold weight SizeSlider controls."
+     "label": "Upper bound (900) for body and bold weight sliders."
     },
     "frontend/src/pages/DeskThemeSettingsPage.vue::BODY_WEIGHT_MIN": {
      "body_hash": "949253fb00",
-     "label": "Lower bound for body and bold weight SizeSlider controls."
+     "label": "Lower bound (100) for body and bold weight sliders."
     },
     "frontend/src/pages/DeskThemeSettingsPage.vue::COLOR_FIELDS": {
      "body_hash": "63e6359ae8",
-     "label": "Payload keys normalized to uppercase hex in canonicalPayload for dirty checks."
+     "label": "Payload keys treated as colours and uppercased hex in canonicalPayload."
     },
     "frontend/src/pages/DeskThemeSettingsPage.vue::DEFAULTS": {
      "body_hash": "497a826d33",
-     "label": "Factory default strings for each form field before load or restore."
+     "label": "Fallback string values for every form field when loading or canonicalizing payloads."
     },
     "frontend/src/pages/DeskThemeSettingsPage.vue::DENSITY_PRESETS": {
      "body_hash": "9702e2d149",
-     "label": "Token values for compact, default, and comfortable layout density bundles."
+     "label": "Token values for compact, default, and comfortable density bundles."
     },
     "frontend/src/pages/DeskThemeSettingsPage.vue::DENSITY_PRESET_IDS": {
      "body_hash": "e82849adbf",
-     "label": "Named density preset identifiers compact, default, and comfortable."
+     "label": "Allowed compact, default, and comfortable density preset identifiers."
     },
     "frontend/src/pages/DeskThemeSettingsPage.vue::DENSITY_PRESET_KEYS": {
      "body_hash": "0e74191701",
-     "label": "Spacing, padding, margin, list row, and input fields changed by density presets."
+     "label": "Form keys overwritten together when applying a density preset."
     },
     "frontend/src/pages/DeskThemeSettingsPage.vue::DensityMode": {
      "body_hash": "4e6377d4b3",
-     "label": "Preset id or custom when spacing tokens no longer match a preset."
+     "label": "Density preset id or custom when fine-tuned spacing no longer matches a preset."
     },
     "frontend/src/pages/DeskThemeSettingsPage.vue::DensityPresetId": {
      "body_hash": "6b15387f1a",
-     "label": "Type of the three built-in density preset ids."
+     "label": "Type for the three named desk density presets."
     },
     "frontend/src/pages/DeskThemeSettingsPage.vue::DeskThemeSettingsPage": {
-     "body_hash": "3db16f8321",
-     "label": "Router page to edit NCE Desk Theme with tabbed form, API CRUD, live CSS, and preview window."
+     "body_hash": "407154f651",
+     "label": "Route page for the Desk Theme Editor: tabbed form, CRUD toolbar, preview popup, and themes.api desk endpoints via useThemeEditor."
     },
     "frontend/src/pages/DeskThemeSettingsPage.vue::FONT_OPTIONS": {
      "body_hash": "7d94ff90df",
-     "label": "Body font choices shown in FontSelectField on the typography tab."
+     "label": "Curated body font names shown in FontSelectField on the typography tab."
     },
     "frontend/src/pages/DeskThemeSettingsPage.vue::FormKey": {
      "body_hash": "af72b70378",
-     "label": "Union type of every desk theme editor form field name."
+     "label": "Union type of keys allowed on the desk theme editor form."
     },
     "frontend/src/pages/DeskThemeSettingsPage.vue::PAYLOAD_FIELDS": {
      "body_hash": "ecbdcb566b",
-     "label": "ALL_FIELDS minus theme_name; keys sent when saving desk theme payload."
+     "label": "Subset of ALL_FIELDS persisted on save, excluding theme_name."
     },
     "frontend/src/pages/DeskThemeSettingsPage.vue::applyAutoTextScale": {
      "body_hash": "fdafaec618",
-     "label": "Updates text_xs, text_sm, text_lg from body size using 12/13/16 over 14."
+     "label": "Recomputes text_xs, text_sm, and text_lg from body size when auto mode is on."
     },
     "frontend/src/pages/DeskThemeSettingsPage.vue::applyDensityPreset": {
      "body_hash": "9159bb8744",
-     "label": "Sets form density id and copies preset values into layout fields."
+     "label": "Sets form.density and copies coordinated spacing, padding, margin, list, and input tokens."
     },
     "frontend/src/pages/DeskThemeSettingsPage.vue::applyLiveThemeVars": {
      "body_hash": "c562c976cc",
-     "label": "Applies computeCSSVariables to document root through applyDeskThemeVars while editing."
+     "label": "Applies computeCSSVariables to documentElement through applyDeskThemeVars while editing."
     },
     "frontend/src/pages/DeskThemeSettingsPage.vue::applyPayloadToForm": {
      "body_hash": "a96934aedc",
-     "label": "Hydrates form from API payload, inferring density and fixing text_scale_mode."
+     "label": "Resets form to defaults then merges API payload, inferring density and text scale modes."
     },
     "frontend/src/pages/DeskThemeSettingsPage.vue::buildPayloadFromForm": {
      "body_hash": "f34e0a5270",
-     "label": "Serializes PAYLOAD_FIELDS from reactive form for save and preview."
+     "label": "Copies PAYLOAD_FIELDS from reactive form into a save payload object."
     },
     "frontend/src/pages/DeskThemeSettingsPage.vue::canonicalPayload": {
      "body_hash": "8179ecf312",
-     "label": "Fills missing keys from DEFAULTS and uppercases hex colours for saved snapshot compare."
+     "label": "Normalizes a source record to defaults, uppercasing colour hex fields for dirty comparison."
     },
     "frontend/src/pages/DeskThemeSettingsPage.vue::clampBodyWeight": {
      "body_hash": "f6f693e0d5",
-     "label": "Parses weight strings and clamps to BODY_WEIGHT_MIN and BODY_WEIGHT_MAX."
+     "label": "Parses and clamps font weight inputs to the allowed slider range for display labels."
     },
     "frontend/src/pages/DeskThemeSettingsPage.vue::closeConfirmDialog": {
      "body_hash": "823436b753",
-     "label": "Closes confirm modal when not busy saving."
+     "label": "Dismisses the unsaved-changes modal unless a confirm action is in progress."
     },
     "frontend/src/pages/DeskThemeSettingsPage.vue::closeDeleteDialog": {
      "body_hash": "e600507f00",
-     "label": "Closes delete dialog unless delete submit is running."
+     "label": "Closes delete dialog unless delete submit is in progress."
     },
     "frontend/src/pages/DeskThemeSettingsPage.vue::closeRenameDialog": {
      "body_hash": "ff9457e58c",
-     "label": "Closes rename dialog unless rename API call is in flight."
+     "label": "Closes rename dialog when rename request is not running."
     },
     "frontend/src/pages/DeskThemeSettingsPage.vue::closeSaveAsDialog": {
      "body_hash": "af3fb431df",
-     "label": "Closes save-as dialog unless create submit is running."
+     "label": "Closes save-as dialog when not busy creating a theme."
     },
     "frontend/src/pages/DeskThemeSettingsPage.vue::computeCSSVariables": {
      "body_hash": "1ec467714d",
-     "label": "Builds Desk CSS var map from current form via deskPayloadToCssVars."
+     "label": "Builds live Desk CSS variables from the current form via deskPayloadToCssVars."
     },
     "frontend/src/pages/DeskThemeSettingsPage.vue::confirmDiscardAndContinue": {
      "body_hash": "cb0346176c",
-     "label": "Reverts or reloads theme then completes switch or base restore without saving."
+     "label": "Discards edits and switches theme or restores base per confirm dialog action."
     },
     "frontend/src/pages/DeskThemeSettingsPage.vue::confirmSaveAndContinue": {
      "body_hash": "b4e90f0dcc",
-     "label": "Saves then completes pending theme switch or base restore from dialog."
+     "label": "Saves then loads pending theme or runs restore after confirm dialog."
     },
     "frontend/src/pages/DeskThemeSettingsPage.vue::densityPresetMatches": {
      "body_hash": "084c5e54d1",
-     "label": "True when all DENSITY_PRESET_KEYS equal the chosen preset row."
+     "label": "Returns whether current form values match a named density preset."
     },
     "frontend/src/pages/DeskThemeSettingsPage.vue::densityPresetTokenEqual": {
      "body_hash": "0f3c7f0e96",
-     "label": "Compares spacing floats or exact strings when checking preset match."
+     "label": "Compares spacing rem floats and other preset tokens for equality checks."
     },
     "frontend/src/pages/DeskThemeSettingsPage.vue::deskPanelHelp": {
      "body_hash": "3277c30da3",
-     "label": "Panel help text linking each control group to Desk CSS variables for EditorSection."
+     "label": "PanelHelpContent map wired into EditorSection help dialogs explaining Desk CSS variable targets."
     },
     "frontend/src/pages/DeskThemeSettingsPage.vue::fontCSS": {
      "body_hash": "eec945a8ef",
-     "label": "Typography preview font-family via deskFontStack with system UI fallback."
+     "label": "Builds a CSS font-family stack for typography preview using deskFontStack with system fallback."
+    },
+    "frontend/src/pages/DeskThemeSettingsPage.vue::handlePreviewReady": {
+     "body_hash": "b563874691",
+     "label": "Answers nce-desk-preview-ready postMessage with unsaved editor CSS variables."
     },
     "frontend/src/pages/DeskThemeSettingsPage.vue::handleSave": {
      "body_hash": "59f3cd28f0",
-     "label": "Posts buildPayloadFromForm to themes.api.save_desk_theme for editingTheme."
+     "label": "Submits buildPayloadFromForm to themes.api.save_desk_theme for the editing theme."
     },
     "frontend/src/pages/DeskThemeSettingsPage.vue::inferDensityFromForm": {
      "body_hash": "424869b869",
-     "label": "Picks matching preset id or custom from current layout token values."
+     "label": "Derives custom or preset density mode from current spacing and size fields."
     },
     "frontend/src/pages/DeskThemeSettingsPage.vue::labels": {
      "body_hash": "55b9ffe048",
-     "label": "Theme option label strings used to size the theme select dropdown width."
+     "label": "Maps themesList rows through themeOptionLabel to size the theme select min width."
     },
     "frontend/src/pages/DeskThemeSettingsPage.vue::normalizeDensityMode": {
      "body_hash": "6d1caf2f25",
-     "label": "Coerces unknown density strings to a valid preset or custom mode."
+     "label": "Coerces saved density strings to a valid DensityMode with default fallback."
     },
     "frontend/src/pages/DeskThemeSettingsPage.vue::onThemeChange": {
      "body_hash": "6df57be925",
-     "label": "Theme select handler that confirms when dirty before loadTheme."
+     "label": "Theme select handler that prompts when dirty before loadTheme."
     },
     "frontend/src/pages/DeskThemeSettingsPage.vue::openConfirmDialog": {
      "body_hash": "aff4fa6def",
-     "label": "Shows unsaved-changes modal before switching themes or restore to base."
+     "label": "Opens unsaved-changes modal before switching themes or restoring from base."
     },
     "frontend/src/pages/DeskThemeSettingsPage.vue::openDeleteDialog": {
      "body_hash": "15814744bb",
      "label": "Opens delete confirmation when inactive non-default theme can be removed."
     },
     "frontend/src/pages/DeskThemeSettingsPage.vue::openPreview": {
-     "body_hash": "1e41b58cfb",
-     "label": "Opens or focuses /desk-themes/preview and pushes latest CSS variables."
+     "body_hash": "318a5b06a5",
+     "label": "Opens or focuses /desk-themes/preview popup and pushes current CSS variables."
     },
     "frontend/src/pages/DeskThemeSettingsPage.vue::openRenameDialog": {
      "body_hash": "b3a5170bc0",
-     "label": "Opens rename dialog when canRenameTheme allows editing display name."
+     "label": "Opens rename modal when canRenameTheme allows renaming display name."
     },
     "frontend/src/pages/DeskThemeSettingsPage.vue::openSaveAsDialog": {
      "body_hash": "c3f76516ab",
-     "label": "Opens create-new-theme dialog prefilled with copy of current theme name."
+     "label": "Opens create-new-desk-theme dialog prefilled with a copy name."
     },
     "frontend/src/pages/DeskThemeSettingsPage.vue::parseBodySizePx": {
      "body_hash": "92af1a1614",
-     "label": "Reads numeric px from font_size defaulting to 14 for text scale math."
+     "label": "Parses font_size px for auto text scale ratio math."
     },
     "frontend/src/pages/DeskThemeSettingsPage.vue::pushToPreview": {
-     "body_hash": "37d9d461c9",
-     "label": "Sends nce-desk-theme-update postMessage to open desk-themes preview window."
+     "body_hash": "fb98be510c",
+     "label": "Posts nce-desk-theme-update variables to BroadcastChannel and the open preview window."
     },
     "frontend/src/pages/DeskThemeSettingsPage.vue::requestRestoreToBase": {
      "body_hash": "158308715f",
-     "label": "Starts restore from site base desk theme with confirm if form is dirty."
+     "label": "Prompts or loads base desk payload from themes.api.get_base_desk_theme_payload when not on base."
     },
     "frontend/src/pages/DeskThemeSettingsPage.vue::requestSetAsDefaultTheme": {
      "body_hash": "a562a4be64",
-     "label": "Submits set_base_desk_theme for current theme then reloads editor state."
+     "label": "Calls themes.api.set_base_desk_theme to make the edited theme the site base desk theme."
     },
     "frontend/src/pages/DeskThemeSettingsPage.vue::restoreToBaseConfirmed": {
      "body_hash": "ee66ea2799",
-     "label": "Loads get_base_desk_theme_payload into form and applyLiveThemeVars."
+     "label": "Applies base payload to form and refreshes live Desk CSS on document root."
     },
     "frontend/src/pages/DeskThemeSettingsPage.vue::revertChanges": {
      "body_hash": "ae03eafecc",
-     "label": "Restores form fields from last saved snapshot via applyPayloadToForm."
+     "label": "Reloads last saved snapshot into the form via applyPayloadToForm."
     },
     "frontend/src/pages/DeskThemeSettingsPage.vue::setTextScaleAuto": {
      "body_hash": "5139f988a6",
-     "label": "Toggles text_scale_mode between auto and manual from typography checkbox."
+     "label": "Sets text_scale_mode to auto or manual from the typography toggle."
     },
     "frontend/src/pages/DeskThemeSettingsPage.vue::setThemeStatus": {
      "body_hash": "1f5f85bdde",
-     "label": "Updates Active or Inactive on saved snapshot when form is not dirty."
+     "label": "Updates Active or Inactive availability via save_desk_theme with saved snapshot payload."
     },
     "frontend/src/pages/DeskThemeSettingsPage.vue::submitDelete": {
      "body_hash": "4de2374d92",
-     "label": "Deletes current theme via API and loads another from refreshed list."
+     "label": "Deletes desk theme via API then loads another theme from the refreshed list."
     },
     "frontend/src/pages/DeskThemeSettingsPage.vue::submitRename": {
      "body_hash": "8a7f8b255d",
-     "label": "Calls rename_desk_theme then reloads list and current theme."
+     "label": "Renames desk theme through themes.api.rename_desk_theme and reloads editor."
     },
     "frontend/src/pages/DeskThemeSettingsPage.vue::submitSaveAs": {
      "body_hash": "d2b44e6881",
-     "label": "Creates desk theme via create_desk_theme with trimmed saveAsDialog name."
+     "label": "Creates a new NCE Desk Theme from current form via themes.api.create_desk_theme."
     },
     "frontend/src/pages/DeskThemeSettingsPage.vue::submitSaveAsBaseTheme": {
      "body_hash": "636eb3ab4e",
-     "label": "Password-gated save_as_base_desk_theme bundling Default desk theme into the app."
+     "label": "Password-gated themes.api.save_as_base_desk_theme bundling Default desk theme into the app."
     },
     "frontend/src/pages/DeskThemeSettingsPage.vue::themeFromQuery": {
      "body_hash": "c28aed2b09",
-     "label": "Returns trimmed theme query param for deep-linking a specific desk theme."
+     "label": "Reads the theme query parameter from vue-router for deep-linking a desk theme."
     },
     "frontend/src/pages/DeskThemeSettingsPage.vue::themeOptionLabel": {
      "body_hash": "080891e41a",
-     "label": "Builds theme dropdown label with Default and active markers from list row."
+     "label": "Formats theme dropdown options with Default and active markers from list metadata."
     },
     "frontend/src/pages/DeskThemeSettingsPage.vue::tryLoadThemeFromQuery": {
      "body_hash": "5052a5c63d",
-     "label": "Loads theme from query when name exists; used on mount and by useThemeEditor."
+     "label": "Loads a desk theme by name when the URL theme query matches a list row."
     },
     "frontend/src/pages/DeskThemeSettingsPage.vue::weightDisplayLabel": {
      "body_hash": "496d11cd94",
-     "label": "Adds Light, Regular, Medium, Semi-bold, or Bold hint beside weight sliders."
+     "label": "Turns a numeric weight into a short Light through Bold caption beside sliders."
     }
    }
   },
   "frontend/src/pages/HomePage.vue": {
-   "body_hash": "40445b58076a0a79373abef85da87e74bdbadf8f63280a931463a530a0cb09b7",
+   "body_hash": "fbf99beff6e8088e4ae5edf31f0d0b998aa7c4e64d2babcfd611d31b7261511c",
    "header": {
     "format": 1,
     "gotchas": [],
     "keywords": [
+     "Themes",
      "Theme Editor",
      "Theme Preview",
-     "site-wide colours",
+     "theme-settings",
+     "openPreviewPopup",
+     "router-link",
+     "Site theming",
+     "card-grid",
      "home-page",
-     "visual customization",
-     "Themes"
+     "/themes/preview"
     ],
-    "purpose": "Landing page that links to the site Theme Editor and the Theme Preview.",
-    "read_when": "Changing the Themes home cards or their routes to the editor and preview."
+    "purpose": "Themes app landing page with cards linking to the site Theme Editor and Theme Preview popup.",
+    "read_when": "Open from router home route when choosing between /themes/theme-settings and opening theme preview in a popup."
+   },
+   "labels": {
+    "frontend/src/pages/HomePage.vue::HomePage": {
+     "body_hash": "e197af7473",
+     "label": "Router home view with cards to theme-settings and preview opened via openPreviewPopup instead of full navigation."
+    }
    }
   },
   "frontend/src/pages/ThemePreviewPage.vue": {
@@ -1430,292 +1584,293 @@
    }
   },
   "frontend/src/pages/ThemeSettingsPage.vue": {
-   "body_hash": "1bbeee55fccba89ea20c2ad4d41acd7521344e30665296a8730651a4289567f1",
+   "body_hash": "6bf54cc83092acdd4279e1e1b214beffa9162f378c89d02c89f7aaea29332e3d",
    "header": {
     "format": 1,
     "gotchas": [
-     "Active/Inactive radios stay disabled until you save or revert dirty edits.",
-     "Restore to Base Theme saves dirty form first and does not use the unsaved-changes confirm dialog.",
-     "Switching themes while dirty reopens the dropdown until you save, discard, or cancel.",
-     "Corporate brand palette forces gamma 0 and saturation 100 on save and when toggled on.",
-     "Retired font picker names load as Public Sans via RETIRED_FONT_ALIASES.",
-     "Save as base theme is a rare release action; commit and push the themes app afterward."
+     "domain/theme-tokens.ts is generated from theme_tokens.py; do not edit by hand.",
+     "Corporate brand palette mode forces gamma and saturation adjustments to defaults on save.",
+     "Restore to Base Theme saves dirty edits first instead of showing the unsaved confirm dialog.",
+     "Shadow opacity slider uses direct alpha (96% maps to rgba alpha 0.96).",
+     "Retired font picker names map to Public Sans when loading saved themes.",
+     "Saving as base theme writes bundled files; commit and push the themes app after running."
     ],
     "keywords": [
      "Theme Editor",
-     "ThemeSettingsPage",
-     "useThemeEditor",
      "computeCSSVariables",
      "brand_palette_mode",
-     "nce-theme-update",
-     "themes.api.save_theme",
-     "Open Preview",
-     "Restore to Base",
-     "tailwind_overrides",
      "nce_theme.css",
-     "AGENT:TAB",
-     "postMessage",
-     "save as base theme"
+     "useThemeEditor",
+     "themes.api.save_theme",
+     "BrandColorPicker",
+     "neutral_color_warmth",
+     "theme-table",
+     "tailwind_overrides",
+     "set_base_theme",
+     "nce-theme-update",
+     "COLOR_VAR_MAP",
+     "ThemeClassCatalogPanel",
+     "Restore to Base Theme"
     ],
-    "purpose": "Site theme editor page for colours, typography, layout, live --nce CSS variables, preview, and base theme publishing.",
-    "read_when": "Open when changing web NCE theme settings UI, live preview, save flow, or router theme editor route."
+    "purpose": "Site NCE theme editor for brand colours, typography, layout, tables, shadows, CSS publish, and live --nce variables.",
+    "read_when": "Open when editing site NCE themes, previewing nce_theme.css variables, or bundling save as base theme."
    },
    "labels": {
     "frontend/src/pages/ThemeSettingsPage.vue::ALL_FIELDS": {
      "body_hash": "d1813a3e0a",
-     "label": "Canonical list of every editable theme field bound on the reactive form."
+     "label": "Every site theme form key including brand flip poles, layout, advanced CSS, and dark_mode."
     },
     "frontend/src/pages/ThemeSettingsPage.vue::BODY_WEIGHT_MAX": {
      "body_hash": "22233cdf41",
-     "label": "Upper bound 900 for the body weight range slider."
+     "label": "Maximum slider value for site theme body font weight."
     },
     "frontend/src/pages/ThemeSettingsPage.vue::BODY_WEIGHT_MIN": {
      "body_hash": "949253fb00",
-     "label": "Lower bound 100 for the body weight range slider."
+     "label": "Minimum slider value for site theme body font weight."
     },
     "frontend/src/pages/ThemeSettingsPage.vue::DEFAULTS": {
      "body_hash": "d1f6d0d8f5",
-     "label": "Factory defaults for the form including status colours and layout tokens."
+     "label": "Initial and fallback values for all site theme fields including STATUS_COLOR_DEFAULTS spread."
     },
     "frontend/src/pages/ThemeSettingsPage.vue::FONT_GENERIC": {
      "body_hash": "7146ecac14",
-     "label": "Maps curated font labels to CSS generic family fallbacks."
+     "label": "Maps curated font names to generic CSS families for fontCSS stacks."
     },
     "frontend/src/pages/ThemeSettingsPage.vue::FormKey": {
      "body_hash": "af72b70378",
-     "label": "Type of allowed keys on the theme editor reactive form object."
+     "label": "Union of allowed keys on the site theme editor reactive form."
     },
     "frontend/src/pages/ThemeSettingsPage.vue::PAYLOAD_FIELDS": {
      "body_hash": "fe37b09c0b",
-     "label": "API field list: all form keys except theme_name plus neutral colour exports."
+     "label": "Persisted theme fields plus neutral_color and neutral_color_shades derived on save."
     },
     "frontend/src/pages/ThemeSettingsPage.vue::ThemeSettingsPage": {
-     "body_hash": "c6670c0604",
-     "label": "Route-mounted site theme editor with tabbed panels, toolbar CRUD, and live root CSS preview."
+     "body_hash": "d92f9294b4",
+     "label": "Router site Theme Editor page: tabbed NCE theme form, live root CSS vars, preview popup, and themes.api CRUD wiring."
     },
     "frontend/src/pages/ThemeSettingsPage.vue::applyLiveThemeVars": {
      "body_hash": "71066c1375",
-     "label": "Writes computed variables on documentElement and debounces preview postMessage."
+     "label": "Sets computed --nce variables on documentElement and debounces pushToPreview for popup sync."
     },
     "frontend/src/pages/ThemeSettingsPage.vue::applyPayloadToForm": {
      "body_hash": "c6f269cb93",
-     "label": "Hydrates the form from API data, migrates flips, and splits effective brand hex."
+     "label": "Hydrates form from API payload with migrations, table tiers, fonts, and effectiveRoleHex unpack."
     },
     "frontend/src/pages/ThemeSettingsPage.vue::applyStatusColorDefaults": {
      "body_hash": "8431a45eeb",
-     "label": "Resets accent and status swatches to shared STATUS_COLOR_DEFAULTS."
+     "label": "Resets accent and status colour fields to STATUS_COLOR_DEFAULTS from Use defaults button."
     },
     "frontend/src/pages/ThemeSettingsPage.vue::applyTableCssVars": {
      "body_hash": "527d647038",
-     "label": "Merges row, header, divider colours and table border width tiers into the var map."
+     "label": "Adds row, header, divider, and tiered border width variables for theme-table live preview."
     },
     "frontend/src/pages/ThemeSettingsPage.vue::buildPayloadFromForm": {
      "body_hash": "ef7e40c2cf",
-     "label": "Builds save payload, baking flexible gammas and resolving neutral warmth fields."
+     "label": "Serializes form to API payload with corporate gamma rules and resolveNeutralIntoPayload."
     },
     "frontend/src/pages/ThemeSettingsPage.vue::canonicalPayload": {
      "body_hash": "921ff46113",
-     "label": "Normalizes snapshots for dirty detection with upper hex and clamped numbers."
+     "label": "Normalizes loaded or saved payloads for dirty checking including neutrals and flip fields."
     },
     "frontend/src/pages/ThemeSettingsPage.vue::clampBodyWeight": {
      "body_hash": "f6f693e0d5",
-     "label": "Parses body weight and clamps it between slider min and max."
+     "label": "Parses and bounds body weight for slider display and canonical payload."
     },
     "frontend/src/pages/ThemeSettingsPage.vue::clampShadowDirection": {
      "body_hash": "de0bebf94d",
-     "label": "Clamps shadow direction angle between 0 and 360 degrees."
+     "label": "Bounds shadow direction degrees between 0 and 360."
     },
     "frontend/src/pages/ThemeSettingsPage.vue::clampShadowOpacity": {
      "body_hash": "24c0466699",
-     "label": "Clamps shadow opacity percent between 0 and 100 with a default fallback."
+     "label": "Bounds shadow opacity percent between 0 and 100 for form and save."
     },
     "frontend/src/pages/ThemeSettingsPage.vue::closeConfirmDialog": {
      "body_hash": "823436b753",
-     "label": "Dismisses the unsaved-changes dialog when not busy saving."
+     "label": "Closes confirm dialog when not busy unless save-and-continue is running."
     },
     "frontend/src/pages/ThemeSettingsPage.vue::closeDeleteDialog": {
      "body_hash": "09294690a7",
-     "label": "Closes delete dialog unless deletion is running."
+     "label": "Closes delete theme modal when deletion is not submitting."
     },
     "frontend/src/pages/ThemeSettingsPage.vue::closeRenameDialog": {
      "body_hash": "684b572513",
-     "label": "Closes rename dialog unless a rename request is in flight."
+     "label": "Closes rename theme modal unless rename submit is busy."
     },
     "frontend/src/pages/ThemeSettingsPage.vue::closeSaveAsDialog": {
      "body_hash": "af3fb431df",
-     "label": "Closes save-as modal and clears name unless creation is running."
+     "label": "Dismisses save-as-new theme modal when create is not in flight."
     },
     "frontend/src/pages/ThemeSettingsPage.vue::closeSaveBaseThemeDialog": {
      "body_hash": "04229aff5a",
-     "label": "Closes save-as-base confirm unless the bundled save is running."
+     "label": "Closes base-theme bundle confirmation modal unless confirm is busy."
     },
     "frontend/src/pages/ThemeSettingsPage.vue::computeCSSVariables": {
      "body_hash": "8e35efe34d",
-     "label": "Builds the full live --nce-* variable set including shades, neutral, shadow, and tables."
+     "label": "Builds full --nce live variable map including shades, neutrals, shadows, and table tokens."
     },
     "frontend/src/pages/ThemeSettingsPage.vue::confirmDiscardAndContinue": {
      "body_hash": "cb0346176c",
-     "label": "Abandons edits and loads the pending theme or restores base payload."
+     "label": "Reverts or switches without save then completes restore when action was restore."
     },
     "frontend/src/pages/ThemeSettingsPage.vue::confirmSaveAndContinue": {
      "body_hash": "d317500604",
-     "label": "Saves the form then completes the pending switch or base restore."
+     "label": "Saves then switches theme or restores base per pending confirm dialog action."
     },
     "frontend/src/pages/ThemeSettingsPage.vue::confirmSaveAsBaseTheme": {
      "body_hash": "a947412e74",
-     "label": "Saves editor changes then runs bundled base theme publish after confirm."
+     "label": "Saves editor then runs submitSaveAsBaseTheme after user confirms bundle dialog."
     },
     "frontend/src/pages/ThemeSettingsPage.vue::fontCSS": {
      "body_hash": "97085adf5b",
-     "label": "Formats a font pick as a CSS stack or system UI fallback for preview vars."
+     "label": "Returns quoted font stack with generic fallback or system UI stack for System Default."
     },
     "frontend/src/pages/ThemeSettingsPage.vue::handleSave": {
      "body_hash": "d6ccfb3e87",
-     "label": "Submits current payload to themes.api.save_theme through the editor resource."
+     "label": "Persists buildPayloadFromForm via themes.api.save_theme for editingTheme."
     },
     "frontend/src/pages/ThemeSettingsPage.vue::isCorporateBrandPaletteMode": {
      "body_hash": "197c41de1b",
-     "label": "Treats every mode except flexible as corporate brand palette behaviour."
+     "label": "True when brand_palette_mode is not flexible, locking gamma and saturation behaviour."
     },
     "frontend/src/pages/ThemeSettingsPage.vue::labels": {
      "body_hash": "55b9ffe048",
-     "label": "Builds theme dropdown label strings used to size the theme select control."
+     "label": "Maps themesList through themeOptionLabel to compute theme select dropdown width."
     },
     "frontend/src/pages/ThemeSettingsPage.vue::lineHeightMap": {
      "body_hash": "b829247853",
-     "label": "Maps line height tokens to numeric CSS line-height multipliers."
+     "label": "Maps line_height tokens to unitless CSS line-height values."
     },
     "frontend/src/pages/ThemeSettingsPage.vue::migrateFgFlipFields": {
      "body_hash": "f2cd8fecaa",
-     "label": "Backfills primary and secondary flip and pole fields from legacy dual keys."
+     "label": "Backfills mono and tonal flip and pole fields from legacy dual-key payload shapes."
     },
     "frontend/src/pages/ThemeSettingsPage.vue::normalizeBrandPaletteMode": {
      "body_hash": "f632ad74c2",
-     "label": "Coerces stored palette mode to corporate or flexible for form and API."
+     "label": "Coerces saved palette mode to corporate or flexible for form and payload."
     },
     "frontend/src/pages/ThemeSettingsPage.vue::normalizeFontChoice": {
      "body_hash": "89c4ae4bae",
-     "label": "Rewrites retired saved font names to Public Sans when loading themes."
+     "label": "Maps retired font aliases to Public Sans when loading saved themes."
     },
     "frontend/src/pages/ThemeSettingsPage.vue::normalizeTableWidthTier": {
      "body_hash": "418f9f5ea6",
-     "label": "Normalizes legacy px widths and tier names to thin, normal, or strong."
+     "label": "Maps legacy px divider widths and strings to thin, normal, or strong tiers."
     },
     "frontend/src/pages/ThemeSettingsPage.vue::onBodyWeightInput": {
      "body_hash": "db7e8d1677",
-     "label": "Updates form.font_weight_body from the body weight range input."
+     "label": "Updates form.font_weight_body from the typography tab range input event."
     },
     "frontend/src/pages/ThemeSettingsPage.vue::onBrandPaletteModeChange": {
      "body_hash": "eaba6f73e2",
-     "label": "Checkbox handler toggling corporate versus flexible and resetting shade tweaks."
+     "label": "Checkbox handler toggling corporate versus flexible brand palette and resetting adjustments."
     },
     "frontend/src/pages/ThemeSettingsPage.vue::onShadowOpacityInput": {
      "body_hash": "bddc5eb5e6",
-     "label": "Stores clamped shadow opacity from the layout tab slider."
+     "label": "Writes clamped shadow opacity from the layout tab slider."
     },
     "frontend/src/pages/ThemeSettingsPage.vue::onThemeChange": {
      "body_hash": "6df57be925",
-     "label": "Theme select change handler that guards dirty state with the confirm dialog."
+     "label": "Select change handler blocking loadTheme when isDirty until user confirms."
     },
     "frontend/src/pages/ThemeSettingsPage.vue::openConfirmDialog": {
      "body_hash": "a90e6a4212",
-     "label": "Shows unsaved-changes dialog before theme switch or restore from base."
+     "label": "Shows unsaved-changes dialog before theme switch or base restore actions."
     },
     "frontend/src/pages/ThemeSettingsPage.vue::openDeleteDialog": {
      "body_hash": "15814744bb",
-     "label": "Opens delete confirmation when inactive non-default themes may be removed."
+     "label": "Opens delete modal for inactive non-base themes allowed by canDeleteTheme."
     },
     "frontend/src/pages/ThemeSettingsPage.vue::openPreview": {
-     "body_hash": "43a09a15f3",
-     "label": "Opens or focuses the /themes/preview popup and sends live variable updates."
+     "body_hash": "cc94b7e52b",
+     "label": "Opens or focuses /themes/preview popup and pushes current computed CSS variables."
     },
     "frontend/src/pages/ThemeSettingsPage.vue::openRenameDialog": {
      "body_hash": "b3a5170bc0",
-     "label": "Opens rename modal when policy allows renaming the open theme."
+     "label": "Opens rename modal prefilled when inactive or default theme may be renamed."
     },
     "frontend/src/pages/ThemeSettingsPage.vue::openSaveAsDialog": {
      "body_hash": "0dce063f41",
-     "label": "Opens create-theme modal prefilled with a copy of the current name."
+     "label": "Opens modal to create a new theme copied from current editor settings."
     },
     "frontend/src/pages/ThemeSettingsPage.vue::parseFlipShade": {
      "body_hash": "d33c8659b4",
-     "label": "Parses integer shade indices for flip and pole fields or yields null."
+     "label": "Parses nullable numeric shade indices for brand foreground flip and pole fields."
     },
     "frontend/src/pages/ThemeSettingsPage.vue::pushToPreview": {
      "body_hash": "ac61b539af",
-     "label": "Posts nce-theme-update with computed variables to the preview window."
+     "label": "postMessage nce-theme-update with computeCSSVariables to the open preview window."
     },
     "frontend/src/pages/ThemeSettingsPage.vue::radiusMap": {
      "body_hash": "25a342b682",
-     "label": "Maps border_radius choice keys to rem values for corner previews."
+     "label": "Maps border_radius tokens to rem strings for live --nce-border-radius preview."
     },
     "frontend/src/pages/ThemeSettingsPage.vue::requestRestoreToBase": {
      "body_hash": "7cb6ff9874",
-     "label": "Auto-saves dirty edits then loads bundled base theme JSON into the editor."
+     "label": "Saves if dirty then loads app base_theme.json payload into editor without confirm dialog."
     },
     "frontend/src/pages/ThemeSettingsPage.vue::requestSaveAsBaseTheme": {
      "body_hash": "8cfa799391",
-     "label": "Opens confirmation before bundling when editing the default theme with password."
+     "label": "Opens save-as-base confirmation when System tab password is entered."
     },
     "frontend/src/pages/ThemeSettingsPage.vue::requestSetAsDefaultTheme": {
      "body_hash": "a47c228431",
-     "label": "Calls set_base_theme for the open theme then reloads editor metadata."
+     "label": "Submits themes.api.set_base_theme to promote edited theme to site base default."
     },
     "frontend/src/pages/ThemeSettingsPage.vue::resetBrandPaletteAdjustments": {
      "body_hash": "a95b344546",
-     "label": "Clears per-role gamma and sets saturation to 100 on brand colour fields."
+     "label": "Zeros gamma and resets saturation to 100 for all GAMMA_SAT_ROLE_FIELDS when corporate mode is chosen."
     },
     "frontend/src/pages/ThemeSettingsPage.vue::restoreToBaseConfirmed": {
      "body_hash": "de54ab0943",
-     "label": "Fetches get_base_theme_payload and applies it with live CSS refresh."
+     "label": "Fetches get_base_theme_payload, applies to form, and refreshes live CSS variables."
     },
     "frontend/src/pages/ThemeSettingsPage.vue::revertChanges": {
      "body_hash": "ae03eafecc",
-     "label": "Restores the last saved snapshot into the form via applyPayloadToForm."
+     "label": "Restores form from savedSnapshot through applyPayloadToForm."
     },
     "frontend/src/pages/ThemeSettingsPage.vue::roleShadeAdjustments": {
      "body_hash": "476c08afc8",
-     "label": "Supplies zero adjustments in corporate mode else reads gamma and saturation from form."
+     "label": "Supplies gamma and saturation for a brand role, or zeros in corporate palette mode."
     },
     "frontend/src/pages/ThemeSettingsPage.vue::setThemeStatus": {
      "body_hash": "97592a173f",
-     "label": "Persists Active or Inactive availability on the saved snapshot when clean."
+     "label": "Updates Active or Inactive panel availability using saved snapshot on save_theme."
     },
     "frontend/src/pages/ThemeSettingsPage.vue::submitDelete": {
      "body_hash": "d483eaf7af",
-     "label": "Deletes the theme via API and loads the site default or first list entry."
+     "label": "Deletes theme via API then loads default or first remaining theme from list."
     },
     "frontend/src/pages/ThemeSettingsPage.vue::submitRename": {
      "body_hash": "189fd43185",
-     "label": "Calls rename_theme then refreshes the list and reloads the theme."
+     "label": "Calls themes.api.rename_theme then reloads list and editor for returned name."
     },
     "frontend/src/pages/ThemeSettingsPage.vue::submitSaveAs": {
      "body_hash": "f6505653b2",
-     "label": "Creates a new theme from the current form payload after name validation."
+     "label": "Creates theme via themes.api.create_theme with trimmed name and current payload."
     },
     "frontend/src/pages/ThemeSettingsPage.vue::submitSaveAsBaseTheme": {
      "body_hash": "95a02e476f",
-     "label": "Password submit for save_as_base_theme bundling app base and published CSS."
+     "label": "Password submit to save_as_base_theme bundling Default theme and nce_theme.css into app."
     },
     "frontend/src/pages/ThemeSettingsPage.vue::tableHeaderForeground": {
      "body_hash": "ddd28646a4",
-     "label": "Resolves table header text colour from brand flip rules or mono contrast on header hex."
+     "label": "Picks table header text colour from brand shade logic or pickFgMono on the header hex."
     },
     "frontend/src/pages/ThemeSettingsPage.vue::tableWidthTierCssVar": {
      "body_hash": "e6e17afcaf",
-     "label": "Points table divider tiers at the matching --nce-border-width CSS variables."
+     "label": "Maps a width tier to the matching --nce-border-width CSS variable reference."
     },
     "frontend/src/pages/ThemeSettingsPage.vue::themeFromQuery": {
      "body_hash": "c28aed2b09",
-     "label": "Returns trimmed theme name from route query for deep-link loading on mount."
+     "label": "Returns trimmed theme name from route query for deep-linked editor loads."
     },
     "frontend/src/pages/ThemeSettingsPage.vue::themeOptionLabel": {
      "body_hash": "73acf2097b",
-     "label": "Formats theme dropdown text, marking the site default with a suffix."
+     "label": "Formats theme select options, marking the site default theme with a Default suffix."
     },
     "frontend/src/pages/ThemeSettingsPage.vue::tryLoadThemeFromQuery": {
      "body_hash": "5052a5c63d",
-     "label": "Selects loadTheme when query theme matches a row in the themes list."
+     "label": "Loads theme by name when URL theme query matches themesList after mount."
     }
    }
   },
@@ -1821,6 +1976,35 @@
     ],
     "purpose": "Fetches published nce_theme.css and builds the System tab class catalog from it.",
     "read_when": "Changing how the class catalog parses published nce_theme.css or resolves theme vars."
+   }
+  },
+  "frontend/src/utils/previewWindow.ts": {
+   "body_hash": "02f1d2e13b560870186defec2f3bc9130995a8d1d1af2b4c3919b35ccaa09cc2",
+   "header": {
+    "format": 1,
+    "gotchas": [],
+    "keywords": [
+     "openPreviewPopup",
+     "FEATURES",
+     "desk-themes-preview",
+     "themes-preview",
+     "window.open",
+     "popup preview",
+     "theme preview",
+     "desk-themes"
+    ],
+    "purpose": "Opens theme preview routes in a popup window instead of navigating the current page.",
+    "read_when": "When adding or changing links that should open web or desk theme preview in a sized popup."
+   },
+   "labels": {
+    "frontend/src/utils/previewWindow.ts::FEATURES": {
+     "body_hash": "c5f88a1af5",
+     "label": "window.open feature string for popup size, position, and scrollbars."
+    },
+    "frontend/src/utils/previewWindow.ts::openPreviewPopup": {
+     "body_hash": "a822f38052",
+     "label": "Opens a preview URL in a named popup window and focuses it; App and home pages call this for preview links."
+    }
    }
   },
   "frontend/src/utils/shadowBuild.ts": {
@@ -2167,12 +2351,13 @@
    }
   },
   "themes/component_api.py": {
-   "body_hash": "9ed43e28dedae4d7c80590c30b857c28f645b2e64a8b26cd4be719c4b5b11489",
+   "body_hash": "fabbabb9ceecf42336dbfe481afa5a0df8a7e909ea99be838c68bd2e542cd26b",
    "header": {
     "format": 1,
     "gotchas": [
-     "Resolved .vue path must stay inside the app folder or the API throws.",
-     "open_vue_components reloads child DocTypes before parent when bootstrapping the list."
+     "_vue_file throws if file_path resolves outside the app folder.",
+     "rescan_all and missing-file saves set doc.flags.skip_css_publish before a single publish_component_css at the end.",
+     "open_vue_components reloads vue_component_element, vue_component, then theme_component_settings when DocType is missing."
     ],
     "keywords": [
      "rescan_all",
@@ -2180,96 +2365,111 @@
      "publish_css",
      "Vue Component",
      "merge_elements",
-     "build_summary",
-     "ELEMENT_FIELDS",
+     "inherit_table_usage",
+     "apply_root_flags",
+     "frappe.whitelist",
      "System Manager",
+     "nce_component_overrides",
      "component_key",
-     "publish_component_css"
+     "needs_attention"
     ],
-    "purpose": "Whitelisted Frappe methods to rescan Vue files, refresh components, preview overrides, and publish component CSS.",
-    "read_when": "When wiring Desk actions or permissions for Vue Component rescan, preview, or CSS publish."
+    "purpose": "Whitelisted Frappe methods to rescan Vue files, refresh one component, preview CSS, and publish component overrides.",
+    "read_when": "Wiring Desk actions, whitelisted calls, or Vue Component DocType validate that depends on scan and CSS publish."
    },
    "labels": {
     "themes/component_api.py::_app_root": {
      "body_hash": "a4a5a98c64",
-     "label": "Returns the filesystem parent path for an installed Frappe app name."
+     "label": "Resolves the filesystem parent of a Frappe app path for walking .vue files."
     },
     "themes/component_api.py::_apply_scan": {
      "body_hash": "2923b444bd",
-     "label": "Writes scan metadata and merged element rows, or marks the component Missing."
+     "label": "Maps scan results onto the doc or Missing status and merges scanned elements via component_sync merge_elements."
     },
     "themes/component_api.py::_excluded_apps": {
      "body_hash": "a45e01a811",
-     "label": "Builds the app set skipped during full rescan from settings and sync defaults."
+     "label": "Builds the app set skipped during rescan from ALWAYS_EXCLUDED_APPS plus Theme Component Settings excluded_apps."
     },
     "themes/component_api.py::_refresh_all_summaries": {
      "body_hash": "0c5a6074a4",
-     "label": "Rebuilds every Vue Component summary via build_summary after scan or refresh."
+     "label": "Rebuilds every Vue Component summary field via build_summary and _used_by without update_modified."
     },
     "themes/component_api.py::_set_rows": {
      "body_hash": "67a6d769bb",
-     "label": "Replaces the elements child table from scan merge rows using allowed fields only."
+     "label": "Replaces the Vue Component elements child table from dict rows limited to ELEMENT_FIELDS."
     },
     "themes/component_api.py::_used_by": {
      "body_hash": "8f63f3a0d7",
-     "label": "Lists other Present components whose uses_components list includes this name."
+     "label": "Lists Present Vue Component names whose uses_components include a given component_name; VueComponent.validate calls this."
     },
     "themes/component_api.py::_vue_file": {
      "body_hash": "c513e8b2f2",
-     "label": "Resolves and validates the on-disk .vue path for one Vue Component record."
+     "label": "Resolves doc file_path under the app root or None if missing; blocks paths outside the app folder."
+    },
+    "themes/component_api.py::apply_root_flags": {
+     "body_hash": "b6b9703a8a",
+     "label": "Loads all Vue Component usage rows, runs mark_roots, and writes is_root without bumping modified."
+    },
+    "themes/component_api.py::components_inside": {
+     "body_hash": "7f718aff66",
+     "label": "Returns name and component_name for Vue Component rows referenced in the parent uses_components list."
     },
     "themes/component_api.py::get_preview_theme": {
      "body_hash": "4eb31ba053",
-     "label": "Whitelisted default NCE Theme name and slug for the component colour preview UI."
+     "label": "Returns site default NCE Theme name and slug for the theme editor preview UI."
     },
     "themes/component_api.py::open_vue_components": {
      "body_hash": "79afabb84f",
-     "label": "Whitelisted bootstrap of DocTypes and initial rescan, then returns the Vue Component list URL."
+     "label": "Ensures DocTypes exist, runs rescan_all when empty, and returns the Desk vue-component list URL."
     },
     "themes/component_api.py::preview_declarations": {
      "body_hash": "9891d9f7c7",
-     "label": "Whitelisted CSS declaration strings per element key for live override preview."
+     "label": "Maps element override row keys to joined CSS declaration strings from declarations_for for live preview."
     },
     "themes/component_api.py::publish_css": {
      "body_hash": "d28ea72ea6",
-     "label": "Whitelisted republish of nce_component_overrides.css from saved Vue Component rows."
+     "label": "Whitelisted entry point that runs publish_component_css for nce_component_overrides.css."
     },
     "themes/component_api.py::refresh_component": {
-     "body_hash": "53653cb0ee",
-     "label": "Whitelisted rescan of one Vue Component with table inheritance from child records."
+     "body_hash": "4bc4ef90b9",
+     "label": "Rescan one record from disk, inherit table data from child rows, save, reapply root flags and summaries."
     },
     "themes/component_api.py::rescan_all": {
-     "body_hash": "528352d6a8",
-     "label": "Whitelisted full-site Vue rescan, summary refresh, and component overrides CSS publish."
+     "body_hash": "c98f0e7057",
+     "label": "System Manager whitelisted full-site .vue rescan, inherit tables, mark roots, refresh summaries, and publish CSS."
+    },
+    "themes/component_api.py::vue_component_permission_query": {
+     "body_hash": "9b007c8b18",
+     "label": "Returns SQL so list views only show root Vue Components; registered in hooks permission_query_conditions."
     }
    }
   },
   "themes/hooks.py": {
-   "body_hash": "b19d18be4288e750056f6fdeaffb5b0e8f5416c5e761c2fdb61d7214b0156379",
+   "body_hash": "73a6ec181b33fc7bfa8e69db09357401404617feafda10bd60764911cf441895",
    "header": {
     "format": 1,
     "gotchas": [
-     "_css_url must stay DB-free at import and never raise; failures use the bare asset path.",
-     "Do not monkey-patch frappe.get_hooks for cache busting; that broke boot previously."
+     "_css_url must stay DB-free at import and never raise; failures return the path without ?v= hash.",
+     "Do not monkey-patch frappe.get_hooks for cache busting; that previously broke boot."
     ],
     "keywords": [
      "app_include_css",
      "nce_theme.css",
      "nce_component_overrides.css",
+     "nce_desk_theme.css",
      "website_route_rules",
+     "permission_query_conditions",
      "extend_bootinfo",
      "after_install",
-     "_css_url",
      "theme-swatch-picker",
      "desk_theme_loader"
     ],
-    "purpose": "Registers Themes app hooks: site CSS and JS, bootinfo, SPA routes, app screen tiles, and after_install.",
-    "read_when": "When adding assets, theme editor routes, or desk app portal entries for the Themes app."
+    "purpose": "Registers themes app hooks: site CSS and JS, Vue Component permissions, bootinfo, SPA routes, and after_install.",
+    "read_when": "Changing which CSS loads globally, theme editor URL routes, or Vue Component list permission SQL."
    },
    "labels": {
     "themes/hooks.py::_css_url": {
      "body_hash": "767dfebc19",
-     "label": "Builds /assets/themes/css URLs with optional .hash cache-buster at hooks import time."
+     "label": "At import, appends ?v= from public/css sidecar hash when present else bare /assets/themes/css/ URL."
     }
    }
   },
@@ -2542,27 +2742,25 @@
    }
   },
   "themes/public/css/nce_desk_theme.css": {
-   "body_hash": "91241e879b4d3bda9ac8d3e102ce8e7caca067b35b1573b88c181fff4235fd9d",
+   "body_hash": "24fa6e78f6b1041e1ae0bbf2eef6da1cba8ba5d6f417cccf69a1fbc906551d00",
    "header": {
     "format": 1,
     "gotchas": [
      "Generated by themes.utils.desk_css_writer — do not edit"
     ],
     "keywords": [
+     "nce_desk_theme",
      "desk_css_writer",
      "Public Sans",
-     "data-theme",
-     "light",
      "--bg-color",
-     "nce-weight-bold",
-     "font-stack",
-     "g-bar-color",
-     "list-subject",
-     "form-control bold",
-     "Frappe desk"
+     "--text-color",
+     ":root",
+     "data-theme",
+     "font-face",
+     "app_include_css"
     ],
-    "purpose": "Generated Frappe desk theme CSS with Public Sans @font-face, light :root variables, and list or bold typography overrides.",
-    "read_when": "When desk colors, fonts, or list weights look wrong and you need the desk_css_writer output, not hand edits."
+    "purpose": "Published generated CSS that sets Desk :root variables, Public Sans fonts, and a few list form weight rules.",
+    "read_when": "Verifying Desk look after desk theme publish or comparing live tokens to desk_css_writer golden output."
    }
   },
   "themes/public/css/nce_theme.css": {
@@ -2614,23 +2812,22 @@
    }
   },
   "themes/public/frontend/assets/themes4.css": {
-   "body_hash": "552b515fa01bdb15e67af194271057ce759f0f1d3228dbdf086f50974759cc62",
+   "body_hash": "d8e2c62c214939dd21b1757bc1d61e1433698d0caf3b1e8651cdd4314eae69f2",
    "header": {
     "format": 1,
     "gotchas": [],
     "keywords": [
      "home-page",
-     "home-title",
-     "card-grid",
      "home-card",
-     "data-v-19c41188",
-     "card-label",
+     "card-grid",
+     "data-v-0e2234ce",
+     "home-title",
      "card-desc",
-     "home-subtitle",
-     "card-icon"
+     "themes frontend",
+     "vite chunk"
     ],
-    "purpose": "Minified Vite chunk of scoped CSS for the themes home page layout, headings, and navigation card grid.",
-    "read_when": "When production home page padding, card grid, or hover border styles disagree with the Vue component."
+    "purpose": "Vite-built scoped CSS for the themes app home page layout, title, and navigation card grid.",
+    "read_when": "Debugging missing or wrong Home page spacing, cards, or scoped data-v- styles in the built frontend."
    }
   },
   "themes/public/frontend/assets/themes7.css": {
@@ -2653,23 +2850,26 @@
    }
   },
   "themes/public/frontend/assets/themes8.css": {
-   "body_hash": "a01f379c52b20e76a5426295a4ed2884b4b3dce1e1d2a2a58ca1919e6a655be0",
+   "body_hash": "fffc8dc7a4eaec3f6406b0407c7ae6a66b2fcdb2a981dd5c13bdceac7636a297",
    "header": {
     "format": 1,
     "gotchas": [],
     "keywords": [
      "home-page",
-     "data-v-b1d04649",
-     "home-card",
-     "card-grid",
      "home-title",
      "home-subtitle",
+     "card-grid",
+     "home-card",
+     "card-icon",
      "card-label",
      "card-desc",
-     "card-icon"
+     "data-v-2d00a1ec",
+     "border-radius",
+     "frontend asset",
+     "themes home"
     ],
-    "purpose": "Alternate Vite chunk of scoped home page CSS with the same card grid layout as other home bundles but a different scope hash.",
-    "read_when": "When comparing home page styles across frontend build outputs or after a hash change from rebuild."
+    "purpose": "Built scoped CSS for the Themes frontend home page layout, title text, and navigation card grid.",
+    "read_when": "When changing home page spacing, card hover, or typography in the compiled themes frontend bundle."
    }
   },
   "themes/public/frontend/index.html": {
@@ -3066,165 +3266,170 @@
    }
   },
   "themes/themes/doctype/vue_component/vue_component.js": {
-   "body_hash": "ddeb0e476bc5cbc4aa1ab37069a2dfa37c4d37ffe009bbf386ddde9f6483ba53",
+   "body_hash": "52e20504174b0477717c64b15d084039c3a1822bd10b6c74333eee4afe43871b",
    "header": {
     "format": 1,
     "gotchas": [
-     "Preview table row 1 is alternate/odd and row 2 is main/even to match theme-table striping.",
-     "ThemeSwatchPicker requires the built theme-swatch-picker widget; otherwise pickers show an install message."
+     "Row 1 in the table preview is alternate or odd; row 2 is main or even, matching theme-table striping.",
+     "Empty table slots use the assigned theme Tables tokens like the Theme Editor."
     ],
     "keywords": [
      "Vue Component",
-     "frappe.ui.form.on",
      "colours_html",
-     "VC_TABLE_CLASS_FIELDS",
      "themeSwatchPicker",
-     "nce_component_overrides.css",
+     "VC_TABLE_ROW_SLOTS",
+     "nce_component_overrides",
      "refresh_component",
-     "override_bg_class",
-     "Revert to Theme Defaults",
      "preview_declarations",
+     "override_bg_class",
+     "keep_default",
+     "vc-colours-wrap",
+     "components_inside",
      "get_preview_theme"
     ],
-    "purpose": "Vue Component Desk form script: custom Colours UI, theme swatch pickers, table overrides, preview, and rescan from file.",
-    "read_when": "Editing how operators pick theme classes, preview overrides, or refresh scanned elements on the Vue Component form."
+    "purpose": "Vue Component DocType form script for the Colours tab, table tokens, swatch pickers, preview, and rescan from file.",
+    "read_when": "When editing element overrides, table chrome pickers, or refresh or preview behaviour on the Vue Component form."
    },
    "labels": {
     "themes/themes/doctype/vue_component/vue_component.js::VC_TABLE_CLASS_FIELDS": {
      "body_hash": "aa27d556e4",
-     "label": "Lists Vue Component DocType field names snapshotted for table class revert and dirty checks."
+     "label": "Names all Vue Component doc fields stored for table bg, fg, and divider classes during revert."
     },
     "themes/themes/doctype/vue_component/vue_component.js::VC_TABLE_LINE_SLOTS": {
      "body_hash": "12944c5f06",
-     "label": "Maps divider line slots to width and colour DocType fields for the Tables line editor."
+     "label": "Maps divider line labels to width and color class fields for the Tables section."
     },
     "themes/themes/doctype/vue_component/vue_component.js::VC_TABLE_ROW_SLOTS": {
      "body_hash": "274fdc4ccd",
-     "label": "Maps header and row background slots to labels, fields, fg types, and theme fallbacks for the Tables section."
+     "label": "Maps header and striped row labels to bg class fields, fg type fields, and theme fallbacks."
     },
     "themes/themes/doctype/vue_component/vue_component.js::_vc_bind_colours_events": {
      "body_hash": "9454305177",
-     "label": "Delegates clicks and changes on Colours panel for pickers, revert, preview, refresh, and table fields."
+     "label": "Wires colours_html clicks and changes for pickers, revert, preview, refresh, and table fields."
     },
     "themes/themes/doctype/vue_component/vue_component.js::_vc_build_tables_section_html": {
      "body_hash": "6141dad88c",
-     "label": "Builds Tables section with row pickers, mini table preview, and divider line controls."
+     "label": "Assembles Tables warnings, row pickers, mini preview grid, and divider line editors."
     },
     "themes/themes/doctype/vue_component/vue_component.js::_vc_chrome_table_head_html": {
      "body_hash": "9e533d25db",
-     "label": "Returns thead markup for Surface, Preview, Class columns in element and table editors."
+     "label": "Returns shared thead row for Surface, Preview, and Class columns."
     },
     "themes/themes/doctype/vue_component/vue_component.js::_vc_element_class_cell_html": {
      "body_hash": "e59087a919",
-     "label": "Builds Class column HTML with overrides, pick buttons, border controls, and Keep default."
+     "label": "Renders class column with bg display, text and border pickers, and Keep default."
     },
     "themes/themes/doctype/vue_component/vue_component.js::_vc_element_swatch_html": {
      "body_hash": "27b0fc5362",
-     "label": "Renders a small swatch span for an element group using overrides or inferred background."
+     "label": "Returns preview swatch markup for one grouped element using bg, text, or empty state."
     },
     "themes/themes/doctype/vue_component/vue_component.js::_vc_ensure_styles": {
-     "body_hash": "c9d462d303",
-     "label": "Injects vc-colours-style-v2 CSS for the custom Colours panel layout and previews."
+     "body_hash": "c43d4f06b0",
+     "label": "Creates or updates injected vc-colours-style-v2 rules for the custom colours tables."
     },
     "themes/themes/doctype/vue_component/vue_component.js::_vc_fg_tonal_class": {
      "body_hash": "47bafd0fd3",
-     "label": "Derives a theme-text tonal foreground class from a theme-bg background class token."
+     "label": "Builds matching theme-text fg-tonal class from a theme-bg class string."
     },
     "themes/themes/doctype/vue_component/vue_component.js::_vc_group_by_key": {
      "body_hash": "0bf92a4b46",
-     "label": "Looks up one element group object by key from the current form elements list."
+     "label": "Looks up one element group by selector key for picker and change handlers."
     },
     "themes/themes/doctype/vue_component/vue_component.js::_vc_groups": {
      "body_hash": "125c60081b",
-     "label": "Groups Present element child rows by selector or element key sorted by template line."
+     "label": "Buckets Present child rows by selector key and orders groups by earliest line."
     },
     "themes/themes/doctype/vue_component/vue_component.js::_vc_groups.present": {
      "body_hash": "5b3db069c7",
-     "label": "Filters element rows to those with element_status Present before grouping."
+     "label": "Keeps only element rows with element_status Present before grouping by key."
     },
     "themes/themes/doctype/vue_component/vue_component.js::_vc_line_preview_html": {
      "body_hash": "1baf1972a5",
-     "label": "Renders a horizontal line preview span with chosen width and colour class."
+     "label": "Renders a short horizontal line sample with chosen width and color class."
     },
     "themes/themes/doctype/vue_component/vue_component.js::_vc_line_width_px": {
      "body_hash": "1169e92ed5",
-     "label": "Maps theme-border width classes to pixel widths for line preview styling."
+     "label": "Converts theme-border width class names to pixel width for line previews."
     },
     "themes/themes/doctype/vue_component/vue_component.js::_vc_open_doc_picker": {
      "body_hash": "f474e0d112",
-     "label": "Opens ThemeSwatchPicker on Vue Component DocType fields for table background or line colour."
+     "label": "Opens ThemeSwatchPicker on the parent doc for table bg or divider color fields."
     },
     "themes/themes/doctype/vue_component/vue_component.js::_vc_open_preview": {
      "body_hash": "c0c032dc48",
-     "label": "Calls preview_declarations and shows saved versus draft samples in a dialog with Save action."
+     "label": "Shows extra-large dialog comparing saved vs draft styles via preview_declarations then optional save."
     },
     "themes/themes/doctype/vue_component/vue_component.js::_vc_open_swatch_picker": {
      "body_hash": "cad3db4a60",
-     "label": "Opens ThemeSwatchPicker for a grouped element row to set bg, text, or border overrides."
+     "label": "Opens ThemeSwatchPicker for grouped element bg, text, or border override fields."
     },
     "themes/themes/doctype/vue_component/vue_component.js::_vc_override_payload": {
      "body_hash": "257e5b0e3f",
-     "label": "Normalises one element row into override fields sent to preview_declarations, honouring keep_default."
+     "label": "Normalizes one element row into preview API fields, clearing when keep_default is set."
     },
     "themes/themes/doctype/vue_component/vue_component.js::_vc_preview_bg_class": {
      "body_hash": "3efd7d4940",
-     "label": "Chooses preview background from override or first theme-bg in source_classes."
+     "label": "Chooses preview background from override_bg_class or source_classes theme-bg token."
     },
     "themes/themes/doctype/vue_component/vue_component.js::_vc_preview_theme": {
      "body_hash": "9b9d842fcd",
-     "label": "Fetches and caches default preview theme via get_preview_theme for swatch pickers and previews."
+     "label": "Loads default preview theme once via get_preview_theme for pickers and the panel."
     },
     "themes/themes/doctype/vue_component/vue_component.js::_vc_refresh_from_file": {
      "body_hash": "52e12328fe",
-     "label": "Calls themes.component_api.refresh_component for this record then reloads the form document."
+     "label": "Calls themes.component_api.refresh_component then reloads the open Vue Component doc."
     },
     "themes/themes/doctype/vue_component/vue_component.js::_vc_reload_css": {
      "body_hash": "f12ef0e04c",
-     "label": "Appends a cache-busting query to desk links whose href includes nce_component_overrides.css."
+     "label": "Appends a cache-bust query to every nce_component_overrides.css link in the page."
     },
     "themes/themes/doctype/vue_component/vue_component.js::_vc_render_colours": {
      "body_hash": "3d83c4b999",
-     "label": "Fills colours_html with theme info, element table, optional Tables block, warnings, and binds events."
+     "label": "Rebuilds colours_html with theme bar, element table, optional Tables block, and warnings."
     },
     "themes/themes/doctype/vue_component/vue_component.js::_vc_render_colours.missingCount": {
      "body_hash": "ac004a8ea1",
-     "label": "Counts element child rows marked Missing for the footer note on Colours."
+     "label": "Counts child elements marked Missing for the stale-elements footer note."
+    },
+    "themes/themes/doctype/vue_component/vue_component.js::_vc_render_inside": {
+     "body_hash": "40e928ed5c",
+     "label": "Fills inside_html with links to child Vue Components from components_inside API."
     },
     "themes/themes/doctype/vue_component/vue_component.js::_vc_sample": {
      "body_hash": "d8107648c9",
-     "label": "Builds tag-appropriate sample HTML for preview dialog using classes and inline declaration."
+     "label": "Builds tag-appropriate sample HTML for preview dialog using computed CSS declarations."
     },
     "themes/themes/doctype/vue_component/vue_component.js::_vc_set_group": {
      "body_hash": "61d3bb9a52",
-     "label": "Writes override field values to every row in a group and re-renders Colours."
+     "label": "Applies field values to every row in one element group and refreshes the colours UI."
     },
     "themes/themes/doctype/vue_component/vue_component.js::_vc_show_revert": {
      "body_hash": "442b47c52d",
-     "label": "Returns whether saved element overrides or table classes differ from theme defaults."
+     "label": "Decides whether Revert to Theme Defaults appears for element or table overrides."
     },
     "themes/themes/doctype/vue_component/vue_component.js::_vc_show_revert.elementsDirty": {
      "body_hash": "91cdfa98ab",
-     "label": "Detects non-empty element overrides or keep_default flags in the saved snapshot."
+     "label": "Detects saved element rows with keep_default or any non-empty override field."
     },
     "themes/themes/doctype/vue_component/vue_component.js::_vc_table_row_swatch_html": {
      "body_hash": "8966a0083b",
-     "label": "Renders table row background swatch HTML optionally with tonal foreground class."
+     "label": "Returns table row background swatch with optional tonal foreground class."
     },
     "themes/themes/doctype/vue_component/vue_component.js::_vc_table_saved_from_doc": {
      "body_hash": "d30033fb2a",
-     "label": "Builds a map of table class field values from a Vue Component doc for revert comparison."
+     "label": "Captures current table class field values from the doc for revert dirty checks."
     },
     "themes/themes/doctype/vue_component/vue_component.js::_vc_width_select_html": {
      "body_hash": "d57affe2d3",
-     "label": "Builds a border width select for thin, normal, strong, or theme default classes."
+     "label": "Builds border width select with Theme default, thin, normal, and strong options."
     },
     "themes/themes/doctype/vue_component/vue_component.js::form.on Vue Component.after_save": {
      "body_hash": "2635e4852d",
-     "label": "After save on Vue Component, busts cache on nce_component_overrides.css stylesheet links."
+     "label": "Runs after save to bust cache on nce_component_overrides.css stylesheets."
     },
     "themes/themes/doctype/vue_component/vue_component.js::form.on Vue Component.refresh": {
-     "body_hash": "a289a87b58",
-     "label": "On Vue Component form refresh, adds Rescan button, saves colour snapshots, and renders the Colours HTML panel."
+     "body_hash": "a86d75e11a",
+     "label": "Runs on Vue Component form refresh: rescan button, saved snapshots, colours and inside panel."
     }
    }
   },
@@ -3267,21 +3472,24 @@
    }
   },
   "themes/themes/doctype/vue_component/vue_component_list.js": {
-   "body_hash": "3bd8639aaaa45d9e2d2b7c9dc503629fde76f19b345dd44cb391033fcb95e831",
+   "body_hash": "0f50708221ceab13d0efa3d8957cd51c9216a7c59f28ce288376fd72a3792181",
    "header": {
     "format": 1,
     "gotchas": [],
     "keywords": [
      "Vue Component",
      "listview_settings",
+     "is_root",
      "needs_attention",
-     "rescan_all",
      "get_indicator",
      "Rescan",
-     "Scanning .vue files"
+     "rescan_all",
+     "component_api",
+     "Work to do",
+     "add_fields"
     ],
-    "purpose": "Vue Component list view settings: work-to-do indicator and Rescan button calling rescan_all.",
-    "read_when": "Changing list indicators for needs_attention or the bulk rescan action on Vue Component."
+    "purpose": "Registers Vue Component list view filters, status indicators, and the Rescan all toolbar action.",
+    "read_when": "When changing which components appear in the list or how Rescan and attention badges behave."
    }
   },
   "themes/themes/doctype/vue_component_element/vue_component_element.py": {
@@ -3450,85 +3658,93 @@
    }
   },
   "themes/utils/component_scan.py": {
-   "body_hash": "e57fa56b478332183271691c650467c68ccfb1d1eaa16a6dcb63775157eaca56",
+   "body_hash": "faba49bc71f6f7645809fcd98a8cd1b58ec167af3d2be16c9602490559b9ece1",
    "header": {
     "format": 1,
     "gotchas": [
-     "inherit_table_usage mutates scans until stable for nested uses_components chains.",
-     "Components with owns_table keep their table_selector; others inherit from first matching child.",
-     "Utility-like class tokens are skipped when picking selector_class."
+     "inherit_table_usage mutates scan dicts; rows with owns_table are never changed.",
+     "mark_roots mutates scans only for is_root; uses_components may be a list or newline-separated string.",
+     "Parser skips template and slot tags; Vue built-ins are excluded from uses_components."
     ],
     "keywords": [
      "scan_vue_file",
      "scan_vue_source",
-     "_TemplateParser",
-     "theme-bg",
      "inherit_table_usage",
-     "element_key",
-     "uses_components",
-     "source_hash",
+     "mark_roots",
      "iter_vue_files",
-     "table_selector"
+     "uses_components",
+     "owns_table",
+     "table_selector",
+     "theme-",
+     "VUE_BUILTINS",
+     "SELECTOR_RE",
+     "vue component scan",
+     "HTMLParser",
+     "source_hash"
     ],
-    "purpose": "Scans Vue SFC templates for theme-* colour classes, child components, and owned or inherited tables.",
-    "read_when": "Open when rescanning app Vue files, building element keys, or propagating table selectors."
+    "purpose": "Scans Vue SFC templates for theme-class elements, child components, and table ownership for the Vue Component DocType.",
+    "read_when": "Changing how .vue files are walked, parsed, or how table selectors propagate to parent components."
    },
    "labels": {
     "themes/utils/component_scan.py::_TemplateParser": {
      "body_hash": "c69a5887da",
-     "label": "HTMLParser collecting themed elements, components, and table metadata from template."
+     "label": "HTMLParser subclass that accumulates themed element rows, table flags, root_class, and child component names from a template."
     },
     "themes/utils/component_scan.py::_TemplateParser.__init__": {
      "body_hash": "76503b2328",
-     "label": "Initializes parser state with template line offset for accurate source lines."
+     "label": "Stores template line_offset and empty collections for elements, uses_components, and table fields before feed."
     },
     "themes/utils/component_scan.py::_TemplateParser._on_tag": {
      "body_hash": "4fffbe5099",
-     "label": "Records theme classes, dynamic bindings, tables, and child component tags."
+     "label": "Emits element dicts for theme colour bindings, records table ownership, root_class, and non-builtin child tags."
     },
     "themes/utils/component_scan.py::_TemplateParser.handle_startendtag": {
      "body_hash": "e8f8323152",
-     "label": "Delegates self-closing tags to shared themed element handler."
+     "label": "Forwards self-closing tags into _on_tag so void elements are scanned."
     },
     "themes/utils/component_scan.py::_TemplateParser.handle_starttag": {
      "body_hash": "f68ec04132",
-     "label": "Delegates opening tags to shared themed element handler."
+     "label": "Forwards normal opening tags into _on_tag for scanning."
     },
     "themes/utils/component_scan.py::_selector_from_class_tokens": {
      "body_hash": "1c2dc6f467",
-     "label": "Picks last non-theme, non-utility class token as CSS override selector."
+     "label": "Chooses the rightmost class token that matches SELECTOR_RE and is not theme- or Tailwind utility-like."
     },
     "themes/utils/component_scan.py::extract_purpose": {
      "body_hash": "03ff5b53f1",
-     "label": "Reads purpose from HTML comment JSON or first comment line in the SFC."
+     "label": "Pulls the Vue Component purpose string from a leading comment JSON purpose field or first comment line."
     },
     "themes/utils/component_scan.py::extract_template": {
      "body_hash": "580340c3e3",
-     "label": "Returns template inner HTML and line offset for parser positioning."
+     "label": "Returns inner template HTML and the line number where it starts for accurate element line reporting."
     },
     "themes/utils/component_scan.py::inherit_table_usage": {
      "body_hash": "a86aa09c9f",
-     "label": "Copies child table_selector onto parents that use a table-owning descendant."
+     "label": "Copies a child table_selector onto parents without owns_table via uses_components until stable; refresh and rescan_all."
     },
     "themes/utils/component_scan.py::iter_vue_files": {
      "body_hash": "ec3d8c6cb4",
-     "label": "Walks a directory tree collecting .vue paths while skipping build and vendor dirs."
+     "label": "Lists .vue paths under an app root, skipping node_modules, dist, and other SKIP_DIRS; rescan_all walks installed apps."
     },
     "themes/utils/component_scan.py::kebab_to_pascal": {
      "body_hash": "6521ce8ae5",
-     "label": "Converts kebab-case tag names to PascalCase for child component tracking."
+     "label": "Turns kebab-case tag names into PascalCase child component names for uses_components and summaries."
+    },
+    "themes/utils/component_scan.py::mark_roots": {
+     "body_hash": "cca6b73fe7",
+     "label": "Sets is_root when no other scan in the same app lists this component_name in uses_components; apply_root_flags persists."
     },
     "themes/utils/component_scan.py::scan_vue_file": {
      "body_hash": "ed8666319a",
-     "label": "Reads a .vue path and returns scan_vue_source plus name and source_hash."
+     "label": "Reads a .vue path and merges scan_vue_source with component_name and source_hash for API rescan and refresh."
     },
     "themes/utils/component_scan.py::scan_vue_source": {
      "body_hash": "5dc0644ce6",
-     "label": "Parses template into elements list, purpose, table flags, and uses_components."
+     "label": "Runs extract_template and _TemplateParser to return elements, uses_components, purpose, and table metadata from a string."
     },
     "themes/utils/component_scan.py::source_hash": {
      "body_hash": "d47e217493",
-     "label": "Short SHA-1 digest of file text for change detection on rescans."
+     "label": "Short SHA1 digest of full file text stored on Vue Component records to detect source changes."
     }
    }
   },

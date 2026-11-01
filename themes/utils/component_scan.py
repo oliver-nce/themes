@@ -30,6 +30,14 @@ VUE_BUILTINS = frozenset({
 	"RouterLink",
 })
 
+GENERIC_TABLE_CLASS_PREFIXES = ("table-", "frappe-", "form-", "grid-", "dt-")
+GENERIC_TABLE_CLASSES = frozenset({"table", "grid", "list"})
+
+
+def _is_generic_class(name: str) -> bool:
+	return name in GENERIC_TABLE_CLASSES or name.startswith(GENERIC_TABLE_CLASS_PREFIXES)
+
+
 _TEMPLATE_OPEN_RE = re.compile(r"<template(\s[^>]*)?>")
 
 
@@ -136,6 +144,32 @@ def inherit_table_usage(scans: list[dict]) -> None:
 				break
 
 
+def mark_roots(scans: list[dict]) -> None:
+	"""Mutates each scan, setting is_root to 1 or 0.
+
+	uses_components may be a list of strings or a newline-separated string.
+	A scan is listed (is_root 1) when it uses another scanned component in the same app,
+	or when no scan in that app uses it. Only a component that is used and uses no
+	scanned component is left off the list.
+	"""
+	known = {(s.get("app") or "", s.get("component_name") or "") for s in scans}
+	used: set[tuple[str, str]] = set()
+	has_children: set[int] = set()
+	for i, scan in enumerate(scans):
+		uses = scan.get("uses_components") or []
+		if isinstance(uses, str):
+			uses = [u.strip() for u in uses.split("\n") if u.strip()]
+		parent_app = scan.get("app") or ""
+		for child_name in uses:
+			if child_name and (parent_app, child_name) in known:
+				used.add((parent_app, child_name))
+				has_children.add(i)
+	for i, scan in enumerate(scans):
+		app = scan.get("app") or ""
+		name = scan.get("component_name") or ""
+		scan["is_root"] = 1 if i in has_children or (app, name) not in used else 0
+
+
 class _TemplateParser(HTMLParser):
 	def __init__(self, line_offset: int) -> None:
 		super().__init__(convert_charrefs=True)
@@ -147,6 +181,8 @@ class _TemplateParser(HTMLParser):
 		self.owns_table = False
 		self.root_class = ""
 		self.table_selector = ""
+		self.theme_table_targets: list[str] = []
+		self._unclassed_tables = 0
 
 	def handle_starttag(self, tag: str, attrs: list[tuple[str, str | None]]) -> None:
 		self._on_tag(tag, attrs)
@@ -178,6 +214,13 @@ class _TemplateParser(HTMLParser):
 			self.owns_table = True
 			if not self.table_selector and tag_selector:
 				self.table_selector = tag_selector
+			if "theme-table" not in tokens:
+				if tag_selector and not _is_generic_class(tag_selector):
+					target = f"class:{tag_selector}"
+					if target not in self.theme_table_targets:
+						self.theme_table_targets.append(target)
+				else:
+					self._unclassed_tables += 1
 		if original_name.lower() in ("template", "slot"):
 			return
 		pascal = kebab_to_pascal(original_name)
@@ -225,6 +268,9 @@ def scan_vue_source(source: str) -> dict:
 	if template:
 		parser.feed(template)
 		parser.close()
+	targets = list(parser.theme_table_targets)
+	if parser._unclassed_tables and parser.root_class and not _is_generic_class(parser.root_class):
+		targets.append(f"scope:{parser.root_class}")
 	return {
 		"elements": parser.elements,
 		"uses_components": sorted(parser.uses_components),
@@ -234,6 +280,7 @@ def scan_vue_source(source: str) -> dict:
 		"root_class": parser.root_class,
 		"table_selector": parser.table_selector,
 		"table_scope_class": "",
+		"theme_table_targets": targets,
 	}
 
 

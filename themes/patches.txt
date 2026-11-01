@@ -11,3 +11,5 @@ themes.patches.v1_0.bootstrap_default_desk_theme
 themes.patches.v1_0.resolve_neutral_color_shades
 themes.patches.v1_0.add_desk_css_hash_field
 themes.patches.v1_0.sync_is_default_flag
+themes.patches.v1_0.design_mode_defaults
+themes.patches.v1_0.clear_design_mode_protected

@@ -6,7 +6,13 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from themes.utils.component_scan import inherit_table_usage, iter_vue_files, scan_vue_source, scan_vue_file
+from themes.utils.component_scan import (
+	inherit_table_usage,
+	iter_vue_files,
+	mark_roots,
+	scan_vue_file,
+	scan_vue_source,
+)
 
 FIXTURES = Path(__file__).resolve().parent / "fixtures" / "vue"
 
@@ -207,6 +213,104 @@ class TestComponentScan(unittest.TestCase):
 		]
 		inherit_table_usage(scans)
 		self.assertEqual(scans[0]["table_selector"], "mine-table")
+
+	def test_mark_roots_chain(self) -> None:
+		scans = [
+			{"app": "nce", "component_name": "A", "uses_components": ["B"]},
+			{"app": "nce", "component_name": "B", "uses_components": ["C"]},
+			{"app": "nce", "component_name": "C", "uses_components": []},
+		]
+		mark_roots(scans)
+		by_name = {s["component_name"]: s for s in scans}
+		self.assertEqual(by_name["A"]["is_root"], 1)
+		self.assertEqual(by_name["B"]["is_root"], 1)
+		self.assertEqual(by_name["C"]["is_root"], 0)
+
+	def test_mark_roots_shared_child(self) -> None:
+		scans = [
+			{"app": "nce", "component_name": "A", "uses_components": ["B"]},
+			{"app": "nce", "component_name": "D", "uses_components": ["B"]},
+			{"app": "nce", "component_name": "B", "uses_components": []},
+		]
+		mark_roots(scans)
+		by_name = {s["component_name"]: s for s in scans}
+		self.assertEqual(by_name["A"]["is_root"], 1)
+		self.assertEqual(by_name["D"]["is_root"], 1)
+		self.assertEqual(by_name["B"]["is_root"], 0)
+
+	def test_mark_roots_cross_app(self) -> None:
+		scans = [
+			{"app": "nce", "component_name": "App", "uses_components": ["Panel"]},
+			{"app": "nce", "component_name": "Panel", "uses_components": []},
+			{"app": "other", "component_name": "Panel", "uses_components": []},
+		]
+		mark_roots(scans)
+		by_key = {(s["app"], s["component_name"]): s for s in scans}
+		self.assertEqual(by_key[("other", "Panel")]["is_root"], 1)
+		self.assertEqual(by_key[("nce", "Panel")]["is_root"], 0)
+
+	def test_mark_roots_newline_uses(self) -> None:
+		scans = [
+			{"app": "nce", "component_name": "Parent", "uses_components": "Foo\nBar"},
+			{"app": "nce", "component_name": "Foo", "uses_components": []},
+			{"app": "nce", "component_name": "Bar", "uses_components": []},
+		]
+		mark_roots(scans)
+		by_name = {s["component_name"]: s for s in scans}
+		self.assertEqual(by_name["Parent"]["is_root"], 1)
+		self.assertEqual(by_name["Foo"]["is_root"], 0)
+		self.assertEqual(by_name["Bar"]["is_root"], 0)
+
+	def test_mark_roots_isolated(self) -> None:
+		scans = [
+			{"app": "nce", "component_name": "One", "uses_components": []},
+			{"app": "nce", "component_name": "Two", "uses_components": []},
+		]
+		mark_roots(scans)
+		self.assertEqual(scans[0]["is_root"], 1)
+		self.assertEqual(scans[1]["is_root"], 1)
+
+	def test_mark_roots_unscanned_child_is_not_a_parent(self) -> None:
+		scans = [
+			{"app": "nce", "component_name": "Page", "uses_components": ["Toolbar"]},
+			{"app": "nce", "component_name": "Toolbar", "uses_components": ["FeatherIcon"]},
+		]
+		mark_roots(scans)
+		by_name = {s["component_name"]: s for s in scans}
+		self.assertEqual(by_name["Page"]["is_root"], 1)
+		self.assertEqual(by_name["Toolbar"]["is_root"], 0)
+
+
+class TestThemeTableTargets(unittest.TestCase):
+	def test_classed_table(self) -> None:
+		source = """<template><div class="acme-panel"><table class="acme-grid"></table></div></template>"""
+		result = scan_vue_source(source)
+		self.assertEqual(result["theme_table_targets"], ["class:acme-grid"])
+
+	def test_theme_table_class_excluded(self) -> None:
+		source = """<template><div class="acme-panel"><table class="acme-grid theme-table"></table></div></template>"""
+		result = scan_vue_source(source)
+		self.assertEqual(result["theme_table_targets"], [])
+
+	def test_unclassed_table_scope(self) -> None:
+		source = """<template><div class="acme-panel"><table></table></div></template>"""
+		result = scan_vue_source(source)
+		self.assertEqual(result["theme_table_targets"], ["scope:acme-panel"])
+
+	def test_generic_table_classes_scope(self) -> None:
+		source = """<template><div class="acme-panel"><table class="table table-bordered"></table></div></template>"""
+		result = scan_vue_source(source)
+		self.assertEqual(result["theme_table_targets"], ["scope:acme-panel"])
+
+	def test_two_classed_tables(self) -> None:
+		source = """<template>
+<div class="wrap">
+  <table class="a-tbl"></table>
+  <table class="b-tbl"></table>
+</div>
+</template>"""
+		result = scan_vue_source(source)
+		self.assertEqual(result["theme_table_targets"], ["class:a-tbl", "class:b-tbl"])
 
 
 if __name__ == "__main__":

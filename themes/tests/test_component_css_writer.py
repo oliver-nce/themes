@@ -3,7 +3,13 @@ from __future__ import annotations
 
 import unittest
 
-from themes.utils.component_css_writer import HEADER, declarations_for, generate_component_css, table_css_for
+from themes.utils.component_css_writer import (
+	HEADER,
+	declarations_for,
+	generate_component_css,
+	table_css_for,
+	theme_table_bundle_for,
+)
 
 
 def _row(**kwargs: object) -> dict:
@@ -163,11 +169,20 @@ class TestTableCssWriter(unittest.TestCase):
 
 	def test_table_row_even(self) -> None:
 		css = table_css_for(_parent(table_row_bg_class="theme-bg-primary-100"))
-		self.assertIn("tbody tr:nth-child(even)", css)
+		self.assertIn(".ppv2-table tbody tr:nth-child(even)", css)
+		self.assertNotIn(".ppv2-table.ppv2-table.ppv2-table tbody tr", css)
 
 	def test_table_row_odd(self) -> None:
 		css = table_css_for(_parent(table_row_alt_bg_class="theme-bg-primary-200"))
-		self.assertIn("tbody tr:nth-child(odd)", css)
+		self.assertIn(".ppv2-table tbody tr:nth-child(odd)", css)
+		self.assertNotIn(".ppv2-table.ppv2-table.ppv2-table tbody tr", css)
+
+	def test_table_row_scoped(self) -> None:
+		css = table_css_for(_parent(
+			table_scope_class="wrap",
+			table_row_bg_class="theme-bg-primary-100",
+		))
+		self.assertIn(".wrap .ppv2-table tbody tr:nth-child(even)", css)
 
 	def test_table_scope_prefix(self) -> None:
 		css = table_css_for(_parent(
@@ -208,6 +223,43 @@ class TestTableCssWriter(unittest.TestCase):
 		))
 		self.assertIn("border-right: none", css)
 		self.assertIn("th:last-child", css)
+
+
+class TestThemeTableBundle(unittest.TestCase):
+	def test_class_target(self) -> None:
+		css = theme_table_bundle_for({
+			"status": "Present",
+			"component_name": "X",
+			"theme_table_targets": "class:acme-grid",
+		})
+		self.assertIn(".acme-grid.acme-grid.acme-grid td {", css)
+		self.assertIn(".acme-grid tbody tr:nth-child(even)", css)
+		self.assertIn("var(--nce-border-width-table-row)", css)
+		self.assertIn("var(--nce-color-table-col-divider)", css)
+
+	def test_scope_target(self) -> None:
+		css = theme_table_bundle_for({
+			"status": "Present",
+			"component_name": "X",
+			"theme_table_targets": "scope:acme-panel",
+		})
+		self.assertIn(".acme-panel.acme-panel.acme-panel table td {", css)
+
+	def test_invalid_lines_empty(self) -> None:
+		css = theme_table_bundle_for({
+			"status": "Present",
+			"component_name": "X",
+			"theme_table_targets": "class:\nweird:x",
+		})
+		self.assertEqual(css, "")
+
+	def test_missing_status_empty(self) -> None:
+		css = theme_table_bundle_for({
+			"status": "Missing",
+			"component_name": "X",
+			"theme_table_targets": "class:acme-grid",
+		})
+		self.assertEqual(css, "")
 
 
 if __name__ == "__main__":

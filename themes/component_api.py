@@ -6,10 +6,17 @@ from pathlib import Path
 import frappe
 from frappe import _
 
-from themes.utils.component_css_writer import declarations_for, publish_component_css
-from themes.utils.component_scan import inherit_table_usage, iter_vue_files, scan_vue_file
+from themes.utils.component_css_writer import declarations_for, publish_component_css, table_css_for
+from themes.utils.component_scan import inherit_table_usage, iter_vue_files, mark_roots, scan_vue_file
 from themes.utils.component_summary import build_summary
 from themes.utils.component_sync import ALWAYS_EXCLUDED_APPS, merge_elements
+from themes.utils.design_mode import (
+	TABLE_VALUE_FIELDS,
+	build_selector_map,
+	build_table_map,
+	clean_table_values,
+	parse_protected,
+)
 
 ELEMENT_FIELDS = (
 	"element_key",
@@ -30,12 +37,23 @@ ELEMENT_FIELDS = (
 )
 
 
+def _is_frappe_branded(app: str) -> bool:
+	try:
+		publishers = frappe.get_hooks("app_publisher", app_name=app) or []
+	except Exception:
+		return False
+	return any("frappe technologies" in str(p).lower() for p in publishers)
+
+
 def _excluded_apps() -> set[str]:
 	excluded = set(ALWAYS_EXCLUDED_APPS)
 	raw = frappe.db.get_single_value("Theme Component Settings", "excluded_apps") or ""
 	for line in raw.splitlines():
 		app = line.strip()
 		if app:
+			excluded.add(app)
+	for app in frappe.get_installed_apps():
+		if app not in excluded and _is_frappe_branded(app):
 			excluded.add(app)
 	return excluded
 
@@ -72,6 +90,7 @@ def _apply_scan(doc, scan: dict | None) -> None:
 		doc.root_class = ""
 		doc.table_selector = ""
 		doc.table_scope_class = ""
+		doc.theme_table_targets = ""
 	else:
 		doc.component_name = scan["component_name"]
 		doc.source_hash = scan["source_hash"]
@@ -83,6 +102,7 @@ def _apply_scan(doc, scan: dict | None) -> None:
 		doc.root_class = scan.get("root_class") or ""
 		doc.table_selector = scan.get("table_selector") or ""
 		doc.table_scope_class = scan.get("table_scope_class") or ""
+		doc.theme_table_targets = "\n".join(scan.get("theme_table_targets") or [])
 		merged = merge_elements([r.as_dict() for r in doc.elements], scan["elements"])
 		_set_rows(doc, merged)
 	doc.last_scanned = frappe.utils.now_datetime()
@@ -101,6 +121,42 @@ def _used_by(component_name: str, exclude_name: str) -> list[str]:
 		if component_name in uses.split("\n"):
 			names.append(row["component_name"])
 	return sorted(names)
+
+
+def apply_root_flags() -> None:
+	rows = frappe.get_all(
+		"Vue Component",
+		fields=["name", "app", "component_name", "uses_components"],
+	)
+	scans: list[dict] = []
+	for row in rows:
+		if isinstance(row, dict):
+			scans.append({
+				"name": row["name"],
+				"app": row.get("app") or "",
+				"component_name": row.get("component_name") or "",
+				"uses_components": row.get("uses_components") or "",
+			})
+		else:
+			scans.append({
+				"name": row.name,
+				"app": row.app or "",
+				"component_name": row.component_name or "",
+				"uses_components": row.uses_components or "",
+			})
+	mark_roots(scans)
+	for scan in scans:
+		frappe.db.set_value(
+			"Vue Component",
+			scan["name"],
+			"is_root",
+			int(scan.get("is_root") or 0),
+			update_modified=False,
+		)
+
+
+def vue_component_permission_query(user=None) -> str:
+	return "`tabVue Component`.`is_root` = 1"
 
 
 def _refresh_all_summaries() -> None:
@@ -163,6 +219,7 @@ def rescan_all() -> dict:
 		doc.save(ignore_permissions=True)
 		missing += 1
 
+	apply_root_flags()
 	_refresh_all_summaries()
 	publish_component_css()
 	return {
@@ -211,8 +268,31 @@ def refresh_component(name: str) -> dict:
 		inherit_table_usage([scan, *siblings])
 	_apply_scan(doc, scan)
 	doc.save()
+	apply_root_flags()
 	_refresh_all_summaries()
 	return {"status": doc.status, "needs_attention": doc.needs_attention}
+
+
+@frappe.whitelist()
+def components_inside(name: str) -> list[dict]:
+	frappe.only_for("System Manager")
+	doc = frappe.get_doc("Vue Component", name)
+	uses = [u.strip() for u in (doc.uses_components or "").split("\n") if u.strip()]
+	if not uses:
+		return []
+	rows = frappe.get_all(
+		"Vue Component",
+		filters={"app": doc.app, "component_name": ["in", uses]},
+		fields=["name", "component_name"],
+	)
+	by_name = {row["component_name"]: row for row in rows}
+	result: list[dict] = []
+	for comp_name in uses:
+		row = by_name.get(comp_name)
+		if not row:
+			continue
+		result.append({"name": row["name"], "component_name": row["component_name"]})
+	return result
 
 
 @frappe.whitelist()
@@ -229,7 +309,7 @@ def get_preview_theme() -> dict:
 
 @frappe.whitelist()
 def preview_declarations(rows) -> dict:
-	frappe.only_for("System Manager")
+	_require_design()
 	if isinstance(rows, str):
 		rows = frappe.parse_json(rows)
 	result: dict[str, str] = {}
@@ -268,3 +348,193 @@ def open_vue_components() -> dict:
 		"created": created,
 		"populated": populated,
 	}
+
+
+_TABLE_CLASS_FIELDS = (
+	"table_header_bg_class", "table_row_bg_class", "table_row_alt_bg_class",
+	"table_header_line_class", "table_header_line_color_class",
+	"table_row_divider_class", "table_row_divider_color_class",
+	"table_col_divider_class", "table_col_divider_color_class",
+)
+_TABLE_FG_FIELDS = ("table_header_fg_type", "table_row_fg_type", "table_row_alt_fg_type")
+_DESIGN_VALUE_FIELDS = (
+	"override_bg_class", "override_fg_type", "override_text_class",
+	"override_border_width_class", "override_border_color_class",
+)
+
+
+def can_design(user: str | None = None) -> bool:
+	"""Administrator, System Manager, or anyone who can write Vue Component."""
+	user = user or frappe.session.user
+	if not user or user == "Guest":
+		return False
+	if user == "Administrator" or "System Manager" in frappe.get_roles(user):
+		return True
+	return bool(frappe.has_permission("Vue Component", "write", user=user))
+
+
+def design_mode_enabled() -> bool:
+	return bool(frappe.db.get_single_value("Theme Component Settings", "design_mode_enabled"))
+
+
+def _require_design() -> None:
+	if not can_design():
+		frappe.throw(_("You are not allowed to use Design Mode."), frappe.PermissionError)
+
+
+@frappe.whitelist()
+def get_design_mode_status() -> dict:
+	return {"enabled": design_mode_enabled(), "allowed": can_design()}
+
+
+@frappe.whitelist()
+def set_design_mode_enabled(enabled) -> dict:
+	frappe.only_for("System Manager")
+	value = 1 if str(enabled).lower() in ("1", "true", "yes", "on") else 0
+	frappe.db.set_single_value("Theme Component Settings", "design_mode_enabled", value)
+	frappe.db.commit()
+	scan = None
+	if value:
+		try:
+			scan = rescan_all()
+		except Exception as e:
+			frappe.log_error(title="Design Mode scan failed")
+			scan = {"error": str(e)}
+	return {"enabled": bool(value), "scan": scan}
+
+
+def _protected_classes() -> set[str]:
+	return parse_protected(frappe.db.get_single_value("Theme Component Settings", "protected_classes"))
+
+
+@frappe.whitelist()
+def get_design_mode_map() -> dict:
+	_require_design()
+	parents = {
+		p.name: p
+		for p in frappe.get_all(
+			"Vue Component",
+			filters={"status": "Present"},
+			fields=["name", "component_name", "app", "file_path"],
+		)
+	}
+	rows = []
+	for r in frappe.get_all(
+		"Vue Component Element",
+		filters={"parenttype": "Vue Component", "element_status": "Present"},
+		fields=["parent", "selector_class", "tag", "line", "is_dynamic", "keep_default", *_DESIGN_VALUE_FIELDS],
+	):
+		p = parents.get(r.parent)
+		if not p:
+			continue
+		rows.append({**r, "component_name": p.component_name, "app": p.app, "file_path": p.file_path})
+	table_rows = frappe.get_all(
+		"Vue Component",
+		filters={"status": "Present", "owns_table": 1},
+		fields=["name", "component_name", "table_selector", "table_scope_class", *TABLE_VALUE_FIELDS],
+	)
+	theme = get_preview_theme()
+	return {
+		"theme": theme["theme"],
+		"slug": theme["slug"],
+		"selectors": build_selector_map(rows, _protected_classes()),
+		"tables": build_table_map(table_rows),
+	}
+
+
+def _components_with_selector(selector: str) -> list[str]:
+	names = frappe.get_all(
+		"Vue Component Element",
+		filters={"parenttype": "Vue Component", "element_status": "Present", "selector_class": selector},
+		pluck="parent",
+	)
+	present = set(frappe.get_all("Vue Component", filters={"status": "Present", "name": ["in", list(set(names)) or [""]]}, pluck="name"))
+	return sorted(present)
+
+
+@frappe.whitelist()
+def save_design_change(selector: str, values) -> dict:
+	_require_design()
+	if isinstance(values, str):
+		values = frappe.parse_json(values)
+	selector = (selector or "").strip()
+	if selector in _protected_classes():
+		frappe.throw(_("{0} is set per panel on the Page Panel's Colours tab.").format(selector))
+	names = _components_with_selector(selector)
+	if not names:
+		frappe.throw(_("No Vue Component uses the class {0}.").format(selector))
+	for name in names:
+		doc = frappe.get_doc("Vue Component", name)
+		for row in doc.elements:
+			if row.element_status != "Present" or (row.selector_class or "").strip() != selector:
+				continue
+			for f in _DESIGN_VALUE_FIELDS:
+				row.set(f, (values.get(f) or "").strip())
+			row.keep_default = 1 if values.get("keep_default") else 0
+		doc.flags.skip_css_publish = True
+		doc.save()
+	result = publish_component_css()
+	return {"components": names, "css_hash": result.get("css_hash") or ""}
+
+
+@frappe.whitelist()
+def revert_design_components(names) -> dict:
+	_require_design()
+	if isinstance(names, str):
+		names = frappe.parse_json(names)
+	reverted = []
+	for name in names or []:
+		if not frappe.db.exists("Vue Component", name):
+			continue
+		doc = frappe.get_doc("Vue Component", name)
+		for row in doc.elements:
+			for f in _DESIGN_VALUE_FIELDS:
+				row.set(f, "")
+			row.keep_default = 0
+		for f in _TABLE_CLASS_FIELDS:
+			doc.set(f, "")
+		for f in _TABLE_FG_FIELDS:
+			doc.set(f, "mono")
+		doc.flags.skip_css_publish = True
+		doc.save()
+		reverted.append(name)
+	result = publish_component_css()
+	return {"reverted": reverted, "css_hash": result.get("css_hash") or ""}
+
+
+def _table_parent(name: str) -> dict:
+	if not frappe.db.exists("Vue Component", name):
+		frappe.throw(_("Vue Component {0} not found.").format(name))
+	return frappe.db.get_value(
+		"Vue Component",
+		name,
+		["name", "component_name", "status", "has_table", "table_selector", "table_scope_class", *TABLE_VALUE_FIELDS],
+		as_dict=True,
+	)
+
+
+@frappe.whitelist()
+def preview_design_table(name: str, values) -> dict:
+	_require_design()
+	if isinstance(values, str):
+		values = frappe.parse_json(values)
+	parent = dict(_table_parent(name))
+	parent.update(clean_table_values(values))
+	parent["status"] = "Present"
+	parent["has_table"] = 1
+	return {"css": table_css_for(parent)}
+
+
+@frappe.whitelist()
+def save_design_table(name: str, values) -> dict:
+	_require_design()
+	if isinstance(values, str):
+		values = frappe.parse_json(values)
+	_table_parent(name)
+	doc = frappe.get_doc("Vue Component", name)
+	for f, v in clean_table_values(values).items():
+		doc.set(f, v)
+	doc.flags.skip_css_publish = True
+	doc.save()
+	result = publish_component_css()
+	return {"name": name, "css_hash": result.get("css_hash") or ""}
