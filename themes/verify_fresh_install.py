@@ -8,6 +8,8 @@ import os
 
 import frappe
 
+from themes.utils.css_publish import public_css_path
+
 
 def run():
     _check_site_theme_config_exists()
@@ -66,8 +68,7 @@ def _check_base_theme():
 
 
 def _check_css_file():
-    app_path = frappe.get_app_path("themes")
-    css_path = os.path.join(app_path, "public", "css", "nce_theme.css")
+    css_path = public_css_path("nce_theme.css")
     if not os.path.isfile(css_path):
         raise Exception(f"nce_theme.css not found at {css_path}")
     if os.path.getsize(css_path) == 0:
