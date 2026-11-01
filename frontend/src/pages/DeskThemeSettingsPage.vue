@@ -6,138 +6,18 @@ Desk Theme Editor for NCE Desk Theme colours, shape, typography, Gantt, and live
 // Copyright (c) 2026 Oliver Reid. All rights reserved. Copying prohibited — see README.
 <template>
 	<div class="max-w-6xl mx-auto px-6 py-4">
-		<div class="editor-header editor-panel">
-			<div class="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-				<div>
-					<h1 class="editor-title">Desk Theme Editor</h1>
-					<p class="editor-subtitle mt-0.5">
-						Editing <strong>{{ editorMeta.theme_name || "—" }}</strong>
-						<span v-if="editingTheme && siteBaseTheme && editingTheme !== siteBaseTheme" class="editor-warn">
-							· not the site base desk theme
-						</span>
-						<span v-if="siteBaseThemeName" class="editor-muted">
-							· Site base: <strong>{{ siteBaseThemeName }}</strong>
-						</span>
-					</p>
-					<div
-						v-if="editorLoaded"
-						class="editor-status-row mt-2 flex flex-wrap items-center gap-x-4 gap-y-1"
-					>
-						<span class="editor-status-label">For Desk:</span>
-						<label class="editor-status-option">
-							<input
-								type="radio"
-								name="desk-theme-availability"
-								value="Active"
-								:checked="savedThemeStatus === 'Active'"
-								:disabled="!canChangeStatus"
-								@change="setThemeStatus('Active')"
-							/>
-							Active
-						</label>
-						<label class="editor-status-option">
-							<input
-								type="radio"
-								name="desk-theme-availability"
-								value="Inactive"
-								:checked="savedThemeStatus === 'Inactive'"
-								:disabled="!canChangeStatus"
-								@change="setThemeStatus('Inactive')"
-							/>
-							Inactive
-						</label>
-						<span v-if="statusSaving" class="editor-status-hint">Saving…</span>
-						<span v-else-if="isDirty" class="editor-status-hint editor-status-hint-warn">
-							Save or revert changes before changing availability
-						</span>
-					</div>
-				</div>
-				<div class="editor-toolbar flex flex-col sm:flex-row sm:flex-wrap items-stretch sm:items-center gap-3 lg:justify-end lg:max-w-[70%]">
-					<select
-						v-if="themesList.data?.length"
-						v-model="selectedTheme"
-						class="theme-select"
-						:style="{ minWidth: themeSelectWidth }"
-						:disabled="loadingTheme"
-						@change="onThemeChange"
-					>
-						<option v-for="t in themesList.data" :key="t.name" :value="t.name">
-							{{ themeOptionLabel(t) }}
-						</option>
-					</select>
-					<div class="editor-actions flex flex-wrap gap-2 justify-end">
-						<Button
-							variant="solid"
-							class="theme-btn theme-btn-quiet bg-primary-100 text-primary-100-fg border border-border hover:bg-row-alt"
-							@click="openPreview"
-						>
-							Open Preview ↗
-						</Button>
-						<Button
-							variant="solid"
-							class="theme-btn theme-btn-quiet bg-primary-100 text-primary-100-fg border border-border hover:bg-row-alt"
-							:disabled="!isDirty || loadingTheme"
-							@click="revertChanges"
-						>
-							Revert
-						</Button>
-						<Button
-							variant="solid"
-							class="theme-btn theme-btn-quiet bg-primary-100 text-primary-100-fg border border-border hover:bg-row-alt"
-							:loading="saving"
-							:disabled="!isDirty || loadingTheme"
-							@click="handleSave"
-						>
-							Save Changes
-						</Button>
-						<Button
-							variant="solid"
-							class="theme-btn theme-btn-quiet bg-primary-100 text-primary-100-fg border border-border hover:bg-row-alt"
-							:disabled="loadingTheme || !siteBaseTheme || editingTheme === siteBaseTheme"
-							@click="requestRestoreToBase"
-						>
-							Restore to Base Desk Theme
-						</Button>
-						<Button
-							variant="solid"
-							class="theme-btn theme-btn-quiet bg-primary-100 text-primary-100-fg border border-border hover:bg-row-alt"
-							:disabled="loadingTheme"
-							@click="openSaveAsDialog"
-						>
-							Save as new desk theme
-						</Button>
-						<Button
-							v-if="canSetAsDefaultTheme"
-							variant="solid"
-							class="theme-btn theme-btn-quiet bg-primary-100 text-primary-100-fg border border-border hover:bg-row-alt"
-							:loading="setDefaultBusy"
-							:disabled="!canSetAsDefaultTheme"
-							@click="requestSetAsDefaultTheme"
-						>
-							Set as Default desk theme
-						</Button>
-						<Button
-							v-if="showRenameButton"
-							variant="solid"
-							class="theme-btn theme-btn-quiet bg-primary-100 text-primary-100-fg border border-border hover:bg-row-alt"
-							:disabled="!canRenameTheme"
-							@click="openRenameDialog"
-						>
-							Rename
-						</Button>
-						<Button
-							v-if="showDeleteButton"
-							variant="solid"
-							class="theme-btn theme-btn-quiet bg-primary-100 text-primary-100-fg border border-border hover:bg-row-alt"
-							:disabled="!canDeleteTheme"
-							@click="openDeleteDialog"
-						>
-							Delete
-						</Button>
-					</div>
-				</div>
-			</div>
-		</div>
+		<ThemeEditorHeader
+			:manager="manager"
+			title="Desk Theme Editor"
+			noun="desk theme"
+			status-label="For Desk:"
+			radio-name="desk-theme-availability"
+			restore-target="Desk Theme"
+			restore-blocked-on-base
+			:theme-option-label="themeOptionLabel"
+			@preview="openPreview"
+			@restore="requestRestoreToBase"
+		/>
 
 		<div v-if="switchError" class="mb-4 rounded-md bg-red-50 text-red-700 text-sm px-4 py-2">
 			{{ switchError }}
@@ -712,63 +592,47 @@ Desk Theme Editor for NCE Desk Theme colours, shape, typography, Gantt, and live
 		</template>
 
 		<Teleport to="body">
-			<div
-				v-if="confirmDialog.open"
-				class="fixed inset-0 z-50 flex items-center justify-center bg-black/30 p-4"
-				@click.self="closeConfirmDialog"
-			>
-				<div class="bg-white rounded-lg shadow-xl p-5 max-w-md w-full">
-					<h3 class="text-base font-semibold text-gray-900">{{ confirmDialog.title }}</h3>
-					<p class="text-sm text-gray-600 mt-2">{{ confirmDialog.message }}</p>
-					<div class="flex flex-wrap gap-2 justify-end mt-5">
-						<Button variant="solid" class="bg-primary-100 text-primary-100-fg border border-border" @click="closeConfirmDialog">
-							Cancel
-						</Button>
-						<Button variant="solid" class="bg-primary-100 text-primary-100-fg border border-border" @click="confirmDiscardAndContinue">
-							Discard changes
-						</Button>
-						<Button variant="solid" class="bg-primary text-primary-fg border border-primary" :loading="confirmDialog.busy" @click="confirmSaveAndContinue">
-							Save &amp; continue
-						</Button>
-					</div>
+			<ThemeDialog :open="confirmDialog.open" :title="confirmDialog.title" @close="closeConfirmDialog">
+				<p class="text-sm text-gray-600 mt-2">{{ confirmDialog.message }}</p>
+				<div class="flex flex-wrap gap-2 justify-end mt-5">
+					<Button variant="solid" class="bg-primary-100 text-primary-100-fg border border-border" @click="closeConfirmDialog">
+						Cancel
+					</Button>
+					<Button variant="solid" class="bg-primary-100 text-primary-100-fg border border-border" @click="confirmDiscardAndContinue">
+						Discard changes
+					</Button>
+					<Button variant="solid" class="bg-primary text-primary-fg border border-primary" :loading="confirmDialog.busy" @click="confirmSaveAndContinue">
+						Save &amp; continue
+					</Button>
 				</div>
-			</div>
+			</ThemeDialog>
 
-			<div v-if="saveAsDialog.open" class="fixed inset-0 z-50 flex items-center justify-center bg-black/30 p-4" @click.self="closeSaveAsDialog">
-				<div class="bg-white rounded-lg shadow-xl p-5 max-w-md w-full">
-					<h3 class="text-base font-semibold text-gray-900">Save as new desk theme</h3>
-					<input v-model="saveAsDialog.name" type="text" class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm mt-3" placeholder="Desk theme name" />
-					<p v-if="saveAsDialog.error" class="text-sm text-red-600 mt-2">{{ saveAsDialog.error }}</p>
-					<div class="flex gap-2 justify-end mt-5">
-						<Button variant="solid" class="bg-primary-100 text-primary-100-fg border border-border" @click="closeSaveAsDialog">Cancel</Button>
-						<Button variant="solid" class="bg-primary text-primary-fg border border-primary" :loading="saveAsDialog.busy" @click="submitSaveAs">Create</Button>
-					</div>
+			<ThemeDialog :open="saveAsDialog.open" title="Save as new desk theme" @close="closeSaveAsDialog">
+				<input v-model="saveAsDialog.name" type="text" class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm mt-3" placeholder="Desk theme name" />
+				<p v-if="saveAsDialog.error" class="text-sm text-red-600 mt-2">{{ saveAsDialog.error }}</p>
+				<div class="flex gap-2 justify-end mt-5">
+					<Button variant="solid" class="bg-primary-100 text-primary-100-fg border border-border" @click="closeSaveAsDialog">Cancel</Button>
+					<Button variant="solid" class="bg-primary text-primary-fg border border-primary" :loading="saveAsDialog.busy" @click="submitSaveAs">Create</Button>
 				</div>
-			</div>
+			</ThemeDialog>
 
-			<div v-if="renameDialog.open" class="fixed inset-0 z-50 flex items-center justify-center bg-black/30 p-4" @click.self="closeRenameDialog">
-				<div class="bg-white rounded-lg shadow-xl p-5 max-w-md w-full">
-					<h3 class="text-base font-semibold text-gray-900">Rename desk theme</h3>
-					<input v-model="renameDialog.name" type="text" class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm mt-3" />
-					<p v-if="renameDialog.error" class="text-sm text-red-600 mt-2">{{ renameDialog.error }}</p>
-					<div class="flex gap-2 justify-end mt-5">
-						<Button variant="solid" class="bg-primary-100 text-primary-100-fg border border-border" @click="closeRenameDialog">Cancel</Button>
-						<Button variant="solid" class="bg-primary text-primary-fg border border-primary" :loading="renameDialog.busy" @click="submitRename">Rename</Button>
-					</div>
+			<ThemeDialog :open="renameDialog.open" title="Rename desk theme" @close="closeRenameDialog">
+				<input v-model="renameDialog.name" type="text" class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm mt-3" />
+				<p v-if="renameDialog.error" class="text-sm text-red-600 mt-2">{{ renameDialog.error }}</p>
+				<div class="flex gap-2 justify-end mt-5">
+					<Button variant="solid" class="bg-primary-100 text-primary-100-fg border border-border" @click="closeRenameDialog">Cancel</Button>
+					<Button variant="solid" class="bg-primary text-primary-fg border border-primary" :loading="renameDialog.busy" @click="submitRename">Rename</Button>
 				</div>
-			</div>
+			</ThemeDialog>
 
-			<div v-if="deleteDialog.open" class="fixed inset-0 z-50 flex items-center justify-center bg-black/30 p-4" @click.self="closeDeleteDialog">
-				<div class="bg-white rounded-lg shadow-xl p-5 max-w-md w-full">
-					<h3 class="text-base font-semibold text-gray-900">Delete desk theme?</h3>
-					<p class="text-sm text-gray-600 mt-2">This cannot be undone.</p>
-					<p v-if="deleteDialog.error" class="text-sm text-red-600 mt-2">{{ deleteDialog.error }}</p>
-					<div class="flex gap-2 justify-end mt-5">
-						<Button variant="solid" class="bg-primary-100 text-primary-100-fg border border-border" @click="closeDeleteDialog">Cancel</Button>
-						<Button variant="solid" class="bg-primary text-primary-fg border border-primary" :loading="deleteDialog.busy" @click="submitDelete">Delete</Button>
-					</div>
+			<ThemeDialog :open="deleteDialog.open" title="Delete desk theme?" @close="closeDeleteDialog">
+				<p class="text-sm text-gray-600 mt-2">This cannot be undone.</p>
+				<p v-if="deleteDialog.error" class="text-sm text-red-600 mt-2">{{ deleteDialog.error }}</p>
+				<div class="flex gap-2 justify-end mt-5">
+					<Button variant="solid" class="bg-primary-100 text-primary-100-fg border border-border" @click="closeDeleteDialog">Cancel</Button>
+					<Button variant="solid" class="bg-primary text-primary-fg border border-primary" :loading="deleteDialog.busy" @click="submitDelete">Delete</Button>
 				</div>
-			</div>
+			</ThemeDialog>
 		</Teleport>
 	</div>
 </template>
@@ -780,6 +644,8 @@ import FontSelectField from "@/components/FontSelectField.vue"
 import PasswordField from "@/components/PasswordField.vue"
 import SizeSlider from "@/components/SizeSlider.vue"
 import SwatchPicker from "@/components/SwatchPicker.vue"
+import ThemeEditorHeader from "@/components/ThemeEditorHeader.vue"
+import ThemeDialog from "@/components/ThemeDialog.vue"
 import { applyDeskThemeVars, deskPayloadToCssVars } from "@/composables/useDeskTheme"
 import { useThemeManagement } from "@/composables/useThemeManagement"
 import { fontStack as fontCSS } from "@/utils/fonts"
@@ -1412,60 +1278,7 @@ watch(
 
 // ─── AGENT:theme-management ─── useThemeManagement (dialogs, permissions, CRUD; shared with web page)
 
-const {
-	loadingTheme,
-	saving,
-	statusSaving,
-	editorLoaded,
-	editorError,
-	switchError,
-	listLoadError,
-	selectedTheme,
-	editingTheme,
-	siteBaseTheme,
-	savedThemeStatus,
-	editorMeta,
-	isDirty,
-	savedSnapshot,
-	themesList,
-	loadTheme,
-	confirmDialog,
-	saveAsDialog,
-	renameDialog,
-	deleteDialog,
-	systemTab,
-	siteBaseThemeName,
-	themeSelectWidth,
-	canChangeStatus,
-	canRenameTheme,
-	canDeleteTheme,
-	showRenameButton,
-	showDeleteButton,
-	canSetAsDefaultTheme,
-	canSaveAsDefaultTheme,
-	setDefaultBusy,
-	requestSetAsDefaultTheme,
-	openConfirmDialog,
-	closeConfirmDialog,
-	confirmSaveAndContinue,
-	confirmDiscardAndContinue,
-	onThemeChange,
-	revertChanges,
-	handleSave,
-	setThemeStatus,
-	openSaveAsDialog,
-	closeSaveAsDialog,
-	submitSaveAs,
-	openRenameDialog,
-	closeRenameDialog,
-	submitRename,
-	openDeleteDialog,
-	closeDeleteDialog,
-	submitDelete,
-	restoreToBaseConfirmed,
-	saveAsBaseTheme,
-	tryLoadThemeFromQuery,
-} = useThemeManagement(
+const manager = useThemeManagement(
 	{
 		list: "themes.api.list_desk_themes",
 		getEditor: "themes.api.get_desk_theme_editor",
@@ -1505,6 +1318,38 @@ const {
 			themes[0]?.name,
 	},
 )
+
+const {
+	loadingTheme,
+	editorLoaded,
+	editorError,
+	switchError,
+	listLoadError,
+	editingTheme,
+	siteBaseTheme,
+	editorMeta,
+	isDirty,
+	themesList,
+	confirmDialog,
+	saveAsDialog,
+	renameDialog,
+	deleteDialog,
+	systemTab,
+	canSaveAsDefaultTheme,
+	openConfirmDialog,
+	closeConfirmDialog,
+	confirmSaveAndContinue,
+	confirmDiscardAndContinue,
+	closeSaveAsDialog,
+	submitSaveAs,
+	closeRenameDialog,
+	submitRename,
+	closeDeleteDialog,
+	submitDelete,
+	restoreToBaseConfirmed,
+	saveAsBaseTheme,
+	tryLoadThemeFromQuery,
+} = manager
 
 function requestRestoreToBase() {
 	if (!siteBaseTheme.value || editingTheme.value === siteBaseTheme.value) return
@@ -1564,28 +1409,28 @@ onMounted(() => {
 .editor-header {
 	margin-bottom: 1.25rem;
 }
-.editor-title {
+.editor-header :deep(.editor-title) {
 	font-size: calc(var(--nce-font-size, 14px) * 1.375);
 	font-weight: 600;
 	color: var(--nce-color-heading, #111827);
 }
-.editor-subtitle {
+.editor-header :deep(.editor-subtitle) {
 	font-size: calc(var(--nce-font-size, 14px) * 0.875);
 	color: var(--nce-color-text, #374151);
 }
-.editor-status-label,
-.editor-status-option,
-.editor-status-hint {
+.editor-header :deep(.editor-status-label),
+.editor-header :deep(.editor-status-option),
+.editor-header :deep(.editor-status-hint) {
 	font-size: calc(var(--nce-font-size, 14px) * 0.875);
 }
-.editor-status-hint-warn,
-.editor-warn {
+.editor-header :deep(.editor-status-hint-warn),
+.editor-header :deep(.editor-warn) {
 	color: var(--nce-color-warning, #d97706);
 }
-.editor-muted {
+.editor-header :deep(.editor-muted) {
 	color: var(--nce-color-muted, #9ca3af);
 }
-.theme-select {
+.editor-header :deep(.theme-select) {
 	flex: 1 1 auto;
 	max-width: 26rem;
 	width: 100%;

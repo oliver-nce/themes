@@ -437,3 +437,5 @@ export function useThemeManagement(
 		saveAsBaseTheme,
 	}
 }
+
+export type ThemeManagement = ReturnType<typeof useThemeManagement>

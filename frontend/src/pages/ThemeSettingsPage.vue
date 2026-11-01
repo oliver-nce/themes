@@ -6,139 +6,17 @@ Site Theme Editor for colours, typography, layout, live CSS variables, and base 
 // Copyright (c) 2026 Oliver Reid. All rights reserved. Copying prohibited — see README.
 <template>
 	<div class="max-w-6xl mx-auto px-6 py-4">
-		<!-- Header -->
-		<div class="editor-header editor-panel">
-			<div class="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-				<div>
-					<h1 class="editor-title">Theme Editor</h1>
-					<p class="editor-subtitle mt-0.5">
-						Editing <strong>{{ editorMeta.theme_name || "—" }}</strong>
-						<span v-if="editingTheme && siteBaseTheme && editingTheme !== siteBaseTheme" class="editor-warn">
-							· not the site base theme
-						</span>
-						<span v-if="siteBaseThemeName" class="editor-muted">
-							· Site base: <strong>{{ siteBaseThemeName }}</strong>
-						</span>
-					</p>
-					<div
-						v-if="editorLoaded"
-						class="editor-status-row mt-2 flex flex-wrap items-center gap-x-4 gap-y-1"
-					>
-						<span class="editor-status-label">For panels:</span>
-						<label class="editor-status-option">
-							<input
-								type="radio"
-								name="theme-availability"
-								value="Active"
-								:checked="savedThemeStatus === 'Active'"
-								:disabled="!canChangeStatus"
-								@change="setThemeStatus('Active')"
-							/>
-							Active
-						</label>
-						<label class="editor-status-option">
-							<input
-								type="radio"
-								name="theme-availability"
-								value="Inactive"
-								:checked="savedThemeStatus === 'Inactive'"
-								:disabled="!canChangeStatus"
-								@change="setThemeStatus('Inactive')"
-							/>
-							Inactive
-						</label>
-						<span v-if="statusSaving" class="editor-status-hint">Saving…</span>
-						<span v-else-if="isDirty" class="editor-status-hint editor-status-hint-warn">
-							Save or revert changes before changing availability
-						</span>
-					</div>
-				</div>
-				<div class="editor-toolbar flex flex-col sm:flex-row sm:flex-wrap items-stretch sm:items-center gap-3 lg:justify-end lg:max-w-[70%]">
-					<select
-						v-if="themesList.data?.length"
-						v-model="selectedTheme"
-						class="theme-select"
-						:style="{ minWidth: themeSelectWidth }"
-						:disabled="loadingTheme"
-						@change="onThemeChange"
-					>
-						<option v-for="t in themesList.data" :key="t.name" :value="t.name">
-							{{ themeOptionLabel(t) }}
-						</option>
-					</select>
-					<div class="editor-actions flex flex-wrap gap-2 justify-end">
-						<Button
-							variant="solid"
-							class="theme-btn theme-btn-quiet bg-primary-100 text-primary-100-fg border border-border hover:bg-row-alt"
-							@click="openPreview"
-						>
-							Open Preview ↗
-						</Button>
-						<Button
-							variant="solid"
-							class="theme-btn theme-btn-quiet bg-primary-100 text-primary-100-fg border border-border hover:bg-row-alt"
-							:disabled="!isDirty || loadingTheme"
-							@click="revertChanges"
-						>
-							Revert
-						</Button>
-						<Button
-							variant="solid"
-							class="theme-btn theme-btn-quiet bg-primary-100 text-primary-100-fg border border-border hover:bg-row-alt"
-							:loading="saving"
-							:disabled="!isDirty || loadingTheme"
-							@click="handleSave"
-						>
-							Save Changes
-						</Button>
-						<Button
-							variant="solid"
-							class="theme-btn theme-btn-quiet bg-primary-100 text-primary-100-fg border border-border hover:bg-row-alt"
-						:disabled="loadingTheme || !siteBaseTheme"
-						@click="requestRestoreToBase"
-					>
-						Restore to Base Theme
-						</Button>
-						<Button
-							variant="solid"
-							class="theme-btn theme-btn-quiet bg-primary-100 text-primary-100-fg border border-border hover:bg-row-alt"
-							:disabled="loadingTheme"
-							@click="openSaveAsDialog"
-						>
-							Save as new theme
-						</Button>
-						<Button
-							v-if="canSetAsDefaultTheme"
-							variant="solid"
-							class="theme-btn theme-btn-quiet bg-primary-100 text-primary-100-fg border border-border hover:bg-row-alt"
-							:loading="setDefaultBusy"
-							:disabled="!canSetAsDefaultTheme"
-							@click="requestSetAsDefaultTheme"
-						>
-							Set as Default theme
-						</Button>
-						<Button
-							v-if="showRenameButton"
-							variant="solid"
-							class="theme-btn theme-btn-quiet bg-primary-100 text-primary-100-fg border border-border hover:bg-row-alt"
-							:disabled="!canRenameTheme"
-							@click="openRenameDialog"
-						>
-							Rename
-						</Button>
-						<Button
-							v-if="showDeleteButton"
-							variant="solid"
-							class="theme-btn theme-btn-quiet bg-primary-100 text-primary-100-fg border border-border hover:bg-row-alt"
-							:disabled="!canDeleteTheme"
-							@click="openDeleteDialog"
-						>
-							Delete
-						</Button>
-					</div>
-				</div>
-			</div>
-		</div>
+		<ThemeEditorHeader
+			:manager="manager"
+			title="Theme Editor"
+			noun="theme"
+			status-label="For panels:"
+			radio-name="theme-availability"
+			restore-target="Theme"
+			:theme-option-label="themeOptionLabel"
+			@preview="openPreview"
+			@restore="requestRestoreToBase"
+		/>
 
 		<div v-if="switchError" class="mb-4 rounded-md bg-red-50 text-red-700 text-sm px-4 py-2">
 			{{ switchError }}
@@ -662,180 +540,145 @@ Site Theme Editor for colours, typography, layout, live CSS variables, and base 
 
 		<!-- Unsaved changes prompt -->
 		<Teleport to="body">
-			<div
-				v-if="confirmDialog.open"
-				class="fixed inset-0 z-50 flex items-center justify-center bg-black/30 p-4"
-				@click.self="closeConfirmDialog"
-			>
-				<div class="bg-white rounded-lg shadow-xl p-5 max-w-md w-full">
-					<h3 class="text-base font-semibold text-gray-900">{{ confirmDialog.title }}</h3>
-					<p class="text-sm text-gray-600 mt-2">{{ confirmDialog.message }}</p>
-					<div class="flex flex-wrap gap-2 justify-end mt-5">
-						<Button
-							variant="solid"
-							class="bg-primary-100 text-primary-100-fg border border-border hover:bg-row-alt"
-							@click="closeConfirmDialog"
-						>
-							Cancel
-						</Button>
-						<Button
-							variant="solid"
-							class="bg-primary-100 text-primary-100-fg border border-border hover:bg-row-alt"
-							@click="confirmDiscardAndContinue"
-						>
-							Discard changes
-						</Button>
-						<Button
-							variant="solid"
-							class="bg-primary text-primary-fg border border-primary"
-							:loading="confirmDialog.busy"
-							@click="confirmSaveAndContinue"
-						>
-							Save &amp; continue
-						</Button>
-					</div>
+			<ThemeDialog :open="confirmDialog.open" :title="confirmDialog.title" @close="closeConfirmDialog">
+				<p class="text-sm text-gray-600 mt-2">{{ confirmDialog.message }}</p>
+				<div class="flex flex-wrap gap-2 justify-end mt-5">
+					<Button
+						variant="solid"
+						class="bg-primary-100 text-primary-100-fg border border-border hover:bg-row-alt"
+						@click="closeConfirmDialog"
+					>
+						Cancel
+					</Button>
+					<Button
+						variant="solid"
+						class="bg-primary-100 text-primary-100-fg border border-border hover:bg-row-alt"
+						@click="confirmDiscardAndContinue"
+					>
+						Discard changes
+					</Button>
+					<Button
+						variant="solid"
+						class="bg-primary text-primary-fg border border-primary"
+						:loading="confirmDialog.busy"
+						@click="confirmSaveAndContinue"
+					>
+						Save &amp; continue
+					</Button>
 				</div>
-			</div>
+			</ThemeDialog>
 
-			<div
-				v-if="saveBaseThemeDialog.open"
-				class="fixed inset-0 z-50 flex items-center justify-center bg-black/30 p-4"
-				@click.self="closeSaveBaseThemeDialog"
-			>
-				<div class="bg-white rounded-lg shadow-xl p-5 max-w-md w-full">
-					<h3 class="text-base font-semibold text-gray-900">Save as Base Theme</h3>
-					<div class="text-sm text-gray-600 mt-2 space-y-3">
-						<p>
-							This action will save any current change to the Default Theme.
-						</p>
-						<p>
-							The theme will be saved in the Themes application code. If the application is installed on another Frappe Bench, or migrated from one Bench to another Site, this saved theme will become the Default Theme for that installation.
-						</p>
-					</div>
-					<p v-if="saveBaseThemeDialog.error" class="text-sm text-red-600 mt-3">{{ saveBaseThemeDialog.error }}</p>
-					<div class="flex flex-wrap gap-2 justify-end mt-5">
-						<Button
-							variant="solid"
-							class="bg-primary-100 text-primary-100-fg border border-border hover:bg-row-alt"
-							:disabled="saveBaseThemeDialog.busy"
-							@click="closeSaveBaseThemeDialog"
-						>
-							Cancel
-						</Button>
-						<Button
-							variant="solid"
-							class="bg-primary text-primary-fg border border-primary"
-							:loading="saveBaseThemeDialog.busy"
-							@click="confirmSaveAsBaseTheme"
-						>
-							Continue
-						</Button>
-					</div>
-				</div>
-			</div>
-
-			<div
-				v-if="saveAsDialog.open"
-				class="fixed inset-0 z-50 flex items-center justify-center bg-black/30 p-4"
-				@click.self="closeSaveAsDialog"
-			>
-				<div class="bg-white rounded-lg shadow-xl p-5 max-w-md w-full">
-					<h3 class="text-base font-semibold text-gray-900">Save as new theme</h3>
-					<p class="text-sm text-gray-600 mt-2">Create a new theme from the current settings.</p>
-					<input
-						v-model="saveAsDialog.name"
-						type="text"
-						class="mt-3 w-full border border-gray-300 rounded-md px-3 py-2 text-sm"
-						placeholder="Theme name"
-						@keyup.enter="submitSaveAs"
-					/>
-					<p v-if="saveAsDialog.error" class="text-sm text-red-600 mt-2">{{ saveAsDialog.error }}</p>
-					<div class="flex gap-2 justify-end mt-4">
-						<Button
-							variant="solid"
-							class="bg-primary-100 text-primary-100-fg border border-border hover:bg-row-alt"
-							@click="closeSaveAsDialog"
-						>
-							Cancel
-						</Button>
-						<Button
-							variant="solid"
-							class="bg-primary text-primary-fg border border-primary"
-							:loading="saveAsDialog.busy"
-							@click="submitSaveAs"
-						>
-							Create theme
-						</Button>
-					</div>
-				</div>
-			</div>
-
-			<div
-				v-if="renameDialog.open"
-				class="fixed inset-0 z-50 flex items-center justify-center bg-black/30 p-4"
-				@click.self="closeRenameDialog"
-			>
-				<div class="bg-white rounded-lg shadow-xl p-5 max-w-md w-full">
-					<h3 class="text-base font-semibold text-gray-900">Rename theme</h3>
-					<p class="text-sm text-gray-600 mt-2">Only inactive themes that are not the site base can be renamed.</p>
-					<input
-						v-model="renameDialog.name"
-						type="text"
-						class="mt-3 w-full border border-gray-300 rounded-md px-3 py-2 text-sm"
-						placeholder="Theme name"
-						@keyup.enter="submitRename"
-					/>
-					<p v-if="renameDialog.error" class="text-sm text-red-600 mt-2">{{ renameDialog.error }}</p>
-					<div class="flex gap-2 justify-end mt-4">
-						<Button
-							variant="solid"
-							class="bg-primary-100 text-primary-100-fg border border-border hover:bg-row-alt"
-							@click="closeRenameDialog"
-						>
-							Cancel
-						</Button>
-						<Button
-							variant="solid"
-							class="bg-primary text-primary-fg border border-primary"
-							:loading="renameDialog.busy"
-							@click="submitRename"
-						>
-							Rename
-						</Button>
-					</div>
-				</div>
-			</div>
-
-			<div
-				v-if="deleteDialog.open"
-				class="fixed inset-0 z-50 flex items-center justify-center bg-black/30 p-4"
-				@click.self="closeDeleteDialog"
-			>
-				<div class="bg-white rounded-lg shadow-xl p-5 max-w-md w-full">
-					<h3 class="text-base font-semibold text-gray-900">Delete theme</h3>
-					<p class="text-sm text-gray-600 mt-2">
-						Delete <strong>{{ editorMeta.theme_name }}</strong>? This cannot be undone.
+			<ThemeDialog :open="saveBaseThemeDialog.open" title="Save as Base Theme" @close="closeSaveBaseThemeDialog">
+				<div class="text-sm text-gray-600 mt-2 space-y-3">
+					<p>
+						This action will save any current change to the Default Theme.
 					</p>
-					<p v-if="deleteDialog.error" class="text-sm text-red-600 mt-2">{{ deleteDialog.error }}</p>
-					<div class="flex gap-2 justify-end mt-4">
-						<Button
-							variant="solid"
-							class="bg-primary-100 text-primary-100-fg border border-border hover:bg-row-alt"
-							@click="closeDeleteDialog"
-						>
-							Cancel
-						</Button>
-						<Button
-							variant="solid"
-							class="bg-primary text-primary-fg border border-primary"
-							:loading="deleteDialog.busy"
-							@click="submitDelete"
-						>
-							Delete
-						</Button>
-					</div>
+					<p>
+						The theme will be saved in the Themes application code. If the application is installed on another Frappe Bench, or migrated from one Bench to another Site, this saved theme will become the Default Theme for that installation.
+					</p>
 				</div>
-			</div>
+				<p v-if="saveBaseThemeDialog.error" class="text-sm text-red-600 mt-3">{{ saveBaseThemeDialog.error }}</p>
+				<div class="flex flex-wrap gap-2 justify-end mt-5">
+					<Button
+						variant="solid"
+						class="bg-primary-100 text-primary-100-fg border border-border hover:bg-row-alt"
+						:disabled="saveBaseThemeDialog.busy"
+						@click="closeSaveBaseThemeDialog"
+					>
+						Cancel
+					</Button>
+					<Button
+						variant="solid"
+						class="bg-primary text-primary-fg border border-primary"
+						:loading="saveBaseThemeDialog.busy"
+						@click="confirmSaveAsBaseTheme"
+					>
+						Continue
+					</Button>
+				</div>
+			</ThemeDialog>
+
+			<ThemeDialog :open="saveAsDialog.open" title="Save as new theme" @close="closeSaveAsDialog">
+				<p class="text-sm text-gray-600 mt-2">Create a new theme from the current settings.</p>
+				<input
+					v-model="saveAsDialog.name"
+					type="text"
+					class="mt-3 w-full border border-gray-300 rounded-md px-3 py-2 text-sm"
+					placeholder="Theme name"
+					@keyup.enter="submitSaveAs"
+				/>
+				<p v-if="saveAsDialog.error" class="text-sm text-red-600 mt-2">{{ saveAsDialog.error }}</p>
+				<div class="flex gap-2 justify-end mt-4">
+					<Button
+						variant="solid"
+						class="bg-primary-100 text-primary-100-fg border border-border hover:bg-row-alt"
+						@click="closeSaveAsDialog"
+					>
+						Cancel
+					</Button>
+					<Button
+						variant="solid"
+						class="bg-primary text-primary-fg border border-primary"
+						:loading="saveAsDialog.busy"
+						@click="submitSaveAs"
+					>
+						Create theme
+					</Button>
+				</div>
+			</ThemeDialog>
+
+			<ThemeDialog :open="renameDialog.open" title="Rename theme" @close="closeRenameDialog">
+				<p class="text-sm text-gray-600 mt-2">Only inactive themes that are not the site base can be renamed.</p>
+				<input
+					v-model="renameDialog.name"
+					type="text"
+					class="mt-3 w-full border border-gray-300 rounded-md px-3 py-2 text-sm"
+					placeholder="Theme name"
+					@keyup.enter="submitRename"
+				/>
+				<p v-if="renameDialog.error" class="text-sm text-red-600 mt-2">{{ renameDialog.error }}</p>
+				<div class="flex gap-2 justify-end mt-4">
+					<Button
+						variant="solid"
+						class="bg-primary-100 text-primary-100-fg border border-border hover:bg-row-alt"
+						@click="closeRenameDialog"
+					>
+						Cancel
+					</Button>
+					<Button
+						variant="solid"
+						class="bg-primary text-primary-fg border border-primary"
+						:loading="renameDialog.busy"
+						@click="submitRename"
+					>
+						Rename
+					</Button>
+				</div>
+			</ThemeDialog>
+
+			<ThemeDialog :open="deleteDialog.open" title="Delete theme" @close="closeDeleteDialog">
+				<p class="text-sm text-gray-600 mt-2">
+					Delete <strong>{{ editorMeta.theme_name }}</strong>? This cannot be undone.
+				</p>
+				<p v-if="deleteDialog.error" class="text-sm text-red-600 mt-2">{{ deleteDialog.error }}</p>
+				<div class="flex gap-2 justify-end mt-4">
+					<Button
+						variant="solid"
+						class="bg-primary-100 text-primary-100-fg border border-border hover:bg-row-alt"
+						@click="closeDeleteDialog"
+					>
+						Cancel
+					</Button>
+					<Button
+						variant="solid"
+						class="bg-primary text-primary-fg border border-primary"
+						:loading="deleteDialog.busy"
+						@click="submitDelete"
+					>
+						Delete
+					</Button>
+				</div>
+			</ThemeDialog>
 		</Teleport>
 	</div>
 </template>
@@ -854,6 +697,8 @@ import PasswordField from "@/components/PasswordField.vue"
 import SwatchPicker from "@/components/SwatchPicker.vue"
 import ShadowDirectionDial from "@/components/ShadowDirectionDial.vue"
 import ThemeClassCatalogPanel from "@/components/ThemeClassCatalogPanel.vue"
+import ThemeEditorHeader from "@/components/ThemeEditorHeader.vue"
+import ThemeDialog from "@/components/ThemeDialog.vue"
 import { buildThemeShadow } from "@/utils/shadowBuild"
 import { fontStack as fontCSS } from "@/utils/fonts"
 import {
@@ -1618,60 +1463,7 @@ function migrateFgFlipFields(payload: Record<string, any>) {
 
 // ─── AGENT:theme-management ─── useThemeManagement (dialogs, permissions, CRUD; shared with Desk page)
 
-const {
-	saving,
-	statusSaving,
-	loadingTheme,
-	savedThemeStatus,
-	editorLoaded,
-	editorError,
-	switchError,
-	selectedTheme,
-	editingTheme,
-	siteBaseTheme,
-	savedSnapshot,
-	editorMeta,
-	isDirty,
-	themesList,
-	editorResource,
-	loadTheme,
-	confirmDialog,
-	saveAsDialog,
-	renameDialog,
-	deleteDialog,
-	systemTab,
-	siteBaseThemeName,
-	themeSelectWidth,
-	canChangeStatus,
-	canRenameTheme,
-	canDeleteTheme,
-	showRenameButton,
-	showDeleteButton,
-	canSetAsDefaultTheme,
-	canSaveAsDefaultTheme,
-	setDefaultBusy,
-	requestSetAsDefaultTheme,
-	openConfirmDialog,
-	closeConfirmDialog,
-	confirmSaveAndContinue,
-	confirmDiscardAndContinue,
-	onThemeChange,
-	revertChanges,
-	handleSave,
-	setThemeStatus,
-	openSaveAsDialog,
-	closeSaveAsDialog,
-	submitSaveAs,
-	openRenameDialog,
-	closeRenameDialog,
-	submitRename,
-	openDeleteDialog,
-	closeDeleteDialog,
-	submitDelete,
-	restoreToBaseConfirmed,
-	saveAsBaseTheme,
-	tryLoadThemeFromQuery,
-} = useThemeManagement(
+const manager = useThemeManagement(
 	{
 		list: "themes.api.list_themes",
 		getEditor: "themes.api.get_theme_editor",
@@ -1706,6 +1498,37 @@ const {
 			themes.find((t) => t.is_default_theme || t.is_base_theme)?.name || themes[0]?.name,
 	},
 )
+
+const {
+	loadingTheme,
+	editorLoaded,
+	editorError,
+	switchError,
+	siteBaseTheme,
+	editorMeta,
+	isDirty,
+	themesList,
+	editorResource,
+	confirmDialog,
+	saveAsDialog,
+	renameDialog,
+	deleteDialog,
+	systemTab,
+	canSaveAsDefaultTheme,
+	closeConfirmDialog,
+	confirmSaveAndContinue,
+	confirmDiscardAndContinue,
+	handleSave,
+	closeSaveAsDialog,
+	submitSaveAs,
+	closeRenameDialog,
+	submitRename,
+	closeDeleteDialog,
+	submitDelete,
+	restoreToBaseConfirmed,
+	saveAsBaseTheme,
+	tryLoadThemeFromQuery,
+} = manager
 
 const submitSaveAsBaseTheme = saveAsBaseTheme
 
@@ -1812,31 +1635,31 @@ onMounted(() => {
 	margin-bottom: 1.25rem;
 }
 
-.editor-title {
+.editor-header :deep(.editor-title) {
 	font-size: calc(var(--nce-font-size, 14px) * 1.375);
 	font-weight: 600;
 	font-family: var(--nce-font-heading, inherit);
 	color: var(--nce-color-heading, #111827);
 }
 
-.editor-subtitle {
+.editor-header :deep(.editor-subtitle) {
 	font-size: calc(var(--nce-font-size, 14px) * 0.875);
 	font-family: var(--nce-font-family, inherit);
 	color: var(--nce-color-text, #374151);
 }
 
-.editor-subtitle strong {
+.editor-header :deep(.editor-subtitle strong) {
 	color: var(--nce-color-heading, #111827);
 	font-weight: 600;
 }
 
-.editor-status-label {
+.editor-header :deep(.editor-status-label) {
 	font-size: calc(var(--nce-font-size, 14px) * 0.875);
 	color: var(--nce-color-muted, #6b7280);
 	font-family: var(--nce-font-family, inherit);
 }
 
-.editor-status-option {
+.editor-header :deep(.editor-status-option) {
 	display: inline-flex;
 	align-items: center;
 	gap: 0.35rem;
@@ -1846,29 +1669,29 @@ onMounted(() => {
 	cursor: pointer;
 }
 
-.editor-status-option input:disabled {
+.editor-header :deep(.editor-status-option input:disabled) {
 	cursor: not-allowed;
 }
 
-.editor-status-hint {
+.editor-header :deep(.editor-status-hint) {
 	font-size: calc(var(--nce-font-size, 14px) * 0.75);
 	color: var(--nce-color-muted, #6b7280);
 }
 
-.editor-status-hint-warn {
+.editor-header :deep(.editor-status-hint-warn) {
 	color: var(--nce-color-warning, #d97706);
 }
 
-.editor-warn {
+.editor-header :deep(.editor-warn) {
 	color: var(--nce-color-warning, #d97706);
 	font-weight: 500;
 }
 
-.editor-muted {
+.editor-header :deep(.editor-muted) {
 	color: var(--nce-color-muted, #9ca3af);
 }
 
-.theme-select {
+.editor-header :deep(.theme-select) {
 	flex: 1 1 auto;
 	max-width: 26rem;
 	width: 100%;
@@ -1892,23 +1715,23 @@ onMounted(() => {
 		background-color var(--nce-transition-speed, 200ms);
 }
 
-.theme-select:hover:not(:disabled) {
+.editor-header :deep(.theme-select:hover:not(:disabled)) {
 	border-color: var(--nce-color-primary, #3b82f6);
 	background-color: var(--nce-color-surface, #f9fafb);
 }
 
-.theme-select:focus {
+.editor-header :deep(.theme-select:focus) {
 	outline: none;
 	border-color: var(--nce-color-focus, #3b82f6);
 	box-shadow: 0 0 0 3px color-mix(in srgb, var(--nce-color-focus, #3b82f6) 22%, transparent);
 }
 
-.theme-select:disabled {
+.editor-header :deep(.theme-select:disabled) {
 	opacity: 0.55;
 	cursor: not-allowed;
 }
 
-.editor-actions :deep(.theme-btn) {
+.editor-header :deep(.editor-actions .theme-btn) {
 	font-family: var(--nce-font-family, inherit) !important;
 	font-size: calc(var(--nce-font-size, 14px) * 0.875) !important;
 	font-weight: 500 !important;
@@ -1924,11 +1747,11 @@ onMounted(() => {
 	box-shadow: none !important;
 }
 
-.editor-actions :deep(.theme-btn-primary:hover:not(:disabled)) {
+.editor-header :deep(.editor-actions .theme-btn-primary:hover:not(:disabled)) {
 	filter: brightness(1.08);
 }
 
-.editor-actions :deep(.theme-btn:disabled) {
+.editor-header :deep(.editor-actions .theme-btn:disabled) {
 	opacity: 0.45;
 	cursor: not-allowed;
 }
