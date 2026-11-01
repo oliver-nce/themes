@@ -1,0 +1,19 @@
+"""Default Desk chrome CSS variable payload for new NCE Desk Theme installs."""
+
+import json
+import os
+
+_FALLBACK_PAYLOAD = {'b': 1, 'a': '#fff', 'n': {'50': '#000'}}
+
+
+def load_bundled_base_desk_theme_payload() -> dict:
+    """Load bundled base desk theme from data/base_desk_theme.json, else embedded fallback."""
+    path = os.path.join(os.path.dirname(__file__), "..", "data", "base_desk_theme.json")
+    try:
+        with open(path) as f:
+            return json.load(f)
+    except (FileNotFoundError, json.JSONDecodeError, OSError):
+        return dict(_FALLBACK_PAYLOAD)
+
+
+DESK_THEME_DEFAULT_PAYLOAD = load_bundled_base_desk_theme_payload()

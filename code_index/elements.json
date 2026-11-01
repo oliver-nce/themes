@@ -2,9 +2,9 @@
 "_meta": {
 "description": "The single authoritative code index of this project: every function, class, method, route, test, Vue component, CSS section and doc section with a label, plus each file's purpose. Query it with the shared code-index tool (find / show / callers); do not read this file whole. Generated: never edit by hand; hand-written notes live in code_index/project.json.",
 "generator": "_Project support files/code-index/codeindex.py",
-"count": 1291,
+"count": 1323,
 "project_sha256": "69ed9bd33e3667cacec4984d7aaf00e86d1167071b7c0f7916ee05d2458bf936",
-"headers_sha256": "54919e07df405c8b24e958bf79f11e94af652034c0d812d127bfaa7bbaf2f73e"
+"headers_sha256": "f84c632a19d0ac940f4ed1b3e28bde8f625ce27f11a4a53fc84a9c02367f8384"
 },
 "files": {
 "AGENTS.md": {
@@ -520,7 +520,25 @@
 ]
 },
 "frontend/src/App.vue": {
-"purpose": "Theme editor shell with sidebar links for web and desk theme pages.",
+"purpose": "Vue root shell with sidebar nav for web and desk theme routes, preview popups, and the Design Mode toggle.",
+"read_when": "Open when changing Themes app layout, nav links, standalone preview routing, or Design Mode API wiring.",
+"gotchas": [
+"Routes with meta.standalone render only router-view without the sidebar shell."
+],
+"keywords": [
+"themes-app",
+"navSections",
+"designMode",
+"toggleDesignMode",
+"callApi",
+"openPreviewPopup",
+"Theme Editor",
+"Desk Themes",
+"get_design_mode_status",
+"router-view",
+"Vue Implementations",
+"sidebar navigation"
+],
 "depends_on": [
 "frontend/src/utils/previewWindow.ts"
 ]
@@ -824,13 +842,61 @@
 ]
 },
 "frontend/src/design-mode/DesignDialog.vue": {
-"purpose": ""
+"purpose": "Floating Design Mode dialog to edit element or table theme class overrides with pickers, revert, and save.",
+"read_when": "Open when changing override colour chips, table row or line fields, drag positioning, or dialog footer actions.",
+"gotchas": [
+"With Keep default on, the page shows theme colours only after Save."
+],
+"keywords": [
+"DesignDialog",
+"DialogModel",
+"DialogHandlers",
+"PickKind",
+"override_bg_class",
+"TABLE_BG_ROWS",
+"TABLE_LINE_ROWS",
+"BORDER_WIDTH_OPTIONS",
+"keep_default",
+"handlers.pick",
+"dd-chip",
+"themeDefaults"
+]
 },
 "frontend/src/design-mode/design-dialog.css": {
-"purpose": ""
+"purpose": "Styles the Design Mode dialog inside a shadow root using dd classes and NCE colour variable fallbacks.",
+"read_when": "Open when adjusting floating dialog layout, chips, buttons, or host isolation for DesignDialog.",
+"gotchas": [
+":host uses all initial so inherited page styles do not leak into the dialog shadow tree."
+],
+"keywords": [
+":host",
+".dd",
+"nce-color-surface",
+"dd-chip",
+"dd-head",
+"dd-foot",
+"dd-btn-primary",
+"shadow dialog",
+"theme tokens"
+]
 },
 "frontend/src/design-mode/index.ts": {
-"purpose": "Design Mode dialog bundle: mounts DesignDialog.vue in an isolated shadow root and exposes window.nceDesignDialog.",
+"purpose": "Mounts DesignDialog in an isolated shadow root and exposes window.nceDesignDialog open, close, and isOpen.",
+"read_when": "Open when wiring Design Mode dialog hosting, theme CSS link injection, or the global nceDesignDialog API.",
+"gotchas": [
+"Host uses pointer-events none with stopPropagation on listed events so clicks do not reach the page behind."
+],
+"keywords": [
+"nceDesignDialog",
+"attachShadow",
+"design-dialog.css",
+"themeCssHref",
+"nce_theme",
+"DesignDialogOpenOptions",
+"STOP",
+"nce-design-dialog-host",
+"createApp"
+],
 "depends_on": [
 "frontend/src/design-mode/DesignDialog.vue"
 ]
@@ -1202,7 +1268,20 @@
 ]
 },
 "frontend/src/widget/adapters/standalone-adapter.ts": {
-"purpose": "Copyright (c) 2026 Oliver Reid.",
+"purpose": "Standalone adapter that opens the theme swatch picker from arbitrary DOM fields and mounts window.themeSwatchPicker.",
+"read_when": "Open when integrating swatch picker outside Frappe forms or reading theme and value from HTMLElement targets.",
+"gotchas": [],
+"keywords": [
+"openStandaloneThemeSwatchPicker",
+"mountStandaloneThemeSwatchPicker",
+"themeSwatchPicker",
+"themeFieldEl",
+"valueFieldEl",
+"fieldValue",
+"setFieldValue",
+"ThemeSwatchPickerCoreOpts",
+"theme-swatch-picker-core"
+],
 "depends_on": [
 "frontend/src/widget/theme-swatch-picker-core.ts"
 ]
@@ -1260,7 +1339,23 @@
 ]
 },
 "frontend/src/widget/index.ts": {
-"purpose": "Widget entry that exports the swatch picker API and mounts it on window and frappe.ui.",
+"purpose": "Widget entry that exports the theme swatch picker API and mounts it on window and frappe.ui.",
+"read_when": "Integrating or calling the swatch picker from Desk scripts, standalone pages, or bundled widget builds.",
+"gotchas": [],
+"keywords": [
+"themeSwatchPicker",
+"mountStandaloneThemeSwatchPicker",
+"mountDeskThemeSwatchPicker",
+"openStandaloneThemeSwatchPicker",
+"composeThemeClass",
+"parseThemeClass",
+"theme-swatch-picker-core",
+"frappe.ui",
+"window",
+"swatch picker API",
+"desk adapter",
+"standalone adapter"
+],
 "depends_on": [
 "frontend/src/widget/adapters/desk-adapter.ts",
 "frontend/src/widget/adapters/standalone-adapter.ts",
@@ -1339,7 +1434,21 @@
 ]
 },
 "frontend/vite.design.config.js": {
-"purpose": "Vite build that emits the Design Mode dialog as one self-contained IIFE (Vue bundled in)."
+"purpose": "Vite config that builds the Design Mode dialog as one self-contained IIFE with Vue bundled in.",
+"read_when": "Changing design-dialog.js output path, library name nceDesignDialog, or the design-mode entry build.",
+"gotchas": [],
+"keywords": [
+"nceDesignDialog",
+"design-dialog.js",
+"design-mode",
+"defineConfig",
+"themes/public/design_mode",
+"IIFE",
+"plugin-vue",
+"cssCodeSplit",
+"lib build",
+"Vite"
+]
 },
 "frontend/vite.widget.config.js": {
 "purpose": "Vite library build that emits the theme swatch picker as ES and UMD bundles.",
@@ -1420,14 +1529,53 @@
 ]
 },
 "themes/boot.py": {
-"purpose": "Desk boot extensions — fresh theme CSS URLs without bench restart.",
+"purpose": "Desk boot hook exposing fresh desk theme CSS URL and Design Mode session flag without bench restart.",
+"read_when": "When Desk sessions need desk_theme_css_url or nce_design_mode on bootinfo from hooks.",
+"gotchas": [
+"Design mode boot flags are skipped silently if import or checks raise."
+],
+"keywords": [
+"extend_bootinfo",
+"bootinfo",
+"desk_theme_css_url",
+"nce_design_mode",
+"get_desk_theme_css_url",
+"can_design",
+"design_mode_enabled",
+"Desk boot",
+"themes.boot"
+],
 "depends_on": [
 "themes/component_api.py",
 "themes/utils/desk_css_writer.py"
 ]
 },
 "themes/component_api.py": {
-"purpose": "Whitelisted API for Vue Component: rescan, refresh, preview and publish CSS.",
+"purpose": "Whitelisted Frappe API for Vue Component rescan, CSS publish, live preview, and Design Mode desk overrides.",
+"read_when": "Changing Vue Component scan, publish, preview, or Design Mode methods invoked from Desk or scripts.",
+"gotchas": [
+"_vue_file rejects file_path values that resolve outside the app folder.",
+"open_vue_components reloads child DocTypes before parent when Vue Component is missing.",
+"set_design_mode_enabled logs Design Mode scan failed if rescan_all raises.",
+"Protected selector_class values cannot be saved via save_design_change."
+],
+"keywords": [
+"Vue Component",
+"rescan_all",
+"refresh_component",
+"publish_component_css",
+"design_mode_enabled",
+"Theme Component Settings",
+"merge_elements",
+"scan_vue_file",
+"inherit_table_usage",
+"component_key",
+"whitelist",
+"get_design_mode_map",
+"save_design_change",
+"ELEMENT_FIELDS",
+"nce_component"
+],
 "depends_on": [
 "themes/utils/component_css_writer.py",
 "themes/utils/component_scan.py",
@@ -1441,7 +1589,25 @@
 "purpose": ""
 },
 "themes/hooks.py": {
-"purpose": "Frappe app hooks that include published theme CSS, register the theme editor routes, and call after_install."
+"purpose": "Frappe app hooks for theme CSS and JS assets, SPA routes, permissions, boot, and after_install.",
+"read_when": "Changing included assets, theme editor routes, apps screen tiles, or Vue Component list permissions.",
+"gotchas": [
+"_css_url must stay DB-free at import; failures return bare asset path.",
+"Never monkey-patch frappe.get_hooks for CSS URLs; it broke boot previously.",
+"nce_theme.css is :root tokens only and does not style Frappe Desk elements."
+],
+"keywords": [
+"app_include_css",
+"nce_theme.css",
+"nce_component_overrides.css",
+"website_route_rules",
+"extend_bootinfo",
+"permission_query_conditions",
+"_css_url",
+"design_mode.js",
+"after_install",
+"add_to_apps_screen"
+]
 },
 "themes/init_desk_theme.py": {
 "purpose": "Ensures the Default NCE Desk Theme exists, sets base_desk_theme when missing, and publishes nce_desk_theme.css.",
@@ -1560,7 +1726,18 @@
 ]
 },
 "themes/patches/v1_0/clear_design_mode_protected.py": {
-"purpose": ""
+"purpose": "v1_0 patch that clears Theme Component Settings protected_classes for Design Mode.",
+"read_when": "Tracing migration order that emptied protected_classes before defaults were seeded.",
+"gotchas": [],
+"keywords": [
+"protected_classes",
+"Theme Component Settings",
+"execute",
+"set_single_value",
+"Design Mode",
+"patch",
+"frappe.db.exists"
+]
 },
 "themes/patches/v1_0/collapse_theme_versions_to_nce_theme.py": {
 "purpose": "Copies Theme Version JSON onto NCE Theme and clears the active_version pointer.",
@@ -1579,7 +1756,18 @@
 ]
 },
 "themes/patches/v1_0/design_mode_defaults.py": {
-"purpose": "",
+"purpose": "v1_0 patch seeding default Design Mode protected_classes from DEFAULT_PROTECTED when empty.",
+"read_when": "Finding how initial protected_classes lines are set on Theme Component Settings.",
+"gotchas": [],
+"keywords": [
+"DEFAULT_PROTECTED",
+"protected_classes",
+"Theme Component Settings",
+"design_mode",
+"execute",
+"set_single_value",
+"themes.utils.design_mode"
+],
 "depends_on": [
 "themes/utils/design_mode.py"
 ]
@@ -1690,7 +1878,23 @@
 ]
 },
 "themes/public/css/nce_component_overrides.css": {
-"purpose": "Generated by Themes — Vue Component colour overrides."
+"purpose": "Generated stylesheet mapping Vue Component theme classes to NCE colour and table border CSS variables on Desk pages.",
+"read_when": "When override colours for ppv2 tables or tab buttons are wrong and you need the generated class rules, not the Vue Component editor.",
+"gotchas": [
+"Generated by Themes — Vue Component colour overrides. Do not edit; change them in Desk → Vue Component."
+],
+"keywords": [
+"nce_component_overrides",
+"Vue Component colour overrides",
+"ppv2-find-help-table",
+"ppv2-fd-tab-btn",
+"nce-color-table-header",
+"nce-color-row",
+"nce-color-primary-200",
+"PanelFormFindSearchHelpModal",
+"Do not edit",
+"theme table class"
+]
 },
 "themes/public/css/nce_desk_theme.css": {
 "purpose": "Published generated CSS that sets Desk :root variables, Public Sans fonts, and a few list form weight rules.",
@@ -1711,7 +1915,23 @@
 ]
 },
 "themes/public/css/nce_theme.css": {
-"purpose": "── Self-hosted variable fonts (active body + heading) ──"
+"purpose": "Compiled NCE web theme CSS with fonts, :root tokens, theme-* utility classes, theme-table bundle, and default vs nce palette scopes.",
+"read_when": "When tracing --nce-color-* variables, theme-bg or theme-text classes, @font-face assets, or [data-nce-theme] switching.",
+"gotchas": [],
+"keywords": [
+"nce_theme.css",
+"Source Sans 3",
+"Public Sans",
+"--nce-color-primary",
+"Shade scales",
+"theme-table",
+"theme-bg-themed",
+"data-nce-theme",
+"Self-hosted variable fonts",
+"theme-bg-primary",
+"Dynamic-shade escape hatch",
+"canonical variables"
+]
 },
 "themes/public/design_mode/design-dialog.js": {
 "purpose": ""
@@ -1832,7 +2052,22 @@
 ]
 },
 "themes/public/js/design_mode.js": {
-"purpose": "Design Mode: hover a Vue part and click Edit to change its colours."
+"purpose": "Desk Design Mode client script: hover mapped Vue parts, edit colours via dialog, preview and save through themes.component_api.",
+"read_when": "When fixing the Design Mode FAB, hover selection, colour popups, or API calls that regenerate nce_component_overrides.css.",
+"gotchas": [],
+"keywords": [
+"design_mode.js",
+"nce-design-mode-fab",
+"get_design_mode_map",
+"nce_component_overrides.css",
+"themes.component_api",
+"nceDesignDialog",
+"themeSwatchPicker",
+"preview_declarations",
+"save_design_change",
+"HOVER_INTENT_MS",
+"Design Mode"
+]
 },
 "themes/public/js/desk_theme_loader.js": {
 "purpose": "Injects the published desk theme stylesheet from the boot CSS URL each Desk session.",
@@ -1888,64 +2123,16 @@
 "purpose": "Generated by themes.utils.desk_css_writer — do not edit"
 },
 "themes/tests/golden/web_default.css": {
-"purpose": "Checked-in expected CSS snapshot used by tests for the default web theme stylesheet.",
-"read_when": "When a CSS snapshot test fails on the default web theme output.",
-"gotchas": [
-"Refresh with UPDATE_GOLDEN=1 only when the CSS change is intentional."
-],
-"keywords": [
-"--nce-color-primary",
-"--nce-color-neutral",
-"canonical variables",
-"--nce-color-secondary",
-"--nce-color-table-header",
-"golden snapshot"
-]
+"purpose": ""
 },
 "themes/tests/golden/web_gamma_sat.css": {
-"purpose": "Checked-in expected CSS snapshot used by tests for web CSS with raised primary gamma and saturation.",
-"read_when": "When a CSS snapshot test fails on the gamma and saturation web theme output.",
-"gotchas": [
-"Refresh with UPDATE_GOLDEN=1 only when the CSS change is intentional."
-],
-"keywords": [
-"--nce-color-primary",
-"#0050BF",
-"canonical variables",
-"--nce-color-neutral",
-"--nce-color-primary-fg",
-"golden snapshot"
-]
+"purpose": ""
 },
 "themes/tests/golden/web_neutral_warmth.css": {
-"purpose": "Checked-in expected CSS snapshot used by tests for web CSS with a warmer neutral color.",
-"read_when": "When a CSS snapshot test fails on the neutral warmth web theme output.",
-"gotchas": [
-"Refresh with UPDATE_GOLDEN=1 only when the CSS change is intentional."
-],
-"keywords": [
-"--nce-color-neutral",
-"#9d9792",
-"canonical variables",
-"--nce-color-primary",
-"--nce-color-neutral-fg",
-"golden snapshot"
-]
+"purpose": ""
 },
 "themes/tests/golden/web_site_default.css": {
-"purpose": "Checked-in expected CSS snapshot used by tests for site CSS with :root plus a scoped alt theme.",
-"read_when": "When a CSS snapshot test fails on site CSS that scopes an alt theme.",
-"gotchas": [
-"Refresh with UPDATE_GOLDEN=1 only when the CSS change is intentional."
-],
-"keywords": [
-"data-nce-theme",
-"canonical variables",
-"--nce-color-primary",
-"Shade scales",
-"theme-bg-primary",
-"golden snapshot"
-]
+"purpose": ""
 },
 "themes/tests/test_api_contract.py": {
 "purpose": "Mocked tests of web and desk editor response shapes, including is_active versus the Default flag.",
@@ -1966,6 +2153,15 @@
 "depends_on": [
 "themes/api.py",
 "themes/tests/frappe_stub.py"
+]
+},
+"themes/tests/test_backend_characterization.py": {
+"purpose": "Characterization tests for backend publish, bundle, and doctype controllers (pre-refactor).",
+"depends_on": [
+"themes/utils/component_css_writer.py",
+"themes/utils/css_writer.py",
+"themes/utils/desk_css_writer.py",
+"themes/utils/theme_family.py"
 ]
 },
 "themes/tests/test_color_math_parity.py": {
@@ -2341,14 +2537,51 @@
 ]
 },
 "themes/utils/component_css_writer.py": {
-"purpose": "Generate published CSS for Vue Component colour overrides.",
+"purpose": "Generates and publishes nce_component_overrides.css from Vue Component Desk colour overrides and table rules.",
+"read_when": "Debugging component override CSS, table styling output, or publish_component_css called from component_api.",
+"gotchas": [
+"HEADER warns generated CSS must not be edited manually; change overrides in Desk Vue Component."
+],
+"keywords": [
+"generate_component_css",
+"publish_component_css",
+"nce_component_overrides.css",
+"declarations_for",
+"table_css_for",
+"theme_table_bundle_for",
+"write_published_css",
+"Vue Component",
+"override_bg_class",
+"SELECTOR_RE",
+"has_override",
+"component_api"
+],
 "depends_on": [
 "themes/utils/component_sync.py",
 "themes/utils/css_publish.py"
 ]
 },
 "themes/utils/component_scan.py": {
-"purpose": "Scan .vue files for themed template elements and component usage.",
+"purpose": "Scans site .vue files for themed template elements, table usage, and child component references.",
+"read_when": "Understanding rescan/refresh scan results, root flags, or table inheritance before syncing Vue Component records.",
+"gotchas": [
+"inherit_table_usage mutates scans in place until stable for nested uses_components chains.",
+"mark_roots mutates scans setting is_root from same-app usage graph."
+],
+"keywords": [
+"scan_vue_file",
+"scan_vue_source",
+"_TemplateParser",
+"iter_vue_files",
+"inherit_table_usage",
+"mark_roots",
+"theme_table_targets",
+"uses_components",
+"SELECTOR_RE",
+"extract_purpose",
+"component_api",
+"rescan_all"
+],
 "depends_on": [
 "themes/utils/component_sync.py"
 ]
@@ -2467,7 +2700,22 @@
 ]
 },
 "themes/utils/design_mode.py": {
-"purpose": "Design Mode helpers: the CSS-class maps sent to the page and table value cleaning.",
+"purpose": "Builds Design Mode selector and table maps for the page script and normalizes saved table field values.",
+"read_when": "Working on get_design_mode_map, protected classes, or save/preview table APIs in component_api.",
+"gotchas": [],
+"keywords": [
+"build_selector_map",
+"build_table_map",
+"parse_protected",
+"clean_table_values",
+"OVERRIDE_FIELDS",
+"keep_default",
+"protected",
+"table_selector",
+"get_design_mode_map",
+"Design Mode",
+"SELECTOR_RE"
+],
 "depends_on": [
 "themes/utils/component_sync.py"
 ]
@@ -5932,8 +6180,8 @@
 "sig": "",
 "hash": "debf2e21e4",
 "calls": [],
-"label": "Theme editor shell with sidebar links for web and desk theme pages.",
-"label_source": "docstring"
+"label": "Root layout with sidebar sections and main router-view, skipped for standalone preview routes.",
+"label_source": "header"
 },
 {
 "id": "frontend/src/App.vue::callApi",
@@ -5945,8 +6193,8 @@
 "hash": "95c7502bc1",
 "exported": false,
 "calls": [],
-"label": "",
-"label_source": "none"
+"label": "POSTs to themes.component_api Frappe methods with CSRF and throws when the response reports an error.",
+"label_source": "header"
 },
 {
 "id": "frontend/src/App.vue::loadDesignMode",
@@ -5963,8 +6211,8 @@
 "wired_by": [
 "frontend/src/App.vue::App"
 ],
-"label": "",
-"label_source": "none"
+"label": "On mount reads Design Mode enabled state via get_design_mode_status for the sidebar switch.",
+"label_source": "header"
 },
 {
 "id": "frontend/src/App.vue::toggleDesignMode",
@@ -5981,8 +6229,8 @@
 "wired_by": [
 "frontend/src/App.vue::App"
 ],
-"label": "",
-"label_source": "none"
+"label": "Calls set_design_mode_enabled and shows scan counts, off message, or errors in the Vue Implementations toggle.",
+"label_source": "header"
 },
 {
 "id": "frontend/src/components/BrandColorPicker.vue::BrandColorPicker",
@@ -7950,8 +8198,8 @@
 "sig": "",
 "hash": "d3f0812fc0",
 "calls": [],
-"label": "",
-"label_source": "none"
+"label": "Presents element or table override UI mounted from nceDesignDialog with draggable header and handler-driven actions.",
+"label_source": "header"
 },
 {
 "id": "frontend/src/design-mode/DesignDialog.vue::PickKind",
@@ -7963,8 +8211,8 @@
 "hash": "f0c9452f2e",
 "exported": false,
 "calls": [],
-"label": "",
-"label_source": "none"
+"label": "Names bg, text, or border for theme class pick buttons in the dialog.",
+"label_source": "header"
 },
 {
 "id": "frontend/src/design-mode/DesignDialog.vue::DialogModel",
@@ -7976,8 +8224,8 @@
 "hash": "b16d9effb2",
 "exported": false,
 "calls": [],
-"label": "",
-"label_source": "none"
+"label": "Props shape for title, draft fields, theme defaults, position, and saving state from the opener.",
+"label_source": "header"
 },
 {
 "id": "frontend/src/design-mode/DesignDialog.vue::DialogHandlers",
@@ -7989,8 +8237,8 @@
 "hash": "7ebc9bd436",
 "exported": false,
 "calls": [],
-"label": "",
-"label_source": "none"
+"label": "Callback contract for pick, field change, save, cancel, revert, open record, and part actions.",
+"label_source": "header"
 },
 {
 "id": "frontend/src/design-mode/DesignDialog.vue::BORDER_WIDTH_OPTIONS",
@@ -8002,8 +8250,8 @@
 "hash": "a0b6b6e876",
 "exported": false,
 "calls": [],
-"label": "",
-"label_source": "none"
+"label": "Select values for thin, normal, or strong theme border width classes plus empty theme default.",
+"label_source": "header"
 },
 {
 "id": "frontend/src/design-mode/DesignDialog.vue::TABLE_BG_ROWS",
@@ -8015,8 +8263,8 @@
 "hash": "eaa6e64f19",
 "exported": false,
 "calls": [],
-"label": "",
-"label_source": "none"
+"label": "Maps table header, row, and alternate row labels to background and foreground draft fields.",
+"label_source": "header"
 },
 {
 "id": "frontend/src/design-mode/DesignDialog.vue::TABLE_LINE_ROWS",
@@ -8028,8 +8276,8 @@
 "hash": "a00411cabd",
 "exported": false,
 "calls": [],
-"label": "",
-"label_source": "none"
+"label": "Maps header underline and divider labels to width and colour theme class fields.",
+"label_source": "header"
 },
 {
 "id": "frontend/src/design-mode/DesignDialog.vue::draftStr",
@@ -8041,8 +8289,8 @@
 "hash": "5c9bbe703b",
 "exported": false,
 "calls": [],
-"label": "",
-"label_source": "none"
+"label": "Reads a draft model field as a display string, treating null as empty.",
+"label_source": "header"
 },
 {
 "id": "frontend/src/design-mode/DesignDialog.vue::themeLabel",
@@ -8054,8 +8302,8 @@
 "hash": "976a6577aa",
 "exported": false,
 "calls": [],
-"label": "",
-"label_source": "none"
+"label": "Returns the theme default human label for a field from model.themeDefaults.",
+"label_source": "header"
 },
 {
 "id": "frontend/src/design-mode/DesignDialog.vue::themeCss",
@@ -8067,8 +8315,8 @@
 "hash": "1c86ff6a9e",
 "exported": false,
 "calls": [],
-"label": "",
-"label_source": "none"
+"label": "Returns resolved CSS colour from theme defaults for chip preview when draft is empty.",
+"label_source": "header"
 },
 {
 "id": "frontend/src/design-mode/DesignDialog.vue::themeText",
@@ -8082,8 +8330,8 @@
 "calls": [
 "frontend/src/design-mode/DesignDialog.vue::themeLabel"
 ],
-"label": "",
-"label_source": "none"
+"label": "Formats chip caption as Theme plus label or Theme default when no override class.",
+"label_source": "header"
 },
 {
 "id": "frontend/src/design-mode/DesignDialog.vue::widthOptionLabel",
@@ -8097,8 +8345,8 @@
 "calls": [
 "frontend/src/design-mode/DesignDialog.vue::themeLabel"
 ],
-"label": "",
-"label_source": "none"
+"label": "Labels border width options with theme default wording when value is empty.",
+"label_source": "header"
 },
 {
 "id": "frontend/src/design-mode/DesignDialog.vue::bgClassText",
@@ -8113,8 +8361,8 @@
 "frontend/src/design-mode/DesignDialog.vue::draftStr",
 "frontend/src/design-mode/DesignDialog.vue::themeText"
 ],
-"label": "",
-"label_source": "none"
+"label": "Shows background class name with tonal suffix when foreground type is tonal.",
+"label_source": "header"
 },
 {
 "id": "frontend/src/design-mode/DesignDialog.vue::clampPosition",
@@ -8126,8 +8374,8 @@
 "hash": "6a27df5b00",
 "exported": false,
 "calls": [],
-"label": "",
-"label_source": "none"
+"label": "Keeps the dialog box inside the viewport with an eight pixel margin.",
+"label_source": "header"
 },
 {
 "id": "frontend/src/design-mode/DesignDialog.vue::onMove",
@@ -8146,8 +8394,8 @@
 "frontend/src/design-mode/DesignDialog.vue::onUp",
 "frontend/src/design-mode/DesignDialog.vue::startDrag"
 ],
-"label": "",
-"label_source": "none"
+"label": "Updates dialog position while the user drags the header.",
+"label_source": "header"
 },
 {
 "id": "frontend/src/design-mode/DesignDialog.vue::onUp",
@@ -8163,8 +8411,8 @@
 "frontend/src/design-mode/DesignDialog.vue::DesignDialog",
 "frontend/src/design-mode/DesignDialog.vue::startDrag"
 ],
-"label": "",
-"label_source": "none"
+"label": "Ends header drag by removing window mousemove and mouseup listeners.",
+"label_source": "header"
 },
 {
 "id": "frontend/src/design-mode/DesignDialog.vue::startDrag",
@@ -8179,8 +8427,8 @@
 "wired_by": [
 "frontend/src/design-mode/DesignDialog.vue::DesignDialog"
 ],
-"label": "",
-"label_source": "none"
+"label": "Starts header drag on primary button and attaches capture-phase move listeners.",
+"label_source": "header"
 },
 {
 "id": "frontend/src/design-mode/DesignDialog.vue::onKeep",
@@ -8195,8 +8443,8 @@
 "wired_by": [
 "frontend/src/design-mode/DesignDialog.vue::DesignDialog"
 ],
-"label": "",
-"label_source": "none"
+"label": "Sets draft keep_default from the checkbox and notifies handlers.changed.",
+"label_source": "header"
 },
 {
 "id": "frontend/src/design-mode/design-dialog.css::all",
@@ -8220,8 +8468,8 @@
 "hash": "f0c9452f2e",
 "exported": false,
 "calls": [],
-"label": "",
-"label_source": "none"
+"label": "Exported picker kind union matching DesignDialog bg, text, and border picks.",
+"label_source": "header"
 },
 {
 "id": "frontend/src/design-mode/index.ts::DesignDialogHandlers",
@@ -8233,8 +8481,8 @@
 "hash": "9870338703",
 "exported": true,
 "calls": [],
-"label": "",
-"label_source": "none"
+"label": "Exported handler callbacks the host page implements for pick, save, and navigation actions.",
+"label_source": "header"
 },
 {
 "id": "frontend/src/design-mode/index.ts::DesignDialogOpenOptions",
@@ -8246,8 +8494,8 @@
 "hash": "ae9f749d96",
 "exported": true,
 "calls": [],
-"label": "",
-"label_source": "none"
+"label": "Options for opening the dialog including kind, draft, position, notes, and handlers.",
+"label_source": "header"
 },
 {
 "id": "frontend/src/design-mode/index.ts::DesignDialogHandle",
@@ -8259,8 +8507,8 @@
 "hash": "22d7fd75d3",
 "exported": true,
 "calls": [],
-"label": "",
-"label_source": "none"
+"label": "Return value exposing live draft, setSaving, close, and the fixed host element.",
+"label_source": "header"
 },
 {
 "id": "frontend/src/design-mode/index.ts::themeCssHref",
@@ -8272,8 +8520,8 @@
 "hash": "4a07062d33",
 "exported": false,
 "calls": [],
-"label": "",
-"label_source": "none"
+"label": "Finds nce_theme stylesheet link on the page or falls back to assets themes CSS path.",
+"label_source": "header"
 },
 {
 "id": "frontend/src/design-mode/index.ts::STOP",
@@ -8285,8 +8533,8 @@
 "hash": "39cf5c989e",
 "exported": false,
 "calls": [],
-"label": "",
-"label_source": "none"
+"label": "Event names stopped on the host so pointer and keyboard input does not bubble to Frappe.",
+"label_source": "header"
 },
 {
 "id": "frontend/src/design-mode/index.ts::close",
@@ -8301,8 +8549,8 @@
 "wired_by": [
 "frontend/src/design-mode/index.ts"
 ],
-"label": "",
-"label_source": "none"
+"label": "Unmounts the Vue app and removes the design dialog host from the DOM.",
+"label_source": "header"
 },
 {
 "id": "frontend/src/design-mode/index.ts::isOpen",
@@ -8314,8 +8562,8 @@
 "hash": "a8f73c330e",
 "exported": true,
 "calls": [],
-"label": "",
-"label_source": "none"
+"label": "Reports whether a design dialog Vue app is currently mounted.",
+"label_source": "header"
 },
 {
 "id": "frontend/src/design-mode/index.ts::open",
@@ -8330,8 +8578,8 @@
 "frontend/src/design-mode/index.ts::close",
 "frontend/src/design-mode/index.ts::themeCssHref"
 ],
-"label": "",
-"label_source": "none"
+"label": "Creates shadow host, injects theme link and inline CSS, mounts DesignDialog, returns handle.",
+"label_source": "header"
 },
 {
 "id": "frontend/src/design-mode/index.ts::Window",
@@ -8343,8 +8591,8 @@
 "hash": "442343c3a6",
 "exported": false,
 "calls": [],
-"label": "",
-"label_source": "none"
+"label": "Augments Window with optional nceDesignDialog pointing at the default exported API.",
+"label_source": "header"
 },
 {
 "id": "frontend/src/index.css::all",
@@ -12186,9 +12434,8 @@
 "hash": "1a76782176",
 "exported": false,
 "calls": [],
-"label": "Extract text or input value from HTML element",
-"label_source": "generated",
-"label_hash": "1a76782176"
+"label": "Reads current theme slug or class from an input, select, or element text content.",
+"label_source": "header"
 },
 {
 "id": "frontend/src/widget/adapters/standalone-adapter.ts::setFieldValue",
@@ -12200,9 +12447,8 @@
 "hash": "002a075721",
 "exported": false,
 "calls": [],
-"label": "Update HTML element value and dispatch input/change events",
-"label_source": "generated",
-"label_hash": "002a075721"
+"label": "Writes picked class to inputs with input and change events or sets text on other elements.",
+"label_source": "header"
 },
 {
 "id": "frontend/src/widget/adapters/standalone-adapter.ts::StandaloneThemeSwatchPickerOpts",
@@ -12214,9 +12460,8 @@
 "hash": "495324bbbb",
 "exported": true,
 "calls": [],
-"label": "Configuration options for standalone theme swatch picker",
-"label_source": "generated",
-"label_hash": "495324bbbb"
+"label": "Options naming theme and value elements plus optional onClose for standalone picker open.",
+"label_source": "header"
 },
 {
 "id": "frontend/src/widget/adapters/standalone-adapter.ts::openStandaloneThemeSwatchPicker",
@@ -12232,9 +12477,8 @@
 "frontend/src/widget/adapters/standalone-adapter.ts::setFieldValue",
 "frontend/src/widget/theme-swatch-picker-core.ts::open"
 ],
-"label": "Open theme swatch picker for standalone HTML elements",
-"label_source": "generated",
-"label_hash": "b3fe5c5045"
+"label": "Opens theme swatch picker core using get and set callbacks bound to the supplied DOM fields.",
+"label_source": "header"
 },
 {
 "id": "frontend/src/widget/adapters/standalone-adapter.ts::mountStandaloneThemeSwatchPicker",
@@ -12246,9 +12490,8 @@
 "hash": "70f40a5be2",
 "exported": true,
 "calls": [],
-"label": "Mount theme swatch picker interface for standalone environments",
-"label_source": "generated-stale",
-"label_hash": "0e86f64afa"
+"label": "Registers open, openCore, close, and isOpen on window.themeSwatchPicker for non-desk pages.",
+"label_source": "header"
 },
 {
 "id": "frontend/src/widget/blocked-dialog.ts::ThemePickerBlockReason",
@@ -12733,9 +12976,8 @@
 "hash": "03b9b8678b",
 "exported": false,
 "calls": [],
-"label": "Public API for theme swatch picker open, close, and utility functions",
-"label_source": "generated-stale",
-"label_hash": "57b8087a98"
+"label": "Default browser API object: standalone open, core modal open/close, and theme class parse/compose for window.themeSwatchPicker.",
+"label_source": "header"
 },
 {
 "id": "frontend/src/widget/index.ts::Window",
@@ -12747,9 +12989,8 @@
 "hash": "329a137a32",
 "exported": false,
 "calls": [],
-"label": "Window interface type exposing swatch picker API and Frappe UI",
-"label_source": "generated",
-"label_hash": "329a137a32"
+"label": "Extends Window with optional themeSwatchPicker and frappe.ui typings used at mount time.",
+"label_source": "header"
 },
 {
 "id": "frontend/src/widget/theme-swatch-picker-core.ts::ThemeSwatchPickerCoreOpts",
@@ -13776,8 +14017,8 @@
 "wired_by": [
 "themes/hooks.py"
 ],
-"label": "Expose a desk CSS URL with the current publish hash (read each session).",
-"label_source": "docstring"
+"label": "Hook wired from hooks.py sets desk_theme_css_url and nce_design_mode when design mode is on and allowed.",
+"label_source": "header"
 },
 {
 "id": "themes/component_api.py::_is_frappe_branded",
@@ -13788,8 +14029,8 @@
 "sig": "(app: str) -> bool",
 "hash": "47873623bf",
 "calls": [],
-"label": "",
-"label_source": "none"
+"label": "Treats an app as Frappe-branded when app_publisher hooks mention Frappe Technologies for scan exclusion.",
+"label_source": "header"
 },
 {
 "id": "themes/component_api.py::_excluded_apps",
@@ -13802,8 +14043,8 @@
 "calls": [
 "themes/component_api.py::_is_frappe_branded"
 ],
-"label": "Builds the app set skipped during rescan from ALWAYS_EXCLUDED_APPS plus Theme Component Settings excluded_apps.",
-"label_source": "header-stale"
+"label": "Builds apps skipped during rescan from ALWAYS_EXCLUDED_APPS, settings lines, and Frappe-branded installs.",
+"label_source": "header"
 },
 {
 "id": "themes/component_api.py::_app_root",
@@ -13814,7 +14055,7 @@
 "sig": "(app: str) -> Path",
 "hash": "a4a5a98c64",
 "calls": [],
-"label": "Resolves the filesystem parent of a Frappe app path for walking .vue files.",
+"label": "Returns the filesystem parent of a Frappe app path used to resolve Vue Component file_path.",
 "label_source": "header"
 },
 {
@@ -13828,7 +14069,7 @@
 "calls": [
 "themes/component_api.py::_app_root"
 ],
-"label": "Resolves doc file_path under the app root or None if missing; blocks paths outside the app folder.",
+"label": "Resolves the on-disk .vue file for a record or None when missing, blocking paths outside the app root.",
 "label_source": "header"
 },
 {
@@ -13840,7 +14081,7 @@
 "sig": "(doc, rows: list[dict]) -> None",
 "hash": "67a6d769bb",
 "calls": [],
-"label": "Replaces the Vue Component elements child table from dict rows limited to ELEMENT_FIELDS.",
+"label": "Replaces element child rows on a doc keeping only allowed ELEMENT_FIELDS keys.",
 "label_source": "header"
 },
 {
@@ -13855,8 +14096,8 @@
 "themes/component_api.py::_set_rows",
 "themes/utils/component_sync.py::merge_elements"
 ],
-"label": "Maps scan results onto the doc or Missing status and merges scanned elements via component_sync merge_elements.",
-"label_source": "header-stale"
+"label": "Writes scan metadata and merged element rows or marks the component and elements Missing.",
+"label_source": "header"
 },
 {
 "id": "themes/component_api.py::_used_by",
@@ -13867,7 +14108,10 @@
 "sig": "(component_name: str, exclude_name: str) -> list[str]",
 "hash": "8f63f3a0d7",
 "calls": [],
-"label": "Lists Present Vue Component names whose uses_components include a given component_name; VueComponent.validate calls this.",
+"tested_by": [
+"themes/tests/test_backend_characterization.py::TestVueComponentValidate.test_table_fields_valid_values_do_not_throw"
+],
+"label": "Lists Present components whose uses_components includes a name; VueComponent.validate uses it for summaries.",
 "label_source": "header"
 },
 {
@@ -13881,7 +14125,7 @@
 "calls": [
 "themes/utils/component_scan.py::mark_roots"
 ],
-"label": "Loads all Vue Component usage rows, runs mark_roots, and writes is_root without bumping modified.",
+"label": "Recomputes is_root on every Vue Component via mark_roots for Design Mode root-only listing.",
 "label_source": "header"
 },
 {
@@ -13896,7 +14140,7 @@
 "wired_by": [
 "themes/hooks.py"
 ],
-"label": "Returns SQL so list views only show root Vue Components; registered in hooks permission_query_conditions.",
+"label": "Returns list-filter SQL wired in hooks so only is_root Vue Components appear in Desk.",
 "label_source": "header"
 },
 {
@@ -13911,7 +14155,7 @@
 "themes/component_api.py::_used_by",
 "themes/utils/component_summary.py::build_summary"
 ],
-"label": "Rebuilds every Vue Component summary field via build_summary and _used_by without update_modified.",
+"label": "Rebuilds the summary text field on all Vue Component records using build_summary.",
 "label_source": "header"
 },
 {
@@ -13933,7 +14177,7 @@
 "themes/utils/component_scan.py::iter_vue_files",
 "themes/utils/component_scan.py::scan_vue_file"
 ],
-"label": "System Manager whitelisted full-site .vue rescan, inherit tables, mark roots, refresh summaries, and publish CSS.",
+"label": "System Manager whitelisted full-site Vue scan, sync, missing cleanup, summaries, and CSS publish.",
 "label_source": "header"
 },
 {
@@ -13952,7 +14196,7 @@
 "themes/utils/component_scan.py::inherit_table_usage",
 "themes/utils/component_scan.py::scan_vue_file"
 ],
-"label": "Rescan one record from disk, inherit table data from child rows, save, reapply root flags and summaries.",
+"label": "Whitelisted rescan of one named component with child table inheritance, roots, and summaries.",
 "label_source": "header"
 },
 {
@@ -13964,7 +14208,7 @@
 "sig": "(name: str) -> list[dict]",
 "hash": "7f718aff66",
 "calls": [],
-"label": "Returns name and component_name for Vue Component rows referenced in the parent uses_components list.",
+"label": "Returns Vue Component doc names for child component_name entries in uses_components order.",
 "label_source": "header"
 },
 {
@@ -13978,7 +14222,7 @@
 "calls": [
 "themes/utils/site_theme_config_helpers.py::get_site_default_theme_name"
 ],
-"label": "Returns site default NCE Theme name and slug for the theme editor preview UI.",
+"label": "Returns site default NCE Theme name and slug for Design Mode and preview clients.",
 "label_source": "header"
 },
 {
@@ -13993,8 +14237,8 @@
 "themes/component_api.py::_require_design",
 "themes/utils/component_css_writer.py::declarations_for"
 ],
-"label": "Maps element override row keys to joined CSS declaration strings from declarations_for for live preview.",
-"label_source": "header-stale"
+"label": "Design-gated whitelisted map of element keys to CSS declaration strings for live preview.",
+"label_source": "header"
 },
 {
 "id": "themes/component_api.py::publish_css",
@@ -14007,7 +14251,7 @@
 "calls": [
 "themes/utils/component_css_writer.py::publish_component_css"
 ],
-"label": "Whitelisted entry point that runs publish_component_css for nce_component_overrides.css.",
+"label": "System Manager whitelisted republish of nce_component_overrides.css.",
 "label_source": "header"
 },
 {
@@ -14021,7 +14265,7 @@
 "calls": [
 "themes/component_api.py::rescan_all"
 ],
-"label": "Ensures DocTypes exist, runs rescan_all when empty, and returns the Desk vue-component list URL.",
+"label": "Ensures Vue Component DocTypes exist, rescans when empty, returns Desk list URL.",
 "label_source": "header"
 },
 {
@@ -14033,8 +14277,8 @@
 "sig": "(user: str | None=None) -> bool",
 "hash": "b80bfde03e",
 "calls": [],
-"label": "Administrator, System Manager, or anyone who can write Vue Component.",
-"label_source": "docstring"
+"label": "True for Administrator, System Manager, or Vue Component write; boot pairs with design_mode_enabled.",
+"label_source": "header"
 },
 {
 "id": "themes/component_api.py::design_mode_enabled",
@@ -14045,8 +14289,8 @@
 "sig": "() -> bool",
 "hash": "7b851089ba",
 "calls": [],
-"label": "",
-"label_source": "none"
+"label": "Reads Theme Component Settings design_mode_enabled for session and API checks.",
+"label_source": "header"
 },
 {
 "id": "themes/component_api.py::_require_design",
@@ -14059,8 +14303,8 @@
 "calls": [
 "themes/component_api.py::can_design"
 ],
-"label": "",
-"label_source": "none"
+"label": "Raises permission error when can_design is false before Design Mode whitelisted calls.",
+"label_source": "header"
 },
 {
 "id": "themes/component_api.py::get_design_mode_status",
@@ -14074,8 +14318,8 @@
 "themes/component_api.py::can_design",
 "themes/component_api.py::design_mode_enabled"
 ],
-"label": "",
-"label_source": "none"
+"label": "Whitelisted enabled flag plus whether the current user may use Design Mode.",
+"label_source": "header"
 },
 {
 "id": "themes/component_api.py::set_design_mode_enabled",
@@ -14088,8 +14332,8 @@
 "calls": [
 "themes/component_api.py::rescan_all"
 ],
-"label": "",
-"label_source": "none"
+"label": "System Manager toggles design_mode_enabled and runs rescan_all when turning on.",
+"label_source": "header"
 },
 {
 "id": "themes/component_api.py::_protected_classes",
@@ -14102,8 +14346,8 @@
 "calls": [
 "themes/utils/design_mode.py::parse_protected"
 ],
-"label": "",
-"label_source": "none"
+"label": "Loads parsed protected_classes from Theme Component Settings for selector save guards.",
+"label_source": "header"
 },
 {
 "id": "themes/component_api.py::get_design_mode_map",
@@ -14120,8 +14364,8 @@
 "themes/utils/design_mode.py::build_selector_map",
 "themes/utils/design_mode.py::build_table_map"
 ],
-"label": "",
-"label_source": "none"
+"label": "Design-gated whitelisted theme, selector map, and table map payload for design_mode.js.",
+"label_source": "header"
 },
 {
 "id": "themes/component_api.py::_components_with_selector",
@@ -14132,8 +14376,8 @@
 "sig": "(selector: str) -> list[str]",
 "hash": "03919b7ecc",
 "calls": [],
-"label": "",
-"label_source": "none"
+"label": "Lists Present Vue Component names with a Present element row matching selector_class.",
+"label_source": "header"
 },
 {
 "id": "themes/component_api.py::save_design_change",
@@ -14149,8 +14393,8 @@
 "themes/component_api.py::_require_design",
 "themes/utils/component_css_writer.py::publish_component_css"
 ],
-"label": "",
-"label_source": "none"
+"label": "Applies shared override fields to every component using a selector then publishes CSS.",
+"label_source": "header"
 },
 {
 "id": "themes/component_api.py::revert_design_components",
@@ -14164,8 +14408,8 @@
 "themes/component_api.py::_require_design",
 "themes/utils/component_css_writer.py::publish_component_css"
 ],
-"label": "",
-"label_source": "none"
+"label": "Clears element and table design overrides on named components then publishes CSS.",
+"label_source": "header"
 },
 {
 "id": "themes/component_api.py::_table_parent",
@@ -14176,8 +14420,8 @@
 "sig": "(name: str) -> dict",
 "hash": "449cc8dfdb",
 "calls": [],
-"label": "",
-"label_source": "none"
+"label": "Loads table-related fields for a Vue Component or throws when the name is missing.",
+"label_source": "header"
 },
 {
 "id": "themes/component_api.py::preview_design_table",
@@ -14193,8 +14437,8 @@
 "themes/utils/component_css_writer.py::table_css_for",
 "themes/utils/design_mode.py::clean_table_values"
 ],
-"label": "",
-"label_source": "none"
+"label": "Design-gated whitelisted CSS string preview for table colour overrides on one component.",
+"label_source": "header"
 },
 {
 "id": "themes/component_api.py::save_design_table",
@@ -14210,8 +14454,8 @@
 "themes/utils/component_css_writer.py::publish_component_css",
 "themes/utils/design_mode.py::clean_table_values"
 ],
-"label": "",
-"label_source": "none"
+"label": "Design-gated persists cleaned table override fields on a component and publishes CSS.",
+"label_source": "header"
 },
 {
 "id": "themes/hooks.py::_css_url",
@@ -14222,7 +14466,7 @@
 "sig": "(css_filename: str) -> str",
 "hash": "767dfebc19",
 "calls": [],
-"label": "At import, appends ?v= from public/css sidecar hash when present else bare /assets/themes/css/ URL.",
+"label": "Returns /assets/themes/css path with ?v hash sidecar at import; falls back without raising.",
 "label_source": "header"
 },
 {
@@ -14385,8 +14629,8 @@
 "sig": "()",
 "hash": "d45ba4be11",
 "calls": [],
-"label": "",
-"label_source": "none"
+"label": "Migration clears protected_classes on Theme Component Settings when that DocType exists.",
+"label_source": "header"
 },
 {
 "id": "themes/patches/v1_0/collapse_theme_versions_to_nce_theme.py::execute",
@@ -14412,8 +14656,8 @@
 "sig": "()",
 "hash": "91d59d7f9e",
 "calls": [],
-"label": "",
-"label_source": "none"
+"label": "Migration sets protected_classes from DEFAULT_PROTECTED when the field is still empty.",
+"label_source": "header"
 },
 {
 "id": "themes/patches/v1_0/migrate_theme_settings_to_nce_theme.py::execute",
@@ -14674,8 +14918,8 @@
 "hash": "b7787bd576",
 "exported": false,
 "calls": [],
-"label": "",
-"label_source": "none"
+"label": "Reads Frappe CSRF token from window for authenticated component_api POST requests.",
+"label_source": "header"
 },
 {
 "id": "themes/public/js/design_mode.js::esc",
@@ -14687,8 +14931,8 @@
 "hash": "bc06620186",
 "exported": false,
 "calls": [],
-"label": "",
-"label_source": "none"
+"label": "Escapes HTML metacharacters in strings before safe insertion in UI text.",
+"label_source": "header"
 },
 {
 "id": "themes/public/js/design_mode.js::call",
@@ -14702,8 +14946,8 @@
 "calls": [
 "themes/public/js/design_mode.js::csrf"
 ],
-"label": "",
-"label_source": "none"
+"label": "POSTs JSON to themes.component_api methods with CSRF header and surfaces server errors.",
+"label_source": "header"
 },
 {
 "id": "themes/public/js/design_mode.js::selectorFromMap",
@@ -14715,8 +14959,8 @@
 "hash": "c052ebe5c9",
 "exported": false,
 "calls": [],
-"label": "",
-"label_source": "none"
+"label": "Builds a comma-separated class selector list from the design mode map selectors and tables.",
+"label_source": "header"
 },
 {
 "id": "themes/public/js/design_mode.js::pageHasParts",
@@ -14728,8 +14972,8 @@
 "hash": "648c251f99",
 "exported": false,
 "calls": [],
-"label": "",
-"label_source": "none"
+"label": "Checks whether the page DOM contains any element matching mapped component selectors.",
+"label_source": "header"
 },
 {
 "id": "themes/public/js/design_mode.js::updateFab",
@@ -14743,8 +14987,8 @@
 "calls": [
 "themes/public/js/design_mode.js::pageHasParts"
 ],
-"label": "",
-"label_source": "none"
+"label": "Shows or hides the floating button and sets Exit Design Mode, Loading, or Design Mode label.",
+"label_source": "header"
 },
 {
 "id": "themes/public/js/design_mode.js::schedulePresence",
@@ -14761,8 +15005,8 @@
 "wired_by": [
 "themes/public/js/design_mode.js::init"
 ],
-"label": "",
-"label_source": "none"
+"label": "Debounces FAB visibility updates after DOM mutations from the presence observer.",
+"label_source": "header"
 },
 {
 "id": "themes/public/js/design_mode.js::ensureFab",
@@ -14778,8 +15022,8 @@
 "themes/public/js/design_mode.js::turnOff",
 "themes/public/js/design_mode.js::turnOn"
 ],
-"label": "",
-"label_source": "none"
+"label": "Creates the bottom-right Design Mode FAB and toggles turnOn or turnOff on click.",
+"label_source": "header"
 },
 {
 "id": "themes/public/js/design_mode.js::ensureRoot",
@@ -14791,8 +15035,8 @@
 "hash": "645ef05669",
 "exported": false,
 "calls": [],
-"label": "",
-"label_source": "none"
+"label": "Finds or appends the fixed nce-design-mode overlay container on document body.",
+"label_source": "header"
 },
 {
 "id": "themes/public/js/design_mode.js::toast",
@@ -14806,8 +15050,8 @@
 "calls": [
 "themes/public/js/design_mode.js::ensureRoot"
 ],
-"label": "",
-"label_source": "none"
+"label": "Displays a short success or error toast above the FAB inside the overlay root.",
+"label_source": "header"
 },
 {
 "id": "themes/public/js/design_mode.js::findTarget",
@@ -14819,8 +15063,8 @@
 "hash": "297dcca9c6",
 "exported": false,
 "calls": [],
-"label": "",
-"label_source": "none"
+"label": "Walks ancestors from a node to the first element whose class is in selectors map.",
+"label_source": "header"
 },
 {
 "id": "themes/public/js/design_mode.js::label",
@@ -14832,8 +15076,8 @@
 "hash": "79507f1209",
 "exported": false,
 "calls": [],
-"label": "",
-"label_source": "none"
+"label": "Formats hover text as component name, selector class, and optional extra component count.",
+"label_source": "header"
 },
 {
 "id": "themes/public/js/design_mode.js::reloadOverridesCss",
@@ -14845,8 +15089,8 @@
 "hash": "13b81267ed",
 "exported": false,
 "calls": [],
-"label": "",
-"label_source": "none"
+"label": "Appends a cache-busting query to every nce_component_overrides.css stylesheet link after save.",
+"label_source": "header"
 },
 {
 "id": "themes/public/js/design_mode.js::ensureStyles",
@@ -14858,8 +15102,8 @@
 "hash": "e3d15db505",
 "exported": false,
 "calls": [],
-"label": "",
-"label_source": "none"
+"label": "Injects one-time inline CSS for FAB, outlines, labels, edit button, and toasts.",
+"label_source": "header"
 },
 {
 "id": "themes/public/js/design_mode.js::clearSelMark",
@@ -14871,8 +15115,8 @@
 "hash": "ec32c73129",
 "exported": false,
 "calls": [],
-"label": "",
-"label_source": "none"
+"label": "Removes the data-ndm-sel attribute from the currently marked selection element.",
+"label_source": "header"
 },
 {
 "id": "themes/public/js/design_mode.js::markSel",
@@ -14886,8 +15130,8 @@
 "calls": [
 "themes/public/js/design_mode.js::clearSelMark"
 ],
-"label": "",
-"label_source": "none"
+"label": "Applies data-ndm-sel outline styling to the chosen element or a dashed none state.",
+"label_source": "header"
 },
 {
 "id": "themes/public/js/design_mode.js::hideOutline",
@@ -14903,8 +15147,8 @@
 "themes/public/js/design_mode.js::clearSelMark",
 "themes/public/js/design_mode.js::hideSiblings"
 ],
-"label": "",
-"label_source": "none"
+"label": "Clears selection marks, hover label, edit button, and sibling highlights when no popup.",
+"label_source": "header"
 },
 {
 "id": "themes/public/js/design_mode.js::selectorFor",
@@ -14916,8 +15160,8 @@
 "hash": "b491f5284f",
 "exported": false,
 "calls": [],
-"label": "",
-"label_source": "none"
+"label": "Returns the mapped CSS class string for table or element selection kinds.",
+"label_source": "header"
 },
 {
 "id": "themes/public/js/design_mode.js::hideSiblings",
@@ -14929,8 +15173,8 @@
 "hash": "1fe4b0f40a",
 "exported": false,
 "calls": [],
-"label": "",
-"label_source": "none"
+"label": "Strips data-ndm-sib highlight attributes from all previously outlined sibling nodes.",
+"label_source": "header"
 },
 {
 "id": "themes/public/js/design_mode.js::showSiblings",
@@ -14944,8 +15188,8 @@
 "calls": [
 "themes/public/js/design_mode.js::hideSiblings"
 ],
-"label": "",
-"label_source": "none"
+"label": "Outlines other on-screen elements sharing the mapped class, capped at MAX_SIBLINGS.",
+"label_source": "header"
 },
 {
 "id": "themes/public/js/design_mode.js::showOutlineFor",
@@ -14959,8 +15203,8 @@
 "calls": [
 "themes/public/js/design_mode.js::markSel"
 ],
-"label": "",
-"label_source": "none"
+"label": "Positions the fixed label and marks the element at its bounding rectangle.",
+"label_source": "header"
 },
 {
 "id": "themes/public/js/design_mode.js::showOutline",
@@ -14975,8 +15219,8 @@
 "themes/public/js/design_mode.js::label",
 "themes/public/js/design_mode.js::showOutlineFor"
 ],
-"label": "",
-"label_source": "none"
+"label": "Builds component label text including locked suffix and delegates to showOutlineFor.",
+"label_source": "header"
 },
 {
 "id": "themes/public/js/design_mode.js::findMappedTable",
@@ -14988,8 +15232,8 @@
 "hash": "4669a927bb",
 "exported": false,
 "calls": [],
-"label": "",
-"label_source": "none"
+"label": "Finds the nearest table ancestor whose class appears in the design mode tables map.",
+"label_source": "header"
 },
 {
 "id": "themes/public/js/design_mode.js::candidateFor",
@@ -15005,8 +15249,8 @@
 "themes/public/js/design_mode.js::findTarget",
 "themes/public/js/design_mode.js::label"
 ],
-"label": "",
-"label_source": "none"
+"label": "Classifies a mouse target as mapped table, mapped element, or unmapped none for hover UI.",
+"label_source": "header"
 },
 {
 "id": "themes/public/js/design_mode.js::clearIntent",
@@ -15018,8 +15262,8 @@
 "hash": "5d1f4f3ed0",
 "exported": false,
 "calls": [],
-"label": "",
-"label_source": "none"
+"label": "Clears the hover delay timer and intent element before changing selection.",
+"label_source": "header"
 },
 {
 "id": "themes/public/js/design_mode.js::applySelection",
@@ -15039,8 +15283,8 @@
 "themes/public/js/design_mode.js::showOutlineFor",
 "themes/public/js/design_mode.js::showSiblings"
 ],
-"label": "",
-"label_source": "none"
+"label": "Stores selection, draws outline and sibling count, and positions the Edit button.",
+"label_source": "header"
 },
 {
 "id": "themes/public/js/design_mode.js::positionEditButton",
@@ -15052,8 +15296,8 @@
 "hash": "e8f3ad4e0c",
 "exported": false,
 "calls": [],
-"label": "",
-"label_source": "none"
+"label": "Places the Edit control beside the selected element within the viewport bounds.",
+"label_source": "header"
 },
 {
 "id": "themes/public/js/design_mode.js::swallow",
@@ -15069,8 +15313,8 @@
 "themes/public/js/design_mode.js::ensureFab",
 "themes/public/js/design_mode.js::turnOn"
 ],
-"label": "",
-"label_source": "none"
+"label": "Stops event propagation on FAB and edit control pointer events so clicks do not hit the page.",
+"label_source": "header"
 },
 {
 "id": "themes/public/js/design_mode.js::onEditClick",
@@ -15088,8 +15332,8 @@
 "wired_by": [
 "themes/public/js/design_mode.js::turnOn"
 ],
-"label": "",
-"label_source": "none"
+"label": "Opens the element or table colour dialog anchored at the Edit button.",
+"label_source": "header"
 },
 {
 "id": "themes/public/js/design_mode.js::onMouseMoveFrame",
@@ -15108,8 +15352,8 @@
 "wired_by": [
 "themes/public/js/design_mode.js::onMouseMove"
 ],
-"label": "",
-"label_source": "none"
+"label": "On animation frame, resolves hover target and applies selection after hover intent delay.",
+"label_source": "header"
 },
 {
 "id": "themes/public/js/design_mode.js::onMouseMove",
@@ -15125,8 +15369,8 @@
 "themes/public/js/design_mode.js::turnOff",
 "themes/public/js/design_mode.js::turnOn"
 ],
-"label": "",
-"label_source": "none"
+"label": "Records the latest mousemove and schedules a single rAF outline update per frame.",
+"label_source": "header"
 },
 {
 "id": "themes/public/js/design_mode.js::loadDialog",
@@ -15138,8 +15382,8 @@
 "hash": "1b48c786f7",
 "exported": false,
 "calls": [],
-"label": "",
-"label_source": "none"
+"label": "Lazy-loads design-dialog.js and resolves when nceDesignDialog.open is available.",
+"label_source": "header"
 },
 {
 "id": "themes/public/js/design_mode.js::dialogReady",
@@ -15154,8 +15398,8 @@
 "themes/public/js/design_mode.js::loadDialog",
 "themes/public/js/design_mode.js::toast"
 ],
-"label": "",
-"label_source": "none"
+"label": "Returns true if the dialog script is ready; otherwise toasts and triggers loadDialog.",
+"label_source": "header"
 },
 {
 "id": "themes/public/js/design_mode.js::onOutsideMouseDown",
@@ -15169,8 +15413,8 @@
 "calls": [
 "themes/public/js/design_mode.js::cancelPopup"
 ],
-"label": "",
-"label_source": "none"
+"label": "Closes the open popup when mousedown occurs outside the dialog host.",
+"label_source": "header"
 },
 {
 "id": "themes/public/js/design_mode.js::openPickerFor",
@@ -15185,8 +15429,8 @@
 "themes/public/js/design_mode.js::onDraftChanged",
 "themes/public/js/design_mode.js::toast"
 ],
-"label": "",
-"label_source": "none"
+"label": "Opens themeSwatchPicker for a draft field using the map theme slug and draft getters.",
+"label_source": "header"
 },
 {
 "id": "themes/public/js/design_mode.js::onDraftChanged",
@@ -15201,8 +15445,8 @@
 "themes/public/js/design_mode.js::updatePreview",
 "themes/public/js/design_mode.js::updateTablePreview"
 ],
-"label": "",
-"label_source": "none"
+"label": "Refreshes live element or table CSS preview after a draft colour field changes.",
+"label_source": "header"
 },
 {
 "id": "themes/public/js/design_mode.js::openRecord",
@@ -15214,8 +15458,8 @@
 "hash": "8f1fa23539",
 "exported": false,
 "calls": [],
-"label": "",
-"label_source": "none"
+"label": "Opens the Vue Component DocType form in a new tab for the popup table or element entry.",
+"label_source": "header"
 },
 {
 "id": "themes/public/js/design_mode.js::dialogHandlers",
@@ -15230,8 +15474,8 @@
 "themes/public/js/design_mode.js::cancelPopup",
 "themes/public/js/design_mode.js::openPopup"
 ],
-"label": "",
-"label_source": "none"
+"label": "Supplies pick, changed, save, cancel, revert, openRecord, and part callbacks to the design dialog.",
+"label_source": "header"
 },
 {
 "id": "themes/public/js/design_mode.js::elementPopupNotes",
@@ -15243,8 +15487,8 @@
 "hash": "32c91ec7ee",
 "exported": false,
 "calls": [],
-"label": "",
-"label_source": "none"
+"label": "Adds notes when a selector is shared, code-driven dynamic, or Page Panel protected.",
+"label_source": "header"
 },
 {
 "id": "themes/public/js/design_mode.js::updatePreview",
@@ -15259,8 +15503,8 @@
 "themes/public/js/design_mode.js::call",
 "themes/public/js/design_mode.js::toast"
 ],
-"label": "",
-"label_source": "none"
+"label": "Calls preview_declarations and injects a temporary style tag for the selected selector class.",
+"label_source": "header"
 },
 {
 "id": "themes/public/js/design_mode.js::updateTablePreview",
@@ -15275,8 +15519,8 @@
 "themes/public/js/design_mode.js::call",
 "themes/public/js/design_mode.js::toast"
 ],
-"label": "",
-"label_source": "none"
+"label": "Calls preview_design_table and injects returned CSS into the preview style tag.",
+"label_source": "header"
 },
 {
 "id": "themes/public/js/design_mode.js::savePopup",
@@ -15293,8 +15537,8 @@
 "themes/public/js/design_mode.js::reloadOverridesCss",
 "themes/public/js/design_mode.js::toast"
 ],
-"label": "",
-"label_source": "none"
+"label": "Persists table or element draft via save API, reloads overrides CSS, and closes with toast.",
+"label_source": "header"
 },
 {
 "id": "themes/public/js/design_mode.js::revertPopup",
@@ -15311,8 +15555,8 @@
 "themes/public/js/design_mode.js::reloadOverridesCss",
 "themes/public/js/design_mode.js::toast"
 ],
-"label": "",
-"label_source": "none"
+"label": "After confirm, reverts linked Vue Components via API, refreshes map, and reloads overrides CSS.",
+"label_source": "header"
 },
 {
 "id": "themes/public/js/design_mode.js::onScroll",
@@ -15330,8 +15574,8 @@
 "themes/public/js/design_mode.js::turnOff",
 "themes/public/js/design_mode.js::turnOn"
 ],
-"label": "",
-"label_source": "none"
+"label": "Hides hover outline while design mode is on and no colour popup is open.",
+"label_source": "header"
 },
 {
 "id": "themes/public/js/design_mode.js::cancelPopup",
@@ -15345,8 +15589,8 @@
 "calls": [
 "themes/public/js/design_mode.js::hideSiblings"
 ],
-"label": "",
-"label_source": "none"
+"label": "Tears down dialog, preview style, outside listener, swatch picker, and popup state.",
+"label_source": "header"
 },
 {
 "id": "themes/public/js/design_mode.js::cssColourToHex",
@@ -15358,8 +15602,8 @@
 "hash": "420b7d5587",
 "exported": false,
 "calls": [],
-"label": "",
-"label_source": "none"
+"label": "Parses rgb or rgba strings into uppercase hex and transparent flags for dialog defaults.",
+"label_source": "header"
 },
 {
 "id": "themes/public/js/design_mode.js::elementThemeDefaults",
@@ -15373,8 +15617,8 @@
 "calls": [
 "themes/public/js/design_mode.js::cssColourToHex"
 ],
-"label": "",
-"label_source": "none"
+"label": "Samples computed background, text, and border on the hovered element for dialog defaults.",
+"label_source": "header"
 },
 {
 "id": "themes/public/js/design_mode.js::openPopup",
@@ -15396,8 +15640,8 @@
 "themes/public/js/design_mode.js::showSiblings",
 "themes/public/js/design_mode.js::updatePreview"
 ],
-"label": "",
-"label_source": "none"
+"label": "Opens the element design dialog with draft values, notes, handlers, and live preview.",
+"label_source": "header"
 },
 {
 "id": "themes/public/js/design_mode.js::tableThemeDefaults",
@@ -15409,8 +15653,8 @@
 "hash": "9d06302916",
 "exported": false,
 "calls": [],
-"label": "",
-"label_source": "none"
+"label": "Builds table colour and divider default labels from theme CSS variables on a sample table.",
+"label_source": "header"
 },
 {
 "id": "themes/public/js/design_mode.js::openTablePopup",
@@ -15431,8 +15675,8 @@
 "themes/public/js/design_mode.js::tableThemeDefaults",
 "themes/public/js/design_mode.js::updateTablePreview"
 ],
-"label": "",
-"label_source": "none"
+"label": "Opens the table design dialog for a mapped table class with optional nested part editing.",
+"label_source": "header"
 },
 {
 "id": "themes/public/js/design_mode.js::onKeyDown",
@@ -15450,8 +15694,8 @@
 "wired_by": [
 "themes/public/js/design_mode.js::init"
 ],
-"label": "",
-"label_source": "none"
+"label": "Escape closes an open popup or turns off design mode unless the swatch picker is open.",
+"label_source": "header"
 },
 {
 "id": "themes/public/js/design_mode.js::turnOn",
@@ -15471,8 +15715,8 @@
 "themes/public/js/design_mode.js::toast",
 "themes/public/js/design_mode.js::updateFab"
 ],
-"label": "",
-"label_source": "none"
+"label": "Fetches design mode map, mounts overlay UI, enables mousemove tracking, and preloads dialog script.",
+"label_source": "header"
 },
 {
 "id": "themes/public/js/design_mode.js::turnOff",
@@ -15490,8 +15734,8 @@
 "themes/public/js/design_mode.js::hideSiblings",
 "themes/public/js/design_mode.js::updateFab"
 ],
-"label": "",
-"label_source": "none"
+"label": "Removes listeners and overlay, clears selection and preview, and resets design mode state.",
+"label_source": "header"
 },
 {
 "id": "themes/public/js/design_mode.js::hasSystemUserCookie",
@@ -15503,8 +15747,8 @@
 "hash": "b6ec9e5c64",
 "exported": false,
 "calls": [],
-"label": "",
-"label_source": "none"
+"label": "Detects system_user=yes cookie when Frappe boot is unavailable for enablement checks.",
+"label_source": "header"
 },
 {
 "id": "themes/public/js/design_mode.js::init",
@@ -15525,8 +15769,8 @@
 "wired_by": [
 "themes/public/js/design_mode.js"
 ],
-"label": "",
-"label_source": "none"
+"label": "When design mode is allowed and mapped parts exist, creates FAB, observer, and Escape handler.",
+"label_source": "header"
 },
 {
 "id": "themes/public/js/desk_theme_loader.js::syncDeskThemeCss",
@@ -15669,7 +15913,7 @@
 "name": "all",
 "qualname": "all",
 "sig": "",
-"hash": "0ae98206ca",
+"hash": "ed69ddd6fb",
 "calls": [],
 "label": "web_default.css (the whole file)",
 "label_source": "title"
@@ -15681,7 +15925,7 @@
 "name": "all",
 "qualname": "all",
 "sig": "",
-"hash": "85b93803e4",
+"hash": "b3bc723dd0",
 "calls": [],
 "label": "web_gamma_sat.css (the whole file)",
 "label_source": "title"
@@ -15693,7 +15937,7 @@
 "name": "all",
 "qualname": "all",
 "sig": "",
-"hash": "a42fe77d6f",
+"hash": "bee7fb0ba4",
 "calls": [],
 "label": "web_neutral_warmth.css (the whole file)",
 "label_source": "title"
@@ -15705,7 +15949,7 @@
 "name": "all",
 "qualname": "all",
 "sig": "",
-"hash": "6d83ea5428",
+"hash": "688a0318ef",
 "calls": [],
 "label": "web_site_default.css (the whole file)",
 "label_source": "title"
@@ -15814,6 +16058,405 @@
 "hash": "39b9d30ced",
 "calls": [],
 "label": "desk list row active semantics",
+"label_source": "name"
+},
+{
+"id": "themes/tests/test_backend_characterization.py::TestBundleOutput.test_web_bundle_writes_json_and_default_theme_py",
+"file": "themes/tests/test_backend_characterization.py",
+"kind": "test",
+"name": "test_web_bundle_writes_json_and_default_theme_py",
+"qualname": "TestBundleOutput.test_web_bundle_writes_json_and_default_theme_py",
+"sig": "(self)",
+"hash": "d7eb86c557",
+"calls": [
+"themes/utils/theme_family.py::_web_bundle"
+],
+"label": "web bundle writes json and default theme py",
+"label_source": "name"
+},
+{
+"id": "themes/tests/test_backend_characterization.py::TestBundleOutput.test_desk_bundle_writes_json_and_default_desk_theme_py",
+"file": "themes/tests/test_backend_characterization.py",
+"kind": "test",
+"name": "test_desk_bundle_writes_json_and_default_desk_theme_py",
+"qualname": "TestBundleOutput.test_desk_bundle_writes_json_and_default_desk_theme_py",
+"sig": "(self)",
+"hash": "1ea1c4198a",
+"calls": [
+"themes/utils/theme_family.py::_desk_bundle"
+],
+"label": "desk bundle writes json and default desk theme py",
+"label_source": "name"
+},
+{
+"id": "themes/tests/test_backend_characterization.py::TestDeskPublishTail.test_publish_desk_theme_writes_css_hash_and_updates_config",
+"file": "themes/tests/test_backend_characterization.py",
+"kind": "test",
+"name": "test_publish_desk_theme_writes_css_hash_and_updates_config",
+"qualname": "TestDeskPublishTail.test_publish_desk_theme_writes_css_hash_and_updates_config",
+"sig": "(self)",
+"hash": "e5ef4f760e",
+"calls": [
+"themes/utils/desk_css_writer.py::publish_desk_theme"
+],
+"label": "publish desk theme writes css hash and updates config",
+"label_source": "name"
+},
+{
+"id": "themes/tests/test_backend_characterization.py::TestDeskPublishTail.test_read_desk_css_hash_from_sidecar_after_publish",
+"file": "themes/tests/test_backend_characterization.py",
+"kind": "test",
+"name": "test_read_desk_css_hash_from_sidecar_after_publish",
+"qualname": "TestDeskPublishTail.test_read_desk_css_hash_from_sidecar_after_publish",
+"sig": "(self)",
+"hash": "3a845bedfc",
+"calls": [
+"themes/utils/desk_css_writer.py::_read_desk_css_hash",
+"themes/utils/desk_css_writer.py::publish_desk_theme"
+],
+"label": "read desk css hash from sidecar after publish",
+"label_source": "name"
+},
+{
+"id": "themes/tests/test_backend_characterization.py::TestDeskPublishTail.test_read_desk_css_hash_none_when_sidecar_missing",
+"file": "themes/tests/test_backend_characterization.py",
+"kind": "test",
+"name": "test_read_desk_css_hash_none_when_sidecar_missing",
+"qualname": "TestDeskPublishTail.test_read_desk_css_hash_none_when_sidecar_missing",
+"sig": "(self)",
+"hash": "ace7d339ed",
+"calls": [
+"themes/utils/desk_css_writer.py::_read_desk_css_hash"
+],
+"label": "read desk css hash none when sidecar missing",
+"label_source": "name"
+},
+{
+"id": "themes/tests/test_backend_characterization.py::TestWebPublishTail.test_publish_theme_writes_css_fonts_and_hash",
+"file": "themes/tests/test_backend_characterization.py",
+"kind": "test",
+"name": "test_publish_theme_writes_css_fonts_and_hash",
+"qualname": "TestWebPublishTail.test_publish_theme_writes_css_fonts_and_hash",
+"sig": "(self)",
+"hash": "bd60789bd1",
+"calls": [
+"themes/utils/css_writer.py::publish_theme"
+],
+"label": "publish theme writes css fonts and hash",
+"label_source": "name"
+},
+{
+"id": "themes/tests/test_backend_characterization.py::TestComponentPublishTail.test_publish_component_css_header_only_when_no_rows",
+"file": "themes/tests/test_backend_characterization.py",
+"kind": "test",
+"name": "test_publish_component_css_header_only_when_no_rows",
+"qualname": "TestComponentPublishTail.test_publish_component_css_header_only_when_no_rows",
+"sig": "(self)",
+"hash": "4c6639b97a",
+"calls": [
+"themes/utils/component_css_writer.py::publish_component_css"
+],
+"label": "publish component css header only when no rows",
+"label_source": "name"
+},
+{
+"id": "themes/tests/test_backend_characterization.py::TestNCEThemeController.test_before_save_slug_from_theme_name_when_empty",
+"file": "themes/tests/test_backend_characterization.py",
+"kind": "test",
+"name": "test_before_save_slug_from_theme_name_when_empty",
+"qualname": "TestNCEThemeController.test_before_save_slug_from_theme_name_when_empty",
+"sig": "(self)",
+"hash": "85f7dd26fe",
+"calls": [],
+"label": "before save slug from theme name when empty",
+"label_source": "name"
+},
+{
+"id": "themes/tests/test_backend_characterization.py::TestNCEThemeController.test_before_save_keeps_slug_when_theme_name_unchanged",
+"file": "themes/tests/test_backend_characterization.py",
+"kind": "test",
+"name": "test_before_save_keeps_slug_when_theme_name_unchanged",
+"qualname": "TestNCEThemeController.test_before_save_keeps_slug_when_theme_name_unchanged",
+"sig": "(self)",
+"hash": "a9f07f9687",
+"calls": [],
+"label": "before save keeps slug when theme name unchanged",
+"label_source": "name"
+},
+{
+"id": "themes/tests/test_backend_characterization.py::TestNCEThemeController.test_before_save_replaces_slug_when_theme_name_changed",
+"file": "themes/tests/test_backend_characterization.py",
+"kind": "test",
+"name": "test_before_save_replaces_slug_when_theme_name_changed",
+"qualname": "TestNCEThemeController.test_before_save_replaces_slug_when_theme_name_changed",
+"sig": "(self)",
+"hash": "79746f7ff7",
+"calls": [],
+"label": "before save replaces slug when theme name changed",
+"label_source": "name"
+},
+{
+"id": "themes/tests/test_backend_characterization.py::TestNCEThemeController.test_before_insert_copies_base_theme_json",
+"file": "themes/tests/test_backend_characterization.py",
+"kind": "test",
+"name": "test_before_insert_copies_base_theme_json",
+"qualname": "TestNCEThemeController.test_before_insert_copies_base_theme_json",
+"sig": "(self)",
+"hash": "4f79c0120f",
+"calls": [],
+"label": "before insert copies base theme json",
+"label_source": "name"
+},
+{
+"id": "themes/tests/test_backend_characterization.py::TestNCEThemeController.test_before_insert_empty_json_when_no_base",
+"file": "themes/tests/test_backend_characterization.py",
+"kind": "test",
+"name": "test_before_insert_empty_json_when_no_base",
+"qualname": "TestNCEThemeController.test_before_insert_empty_json_when_no_base",
+"sig": "(self)",
+"hash": "05c06d12ad",
+"calls": [],
+"label": "before insert empty json when no base",
+"label_source": "name"
+},
+{
+"id": "themes/tests/test_backend_characterization.py::TestNCEThemeController.test_before_insert_leaves_nonempty_theme_json",
+"file": "themes/tests/test_backend_characterization.py",
+"kind": "test",
+"name": "test_before_insert_leaves_nonempty_theme_json",
+"qualname": "TestNCEThemeController.test_before_insert_leaves_nonempty_theme_json",
+"sig": "(self)",
+"hash": "7abeee9945",
+"calls": [],
+"label": "before insert leaves nonempty theme json",
+"label_source": "name"
+},
+{
+"id": "themes/tests/test_backend_characterization.py::TestNCEThemeController.test_validate_rejects_second_default",
+"file": "themes/tests/test_backend_characterization.py",
+"kind": "test",
+"name": "test_validate_rejects_second_default",
+"qualname": "TestNCEThemeController.test_validate_rejects_second_default",
+"sig": "(self)",
+"hash": "dec83d15ce",
+"calls": [],
+"label": "validate rejects second default",
+"label_source": "name"
+},
+{
+"id": "themes/tests/test_backend_characterization.py::TestNCEThemeController.test_on_update_skips_publish_during_install",
+"file": "themes/tests/test_backend_characterization.py",
+"kind": "test",
+"name": "test_on_update_skips_publish_during_install",
+"qualname": "TestNCEThemeController.test_on_update_skips_publish_during_install",
+"sig": "(self)",
+"hash": "deef4e4fe3",
+"calls": [],
+"label": "on update skips publish during install",
+"label_source": "name"
+},
+{
+"id": "themes/tests/test_backend_characterization.py::TestNCEThemeController.test_on_update_skips_publish_during_migrate",
+"file": "themes/tests/test_backend_characterization.py",
+"kind": "test",
+"name": "test_on_update_skips_publish_during_migrate",
+"qualname": "TestNCEThemeController.test_on_update_skips_publish_during_migrate",
+"sig": "(self)",
+"hash": "e4f8be0bdc",
+"calls": [],
+"label": "on update skips publish during migrate",
+"label_source": "name"
+},
+{
+"id": "themes/tests/test_backend_characterization.py::TestNCEThemeController.test_on_update_publishes_when_active",
+"file": "themes/tests/test_backend_characterization.py",
+"kind": "test",
+"name": "test_on_update_publishes_when_active",
+"qualname": "TestNCEThemeController.test_on_update_publishes_when_active",
+"sig": "(self)",
+"hash": "e7451a3ba4",
+"calls": [],
+"label": "on update publishes when active",
+"label_source": "name"
+},
+{
+"id": "themes/tests/test_backend_characterization.py::TestNCEThemeController.test_on_trash_publishes_base_or_self_when_active",
+"file": "themes/tests/test_backend_characterization.py",
+"kind": "test",
+"name": "test_on_trash_publishes_base_or_self_when_active",
+"qualname": "TestNCEThemeController.test_on_trash_publishes_base_or_self_when_active",
+"sig": "(self)",
+"hash": "bdc9714df7",
+"calls": [],
+"label": "on trash publishes base or self when active",
+"label_source": "name"
+},
+{
+"id": "themes/tests/test_backend_characterization.py::TestNCEDeskThemeController.test_before_save_slug_from_theme_name_when_empty",
+"file": "themes/tests/test_backend_characterization.py",
+"kind": "test",
+"name": "test_before_save_slug_from_theme_name_when_empty",
+"qualname": "TestNCEDeskThemeController.test_before_save_slug_from_theme_name_when_empty",
+"sig": "(self)",
+"hash": "22b590f9d7",
+"calls": [],
+"label": "before save slug from theme name when empty",
+"label_source": "name"
+},
+{
+"id": "themes/tests/test_backend_characterization.py::TestNCEDeskThemeController.test_validate_rejects_second_default",
+"file": "themes/tests/test_backend_characterization.py",
+"kind": "test",
+"name": "test_validate_rejects_second_default",
+"qualname": "TestNCEDeskThemeController.test_validate_rejects_second_default",
+"sig": "(self)",
+"hash": "aed4fbe38c",
+"calls": [],
+"label": "validate rejects second default",
+"label_source": "name"
+},
+{
+"id": "themes/tests/test_backend_characterization.py::TestNCEDeskThemeController.test_validate_rejects_second_active",
+"file": "themes/tests/test_backend_characterization.py",
+"kind": "test",
+"name": "test_validate_rejects_second_active",
+"qualname": "TestNCEDeskThemeController.test_validate_rejects_second_active",
+"sig": "(self)",
+"hash": "f7494e1012",
+"calls": [],
+"label": "validate rejects second active",
+"label_source": "name"
+},
+{
+"id": "themes/tests/test_backend_characterization.py::TestNCEDeskThemeController.test_on_update_publishes_when_active",
+"file": "themes/tests/test_backend_characterization.py",
+"kind": "test",
+"name": "test_on_update_publishes_when_active",
+"qualname": "TestNCEDeskThemeController.test_on_update_publishes_when_active",
+"sig": "(self)",
+"hash": "73c5f60fc8",
+"calls": [],
+"label": "on update publishes when active",
+"label_source": "name"
+},
+{
+"id": "themes/tests/test_backend_characterization.py::TestNCEDeskThemeController.test_on_update_skips_publish_during_install",
+"file": "themes/tests/test_backend_characterization.py",
+"kind": "test",
+"name": "test_on_update_skips_publish_during_install",
+"qualname": "TestNCEDeskThemeController.test_on_update_skips_publish_during_install",
+"sig": "(self)",
+"hash": "1760beb8c8",
+"calls": [],
+"label": "on update skips publish during install",
+"label_source": "name"
+},
+{
+"id": "themes/tests/test_backend_characterization.py::TestNCEDeskThemeController.test_on_trash_publishes_base_or_self_when_active",
+"file": "themes/tests/test_backend_characterization.py",
+"kind": "test",
+"name": "test_on_trash_publishes_base_or_self_when_active",
+"qualname": "TestNCEDeskThemeController.test_on_trash_publishes_base_or_self_when_active",
+"sig": "(self)",
+"hash": "3fd466d38a",
+"calls": [],
+"label": "on trash publishes base or self when active",
+"label_source": "name"
+},
+{
+"id": "themes/tests/test_backend_characterization.py::TestNCEDeskThemeController.test_before_insert_copies_base_desk_theme_json",
+"file": "themes/tests/test_backend_characterization.py",
+"kind": "test",
+"name": "test_before_insert_copies_base_desk_theme_json",
+"qualname": "TestNCEDeskThemeController.test_before_insert_copies_base_desk_theme_json",
+"sig": "(self)",
+"hash": "aa9d660010",
+"calls": [],
+"label": "before insert copies base desk theme json",
+"label_source": "name"
+},
+{
+"id": "themes/tests/test_backend_characterization.py::TestSiteThemeConfigController.test_on_update_skips_during_install",
+"file": "themes/tests/test_backend_characterization.py",
+"kind": "test",
+"name": "test_on_update_skips_during_install",
+"qualname": "TestSiteThemeConfigController.test_on_update_skips_during_install",
+"sig": "(self)",
+"hash": "fcc8a79cf2",
+"calls": [],
+"label": "on update skips during install",
+"label_source": "name"
+},
+{
+"id": "themes/tests/test_backend_characterization.py::TestSiteThemeConfigController.test_validate_missing_base_theme",
+"file": "themes/tests/test_backend_characterization.py",
+"kind": "test",
+"name": "test_validate_missing_base_theme",
+"qualname": "TestSiteThemeConfigController.test_validate_missing_base_theme",
+"sig": "(self)",
+"hash": "af2f1b9fa4",
+"calls": [],
+"label": "validate missing base theme",
+"label_source": "name"
+},
+{
+"id": "themes/tests/test_backend_characterization.py::TestVueComponentValidate.test_table_header_bg_invalid_message",
+"file": "themes/tests/test_backend_characterization.py",
+"kind": "test",
+"name": "test_table_header_bg_invalid_message",
+"qualname": "TestVueComponentValidate.test_table_header_bg_invalid_message",
+"sig": "(self)",
+"hash": "78d82de1bc",
+"calls": [],
+"label": "table header bg invalid message",
+"label_source": "name"
+},
+{
+"id": "themes/tests/test_backend_characterization.py::TestVueComponentValidate.test_table_row_fg_type_invalid_message",
+"file": "themes/tests/test_backend_characterization.py",
+"kind": "test",
+"name": "test_table_row_fg_type_invalid_message",
+"qualname": "TestVueComponentValidate.test_table_row_fg_type_invalid_message",
+"sig": "(self)",
+"hash": "21d366816c",
+"calls": [],
+"label": "table row fg type invalid message",
+"label_source": "name"
+},
+{
+"id": "themes/tests/test_backend_characterization.py::TestVueComponentValidate.test_table_row_divider_class_invalid_message",
+"file": "themes/tests/test_backend_characterization.py",
+"kind": "test",
+"name": "test_table_row_divider_class_invalid_message",
+"qualname": "TestVueComponentValidate.test_table_row_divider_class_invalid_message",
+"sig": "(self)",
+"hash": "f975f1b195",
+"calls": [],
+"label": "table row divider class invalid message",
+"label_source": "name"
+},
+{
+"id": "themes/tests/test_backend_characterization.py::TestVueComponentValidate.test_table_col_divider_color_class_invalid_message",
+"file": "themes/tests/test_backend_characterization.py",
+"kind": "test",
+"name": "test_table_col_divider_color_class_invalid_message",
+"qualname": "TestVueComponentValidate.test_table_col_divider_color_class_invalid_message",
+"sig": "(self)",
+"hash": "5b31f49abb",
+"calls": [],
+"label": "table col divider color class invalid message",
+"label_source": "name"
+},
+{
+"id": "themes/tests/test_backend_characterization.py::TestVueComponentValidate.test_table_fields_valid_values_do_not_throw",
+"file": "themes/tests/test_backend_characterization.py",
+"kind": "test",
+"name": "test_table_fields_valid_values_do_not_throw",
+"qualname": "TestVueComponentValidate.test_table_fields_valid_values_do_not_throw",
+"sig": "(self)",
+"hash": "cebf118eeb",
+"calls": [],
+"label": "table fields valid values do not throw",
 "label_source": "name"
 },
 {
@@ -18326,7 +18969,7 @@
 "sig": "(row: dict) -> bool",
 "hash": "d586fe9ef7",
 "calls": [],
-"label": "Checks override_text_class matches the theme-text class pattern.",
+"label": "Checks whether a row has a non-empty override_text_class that matches TEXT_RE.",
 "label_source": "header"
 },
 {
@@ -18347,7 +18990,7 @@
 "themes/tests/test_component_css_writer.py::TestComponentCssWriter.test_border_width_and_colour",
 "themes/tests/test_component_css_writer.py::TestComponentCssWriter.test_invalid_bg_class_emits_nothing"
 ],
-"label": "Builds background, text, and border declarations for one element override row.",
+"label": "Builds CSS declaration lines for one element row; component_api preview_declarations uses it for live preview.",
 "label_source": "header"
 },
 {
@@ -18359,7 +19002,7 @@
 "sig": "(bg_cls: str, fg_type: str) -> list[str]",
 "hash": "8c4f4d4fa0",
 "calls": [],
-"label": "Background and foreground vars from a theme-bg class and mono or tonal fg.",
+"label": "Maps a theme background class and fg type to background-color and color var declarations for tables.",
 "label_source": "header"
 },
 {
@@ -18371,7 +19014,7 @@
 "sig": "(width_cls: str, color_cls: str, default_width_var: str, default_color_var: str) -> str | None",
 "hash": "5f2b8c61f4",
 "calls": [],
-"label": "Combines border width and colour classes into a single border shorthand.",
+"label": "Combines border width and color classes into one border shorthand or returns None when incomplete.",
 "label_source": "header"
 },
 {
@@ -18383,8 +19026,8 @@
 "sig": "(target: str) -> tuple[str, str] | None",
 "hash": "534894b44c",
 "calls": [],
-"label": "(strong, weak) selector prefixes for one theme_table_targets line.",
-"label_source": "docstring"
+"label": "Parses a theme_table_targets line into strong and weak selector prefixes for class or scope targets.",
+"label_source": "header"
 },
 {
 "id": "themes/utils/component_css_writer.py::theme_table_bundle_for",
@@ -18403,8 +19046,8 @@
 "themes/tests/test_component_css_writer.py::TestThemeTableBundle.test_missing_status_empty",
 "themes/tests/test_component_css_writer.py::TestThemeTableBundle.test_scope_target"
 ],
-"label": "The theme-table rules, aimed at this component's tables that do not carry theme-table.",
-"label_source": "docstring"
+"label": "Emits full theme-table CSS bundle for a Present component from theme_table_targets when tables lack theme-table.",
+"label_source": "header"
 },
 {
 "id": "themes/utils/component_css_writer.py::_table_prefix",
@@ -18415,7 +19058,7 @@
 "sig": "(parent: dict) -> str | None",
 "hash": "fd12ba0b61",
 "calls": [],
-"label": "Builds scoped table selector prefix from table_selector and optional scope class.",
+"label": "Builds scoped CSS selector prefix from table_selector and optional table_scope_class on the parent.",
 "label_source": "header"
 },
 {
@@ -18438,8 +19081,8 @@
 "themes/tests/test_component_css_writer.py::TestTableCssWriter.test_row_divider_width_and_colour",
 "themes/tests/test_component_css_writer.py::TestTableCssWriter.test_row_divider_width_only_default_colour"
 ],
-"label": "Emits thead, tbody stripe, and divider rules for a component table config.",
-"label_source": "header-stale"
+"label": "Generates per-component table header, row, alt, and divider rules; component_api preview_design_table calls it.",
+"label_source": "header"
 },
 {
 "id": "themes/utils/component_css_writer.py::generate_component_css",
@@ -18460,7 +19103,7 @@
 "themes/tests/test_component_css_writer.py::TestComponentCssWriter.test_keep_default_skipped",
 "themes/tests/test_component_css_writer.py::TestComponentCssWriter.test_missing_skipped"
 ],
-"label": "Aggregates eligible element rows into published override rule blocks.",
+"label": "Aggregates eligible Present element overrides into triplicated-selector rule blocks plus the generated header.",
 "label_source": "header"
 },
 {
@@ -18477,8 +19120,11 @@
 "themes/utils/component_css_writer.py::theme_table_bundle_for",
 "themes/utils/css_publish.py::write_published_css"
 ],
-"label": "Loads all Vue Component rows, writes nce_component_overrides.css, clears asset cache.",
-"label_source": "header-stale"
+"tested_by": [
+"themes/tests/test_backend_characterization.py::TestComponentPublishTail.test_publish_component_css_header_only_when_no_rows"
+],
+"label": "Loads all Vue Component records, merges element, bundle, and table CSS, writes file via css_publish, clears Frappe cache.",
+"label_source": "header"
 },
 {
 "id": "themes/utils/component_scan.py::_is_generic_class",
@@ -18489,8 +19135,8 @@
 "sig": "(name: str) -> bool",
 "hash": "312cd9e7da",
 "calls": [],
-"label": "",
-"label_source": "none"
+"label": "Flags table-related class names that are too generic to become theme_table class targets.",
+"label_source": "header"
 },
 {
 "id": "themes/utils/component_scan.py::iter_vue_files",
@@ -18504,7 +19150,7 @@
 "tested_by": [
 "themes/tests/test_component_scan.py::TestComponentScan.test_iter_vue_files"
 ],
-"label": "Lists .vue paths under an app root, skipping node_modules, dist, and other SKIP_DIRS; rescan_all walks installed apps.",
+"label": "Walks a directory tree skipping SKIP_DIRS and returns sorted .vue paths for rescan_all.",
 "label_source": "header"
 },
 {
@@ -18516,7 +19162,7 @@
 "sig": "(source: str) -> tuple[str, int]",
 "hash": "580340c3e3",
 "calls": [],
-"label": "Returns inner template HTML and the line number where it starts for accurate element line reporting.",
+"label": "Returns template inner HTML and line offset after the opening template tag.",
 "label_source": "header"
 },
 {
@@ -18528,7 +19174,7 @@
 "sig": "(source: str) -> str",
 "hash": "03ff5b53f1",
 "calls": [],
-"label": "Pulls the Vue Component purpose string from a leading comment JSON purpose field or first comment line.",
+"label": "Reads purpose from HTML comment JSON or first comment line for Vue Component summary text.",
 "label_source": "header"
 },
 {
@@ -18540,7 +19186,7 @@
 "sig": "(source: str) -> str",
 "hash": "d47e217493",
 "calls": [],
-"label": "Short SHA1 digest of full file text stored on Vue Component records to detect source changes.",
+"label": "Short SHA-1 digest of file source for change detection on Vue Component records.",
 "label_source": "header"
 },
 {
@@ -18552,7 +19198,7 @@
 "sig": "(name: str) -> str",
 "hash": "6521ce8ae5",
 "calls": [],
-"label": "Turns kebab-case tag names into PascalCase child component names for uses_components and summaries.",
+"label": "Converts tag names to PascalCase for uses_components and component_summary element nouns.",
 "label_source": "header"
 },
 {
@@ -18564,7 +19210,7 @@
 "sig": "(tokens: list[str]) -> str",
 "hash": "1c2dc6f467",
 "calls": [],
-"label": "Chooses the rightmost class token that matches SELECTOR_RE and is not theme- or Tailwind utility-like.",
+"label": "Picks the best non-theme, non-utility class token as the element selector_class.",
 "label_source": "header"
 },
 {
@@ -18581,7 +19227,7 @@
 "themes/tests/test_component_scan.py::TestComponentScan.test_inherit_table_usage_chain",
 "themes/tests/test_component_scan.py::TestComponentScan.test_inherit_table_usage_direct"
 ],
-"label": "Copies a child table_selector onto parents without owns_table via uses_components until stable; refresh and rescan_all.",
+"label": "Copies child table_selector into parents without owns_table along uses_components until stable.",
 "label_source": "header"
 },
 {
@@ -18600,8 +19246,8 @@
 "themes/tests/test_component_scan.py::TestComponentScan.test_mark_roots_newline_uses",
 "themes/tests/test_component_scan.py::TestComponentScan.test_mark_roots_shared_child"
 ],
-"label": "Mutates each scan, setting is_root to 1 or 0.",
-"label_source": "docstring"
+"label": "Sets is_root on each scan for Design Mode listing from same-app component usage edges.",
+"label_source": "header"
 },
 {
 "id": "themes/utils/component_scan.py::_TemplateParser",
@@ -18615,8 +19261,8 @@
 "HTMLParser"
 ],
 "calls": [],
-"label": "HTMLParser subclass that accumulates themed element rows, table flags, root_class, and child component names from a template.",
-"label_source": "header-stale"
+"label": "HTMLParser that walks Vue templates collecting themed elements, tables, and component usage.",
+"label_source": "header"
 },
 {
 "id": "themes/utils/component_scan.py::_TemplateParser.__init__",
@@ -18627,8 +19273,8 @@
 "sig": "(self, line_offset: int) -> None",
 "hash": "f87a68ad28",
 "calls": [],
-"label": "Stores template line_offset and empty collections for elements, uses_components, and table fields before feed.",
-"label_source": "header-stale"
+"label": "Initializes parser state for elements, table flags, root_class, and theme_table_targets with line offset.",
+"label_source": "header"
 },
 {
 "id": "themes/utils/component_scan.py::_TemplateParser.handle_starttag",
@@ -18641,7 +19287,7 @@
 "calls": [
 "themes/utils/component_scan.py::_TemplateParser._on_tag"
 ],
-"label": "Forwards normal opening tags into _on_tag for scanning.",
+"label": "Delegates opening tags to _on_tag for scan_vue_source parsing.",
 "label_source": "header"
 },
 {
@@ -18655,7 +19301,7 @@
 "calls": [
 "themes/utils/component_scan.py::_TemplateParser._on_tag"
 ],
-"label": "Forwards self-closing tags into _on_tag so void elements are scanned.",
+"label": "Delegates self-closing tags to _on_tag like ordinary start tags.",
 "label_source": "header"
 },
 {
@@ -18671,8 +19317,8 @@
 "themes/utils/component_scan.py::_selector_from_class_tokens",
 "themes/utils/component_scan.py::kebab_to_pascal"
 ],
-"label": "Emits element dicts for theme colour bindings, records table ownership, root_class, and non-builtin child tags.",
-"label_source": "header-stale"
+"label": "Records themed colour elements, table ownership, theme-table targets, and child component tags per tag.",
+"label_source": "header"
 },
 {
 "id": "themes/utils/component_scan.py::scan_vue_source",
@@ -18695,8 +19341,8 @@
 "themes/tests/test_component_scan.py::TestThemeTableTargets.test_classed_table",
 "themes/tests/test_component_scan.py::TestThemeTableTargets.test_generic_table_classes_scope"
 ],
-"label": "Runs extract_template and _TemplateParser to return elements, uses_components, purpose, and table metadata from a string.",
-"label_source": "header-stale"
+"label": "Parses one .vue source string into elements, usage, purpose, and table metadata dict.",
+"label_source": "header"
 },
 {
 "id": "themes/utils/component_scan.py::scan_vue_file",
@@ -18717,7 +19363,7 @@
 "themes/tests/test_component_scan.py::TestComponentScan.test_no_selector",
 "themes/tests/test_component_scan.py::TestComponentScan.test_no_template"
 ],
-"label": "Reads a .vue path and merges scan_vue_source with component_name and source_hash for API rescan and refresh.",
+"label": "Reads a path and returns scan_vue_source fields plus component_name and source_hash for refresh/rescan.",
 "label_source": "header"
 },
 {
@@ -18804,7 +19450,8 @@
 ],
 "tested_by": [
 "themes/tests/test_component_summary.py::TestBuildSummary.test_build_summary_deterministic",
-"themes/tests/test_component_summary.py::TestBuildSummary.test_build_summary_exact"
+"themes/tests/test_component_summary.py::TestBuildSummary.test_build_summary_exact",
+"themes/tests/test_backend_characterization.py::TestVueComponentValidate.test_table_fields_valid_values_do_not_throw"
 ],
 "label": "Assembles the Vue Component summary field; runs on validate and after API summary refresh.",
 "label_source": "header"
@@ -18878,7 +19525,8 @@
 "themes/utils/component_sync.py::group_key"
 ],
 "tested_by": [
-"themes/tests/test_component_sync.py::TestComponentSync.test_normalise_groups_copies_first_row"
+"themes/tests/test_component_sync.py::TestComponentSync.test_normalise_groups_copies_first_row",
+"themes/tests/test_backend_characterization.py::TestVueComponentValidate.test_table_fields_valid_values_do_not_throw"
 ],
 "label": "Copies keep_default and override fields from each group's canonical row.",
 "label_source": "header"
@@ -19059,6 +19707,9 @@
 "hash": "c1e022d229",
 "calls": [
 "themes/utils/css_writer.py::_font_face_blocks"
+],
+"tested_by": [
+"themes/tests/test_backend_characterization.py::TestWebPublishTail.test_publish_theme_writes_css_fonts_and_hash"
 ],
 "label": "Build fonts.css with every curated font for the Theme Editor picker",
 "label_source": "header"
@@ -19459,6 +20110,9 @@
 "themes/utils/css_writer.py::_emit_typography_classes",
 "themes/utils/css_writer.py::_emit_var_block"
 ],
+"tested_by": [
+"themes/tests/test_backend_characterization.py::TestWebPublishTail.test_publish_theme_writes_css_fonts_and_hash"
+],
 "label": "Build site CSS with the Default theme on :root and Active themes scoped by slug",
 "label_source": "header"
 },
@@ -19491,6 +20145,13 @@
 "themes/utils/site_theme_config_helpers.py::get_site_base_theme_name",
 "themes/utils/site_theme_config_helpers.py::get_site_default_theme_name",
 "themes/utils/site_theme_config_helpers.py::set_site_base_theme_name"
+],
+"tested_by": [
+"themes/tests/test_backend_characterization.py::TestNCEThemeController.test_on_trash_publishes_base_or_self_when_active",
+"themes/tests/test_backend_characterization.py::TestNCEThemeController.test_on_update_publishes_when_active",
+"themes/tests/test_backend_characterization.py::TestNCEThemeController.test_on_update_skips_publish_during_install",
+"themes/tests/test_backend_characterization.py::TestNCEThemeController.test_on_update_skips_publish_during_migrate",
+"themes/tests/test_backend_characterization.py::TestSiteThemeConfigController.test_on_update_skips_during_install"
 ],
 "label": "Rebuild and publish nce_theme.css and fonts.css, then store the CSS hash and clear caches",
 "label_source": "header"
@@ -19532,8 +20193,8 @@
 "tested_by": [
 "themes/tests/test_design_mode.py::TestDesignMode.test_parse_protected"
 ],
-"label": "",
-"label_source": "none"
+"label": "Splits multiline protected-class text into a set; component_api _protected_classes uses it for Design Mode.",
+"label_source": "header"
 },
 {
 "id": "themes/utils/design_mode.py::build_selector_map",
@@ -19548,8 +20209,8 @@
 "themes/tests/test_design_mode.py::TestDesignMode.test_build_selector_map_groups_and_sorts",
 "themes/tests/test_design_mode.py::TestDesignMode.test_build_selector_map_protected_and_dynamic"
 ],
-"label": "Group element rows by selector_class for the page script.",
-"label_source": "docstring"
+"label": "Groups element rows by selector_class with override values and component list for get_design_mode_map.",
+"label_source": "header"
 },
 {
 "id": "themes/utils/design_mode.py::clean_table_values",
@@ -19564,8 +20225,8 @@
 "themes/tests/test_design_mode.py::TestDesignMode.test_clean_table_values",
 "themes/tests/test_design_mode.py::TestDesignMode.test_clean_table_values_none"
 ],
-"label": "Keep only table fields; strip strings; empty fg type becomes mono.",
-"label_source": "docstring"
+"label": "Strips and filters table override fields; empty fg types default to mono for preview and save_design_table.",
+"label_source": "header"
 },
 {
 "id": "themes/utils/design_mode.py::build_table_map",
@@ -19580,8 +20241,8 @@
 "themes/tests/test_design_mode.py::TestDesignMode.test_build_table_map_groups_and_mono_default",
 "themes/tests/test_design_mode.py::TestDesignMode.test_build_table_map_skips_bad_selector"
 ],
-"label": "Map table_selector → owning component, for components with owns_table=1.",
-"label_source": "docstring"
+"label": "Maps each owned table_selector to component name, scope, and table colour fields for get_design_mode_map.",
+"label_source": "header"
 },
 {
 "id": "themes/utils/desk_css_writer.py::_desk_font_stack",
@@ -19672,6 +20333,10 @@
 "themes/utils/desk_css_writer.py::_emit_desk_var_block",
 "themes/utils/desk_css_writer.py::_load_desk_payload"
 ],
+"tested_by": [
+"themes/tests/test_backend_characterization.py::TestDeskPublishTail.test_publish_desk_theme_writes_css_hash_and_updates_config",
+"themes/tests/test_backend_characterization.py::TestDeskPublishTail.test_read_desk_css_hash_from_sidecar_after_publish"
+],
 "label": "Merges base and active desk payloads into font faces, vars, and DESK_CSS_RULES.",
 "label_source": "header"
 },
@@ -19712,6 +20377,10 @@
 "sig": "() -> str | None",
 "hash": "b307b10baa",
 "calls": [],
+"tested_by": [
+"themes/tests/test_backend_characterization.py::TestDeskPublishTail.test_read_desk_css_hash_from_sidecar_after_publish",
+"themes/tests/test_backend_characterization.py::TestDeskPublishTail.test_read_desk_css_hash_none_when_sidecar_missing"
+],
 "label": "Reads the eight-character hash from nce_desk_theme.css.hash on disk.",
 "label_source": "header"
 },
@@ -19728,6 +20397,13 @@
 "themes/utils/desk_css_writer.py::generate_desk_css",
 "themes/utils/site_theme_config_helpers.py::get_site_base_desk_theme_name"
 ],
+"tested_by": [
+"themes/tests/test_backend_characterization.py::TestDeskPublishTail.test_publish_desk_theme_writes_css_hash_and_updates_config",
+"themes/tests/test_backend_characterization.py::TestDeskPublishTail.test_read_desk_css_hash_from_sidecar_after_publish",
+"themes/tests/test_backend_characterization.py::TestNCEDeskThemeController.test_on_trash_publishes_base_or_self_when_active",
+"themes/tests/test_backend_characterization.py::TestNCEDeskThemeController.test_on_update_publishes_when_active",
+"themes/tests/test_backend_characterization.py::TestNCEDeskThemeController.test_on_update_skips_publish_during_install"
+],
 "label": "Regenerates desk CSS from base plus Active themes and updates desk_css_hash.",
 "label_source": "header"
 },
@@ -19740,6 +20416,13 @@
 "sig": "() -> Optional[str]",
 "hash": "2a36788286",
 "calls": [],
+"tested_by": [
+"themes/tests/test_backend_characterization.py::TestNCEThemeController.test_before_insert_copies_base_theme_json",
+"themes/tests/test_backend_characterization.py::TestNCEThemeController.test_before_insert_empty_json_when_no_base",
+"themes/tests/test_backend_characterization.py::TestNCEThemeController.test_on_trash_publishes_base_or_self_when_active",
+"themes/tests/test_backend_characterization.py::TestNCEThemeController.test_on_update_publishes_when_active",
+"themes/tests/test_backend_characterization.py::TestSiteThemeConfigController.test_validate_missing_base_theme"
+],
 "label": "Get site base theme name from Site Theme Config",
 "label_source": "generated",
 "label_hash": "2a36788286"
@@ -19755,6 +20438,9 @@
 "calls": [
 "themes/utils/site_theme_config_helpers.py::get_site_base_theme_name"
 ],
+"tested_by": [
+"themes/tests/test_backend_characterization.py::TestWebPublishTail.test_publish_theme_writes_css_fonts_and_hash"
+],
 "label": "Get site default theme name from NCE Theme is_default flag",
 "label_source": "generated",
 "label_hash": "aa62173cc3"
@@ -19768,6 +20454,9 @@
 "sig": "(theme_name: str) -> None",
 "hash": "bc48613ece",
 "calls": [],
+"tested_by": [
+"themes/tests/test_backend_characterization.py::TestWebPublishTail.test_publish_theme_writes_css_fonts_and_hash"
+],
 "label": "Persist base theme name to Site Theme Config single",
 "label_source": "generated",
 "label_hash": "bc48613ece"
@@ -19794,6 +20483,13 @@
 "sig": "() -> Optional[str]",
 "hash": "1bd4a0619b",
 "calls": [],
+"tested_by": [
+"themes/tests/test_backend_characterization.py::TestDeskPublishTail.test_publish_desk_theme_writes_css_hash_and_updates_config",
+"themes/tests/test_backend_characterization.py::TestDeskPublishTail.test_read_desk_css_hash_from_sidecar_after_publish",
+"themes/tests/test_backend_characterization.py::TestNCEDeskThemeController.test_before_insert_copies_base_desk_theme_json",
+"themes/tests/test_backend_characterization.py::TestNCEDeskThemeController.test_on_trash_publishes_base_or_self_when_active",
+"themes/tests/test_backend_characterization.py::TestNCEDeskThemeController.test_on_update_publishes_when_active"
+],
 "label": "Get site base desk theme name from Site Theme Config",
 "label_source": "generated",
 "label_hash": "1bd4a0619b"
@@ -20549,6 +21245,9 @@
 "wired_by": [
 "themes/utils/theme_family.py"
 ],
+"tested_by": [
+"themes/tests/test_backend_characterization.py::TestBundleOutput.test_web_bundle_writes_json_and_default_theme_py"
+],
 "label": "Bundle web theme payload for app distribution",
 "label_source": "generated",
 "label_hash": "3d0101a946"
@@ -20566,6 +21265,9 @@
 ],
 "wired_by": [
 "themes/utils/theme_family.py"
+],
+"tested_by": [
+"themes/tests/test_backend_characterization.py::TestBundleOutput.test_desk_bundle_writes_json_and_default_desk_theme_py"
 ],
 "label": "Bundle desk theme payload for app distribution",
 "label_source": "generated",

@@ -642,34 +642,49 @@
    }
   },
   "frontend/src/App.vue": {
-   "body_hash": "2be82c7def0fecf6964b5ad77ca9de4ea993a5facaf0300842f99581e6846e21",
+   "body_hash": "559426917eb608d97289f8b512cf6767167200a476bed6f536a890f9cc8241a9",
    "header": {
     "format": 1,
     "gotchas": [
-     "Standalone pages (e.g. preview) render without the shell when route.meta.standalone is set."
+     "Routes with meta.standalone render only router-view without the sidebar shell."
     ],
     "keywords": [
-     "navSections",
-     "openPreviewPopup",
-     "isStandalone",
      "themes-app",
-     "openVueComponents",
-     "vueComponentsErrorMessage",
-     "theme-settings",
-     "desk-themes",
-     "route.meta.standalone"
+     "navSections",
+     "designMode",
+     "toggleDesignMode",
+     "callApi",
+     "openPreviewPopup",
+     "Theme Editor",
+     "Desk Themes",
+     "get_design_mode_status",
+     "router-view",
+     "Vue Implementations",
+     "sidebar navigation"
     ],
-    "purpose": "Theme editor shell with sidebar links for web and desk theme pages.",
-    "read_when": "When changing Themes app layout, nav sections, preview popups, or Apply to Vue Files."
+    "purpose": "Vue root shell with sidebar nav for web and desk theme routes, preview popups, and the Design Mode toggle.",
+    "read_when": "Open when changing Themes app layout, nav links, standalone preview routing, or Design Mode API wiring."
    },
    "labels": {
     "frontend/src/App.vue::App": {
-     "body_hash": "289ba17c47",
-     "label": "Root layout with sidebar nav and main router-view; standalone routes skip the shell."
+     "body_hash": "debf2e21e4",
+     "label": "Root layout with sidebar sections and main router-view, skipped for standalone preview routes."
+    },
+    "frontend/src/App.vue::callApi": {
+     "body_hash": "95c7502bc1",
+     "label": "POSTs to themes.component_api Frappe methods with CSRF and throws when the response reports an error."
+    },
+    "frontend/src/App.vue::loadDesignMode": {
+     "body_hash": "fd845d0ff3",
+     "label": "On mount reads Design Mode enabled state via get_design_mode_status for the sidebar switch."
     },
     "frontend/src/App.vue::openVueComponents": {
      "body_hash": "e2a7759be0",
      "label": "POSTs themes.component_api.open_vue_components and sends a new tab to the returned Desk URL."
+    },
+    "frontend/src/App.vue::toggleDesignMode": {
+     "body_hash": "0d10b51885",
+     "label": "Calls set_design_mode_enabled and shows scan counts, off message, or errors in the Vue Implementations toggle."
     },
     "frontend/src/App.vue::vueComponentsErrorMessage": {
      "body_hash": "2e613852ac",
@@ -1084,6 +1099,191 @@
     ],
     "purpose": "Shared theme editor state for list, load, save, rename, delete, and dirty checking.",
     "read_when": "When changing theme load, save, dirty baseline, or default-theme detection."
+   }
+  },
+  "frontend/src/design-mode/DesignDialog.vue": {
+   "body_hash": "e2b44cdfebd26cba3a4aa4acd0788e8b122fe8720545abc7b63b1d4865d0dfbc",
+   "header": {
+    "format": 1,
+    "gotchas": [
+     "With Keep default on, the page shows theme colours only after Save."
+    ],
+    "keywords": [
+     "DesignDialog",
+     "DialogModel",
+     "DialogHandlers",
+     "PickKind",
+     "override_bg_class",
+     "TABLE_BG_ROWS",
+     "TABLE_LINE_ROWS",
+     "BORDER_WIDTH_OPTIONS",
+     "keep_default",
+     "handlers.pick",
+     "dd-chip",
+     "themeDefaults"
+    ],
+    "purpose": "Floating Design Mode dialog to edit element or table theme class overrides with pickers, revert, and save.",
+    "read_when": "Open when changing override colour chips, table row or line fields, drag positioning, or dialog footer actions."
+   },
+   "labels": {
+    "frontend/src/design-mode/DesignDialog.vue::BORDER_WIDTH_OPTIONS": {
+     "body_hash": "a0b6b6e876",
+     "label": "Select values for thin, normal, or strong theme border width classes plus empty theme default."
+    },
+    "frontend/src/design-mode/DesignDialog.vue::DesignDialog": {
+     "body_hash": "d3f0812fc0",
+     "label": "Presents element or table override UI mounted from nceDesignDialog with draggable header and handler-driven actions."
+    },
+    "frontend/src/design-mode/DesignDialog.vue::DialogHandlers": {
+     "body_hash": "7ebc9bd436",
+     "label": "Callback contract for pick, field change, save, cancel, revert, open record, and part actions."
+    },
+    "frontend/src/design-mode/DesignDialog.vue::DialogModel": {
+     "body_hash": "b16d9effb2",
+     "label": "Props shape for title, draft fields, theme defaults, position, and saving state from the opener."
+    },
+    "frontend/src/design-mode/DesignDialog.vue::PickKind": {
+     "body_hash": "f0c9452f2e",
+     "label": "Names bg, text, or border for theme class pick buttons in the dialog."
+    },
+    "frontend/src/design-mode/DesignDialog.vue::TABLE_BG_ROWS": {
+     "body_hash": "eaa6e64f19",
+     "label": "Maps table header, row, and alternate row labels to background and foreground draft fields."
+    },
+    "frontend/src/design-mode/DesignDialog.vue::TABLE_LINE_ROWS": {
+     "body_hash": "a00411cabd",
+     "label": "Maps header underline and divider labels to width and colour theme class fields."
+    },
+    "frontend/src/design-mode/DesignDialog.vue::bgClassText": {
+     "body_hash": "81eed3538d",
+     "label": "Shows background class name with tonal suffix when foreground type is tonal."
+    },
+    "frontend/src/design-mode/DesignDialog.vue::clampPosition": {
+     "body_hash": "6a27df5b00",
+     "label": "Keeps the dialog box inside the viewport with an eight pixel margin."
+    },
+    "frontend/src/design-mode/DesignDialog.vue::draftStr": {
+     "body_hash": "5c9bbe703b",
+     "label": "Reads a draft model field as a display string, treating null as empty."
+    },
+    "frontend/src/design-mode/DesignDialog.vue::onKeep": {
+     "body_hash": "b46d85491a",
+     "label": "Sets draft keep_default from the checkbox and notifies handlers.changed."
+    },
+    "frontend/src/design-mode/DesignDialog.vue::onMove": {
+     "body_hash": "c9216ad812",
+     "label": "Updates dialog position while the user drags the header."
+    },
+    "frontend/src/design-mode/DesignDialog.vue::onUp": {
+     "body_hash": "e796aecff4",
+     "label": "Ends header drag by removing window mousemove and mouseup listeners."
+    },
+    "frontend/src/design-mode/DesignDialog.vue::startDrag": {
+     "body_hash": "99428f8309",
+     "label": "Starts header drag on primary button and attaches capture-phase move listeners."
+    },
+    "frontend/src/design-mode/DesignDialog.vue::themeCss": {
+     "body_hash": "1c86ff6a9e",
+     "label": "Returns resolved CSS colour from theme defaults for chip preview when draft is empty."
+    },
+    "frontend/src/design-mode/DesignDialog.vue::themeLabel": {
+     "body_hash": "976a6577aa",
+     "label": "Returns the theme default human label for a field from model.themeDefaults."
+    },
+    "frontend/src/design-mode/DesignDialog.vue::themeText": {
+     "body_hash": "729eec7ea0",
+     "label": "Formats chip caption as Theme plus label or Theme default when no override class."
+    },
+    "frontend/src/design-mode/DesignDialog.vue::widthOptionLabel": {
+     "body_hash": "489d602ffc",
+     "label": "Labels border width options with theme default wording when value is empty."
+    }
+   }
+  },
+  "frontend/src/design-mode/design-dialog.css": {
+   "body_hash": "f0370c10fc3be03417b6dced719a39ce3c7dfc6797753dea548702e4406397bd",
+   "header": {
+    "format": 1,
+    "gotchas": [
+     ":host uses all initial so inherited page styles do not leak into the dialog shadow tree."
+    ],
+    "keywords": [
+     ":host",
+     ".dd",
+     "nce-color-surface",
+     "dd-chip",
+     "dd-head",
+     "dd-foot",
+     "dd-btn-primary",
+     "shadow dialog",
+     "theme tokens"
+    ],
+    "purpose": "Styles the Design Mode dialog inside a shadow root using dd classes and NCE colour variable fallbacks.",
+    "read_when": "Open when adjusting floating dialog layout, chips, buttons, or host isolation for DesignDialog."
+   }
+  },
+  "frontend/src/design-mode/index.ts": {
+   "body_hash": "8b2f76774b4f1e4adb0b2889d8bb7f2c0299abe03d814fe18a3037c56607293a",
+   "header": {
+    "format": 1,
+    "gotchas": [
+     "Host uses pointer-events none with stopPropagation on listed events so clicks do not reach the page behind."
+    ],
+    "keywords": [
+     "nceDesignDialog",
+     "attachShadow",
+     "design-dialog.css",
+     "themeCssHref",
+     "nce_theme",
+     "DesignDialogOpenOptions",
+     "STOP",
+     "nce-design-dialog-host",
+     "createApp"
+    ],
+    "purpose": "Mounts DesignDialog in an isolated shadow root and exposes window.nceDesignDialog open, close, and isOpen.",
+    "read_when": "Open when wiring Design Mode dialog hosting, theme CSS link injection, or the global nceDesignDialog API."
+   },
+   "labels": {
+    "frontend/src/design-mode/index.ts::DesignDialogHandle": {
+     "body_hash": "22d7fd75d3",
+     "label": "Return value exposing live draft, setSaving, close, and the fixed host element."
+    },
+    "frontend/src/design-mode/index.ts::DesignDialogHandlers": {
+     "body_hash": "9870338703",
+     "label": "Exported handler callbacks the host page implements for pick, save, and navigation actions."
+    },
+    "frontend/src/design-mode/index.ts::DesignDialogOpenOptions": {
+     "body_hash": "ae9f749d96",
+     "label": "Options for opening the dialog including kind, draft, position, notes, and handlers."
+    },
+    "frontend/src/design-mode/index.ts::PickKind": {
+     "body_hash": "f0c9452f2e",
+     "label": "Exported picker kind union matching DesignDialog bg, text, and border picks."
+    },
+    "frontend/src/design-mode/index.ts::STOP": {
+     "body_hash": "39cf5c989e",
+     "label": "Event names stopped on the host so pointer and keyboard input does not bubble to Frappe."
+    },
+    "frontend/src/design-mode/index.ts::Window": {
+     "body_hash": "442343c3a6",
+     "label": "Augments Window with optional nceDesignDialog pointing at the default exported API."
+    },
+    "frontend/src/design-mode/index.ts::close": {
+     "body_hash": "d1ad8b93ab",
+     "label": "Unmounts the Vue app and removes the design dialog host from the DOM."
+    },
+    "frontend/src/design-mode/index.ts::isOpen": {
+     "body_hash": "a8f73c330e",
+     "label": "Reports whether a design dialog Vue app is currently mounted."
+    },
+    "frontend/src/design-mode/index.ts::open": {
+     "body_hash": "be754d2138",
+     "label": "Creates shadow host, injects theme link and inline CSS, mounts DesignDialog, returns handle."
+    },
+    "frontend/src/design-mode/index.ts::themeCssHref": {
+     "body_hash": "4a07062d33",
+     "label": "Finds nce_theme stylesheet link on the page or falls back to assets themes CSS path."
+    }
    }
   },
   "frontend/src/index.css": {
@@ -2071,20 +2271,45 @@
    }
   },
   "frontend/src/widget/adapters/standalone-adapter.ts": {
-   "body_hash": "242bccf0382b243d7cbba70eddf4abea762ba2b3f4b4aebc312eb53ca8bb4e64",
+   "body_hash": "daa719dc263492bba6176535e2101e19a4be5beea546618321fb29c663f74c91",
    "header": {
     "format": 1,
     "gotchas": [],
     "keywords": [
      "openStandaloneThemeSwatchPicker",
+     "mountStandaloneThemeSwatchPicker",
+     "themeSwatchPicker",
      "themeFieldEl",
      "valueFieldEl",
+     "fieldValue",
      "setFieldValue",
-     "themeSwatchPicker",
-     "dispatchEvent"
+     "ThemeSwatchPickerCoreOpts",
+     "theme-swatch-picker-core"
     ],
-    "purpose": "Standalone adapter that opens the theme swatch picker on plain DOM theme and value fields.",
-    "read_when": "When changing how a non-Desk page reads and writes theme swatch fields."
+    "purpose": "Standalone adapter that opens the theme swatch picker from arbitrary DOM fields and mounts window.themeSwatchPicker.",
+    "read_when": "Open when integrating swatch picker outside Frappe forms or reading theme and value from HTMLElement targets."
+   },
+   "labels": {
+    "frontend/src/widget/adapters/standalone-adapter.ts::StandaloneThemeSwatchPickerOpts": {
+     "body_hash": "495324bbbb",
+     "label": "Options naming theme and value elements plus optional onClose for standalone picker open."
+    },
+    "frontend/src/widget/adapters/standalone-adapter.ts::fieldValue": {
+     "body_hash": "1a76782176",
+     "label": "Reads current theme slug or class from an input, select, or element text content."
+    },
+    "frontend/src/widget/adapters/standalone-adapter.ts::mountStandaloneThemeSwatchPicker": {
+     "body_hash": "70f40a5be2",
+     "label": "Registers open, openCore, close, and isOpen on window.themeSwatchPicker for non-desk pages."
+    },
+    "frontend/src/widget/adapters/standalone-adapter.ts::openStandaloneThemeSwatchPicker": {
+     "body_hash": "b3fe5c5045",
+     "label": "Opens theme swatch picker core using get and set callbacks bound to the supplied DOM fields."
+    },
+    "frontend/src/widget/adapters/standalone-adapter.ts::setFieldValue": {
+     "body_hash": "002a075721",
+     "label": "Writes picked class to inputs with input and change events or sets text on other elements."
+    }
    }
   },
   "frontend/src/widget/blocked-dialog.ts": {
@@ -2146,20 +2371,36 @@
    }
   },
   "frontend/src/widget/index.ts": {
-   "body_hash": "d632d207f92743115f7cff7736c9ce6f8536a3a7386443fc3f7423adac953b8a",
+   "body_hash": "d598722af76a0231c23641189efab9dba3c3fcb5636cbc2719b1444c5e3c336b",
    "header": {
     "format": 1,
     "gotchas": [],
     "keywords": [
+     "themeSwatchPicker",
      "mountStandaloneThemeSwatchPicker",
      "mountDeskThemeSwatchPicker",
-     "themeSwatchPicker",
-     "parseThemeClass",
+     "openStandaloneThemeSwatchPicker",
      "composeThemeClass",
-     "isOpen"
+     "parseThemeClass",
+     "theme-swatch-picker-core",
+     "frappe.ui",
+     "window",
+     "swatch picker API",
+     "desk adapter",
+     "standalone adapter"
     ],
-    "purpose": "Widget entry that exports the swatch picker API and mounts it on window and frappe.ui.",
-    "read_when": "When changing what the theme swatch picker bundle exports or mounts on window."
+    "purpose": "Widget entry that exports the theme swatch picker API and mounts it on window and frappe.ui.",
+    "read_when": "Integrating or calling the swatch picker from Desk scripts, standalone pages, or bundled widget builds."
+   },
+   "labels": {
+    "frontend/src/widget/index.ts::Window": {
+     "body_hash": "329a137a32",
+     "label": "Extends Window with optional themeSwatchPicker and frappe.ui typings used at mount time."
+    },
+    "frontend/src/widget/index.ts::api": {
+     "body_hash": "03b9b8678b",
+     "label": "Default browser API object: standalone open, core modal open/close, and theme class parse/compose for window.themeSwatchPicker."
+    }
    }
   },
   "frontend/src/widget/theme-swatch-picker-core.ts": {
@@ -2241,6 +2482,27 @@
     ],
     "purpose": "Vite build for the theme editor frontend, including the Lucide icon stub plugin.",
     "read_when": "When changing the frontend dev server, output paths, or icon import stubs."
+   }
+  },
+  "frontend/vite.design.config.js": {
+   "body_hash": "859144611265fff9d09d7ffd65b35013484761fc52392996b734612cb2410bcb",
+   "header": {
+    "format": 1,
+    "gotchas": [],
+    "keywords": [
+     "nceDesignDialog",
+     "design-dialog.js",
+     "design-mode",
+     "defineConfig",
+     "themes/public/design_mode",
+     "IIFE",
+     "plugin-vue",
+     "cssCodeSplit",
+     "lib build",
+     "Vite"
+    ],
+    "purpose": "Vite config that builds the Design Mode dialog as one self-contained IIFE with Vue bundled in.",
+    "read_when": "Changing design-dialog.js output path, library name nceDesignDialog, or the design-mode entry build."
    }
   },
   "frontend/vite.widget.config.js": {
@@ -2335,141 +2597,214 @@
    }
   },
   "themes/boot.py": {
-   "body_hash": "1b4b313a50d9f8e9ff0fae884abcf55d93fbd460079e5e3287ce099ebcd44d11",
-   "header": {
-    "format": 1,
-    "gotchas": [],
-    "keywords": [
-     "extend_bootinfo",
-     "desk_theme_css_url",
-     "bootinfo",
-     "publish hash",
-     "bench restart"
-    ],
-    "purpose": "Desk boot hook that exposes the current desk theme CSS URL each session.",
-    "read_when": "When the desk is not picking up a freshly published theme stylesheet."
-   }
-  },
-  "themes/component_api.py": {
-   "body_hash": "fabbabb9ceecf42336dbfe481afa5a0df8a7e909ea99be838c68bd2e542cd26b",
+   "body_hash": "25eefc102abca095302061b139d5a41261d80511bb23b9524ef1366f92fbc94d",
    "header": {
     "format": 1,
     "gotchas": [
-     "_vue_file throws if file_path resolves outside the app folder.",
-     "rescan_all and missing-file saves set doc.flags.skip_css_publish before a single publish_component_css at the end.",
-     "open_vue_components reloads vue_component_element, vue_component, then theme_component_settings when DocType is missing."
+     "Design mode boot flags are skipped silently if import or checks raise."
     ],
     "keywords": [
+     "extend_bootinfo",
+     "bootinfo",
+     "desk_theme_css_url",
+     "nce_design_mode",
+     "get_desk_theme_css_url",
+     "can_design",
+     "design_mode_enabled",
+     "Desk boot",
+     "themes.boot"
+    ],
+    "purpose": "Desk boot hook exposing fresh desk theme CSS URL and Design Mode session flag without bench restart.",
+    "read_when": "When Desk sessions need desk_theme_css_url or nce_design_mode on bootinfo from hooks."
+   },
+   "labels": {
+    "themes/boot.py::extend_bootinfo": {
+     "body_hash": "85e4bc56de",
+     "label": "Hook wired from hooks.py sets desk_theme_css_url and nce_design_mode when design mode is on and allowed."
+    }
+   }
+  },
+  "themes/component_api.py": {
+   "body_hash": "5e2d2d31562e86991b688759d4c2f68df803075509b462426363a32e0b20b929",
+   "header": {
+    "format": 1,
+    "gotchas": [
+     "_vue_file rejects file_path values that resolve outside the app folder.",
+     "open_vue_components reloads child DocTypes before parent when Vue Component is missing.",
+     "set_design_mode_enabled logs Design Mode scan failed if rescan_all raises.",
+     "Protected selector_class values cannot be saved via save_design_change."
+    ],
+    "keywords": [
+     "Vue Component",
      "rescan_all",
      "refresh_component",
-     "publish_css",
-     "Vue Component",
+     "publish_component_css",
+     "design_mode_enabled",
+     "Theme Component Settings",
      "merge_elements",
+     "scan_vue_file",
      "inherit_table_usage",
-     "apply_root_flags",
-     "frappe.whitelist",
-     "System Manager",
-     "nce_component_overrides",
      "component_key",
-     "needs_attention"
+     "whitelist",
+     "get_design_mode_map",
+     "save_design_change",
+     "ELEMENT_FIELDS",
+     "nce_component"
     ],
-    "purpose": "Whitelisted Frappe methods to rescan Vue files, refresh one component, preview CSS, and publish component overrides.",
-    "read_when": "Wiring Desk actions, whitelisted calls, or Vue Component DocType validate that depends on scan and CSS publish."
+    "purpose": "Whitelisted Frappe API for Vue Component rescan, CSS publish, live preview, and Design Mode desk overrides.",
+    "read_when": "Changing Vue Component scan, publish, preview, or Design Mode methods invoked from Desk or scripts."
    },
    "labels": {
     "themes/component_api.py::_app_root": {
      "body_hash": "a4a5a98c64",
-     "label": "Resolves the filesystem parent of a Frappe app path for walking .vue files."
+     "label": "Returns the filesystem parent of a Frappe app path used to resolve Vue Component file_path."
     },
     "themes/component_api.py::_apply_scan": {
-     "body_hash": "2923b444bd",
-     "label": "Maps scan results onto the doc or Missing status and merges scanned elements via component_sync merge_elements."
+     "body_hash": "d008bfe59f",
+     "label": "Writes scan metadata and merged element rows or marks the component and elements Missing."
+    },
+    "themes/component_api.py::_components_with_selector": {
+     "body_hash": "03919b7ecc",
+     "label": "Lists Present Vue Component names with a Present element row matching selector_class."
     },
     "themes/component_api.py::_excluded_apps": {
-     "body_hash": "a45e01a811",
-     "label": "Builds the app set skipped during rescan from ALWAYS_EXCLUDED_APPS plus Theme Component Settings excluded_apps."
+     "body_hash": "da2f0da614",
+     "label": "Builds apps skipped during rescan from ALWAYS_EXCLUDED_APPS, settings lines, and Frappe-branded installs."
+    },
+    "themes/component_api.py::_is_frappe_branded": {
+     "body_hash": "47873623bf",
+     "label": "Treats an app as Frappe-branded when app_publisher hooks mention Frappe Technologies for scan exclusion."
+    },
+    "themes/component_api.py::_protected_classes": {
+     "body_hash": "9cb0381e7f",
+     "label": "Loads parsed protected_classes from Theme Component Settings for selector save guards."
     },
     "themes/component_api.py::_refresh_all_summaries": {
      "body_hash": "0c5a6074a4",
-     "label": "Rebuilds every Vue Component summary field via build_summary and _used_by without update_modified."
+     "label": "Rebuilds the summary text field on all Vue Component records using build_summary."
+    },
+    "themes/component_api.py::_require_design": {
+     "body_hash": "b2d696f00f",
+     "label": "Raises permission error when can_design is false before Design Mode whitelisted calls."
     },
     "themes/component_api.py::_set_rows": {
      "body_hash": "67a6d769bb",
-     "label": "Replaces the Vue Component elements child table from dict rows limited to ELEMENT_FIELDS."
+     "label": "Replaces element child rows on a doc keeping only allowed ELEMENT_FIELDS keys."
+    },
+    "themes/component_api.py::_table_parent": {
+     "body_hash": "449cc8dfdb",
+     "label": "Loads table-related fields for a Vue Component or throws when the name is missing."
     },
     "themes/component_api.py::_used_by": {
      "body_hash": "8f63f3a0d7",
-     "label": "Lists Present Vue Component names whose uses_components include a given component_name; VueComponent.validate calls this."
+     "label": "Lists Present components whose uses_components includes a name; VueComponent.validate uses it for summaries."
     },
     "themes/component_api.py::_vue_file": {
      "body_hash": "c513e8b2f2",
-     "label": "Resolves doc file_path under the app root or None if missing; blocks paths outside the app folder."
+     "label": "Resolves the on-disk .vue file for a record or None when missing, blocking paths outside the app root."
     },
     "themes/component_api.py::apply_root_flags": {
      "body_hash": "b6b9703a8a",
-     "label": "Loads all Vue Component usage rows, runs mark_roots, and writes is_root without bumping modified."
+     "label": "Recomputes is_root on every Vue Component via mark_roots for Design Mode root-only listing."
+    },
+    "themes/component_api.py::can_design": {
+     "body_hash": "b80bfde03e",
+     "label": "True for Administrator, System Manager, or Vue Component write; boot pairs with design_mode_enabled."
     },
     "themes/component_api.py::components_inside": {
      "body_hash": "7f718aff66",
-     "label": "Returns name and component_name for Vue Component rows referenced in the parent uses_components list."
+     "label": "Returns Vue Component doc names for child component_name entries in uses_components order."
+    },
+    "themes/component_api.py::design_mode_enabled": {
+     "body_hash": "7b851089ba",
+     "label": "Reads Theme Component Settings design_mode_enabled for session and API checks."
+    },
+    "themes/component_api.py::get_design_mode_map": {
+     "body_hash": "502756411f",
+     "label": "Design-gated whitelisted theme, selector map, and table map payload for design_mode.js."
+    },
+    "themes/component_api.py::get_design_mode_status": {
+     "body_hash": "9e261eb250",
+     "label": "Whitelisted enabled flag plus whether the current user may use Design Mode."
     },
     "themes/component_api.py::get_preview_theme": {
      "body_hash": "4eb31ba053",
-     "label": "Returns site default NCE Theme name and slug for the theme editor preview UI."
+     "label": "Returns site default NCE Theme name and slug for Design Mode and preview clients."
     },
     "themes/component_api.py::open_vue_components": {
      "body_hash": "79afabb84f",
-     "label": "Ensures DocTypes exist, runs rescan_all when empty, and returns the Desk vue-component list URL."
+     "label": "Ensures Vue Component DocTypes exist, rescans when empty, returns Desk list URL."
     },
     "themes/component_api.py::preview_declarations": {
-     "body_hash": "9891d9f7c7",
-     "label": "Maps element override row keys to joined CSS declaration strings from declarations_for for live preview."
+     "body_hash": "fd45530d8f",
+     "label": "Design-gated whitelisted map of element keys to CSS declaration strings for live preview."
+    },
+    "themes/component_api.py::preview_design_table": {
+     "body_hash": "f545944e87",
+     "label": "Design-gated whitelisted CSS string preview for table colour overrides on one component."
     },
     "themes/component_api.py::publish_css": {
      "body_hash": "d28ea72ea6",
-     "label": "Whitelisted entry point that runs publish_component_css for nce_component_overrides.css."
+     "label": "System Manager whitelisted republish of nce_component_overrides.css."
     },
     "themes/component_api.py::refresh_component": {
      "body_hash": "4bc4ef90b9",
-     "label": "Rescan one record from disk, inherit table data from child rows, save, reapply root flags and summaries."
+     "label": "Whitelisted rescan of one named component with child table inheritance, roots, and summaries."
     },
     "themes/component_api.py::rescan_all": {
      "body_hash": "c98f0e7057",
-     "label": "System Manager whitelisted full-site .vue rescan, inherit tables, mark roots, refresh summaries, and publish CSS."
+     "label": "System Manager whitelisted full-site Vue scan, sync, missing cleanup, summaries, and CSS publish."
+    },
+    "themes/component_api.py::revert_design_components": {
+     "body_hash": "fce5139d79",
+     "label": "Clears element and table design overrides on named components then publishes CSS."
+    },
+    "themes/component_api.py::save_design_change": {
+     "body_hash": "4c8a150cf3",
+     "label": "Applies shared override fields to every component using a selector then publishes CSS."
+    },
+    "themes/component_api.py::save_design_table": {
+     "body_hash": "51ec0eb487",
+     "label": "Design-gated persists cleaned table override fields on a component and publishes CSS."
+    },
+    "themes/component_api.py::set_design_mode_enabled": {
+     "body_hash": "2075aed278",
+     "label": "System Manager toggles design_mode_enabled and runs rescan_all when turning on."
     },
     "themes/component_api.py::vue_component_permission_query": {
      "body_hash": "9b007c8b18",
-     "label": "Returns SQL so list views only show root Vue Components; registered in hooks permission_query_conditions."
+     "label": "Returns list-filter SQL wired in hooks so only is_root Vue Components appear in Desk."
     }
    }
   },
   "themes/hooks.py": {
-   "body_hash": "73a6ec181b33fc7bfa8e69db09357401404617feafda10bd60764911cf441895",
+   "body_hash": "0341273a38764c42f9fd611f0b5500b56cdc46e7f6fb2bea48c0e476d6e236e0",
    "header": {
     "format": 1,
     "gotchas": [
-     "_css_url must stay DB-free at import and never raise; failures return the path without ?v= hash.",
-     "Do not monkey-patch frappe.get_hooks for cache busting; that previously broke boot."
+     "_css_url must stay DB-free at import; failures return bare asset path.",
+     "Never monkey-patch frappe.get_hooks for CSS URLs; it broke boot previously.",
+     "nce_theme.css is :root tokens only and does not style Frappe Desk elements."
     ],
     "keywords": [
      "app_include_css",
      "nce_theme.css",
      "nce_component_overrides.css",
-     "nce_desk_theme.css",
      "website_route_rules",
-     "permission_query_conditions",
      "extend_bootinfo",
+     "permission_query_conditions",
+     "_css_url",
+     "design_mode.js",
      "after_install",
-     "theme-swatch-picker",
-     "desk_theme_loader"
+     "add_to_apps_screen"
     ],
-    "purpose": "Registers themes app hooks: site CSS and JS, Vue Component permissions, bootinfo, SPA routes, and after_install.",
-    "read_when": "Changing which CSS loads globally, theme editor URL routes, or Vue Component list permission SQL."
+    "purpose": "Frappe app hooks for theme CSS and JS assets, SPA routes, permissions, boot, and after_install.",
+    "read_when": "Changing included assets, theme editor routes, apps screen tiles, or Vue Component list permissions."
    },
    "labels": {
     "themes/hooks.py::_css_url": {
      "body_hash": "767dfebc19",
-     "label": "At import, appends ?v= from public/css sidecar hash when present else bare /assets/themes/css/ URL."
+     "label": "Returns /assets/themes/css path with ?v hash sidecar at import; falls back without raising."
     }
    }
   },
@@ -2579,6 +2914,30 @@
     "read_when": "When Default NCE Desk Theme was never created because the field patch no-oped."
    }
   },
+  "themes/patches/v1_0/clear_design_mode_protected.py": {
+   "body_hash": "36432dc3ce53ab50c74cbe36ad4678f2c87de1db84b5adbc92a7500d0abc2a21",
+   "header": {
+    "format": 1,
+    "gotchas": [],
+    "keywords": [
+     "protected_classes",
+     "Theme Component Settings",
+     "execute",
+     "set_single_value",
+     "Design Mode",
+     "patch",
+     "frappe.db.exists"
+    ],
+    "purpose": "v1_0 patch that clears Theme Component Settings protected_classes for Design Mode.",
+    "read_when": "Tracing migration order that emptied protected_classes before defaults were seeded."
+   },
+   "labels": {
+    "themes/patches/v1_0/clear_design_mode_protected.py::execute": {
+     "body_hash": "d45ba4be11",
+     "label": "Migration clears protected_classes on Theme Component Settings when that DocType exists."
+    }
+   }
+  },
   "themes/patches/v1_0/collapse_theme_versions_to_nce_theme.py": {
    "body_hash": "e84218e70fe0f3c28271f97979b1d8bc048674e9ff8c095ceba6639b96f376ce",
    "header": {
@@ -2594,6 +2953,30 @@
     ],
     "purpose": "Copies Theme Version JSON onto NCE Theme and clears the active_version pointer.",
     "read_when": "When theme payloads still live on Theme Version instead of NCE Theme.theme_json."
+   }
+  },
+  "themes/patches/v1_0/design_mode_defaults.py": {
+   "body_hash": "7160eb082174d8fdfc9cf0d3973245bf3b7cba694f441eefa8d5649ac5940dac",
+   "header": {
+    "format": 1,
+    "gotchas": [],
+    "keywords": [
+     "DEFAULT_PROTECTED",
+     "protected_classes",
+     "Theme Component Settings",
+     "design_mode",
+     "execute",
+     "set_single_value",
+     "themes.utils.design_mode"
+    ],
+    "purpose": "v1_0 patch seeding default Design Mode protected_classes from DEFAULT_PROTECTED when empty.",
+    "read_when": "Finding how initial protected_classes lines are set on Theme Component Settings."
+   },
+   "labels": {
+    "themes/patches/v1_0/design_mode_defaults.py::execute": {
+     "body_hash": "91d59d7f9e",
+     "label": "Migration sets protected_classes from DEFAULT_PROTECTED when the field is still empty."
+    }
    }
   },
   "themes/patches/v1_0/migrate_theme_settings_to_nce_theme.py": {
@@ -2723,22 +3106,26 @@
    }
   },
   "themes/public/css/nce_component_overrides.css": {
-   "body_hash": "3b4fffaa9b5db63c741cca22b4e883bd633f153df91aa30bdb2773168dfaa3c5",
+   "body_hash": "8292a4f433413069f30809521248d45f20cf0bbed5045b691c0200ad184965d3",
    "header": {
     "format": 1,
     "gotchas": [
-     "Do not edit manually; change overrides in Desk Vue Component and republish."
+     "Generated by Themes — Vue Component colour overrides. Do not edit; change them in Desk → Vue Component."
     ],
     "keywords": [
      "nce_component_overrides",
-     "Vue Component",
-     "colour overrides",
-     "Generated by Themes",
-     "app_include_css",
-     "publish_component_css"
+     "Vue Component colour overrides",
+     "ppv2-find-help-table",
+     "ppv2-fd-tab-btn",
+     "nce-color-table-header",
+     "nce-color-row",
+     "nce-color-primary-200",
+     "PanelFormFindSearchHelpModal",
+     "Do not edit",
+     "theme table class"
     ],
-    "purpose": "Published CSS file holding Vue Component colour override rules generated from Desk records.",
-    "read_when": "When verifying component override output or why the file is empty before publish."
+    "purpose": "Generated stylesheet mapping Vue Component theme classes to NCE colour and table border CSS variables on Desk pages.",
+    "read_when": "When override colours for ppv2 tables or tab buttons are wrong and you need the generated class rules, not the Vue Component editor."
    }
   },
   "themes/public/css/nce_desk_theme.css": {
@@ -2764,27 +3151,26 @@
    }
   },
   "themes/public/css/nce_theme.css": {
-   "body_hash": "1d9aa0a3ef227e7fc75f8a54173fc0fe780409fcde92041139262490d525a0e8",
+   "body_hash": "eaf180cd3593602305722d911c2fbcce6eefae4f4311b39358c4182bece3f82e",
    "header": {
     "format": 1,
-    "gotchas": [
-     "theme-bg-themed is the Dynamic-shade escape hatch using oklch relative color on --bg"
-    ],
+    "gotchas": [],
     "keywords": [
-     "nce-color-primary",
-     "theme-bg-primary",
-     "data-nce-theme",
-     "theme-table",
+     "nce_theme.css",
      "Source Sans 3",
-     "fg-tonal",
-     "theme-bg-themed",
-     "Shade scales",
      "Public Sans",
-     "theme-text-heading",
+     "--nce-color-primary",
+     "Shade scales",
+     "theme-table",
+     "theme-bg-themed",
+     "data-nce-theme",
+     "Self-hosted variable fonts",
+     "theme-bg-primary",
+     "Dynamic-shade escape hatch",
      "canonical variables"
     ],
-    "purpose": "Compiled NCE web theme CSS with --nce-color tokens, theme-* utilities, tables, typography, and data-nce-theme variable scopes.",
-    "read_when": "When mapping theme-* classes to tokens, shade fg pairing, or default vs nce theme overrides on :root."
+    "purpose": "Compiled NCE web theme CSS with fonts, :root tokens, theme-* utility classes, theme-table bundle, and default vs nce palette scopes.",
+    "read_when": "When tracing --nce-color-* variables, theme-bg or theme-text classes, @font-face assets, or [data-nce-theme] switching."
    }
   },
   "themes/public/frontend/assets/themes-_plugin-vue_export-helper-DkZulUf9.js": {
@@ -2888,6 +3274,250 @@
     ],
     "purpose": "Built Vite HTML shell for the Themes Vue app, loading the bundled themes.js and themes.css assets.",
     "read_when": "When checking which built bundle the Themes frontend loads after a production build."
+   }
+  },
+  "themes/public/js/design_mode.js": {
+   "body_hash": "26c7bde8a3075a751bc99572a1ebebdb3c9d223c3359fbd521124e299fbaa8dd",
+   "header": {
+    "format": 1,
+    "gotchas": [],
+    "keywords": [
+     "design_mode.js",
+     "nce-design-mode-fab",
+     "get_design_mode_map",
+     "nce_component_overrides.css",
+     "themes.component_api",
+     "nceDesignDialog",
+     "themeSwatchPicker",
+     "preview_declarations",
+     "save_design_change",
+     "HOVER_INTENT_MS",
+     "Design Mode"
+    ],
+    "purpose": "Desk Design Mode client script: hover mapped Vue parts, edit colours via dialog, preview and save through themes.component_api.",
+    "read_when": "When fixing the Design Mode FAB, hover selection, colour popups, or API calls that regenerate nce_component_overrides.css."
+   },
+   "labels": {
+    "themes/public/js/design_mode.js::applySelection": {
+     "body_hash": "c56679ea1f",
+     "label": "Stores selection, draws outline and sibling count, and positions the Edit button."
+    },
+    "themes/public/js/design_mode.js::call": {
+     "body_hash": "ff332775f9",
+     "label": "POSTs JSON to themes.component_api methods with CSRF header and surfaces server errors."
+    },
+    "themes/public/js/design_mode.js::cancelPopup": {
+     "body_hash": "66bfa3d8ce",
+     "label": "Tears down dialog, preview style, outside listener, swatch picker, and popup state."
+    },
+    "themes/public/js/design_mode.js::candidateFor": {
+     "body_hash": "5be7865c16",
+     "label": "Classifies a mouse target as mapped table, mapped element, or unmapped none for hover UI."
+    },
+    "themes/public/js/design_mode.js::clearIntent": {
+     "body_hash": "5d1f4f3ed0",
+     "label": "Clears the hover delay timer and intent element before changing selection."
+    },
+    "themes/public/js/design_mode.js::clearSelMark": {
+     "body_hash": "ec32c73129",
+     "label": "Removes the data-ndm-sel attribute from the currently marked selection element."
+    },
+    "themes/public/js/design_mode.js::csrf": {
+     "body_hash": "b7787bd576",
+     "label": "Reads Frappe CSRF token from window for authenticated component_api POST requests."
+    },
+    "themes/public/js/design_mode.js::cssColourToHex": {
+     "body_hash": "420b7d5587",
+     "label": "Parses rgb or rgba strings into uppercase hex and transparent flags for dialog defaults."
+    },
+    "themes/public/js/design_mode.js::dialogHandlers": {
+     "body_hash": "3ee2f88eee",
+     "label": "Supplies pick, changed, save, cancel, revert, openRecord, and part callbacks to the design dialog."
+    },
+    "themes/public/js/design_mode.js::dialogReady": {
+     "body_hash": "8b8ee221f9",
+     "label": "Returns true if the dialog script is ready; otherwise toasts and triggers loadDialog."
+    },
+    "themes/public/js/design_mode.js::elementPopupNotes": {
+     "body_hash": "32c91ec7ee",
+     "label": "Adds notes when a selector is shared, code-driven dynamic, or Page Panel protected."
+    },
+    "themes/public/js/design_mode.js::elementThemeDefaults": {
+     "body_hash": "e143d1b51c",
+     "label": "Samples computed background, text, and border on the hovered element for dialog defaults."
+    },
+    "themes/public/js/design_mode.js::ensureFab": {
+     "body_hash": "cec31d95c6",
+     "label": "Creates the bottom-right Design Mode FAB and toggles turnOn or turnOff on click."
+    },
+    "themes/public/js/design_mode.js::ensureRoot": {
+     "body_hash": "645ef05669",
+     "label": "Finds or appends the fixed nce-design-mode overlay container on document body."
+    },
+    "themes/public/js/design_mode.js::ensureStyles": {
+     "body_hash": "e3d15db505",
+     "label": "Injects one-time inline CSS for FAB, outlines, labels, edit button, and toasts."
+    },
+    "themes/public/js/design_mode.js::esc": {
+     "body_hash": "bc06620186",
+     "label": "Escapes HTML metacharacters in strings before safe insertion in UI text."
+    },
+    "themes/public/js/design_mode.js::findMappedTable": {
+     "body_hash": "4669a927bb",
+     "label": "Finds the nearest table ancestor whose class appears in the design mode tables map."
+    },
+    "themes/public/js/design_mode.js::findTarget": {
+     "body_hash": "297dcca9c6",
+     "label": "Walks ancestors from a node to the first element whose class is in selectors map."
+    },
+    "themes/public/js/design_mode.js::hasSystemUserCookie": {
+     "body_hash": "b6ec9e5c64",
+     "label": "Detects system_user=yes cookie when Frappe boot is unavailable for enablement checks."
+    },
+    "themes/public/js/design_mode.js::hideOutline": {
+     "body_hash": "0e42997df8",
+     "label": "Clears selection marks, hover label, edit button, and sibling highlights when no popup."
+    },
+    "themes/public/js/design_mode.js::hideSiblings": {
+     "body_hash": "1fe4b0f40a",
+     "label": "Strips data-ndm-sib highlight attributes from all previously outlined sibling nodes."
+    },
+    "themes/public/js/design_mode.js::init": {
+     "body_hash": "620697da43",
+     "label": "When design mode is allowed and mapped parts exist, creates FAB, observer, and Escape handler."
+    },
+    "themes/public/js/design_mode.js::label": {
+     "body_hash": "79507f1209",
+     "label": "Formats hover text as component name, selector class, and optional extra component count."
+    },
+    "themes/public/js/design_mode.js::loadDialog": {
+     "body_hash": "1b48c786f7",
+     "label": "Lazy-loads design-dialog.js and resolves when nceDesignDialog.open is available."
+    },
+    "themes/public/js/design_mode.js::markSel": {
+     "body_hash": "4adca1a4cd",
+     "label": "Applies data-ndm-sel outline styling to the chosen element or a dashed none state."
+    },
+    "themes/public/js/design_mode.js::onDraftChanged": {
+     "body_hash": "c496d99a5d",
+     "label": "Refreshes live element or table CSS preview after a draft colour field changes."
+    },
+    "themes/public/js/design_mode.js::onEditClick": {
+     "body_hash": "71f4231ec9",
+     "label": "Opens the element or table colour dialog anchored at the Edit button."
+    },
+    "themes/public/js/design_mode.js::onKeyDown": {
+     "body_hash": "e98f1729fd",
+     "label": "Escape closes an open popup or turns off design mode unless the swatch picker is open."
+    },
+    "themes/public/js/design_mode.js::onMouseMove": {
+     "body_hash": "328aad3cb0",
+     "label": "Records the latest mousemove and schedules a single rAF outline update per frame."
+    },
+    "themes/public/js/design_mode.js::onMouseMoveFrame": {
+     "body_hash": "1b17c44bd3",
+     "label": "On animation frame, resolves hover target and applies selection after hover intent delay."
+    },
+    "themes/public/js/design_mode.js::onOutsideMouseDown": {
+     "body_hash": "2fa85f082f",
+     "label": "Closes the open popup when mousedown occurs outside the dialog host."
+    },
+    "themes/public/js/design_mode.js::onScroll": {
+     "body_hash": "ca0c04b8e1",
+     "label": "Hides hover outline while design mode is on and no colour popup is open."
+    },
+    "themes/public/js/design_mode.js::openPickerFor": {
+     "body_hash": "7177f42c4c",
+     "label": "Opens themeSwatchPicker for a draft field using the map theme slug and draft getters."
+    },
+    "themes/public/js/design_mode.js::openPopup": {
+     "body_hash": "c1786ab3f2",
+     "label": "Opens the element design dialog with draft values, notes, handlers, and live preview."
+    },
+    "themes/public/js/design_mode.js::openRecord": {
+     "body_hash": "8f1fa23539",
+     "label": "Opens the Vue Component DocType form in a new tab for the popup table or element entry."
+    },
+    "themes/public/js/design_mode.js::openTablePopup": {
+     "body_hash": "9f17f6b5a1",
+     "label": "Opens the table design dialog for a mapped table class with optional nested part editing."
+    },
+    "themes/public/js/design_mode.js::pageHasParts": {
+     "body_hash": "648c251f99",
+     "label": "Checks whether the page DOM contains any element matching mapped component selectors."
+    },
+    "themes/public/js/design_mode.js::positionEditButton": {
+     "body_hash": "e8f3ad4e0c",
+     "label": "Places the Edit control beside the selected element within the viewport bounds."
+    },
+    "themes/public/js/design_mode.js::reloadOverridesCss": {
+     "body_hash": "13b81267ed",
+     "label": "Appends a cache-busting query to every nce_component_overrides.css stylesheet link after save."
+    },
+    "themes/public/js/design_mode.js::revertPopup": {
+     "body_hash": "abfb197a95",
+     "label": "After confirm, reverts linked Vue Components via API, refreshes map, and reloads overrides CSS."
+    },
+    "themes/public/js/design_mode.js::savePopup": {
+     "body_hash": "00b16cf72f",
+     "label": "Persists table or element draft via save API, reloads overrides CSS, and closes with toast."
+    },
+    "themes/public/js/design_mode.js::schedulePresence": {
+     "body_hash": "0b89cd6419",
+     "label": "Debounces FAB visibility updates after DOM mutations from the presence observer."
+    },
+    "themes/public/js/design_mode.js::selectorFor": {
+     "body_hash": "b491f5284f",
+     "label": "Returns the mapped CSS class string for table or element selection kinds."
+    },
+    "themes/public/js/design_mode.js::selectorFromMap": {
+     "body_hash": "c052ebe5c9",
+     "label": "Builds a comma-separated class selector list from the design mode map selectors and tables."
+    },
+    "themes/public/js/design_mode.js::showOutline": {
+     "body_hash": "1042908e24",
+     "label": "Builds component label text including locked suffix and delegates to showOutlineFor."
+    },
+    "themes/public/js/design_mode.js::showOutlineFor": {
+     "body_hash": "eb124c0e10",
+     "label": "Positions the fixed label and marks the element at its bounding rectangle."
+    },
+    "themes/public/js/design_mode.js::showSiblings": {
+     "body_hash": "dac9ab62fe",
+     "label": "Outlines other on-screen elements sharing the mapped class, capped at MAX_SIBLINGS."
+    },
+    "themes/public/js/design_mode.js::swallow": {
+     "body_hash": "40a897498a",
+     "label": "Stops event propagation on FAB and edit control pointer events so clicks do not hit the page."
+    },
+    "themes/public/js/design_mode.js::tableThemeDefaults": {
+     "body_hash": "9d06302916",
+     "label": "Builds table colour and divider default labels from theme CSS variables on a sample table."
+    },
+    "themes/public/js/design_mode.js::toast": {
+     "body_hash": "b4dc880906",
+     "label": "Displays a short success or error toast above the FAB inside the overlay root."
+    },
+    "themes/public/js/design_mode.js::turnOff": {
+     "body_hash": "8608a3e199",
+     "label": "Removes listeners and overlay, clears selection and preview, and resets design mode state."
+    },
+    "themes/public/js/design_mode.js::turnOn": {
+     "body_hash": "0be78850f7",
+     "label": "Fetches design mode map, mounts overlay UI, enables mousemove tracking, and preloads dialog script."
+    },
+    "themes/public/js/design_mode.js::updateFab": {
+     "body_hash": "f141e1d248",
+     "label": "Shows or hides the floating button and sets Exit Design Mode, Loading, or Design Mode label."
+    },
+    "themes/public/js/design_mode.js::updatePreview": {
+     "body_hash": "b8a6663fca",
+     "label": "Calls preview_declarations and injects a temporary style tag for the selected selector class."
+    },
+    "themes/public/js/design_mode.js::updateTablePreview": {
+     "body_hash": "767beb7184",
+     "label": "Calls preview_design_table and injects returned CSS into the preview style tag."
+    }
    }
   },
   "themes/public/js/desk_theme_loader.js": {
@@ -3599,13 +4229,11 @@
    }
   },
   "themes/utils/component_css_writer.py": {
-   "body_hash": "c3b509b1f523c1d30b7fff6a7c021c82ed842620c1dd822ef1e639ee7cd4c153",
+   "body_hash": "be9147c9e14a849fee95a13b2526b1092dce087c67ca5efeaa1265ccdb6067a3",
    "header": {
     "format": 1,
     "gotchas": [
-     "Generated header warns edits belong in Desk Vue Component, not the CSS file.",
-     "Selectors repeat class three times for specificity over utility stacks.",
-     "Invalid selector_class or theme classes produce no rule block."
+     "HEADER warns generated CSS must not be edited manually; change overrides in Desk Vue Component."
     ],
     "keywords": [
      "generate_component_css",
@@ -3613,138 +4241,149 @@
      "nce_component_overrides.css",
      "declarations_for",
      "table_css_for",
-     "theme-bg-",
-     "BG_RE",
+     "theme_table_bundle_for",
      "write_published_css",
+     "Vue Component",
+     "override_bg_class",
+     "SELECTOR_RE",
      "has_override",
-     "override_fg_type"
+     "component_api"
     ],
-    "purpose": "Generates published nce_component_overrides.css from Vue Component element and table override settings.",
-    "read_when": "Open when previewing component override CSS, publishing overrides, or parsing theme-* classes."
+    "purpose": "Generates and publishes nce_component_overrides.css from Vue Component Desk colour overrides and table rules.",
+    "read_when": "Debugging component override CSS, table styling output, or publish_component_css called from component_api."
    },
    "labels": {
+    "themes/utils/component_css_writer.py::_bundle_selectors": {
+     "body_hash": "534894b44c",
+     "label": "Parses a theme_table_targets line into strong and weak selector prefixes for class or scope targets."
+    },
     "themes/utils/component_css_writer.py::_table_bg_decls": {
      "body_hash": "8c4f4d4fa0",
-     "label": "Background and foreground vars from a theme-bg class and mono or tonal fg."
+     "label": "Maps a theme background class and fg type to background-color and color var declarations for tables."
     },
     "themes/utils/component_css_writer.py::_table_border_value": {
      "body_hash": "5f2b8c61f4",
-     "label": "Combines border width and colour classes into a single border shorthand."
+     "label": "Combines border width and color classes into one border shorthand or returns None when incomplete."
     },
     "themes/utils/component_css_writer.py::_table_prefix": {
      "body_hash": "fd12ba0b61",
-     "label": "Builds scoped table selector prefix from table_selector and optional scope class."
+     "label": "Builds scoped CSS selector prefix from table_selector and optional table_scope_class on the parent."
     },
     "themes/utils/component_css_writer.py::_valid_text_override": {
      "body_hash": "d586fe9ef7",
-     "label": "Checks override_text_class matches the theme-text class pattern."
+     "label": "Checks whether a row has a non-empty override_text_class that matches TEXT_RE."
     },
     "themes/utils/component_css_writer.py::declarations_for": {
      "body_hash": "4964197390",
-     "label": "Builds background, text, and border declarations for one element override row."
+     "label": "Builds CSS declaration lines for one element row; component_api preview_declarations uses it for live preview."
     },
     "themes/utils/component_css_writer.py::generate_component_css": {
      "body_hash": "0081b69438",
-     "label": "Aggregates eligible element rows into published override rule blocks."
+     "label": "Aggregates eligible Present element overrides into triplicated-selector rule blocks plus the generated header."
     },
     "themes/utils/component_css_writer.py::publish_component_css": {
-     "body_hash": "5ec144294a",
-     "label": "Loads all Vue Component rows, writes nce_component_overrides.css, clears asset cache."
+     "body_hash": "615f4d8b64",
+     "label": "Loads all Vue Component records, merges element, bundle, and table CSS, writes file via css_publish, clears Frappe cache."
     },
     "themes/utils/component_css_writer.py::table_css_for": {
-     "body_hash": "23a82320a2",
-     "label": "Emits thead, tbody stripe, and divider rules for a component table config."
+     "body_hash": "6da5805627",
+     "label": "Generates per-component table header, row, alt, and divider rules; component_api preview_design_table calls it."
+    },
+    "themes/utils/component_css_writer.py::theme_table_bundle_for": {
+     "body_hash": "c190f0c5cd",
+     "label": "Emits full theme-table CSS bundle for a Present component from theme_table_targets when tables lack theme-table."
     }
    }
   },
   "themes/utils/component_scan.py": {
-   "body_hash": "faba49bc71f6f7645809fcd98a8cd1b58ec167af3d2be16c9602490559b9ece1",
+   "body_hash": "5ea8c59e7f6e28dfd686f724593cd41acc18da5db29f93f071ec790f22b4606b",
    "header": {
     "format": 1,
     "gotchas": [
-     "inherit_table_usage mutates scan dicts; rows with owns_table are never changed.",
-     "mark_roots mutates scans only for is_root; uses_components may be a list or newline-separated string.",
-     "Parser skips template and slot tags; Vue built-ins are excluded from uses_components."
+     "inherit_table_usage mutates scans in place until stable for nested uses_components chains.",
+     "mark_roots mutates scans setting is_root from same-app usage graph."
     ],
     "keywords": [
      "scan_vue_file",
      "scan_vue_source",
+     "_TemplateParser",
+     "iter_vue_files",
      "inherit_table_usage",
      "mark_roots",
-     "iter_vue_files",
+     "theme_table_targets",
      "uses_components",
-     "owns_table",
-     "table_selector",
-     "theme-",
-     "VUE_BUILTINS",
      "SELECTOR_RE",
-     "vue component scan",
-     "HTMLParser",
-     "source_hash"
+     "extract_purpose",
+     "component_api",
+     "rescan_all"
     ],
-    "purpose": "Scans Vue SFC templates for theme-class elements, child components, and table ownership for the Vue Component DocType.",
-    "read_when": "Changing how .vue files are walked, parsed, or how table selectors propagate to parent components."
+    "purpose": "Scans site .vue files for themed template elements, table usage, and child component references.",
+    "read_when": "Understanding rescan/refresh scan results, root flags, or table inheritance before syncing Vue Component records."
    },
    "labels": {
     "themes/utils/component_scan.py::_TemplateParser": {
-     "body_hash": "c69a5887da",
-     "label": "HTMLParser subclass that accumulates themed element rows, table flags, root_class, and child component names from a template."
+     "body_hash": "1705f505d2",
+     "label": "HTMLParser that walks Vue templates collecting themed elements, tables, and component usage."
     },
     "themes/utils/component_scan.py::_TemplateParser.__init__": {
-     "body_hash": "76503b2328",
-     "label": "Stores template line_offset and empty collections for elements, uses_components, and table fields before feed."
+     "body_hash": "f87a68ad28",
+     "label": "Initializes parser state for elements, table flags, root_class, and theme_table_targets with line offset."
     },
     "themes/utils/component_scan.py::_TemplateParser._on_tag": {
-     "body_hash": "4fffbe5099",
-     "label": "Emits element dicts for theme colour bindings, records table ownership, root_class, and non-builtin child tags."
+     "body_hash": "7207a23e15",
+     "label": "Records themed colour elements, table ownership, theme-table targets, and child component tags per tag."
     },
     "themes/utils/component_scan.py::_TemplateParser.handle_startendtag": {
      "body_hash": "e8f8323152",
-     "label": "Forwards self-closing tags into _on_tag so void elements are scanned."
+     "label": "Delegates self-closing tags to _on_tag like ordinary start tags."
     },
     "themes/utils/component_scan.py::_TemplateParser.handle_starttag": {
      "body_hash": "f68ec04132",
-     "label": "Forwards normal opening tags into _on_tag for scanning."
+     "label": "Delegates opening tags to _on_tag for scan_vue_source parsing."
+    },
+    "themes/utils/component_scan.py::_is_generic_class": {
+     "body_hash": "312cd9e7da",
+     "label": "Flags table-related class names that are too generic to become theme_table class targets."
     },
     "themes/utils/component_scan.py::_selector_from_class_tokens": {
      "body_hash": "1c2dc6f467",
-     "label": "Chooses the rightmost class token that matches SELECTOR_RE and is not theme- or Tailwind utility-like."
+     "label": "Picks the best non-theme, non-utility class token as the element selector_class."
     },
     "themes/utils/component_scan.py::extract_purpose": {
      "body_hash": "03ff5b53f1",
-     "label": "Pulls the Vue Component purpose string from a leading comment JSON purpose field or first comment line."
+     "label": "Reads purpose from HTML comment JSON or first comment line for Vue Component summary text."
     },
     "themes/utils/component_scan.py::extract_template": {
      "body_hash": "580340c3e3",
-     "label": "Returns inner template HTML and the line number where it starts for accurate element line reporting."
+     "label": "Returns template inner HTML and line offset after the opening template tag."
     },
     "themes/utils/component_scan.py::inherit_table_usage": {
      "body_hash": "a86aa09c9f",
-     "label": "Copies a child table_selector onto parents without owns_table via uses_components until stable; refresh and rescan_all."
+     "label": "Copies child table_selector into parents without owns_table along uses_components until stable."
     },
     "themes/utils/component_scan.py::iter_vue_files": {
      "body_hash": "ec3d8c6cb4",
-     "label": "Lists .vue paths under an app root, skipping node_modules, dist, and other SKIP_DIRS; rescan_all walks installed apps."
+     "label": "Walks a directory tree skipping SKIP_DIRS and returns sorted .vue paths for rescan_all."
     },
     "themes/utils/component_scan.py::kebab_to_pascal": {
      "body_hash": "6521ce8ae5",
-     "label": "Turns kebab-case tag names into PascalCase child component names for uses_components and summaries."
+     "label": "Converts tag names to PascalCase for uses_components and component_summary element nouns."
     },
     "themes/utils/component_scan.py::mark_roots": {
-     "body_hash": "cca6b73fe7",
-     "label": "Sets is_root when no other scan in the same app lists this component_name in uses_components; apply_root_flags persists."
+     "body_hash": "1262b86176",
+     "label": "Sets is_root on each scan for Design Mode listing from same-app component usage edges."
     },
     "themes/utils/component_scan.py::scan_vue_file": {
      "body_hash": "ed8666319a",
-     "label": "Reads a .vue path and merges scan_vue_source with component_name and source_hash for API rescan and refresh."
+     "label": "Reads a path and returns scan_vue_source fields plus component_name and source_hash for refresh/rescan."
     },
     "themes/utils/component_scan.py::scan_vue_source": {
-     "body_hash": "5dc0644ce6",
-     "label": "Runs extract_template and _TemplateParser to return elements, uses_components, purpose, and table metadata from a string."
+     "body_hash": "70c9ed30bc",
+     "label": "Parses one .vue source string into elements, usage, purpose, and table metadata dict."
     },
     "themes/utils/component_scan.py::source_hash": {
      "body_hash": "d47e217493",
-     "label": "Short SHA1 digest of full file text stored on Vue Component records to detect source changes."
+     "label": "Short SHA-1 digest of file source for change detection on Vue Component records."
     }
    }
   },
@@ -4077,6 +4716,46 @@
     ],
     "purpose": "Loads the repo Base Theme seed from base_theme.json, or the embedded fallback, for new Default Theme installs.",
     "read_when": "When checking the token seed copied onto a new Default NCE Theme."
+   }
+  },
+  "themes/utils/design_mode.py": {
+   "body_hash": "d348ac49bdad0090c6d3f85b7eb77ea4c47f68df46256e1b2e91fc5b63d57244",
+   "header": {
+    "format": 1,
+    "gotchas": [],
+    "keywords": [
+     "build_selector_map",
+     "build_table_map",
+     "parse_protected",
+     "clean_table_values",
+     "OVERRIDE_FIELDS",
+     "keep_default",
+     "protected",
+     "table_selector",
+     "get_design_mode_map",
+     "Design Mode",
+     "SELECTOR_RE"
+    ],
+    "purpose": "Builds Design Mode selector and table maps for the page script and normalizes saved table field values.",
+    "read_when": "Working on get_design_mode_map, protected classes, or save/preview table APIs in component_api."
+   },
+   "labels": {
+    "themes/utils/design_mode.py::build_selector_map": {
+     "body_hash": "4e77215101",
+     "label": "Groups element rows by selector_class with override values and component list for get_design_mode_map."
+    },
+    "themes/utils/design_mode.py::build_table_map": {
+     "body_hash": "1ccc2ab870",
+     "label": "Maps each owned table_selector to component name, scope, and table colour fields for get_design_mode_map."
+    },
+    "themes/utils/design_mode.py::clean_table_values": {
+     "body_hash": "8ef18f432d",
+     "label": "Strips and filters table override fields; empty fg types default to mono for preview and save_design_table."
+    },
+    "themes/utils/design_mode.py::parse_protected": {
+     "body_hash": "48537e39b2",
+     "label": "Splits multiline protected-class text into a set; component_api _protected_classes uses it for Design Mode."
+    }
    }
   },
   "themes/utils/desk_css_writer.py": {
