@@ -106,8 +106,7 @@ def create_theme(theme_name: str, payload):
 def set_base_theme(theme: str):
     """Promote theme to Default (is_default + Site Theme Config.base_theme) and regenerate nce_theme.css."""
     _require_system_manager()
-    result = svc.set_base(WEB_FAMILY, theme)
-    return {"status": "ok", "theme": theme, **result}
+    return svc.set_base(WEB_FAMILY, theme)
 
 
 @frappe.whitelist()
@@ -214,15 +213,7 @@ def save_desk_theme(theme: str, payload, status: Optional[str] = None):
 def save_active_desk_theme(payload):
     """Save the Active desk theme payload."""
     _require_system_manager()
-    active = frappe.get_all(
-        "NCE Desk Theme",
-        filters={"status": "Active"},
-        limit=1,
-        pluck="name",
-    )
-    if not active:
-        frappe.throw(_("No active desk theme set."))
-    return svc.save(DESK_FAMILY, active[0], payload)
+    return svc.save(DESK_FAMILY, svc.active_theme_name(DESK_FAMILY), payload)
 
 
 @frappe.whitelist()
@@ -236,8 +227,7 @@ def create_desk_theme(theme_name: str, payload):
 def set_base_desk_theme(theme: str):
     """Promote desk theme to Default (is_default + Site Theme Config.base_desk_theme) and regenerate nce_desk_theme.css."""
     _require_system_manager()
-    result = svc.set_base(DESK_FAMILY, theme)
-    return {"status": "ok", "theme": theme, **result}
+    return svc.set_base(DESK_FAMILY, theme)
 
 
 @frappe.whitelist()

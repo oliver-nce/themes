@@ -145,7 +145,7 @@ class TestBundleOutput(unittest.TestCase):
     def test_desk_bundle_writes_json_and_default_desk_theme_py(self):
         with fake_frappe() as frappe_mock:
             _reload_modules(
-                "themes.utils.bundle_base_desk_theme",
+                "themes.utils.bundle_base_theme",
                 "themes.utils.theme_family",
             )
             from themes.utils.theme_family import _desk_bundle

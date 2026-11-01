@@ -3747,65 +3747,141 @@
    }
   },
   "themes/themes/doctype/nce_desk_theme/nce_desk_theme.py": {
-   "body_hash": "5e0552161ff7283aa63e9e357e10639810522d3633faa1865f2a6661c520a153",
+   "body_hash": "569ddf5a8307584749dd0104c757a93f4e69ffe5a3e38ae1fb8776e1415027d0",
    "header": {
     "format": 1,
     "gotchas": [
-     "Throws if another desk theme is already marked default or already Active.",
-     "on_update and on_trash skip publishing during install or migrate."
+     "validate rejects a second is_default or second Active desk theme on another document.",
+     "on_update and on_trash skip publish_desk_theme during install or migrate via in_setup().",
+     "Desk CSS republish runs when status changes, row is Active, or row is the site base desk theme."
     ],
     "keywords": [
      "NCEDeskTheme",
-     "is_default",
-     "base_desk_theme",
+     "NCE Desk Theme",
      "publish_desk_theme",
-     "theme_json",
-     "already active",
-     "in_migrate"
+     "is_default",
+     "status Active",
+     "slugify_theme_name",
+     "base_theme_json",
+     "get_site_base_desk_theme_name",
+     "desk theme controller"
     ],
-    "purpose": "NCE Desk Theme controller that allows one Default and one Active theme, then republishes desk CSS.",
-    "read_when": "When changing desk theme save rules or when desk CSS is republished."
+    "purpose": "NCE Desk Theme DocType controller enforcing one Default and one Active desk theme and republishing desk CSS.",
+    "read_when": "Debugging desk theme insert seeding, slug updates, uniqueness errors, or when desk CSS should republish on save or delete."
+   },
+   "labels": {
+    "themes/themes/doctype/nce_desk_theme/nce_desk_theme.py::NCEDeskTheme": {
+     "body_hash": "a359986523",
+     "label": "Frappe Document class for desk theme records with Default, Active, and CSS publish lifecycle hooks."
+    },
+    "themes/themes/doctype/nce_desk_theme/nce_desk_theme.py::NCEDeskTheme.before_insert": {
+     "body_hash": "eee8976bbc",
+     "label": "Seeds empty theme_json from the site base desk theme JSON before the first insert."
+    },
+    "themes/themes/doctype/nce_desk_theme/nce_desk_theme.py::NCEDeskTheme.before_save": {
+     "body_hash": "962ac73ad0",
+     "label": "Keeps slug in sync with theme_name using slugify when missing or renamed."
+    },
+    "themes/themes/doctype/nce_desk_theme/nce_desk_theme.py::NCEDeskTheme.on_trash": {
+     "body_hash": "1c3b789a28",
+     "label": "Republishes desk CSS from base or trashed name when deleting Active or base-linked themes."
+    },
+    "themes/themes/doctype/nce_desk_theme/nce_desk_theme.py::NCEDeskTheme.on_update": {
+     "body_hash": "eb85215aa3",
+     "label": "Republishes merged desk CSS when status, Active role, or base desk link warrants an update."
+    },
+    "themes/themes/doctype/nce_desk_theme/nce_desk_theme.py::NCEDeskTheme.validate": {
+     "body_hash": "b17d0ffd2a",
+     "label": "Ensures at most one Default and one Active NCE Desk Theme across the site."
+    }
    }
   },
   "themes/themes/doctype/nce_theme/nce_theme.py": {
-   "body_hash": "8f6e6ed05cd000172406dad2b77f0404dd0c1cc17bbbf8526cf9d86407955e39",
+   "body_hash": "cbb1f566c9de5ab20cefc17e2bebd62092cbe8eb6db6b703c3cba0278a4ce3b7",
    "header": {
     "format": 1,
     "gotchas": [
-     "Throws if another theme is already marked default.",
-     "on_update and on_trash skip publishing during install or migrate."
+     "validate allows only one is_default NCE Theme; unlike desk, Active status is not uniqueness-checked here.",
+     "on_update and on_trash skip publish during install or migrate when in_setup() is true.",
+     "Web CSS republish triggers on status change, Active status, or when the row is the site base theme."
     ],
     "keywords": [
      "NCETheme",
-     "is_default",
+     "NCE Theme",
      "publish_theme",
-     "theme_json",
+     "is_default",
+     "slugify_theme_name",
+     "base_theme_json",
      "get_site_base_theme_name",
-     "already marked default",
-     "in_migrate"
+     "nce_theme.css",
+     "web theme controller"
     ],
-    "purpose": "NCE Theme controller that keeps a single Default theme and republishes web CSS on update or trash.",
-    "read_when": "When changing web theme validation or when nce_theme.css is republished from the document."
+    "purpose": "NCE Theme DocType controller keeping a single Default web theme and republishing nce_theme.css on relevant changes.",
+    "read_when": "Tracing web theme seeding, slug handling, Default uniqueness, or automatic publish_theme on update and trash."
+   },
+   "labels": {
+    "themes/themes/doctype/nce_theme/nce_theme.py::NCETheme": {
+     "body_hash": "1b78c425ff",
+     "label": "Frappe Document class for web theme JSON with Default enforcement and CSS publish hooks."
+    },
+    "themes/themes/doctype/nce_theme/nce_theme.py::NCETheme.before_insert": {
+     "body_hash": "811fec16ea",
+     "label": "Fills theme_json from site base NCE Theme when a new record has no JSON yet."
+    },
+    "themes/themes/doctype/nce_theme/nce_theme.py::NCETheme.before_save": {
+     "body_hash": "962ac73ad0",
+     "label": "Updates slug from theme_name when slug is empty or the display name changed."
+    },
+    "themes/themes/doctype/nce_theme/nce_theme.py::NCETheme.on_trash": {
+     "body_hash": "cb571d61a5",
+     "label": "Regenerates web CSS via publish_theme when trashing Active or base-linked themes."
+    },
+    "themes/themes/doctype/nce_theme/nce_theme.py::NCETheme.on_update": {
+     "body_hash": "eaed03a5ea",
+     "label": "Calls publish_theme when status or base linkage requires regenerating nce_theme.css."
+    },
+    "themes/themes/doctype/nce_theme/nce_theme.py::NCETheme.validate": {
+     "body_hash": "bd9be3d000",
+     "label": "Throws if another NCE Theme is already marked Default besides this document."
+    }
    }
   },
   "themes/themes/doctype/site_theme_config/site_theme_config.py": {
-   "body_hash": "480ce341856e56038260602c043efb2cd3bf819e96e9e19a67133f551e19012f",
+   "body_hash": "db5667116be155c5c77c53bd5a4ae61fb26e1649e482ea0e42215f181d28b7ab",
    "header": {
     "format": 1,
     "gotchas": [
-     "Publishing is skipped during install or migrate.",
-     "An empty base_theme falls back to the legacy active_theme field."
+     "validate resolves base from base_theme, active_theme fallback, or helper getters before existence checks.",
+     "on_update skips both publish_theme and publish_desk_theme during install or migrate.",
+     "Republish uses base_theme field or getter for web and base_desk_theme or getter for desk."
     ],
     "keywords": [
      "SiteThemeConfig",
      "base_theme",
      "base_desk_theme",
-     "active_theme",
      "publish_theme",
-     "publish_desk_theme"
+     "publish_desk_theme",
+     "get_site_base_theme_name",
+     "get_site_base_desk_theme_name",
+     "Site Theme Config",
+     "theme links"
     ],
-    "purpose": "Site Theme Config controller that checks the theme links exist and republishes web and desk CSS on update.",
-    "read_when": "When changing what happens after the site theme pointers are saved."
+    "purpose": "Site Theme Config singleton validates linked NCE themes exist and republishes web and desk CSS when updated.",
+    "read_when": "Fixing base_theme or base_desk_theme link validation or full-site CSS refresh after config changes."
+   },
+   "labels": {
+    "themes/themes/doctype/site_theme_config/site_theme_config.py::SiteThemeConfig": {
+     "body_hash": "04732c6c07",
+     "label": "Singleton Document storing site pointers to Default web and desk themes and triggering CSS rebuilds."
+    },
+    "themes/themes/doctype/site_theme_config/site_theme_config.py::SiteThemeConfig.on_update": {
+     "body_hash": "e202c94740",
+     "label": "Republishes nce_theme.css and nce_desk_theme.css for configured base themes after config save."
+    },
+    "themes/themes/doctype/site_theme_config/site_theme_config.py::SiteThemeConfig.validate": {
+     "body_hash": "9932d76634",
+     "label": "Confirms linked NCE Theme and NCE Desk Theme records exist before saving config."
+    }
    }
   },
   "themes/themes/doctype/theme_component_settings/theme_component_settings.py": {
@@ -4229,69 +4305,70 @@
    }
   },
   "themes/utils/component_css_writer.py": {
-   "body_hash": "be9147c9e14a849fee95a13b2526b1092dce087c67ca5efeaa1265ccdb6067a3",
+   "body_hash": "e290e2ddd084482d5becec8e2cf006df72d1fbc5e8da1a77f96e744f197b293e",
    "header": {
     "format": 1,
     "gotchas": [
-     "HEADER warns generated CSS must not be edited manually; change overrides in Desk Vue Component."
+     "Generated file header says do not edit; change overrides in Desk Vue Component.",
+     "Invalid selector_class or override classes are skipped silently rather than failing publish.",
+     "Rows with keep_default or element_status not Present are omitted from element rules."
     ],
     "keywords": [
      "generate_component_css",
      "publish_component_css",
-     "nce_component_overrides.css",
      "declarations_for",
-     "table_css_for",
+     "nce_component_overrides.css",
      "theme_table_bundle_for",
-     "write_published_css",
+     "table_css_for",
      "Vue Component",
      "override_bg_class",
      "SELECTOR_RE",
-     "has_override",
-     "component_api"
+     "Design Mode",
+     "component overrides"
     ],
-    "purpose": "Generates and publishes nce_component_overrides.css from Vue Component Desk colour overrides and table rules.",
-    "read_when": "Debugging component override CSS, table styling output, or publish_component_css called from component_api."
+    "purpose": "Builds nce_component_overrides.css from Vue Component element and table colour override fields.",
+    "read_when": "Changing how Design Mode or Vue Component overrides become CSS, table bundles, or publish_component_css output."
    },
    "labels": {
     "themes/utils/component_css_writer.py::_bundle_selectors": {
      "body_hash": "534894b44c",
-     "label": "Parses a theme_table_targets line into strong and weak selector prefixes for class or scope targets."
+     "label": "Parses a theme_table_targets class or scope line into strong and weak selector prefixes."
     },
     "themes/utils/component_css_writer.py::_table_bg_decls": {
      "body_hash": "8c4f4d4fa0",
-     "label": "Maps a theme background class and fg type to background-color and color var declarations for tables."
+     "label": "Emits background and foreground var() pair for a theme bg class and mono or tonal fg."
     },
     "themes/utils/component_css_writer.py::_table_border_value": {
      "body_hash": "5f2b8c61f4",
-     "label": "Combines border width and color classes into one border shorthand or returns None when incomplete."
+     "label": "Combines border width and color override classes into one border shorthand or returns nothing."
     },
     "themes/utils/component_css_writer.py::_table_prefix": {
      "body_hash": "fd12ba0b61",
-     "label": "Builds scoped CSS selector prefix from table_selector and optional table_scope_class on the parent."
+     "label": "Builds scoped triple-class selector prefix for per-component table override rules."
     },
     "themes/utils/component_css_writer.py::_valid_text_override": {
      "body_hash": "d586fe9ef7",
-     "label": "Checks whether a row has a non-empty override_text_class that matches TEXT_RE."
+     "label": "Checks override_text_class is non-empty and matches the theme text class pattern."
     },
     "themes/utils/component_css_writer.py::declarations_for": {
      "body_hash": "4964197390",
-     "label": "Builds CSS declaration lines for one element row; component_api preview_declarations uses it for live preview."
+     "label": "Maps one element row to CSS declarations; preview_declarations API uses this for live Design Mode preview."
     },
     "themes/utils/component_css_writer.py::generate_component_css": {
      "body_hash": "0081b69438",
-     "label": "Aggregates eligible Present element overrides into triplicated-selector rule blocks plus the generated header."
+     "label": "Concatenates triplicated selector rules for all eligible element overrides, deduped by component and class."
     },
     "themes/utils/component_css_writer.py::publish_component_css": {
-     "body_hash": "615f4d8b64",
-     "label": "Loads all Vue Component records, merges element, bundle, and table CSS, writes file via css_publish, clears Frappe cache."
+     "body_hash": "892e9cba5e",
+     "label": "Loads Vue Component rows, merges element, bundle, and table CSS, writes nce_component_overrides.css via publish_css."
     },
     "themes/utils/component_css_writer.py::table_css_for": {
      "body_hash": "6da5805627",
-     "label": "Generates per-component table header, row, alt, and divider rules; component_api preview_design_table calls it."
+     "label": "Assembles header, row, alt, and divider CSS for one component table; preview_design_table API calls this."
     },
     "themes/utils/component_css_writer.py::theme_table_bundle_for": {
      "body_hash": "c190f0c5cd",
-     "label": "Emits full theme-table CSS bundle for a Present component from theme_table_targets when tables lack theme-table."
+     "label": "Generates default theme-table styling for targets on Present components lacking theme-table markup."
     }
    }
   },
@@ -4482,195 +4559,236 @@
    }
   },
   "themes/utils/css_publish.py": {
-   "body_hash": "3dae2c281c57d3b3efef763dd067114b1e4f6cd17095d48537f4c5bc2d438471",
+   "body_hash": "34b2e6b462ee5d65083da03c0647040aea2b2386b8da38cba3cb60bcac801c00",
    "header": {
     "format": 1,
     "gotchas": [
-     "A missing or unreadable hash can never break boot; hooks.py falls back to the bare CSS path.",
-     "Cache busting and Site Theme Config css_hash updates stay in the callers because Web and Desk side effects differ."
+     "Hash sidecar is a plain file so hooks.py stays DB-free at import; missing hash falls back to bare CSS URL.",
+     "write_public_css_file skips the sidecar; fonts.css uses that path for the editor-only font sheet."
     ],
     "keywords": [
+     "publish_css",
      "write_published_css",
      "css_hash_for",
      "nce_theme.css",
      "nce_desk_theme.css",
-     "sha1",
-     "sidecar",
-     "cache-busting"
+     ".hash sidecar",
+     "bust_asset_cache",
+     "public/css",
+     "Site Theme Config",
+     "assets_json",
+     "SHA-1",
+     "cache-buster"
     ],
-    "purpose": "Shared writer that saves published theme CSS and an 8-character SHA-1 hash sidecar for cache busting.",
-    "read_when": "When changing how web or desk CSS files and their hash sidecars are written."
+    "purpose": "Shared write and hash sidecar plumbing for publishing nce_theme.css and nce_desk_theme.css with Frappe cache busting.",
+    "read_when": "Tracing how theme CSS lands in public/css, how .hash sidecars work, or what publish_css does after writers build CSS."
+   },
+   "labels": {
+    "themes/utils/css_publish.py::_public_css_dir": {
+     "body_hash": "7a1b62c2d6",
+     "label": "Creates the themes app public/css folder if needed and returns that directory path."
+    },
+    "themes/utils/css_publish.py::bust_asset_cache": {
+     "body_hash": "ba059be4d4",
+     "label": "Clears Frappe assets_json and site cache so browsers pick up new CSS URLs after publish."
+    },
+    "themes/utils/css_publish.py::css_hash_for": {
+     "body_hash": "8dca8d67e1",
+     "label": "Derives the eight-character SHA-1 prefix used as the published CSS query-string cache buster."
+    },
+    "themes/utils/css_publish.py::public_css_path": {
+     "body_hash": "0d433d8810",
+     "label": "Builds the absolute filesystem path for one filename under public/css without mkdir."
+    },
+    "themes/utils/css_publish.py::publish_css": {
+     "body_hash": "3047ba1cf1",
+     "label": "Orchestrates sidecar write, optional Site Theme Config hash_field update, and cache bust for web and desk writers."
+    },
+    "themes/utils/css_publish.py::read_published_css_hash": {
+     "body_hash": "4031d688e5",
+     "label": "Loads the trimmed hash from the filename.hash sidecar, or None when the file is missing or empty."
+    },
+    "themes/utils/css_publish.py::write_public_css_file": {
+     "body_hash": "db0e76f74c",
+     "label": "Persists raw CSS under public/css with no hash sidecar; publish_theme uses it for editor fonts.css."
+    },
+    "themes/utils/css_publish.py::write_published_css": {
+     "body_hash": "58352147a8",
+     "label": "Writes the CSS file plus adjacent .hash sidecar and returns the hash for hooks._css_url()."
+    }
    }
   },
   "themes/utils/css_writer.py": {
-   "body_hash": "1e5182c52fd0fe83074ab7c00948aac85f48e448f5cb577cd5ad04878fa322c7",
+   "body_hash": "50857a2e8ea1da827e3bc738b42e405e98c1347b2dddc597eb5e301a2bc4d0ca",
    "header": {
     "format": 1,
     "gotchas": [
-     "Utility classes are gated by fields present in the default payload; the default defines all standard roles.",
-     "Unregistered font names, including System Default, emit no @font-face rules.",
-     "custom_css is only added to the :root block, never to scoped Active theme blocks.",
-     "Keep shade and colour logic in step with frontend/src/utils/color-shades.ts and src/widget/constants.ts."
+     "custom_css is appended only on the default :root block; scoped Active palettes cannot safely include it.",
+     "Site class emitters use fields present in the default payload only; Active themes add scoped var blocks.",
+     "Re-exports token maps in __all__ for api.py, patches, and tests backward compatibility."
     ],
     "keywords": [
-     "generate_site_css",
-     "generate_css",
-     "publish_theme",
-     "data-nce-theme",
-     "FONT_REGISTRY",
-     "Default theme",
-     "theme-bg",
      "nce_theme.css",
+     "publish_theme",
+     "generate_site_css",
+     "_emit_var_block",
+     "--nce-",
+     "theme-bg",
+     "data-nce-theme",
+     "OKLCH",
+     "theme_color_utils",
+     "theme_tokens",
+     "generate_fonts_css",
      "fonts.css",
-     "theme-table"
+     "CURATED_SHADES"
     ],
-    "purpose": "Builds and publishes web nce_theme.css so the Default theme drives :root and Active themes are scoped.",
-    "read_when": "When changing web CSS variables, theme- utility classes, fonts, or how the Default theme is published."
+    "purpose": "Builds nce_theme.css from NCE Theme JSON: --nce-* variables, theme utility classes, fonts, and publish_theme.",
+    "read_when": "Changing web theme tokens, shade classes, :root vs data-nce-theme scoping, or why publish reruns on NCE Theme save."
    },
    "labels": {
     "themes/utils/css_writer.py::_brand_palette_mode": {
      "body_hash": "d2451d3e93",
-     "label": "Read the theme's brand palette mode as corporate or flexible"
+     "label": "Normalizes brand_palette_mode to corporate unless flexible is explicitly set."
     },
     "themes/utils/css_writer.py::_collect_font_names": {
      "body_hash": "7665116556",
-     "label": "List the registered body and heading fonts used by a set of theme payloads"
+     "label": "Collects unique registered body and heading fonts across one or more theme payloads."
     },
     "themes/utils/css_writer.py::_emit_bg_themed": {
      "body_hash": "e4c6cceb6e",
-     "label": "Add theme-bg-themed, which picks readable text for any --bg shade"
+     "label": "Adds theme-bg-themed escape hatch using oklch relative color on a dynamic --bg variable."
     },
     "themes/utils/css_writer.py::_emit_font_faces": {
      "body_hash": "914c6895ef",
-     "label": "Add @font-face rules for one theme's body and heading fonts"
+     "label": "Adds @font-face rules for fonts referenced in a single payload getter."
     },
     "themes/utils/css_writer.py::_emit_font_faces_multi": {
      "body_hash": "971d637169",
-     "label": "Add @font-face rules for every font used by the Default and Active themes"
+     "label": "Adds @font-face rules for fonts used across default plus Active theme payloads."
     },
     "themes/utils/css_writer.py::_emit_neutral_classes": {
      "body_hash": "4bc939c86d",
-     "label": "Add surface, row, table header, heading, link, border and focus classes"
+     "label": "Emits page, surface, row, table header, and semantic text and border surface utilities."
     },
     "themes/utils/css_writer.py::_emit_prefixed_rule": {
      "body_hash": "44965862e1",
-     "label": "Add a theme- class rule together with its legacy unprefixed alias"
+     "label": "Duplicates a rule under theme- prefixed and legacy unprefixed class names for Desk consumers."
     },
     "themes/utils/css_writer.py::_emit_role_bg_classes": {
      "body_hash": "0b62f718ac",
-     "label": "Add theme-bg role classes with their default foreground colour"
+     "label": "Adds theme-bg-{role} utilities pairing background with default --nce-*-fg variables."
     },
     "themes/utils/css_writer.py::_emit_role_shade_classes": {
      "body_hash": "445f69e1c7",
-     "label": "Add theme-bg, theme-text and theme-border classes for each curated role shade"
+     "label": "Adds theme-bg/text/border utilities for each curated shade stop on shade-scale roles."
     },
     "themes/utils/css_writer.py::_emit_role_text_border_classes": {
      "body_hash": "d11d8b091b",
-     "label": "Add theme-text and theme-border role classes and their fg variants"
+     "label": "Adds per-role text, border, and explicit fg utility classes from COLOR_FIELDS."
     },
     "themes/utils/css_writer.py::_emit_shape_classes": {
      "body_hash": "36c6dba9cb",
-     "label": "Add theme rounded, shadow and transition duration classes"
+     "label": "Defines rounded, shadow, and transition-duration utilities tied to theme shape tokens."
     },
     "themes/utils/css_writer.py::_emit_spacing_classes": {
      "body_hash": "7939638761",
-     "label": "Add theme padding, margin and gap classes at five sizes"
+     "label": "Defines uniform padding, margin, and gap utilities scaled from --nce-spacing-base."
     },
     "themes/utils/css_writer.py::_emit_table_classes": {
      "body_hash": "aa22684b78",
-     "label": "Add the theme-table bundle with zebra rows and cell dividers"
+     "label": "Defines theme-table zebra rows and divider borders from table token variables."
     },
     "themes/utils/css_writer.py::_emit_table_width_vars": {
      "body_hash": "3439e69bc3",
-     "label": "Add the table row and column divider width variables"
+     "label": "Appends --nce-border-width-table-row and table-col vars into a var block."
     },
     "themes/utils/css_writer.py::_emit_typography_classes": {
      "body_hash": "c8876d4ad8",
-     "label": "Add theme font family and font size classes"
+     "label": "Defines font-family and stepped theme-text size classes from typography tokens."
     },
     "themes/utils/css_writer.py::_emit_var_block": {
      "body_hash": "204581f91f",
-     "label": "Add one theme's --nce-* variables, shades, foregrounds and shape tokens under a selector"
+     "label": "Emits selector-scoped --nce-* variables, shade scales, typography, shadow, and optional custom_css."
     },
     "themes/utils/css_writer.py::_fg_flip_mono": {
      "body_hash": "dd2ddc6f30",
-     "label": "Read a role's mono foreground flip shade, accepting older dual fields"
+     "label": "Resolves mono foreground flip from primary or legacy dual flip field names."
     },
     "themes/utils/css_writer.py::_fg_flip_tonal": {
      "body_hash": "f54c76008d",
-     "label": "Read a role's tonal foreground flip shade, accepting older dual fields"
+     "label": "Resolves tonal foreground flip from primary or legacy dual flip field names."
     },
     "themes/utils/css_writer.py::_font_face_blocks": {
      "body_hash": "df953d3b5e",
-     "label": "Return the @font-face rules for one registered self-hosted variable font"
+     "label": "Emits @font-face lines for one curated variable font with latin and latin-ext subsets."
     },
     "themes/utils/css_writer.py::_font_stack": {
      "body_hash": "006181d2a3",
-     "label": "Build the font-family stack for a theme font, or the system stack"
+     "label": "Turns a theme font_family value into a CSS stack using FONT_REGISTRY or the system UI stack."
     },
     "themes/utils/css_writer.py::_get_role_shades": {
      "body_hash": "89f39e18e7",
-     "label": "Return a role's 50 to 950 shades, from stored shades, neutral warmth or generation"
+     "label": "Resolves eleven-stop shades from stored map, neutral warmth, or _generate_shades math."
     },
     "themes/utils/css_writer.py::_normalize_table_width_tier": {
      "body_hash": "250aacae4a",
-     "label": "Normalise a table divider width setting to thin, normal or strong"
+     "label": "Maps legacy px tier names to thin/medium/thick tokens for table divider vars."
     },
     "themes/utils/css_writer.py::_parse_shades_map": {
      "body_hash": "4156b75fec",
-     "label": "Read a stored shade map into sorted shade and hex pairs"
+     "label": "Parses stored JSON or dict role _shades maps into sorted shade tuples."
     },
     "themes/utils/css_writer.py::_pin_stop_600_for_role": {
      "body_hash": "471ed66b92",
-     "label": "Decide whether a role's shade 600 stays exactly its base colour"
+     "label": "Decides whether shade generation pins stop 600 to the base hex under flexible mode."
     },
     "themes/utils/css_writer.py::_resolve_flat_color": {
      "body_hash": "2dd90a925b",
-     "label": "Return a flat colour token, inheriting its table colour fallback when unset"
+     "label": "Reads a scalar color field with TABLE_COLOR_FALLBACKS inheritance when unset."
     },
     "themes/utils/css_writer.py::_resolve_font_name": {
      "body_hash": "1f5d1d9716",
-     "label": "Map a retired font name to its current replacement before publishing"
+     "label": "Substitutes RETIRED_FONT_ALIASES so legacy font picker names still resolve at publish."
     },
     "themes/utils/css_writer.py::_resolve_table_width_var": {
      "body_hash": "75bca7f98b",
-     "label": "Return the CSS variable reference for a table divider width tier"
+     "label": "Returns a var() reference for row or column table border width from the normalized tier."
     },
     "themes/utils/css_writer.py::_role_base_hex": {
      "body_hash": "015169ab43",
-     "label": "Return the base colour emitted for a role, honouring flexible palette adjustments"
+     "label": "Returns the canonical hex at shade 600 for a color role including gamma-adjusted flexible roles."
     },
     "themes/utils/css_writer.py::_role_gamma_sat": {
      "body_hash": "86b1341366",
-     "label": "Read a brand role's gamma and saturation adjustments, or neutral defaults"
+     "label": "Reads per-role gamma and saturation for flexible brand_palette_mode shade generation."
     },
     "themes/utils/css_writer.py::_role_is_configured": {
      "body_hash": "59ae47f4bf",
-     "label": "Tell whether a role has a colour or shades so its CSS is emitted"
+     "label": "Checks whether a role has base color, custom shades, or is always-on neutral."
     },
     "themes/utils/css_writer.py::_table_header_fg": {
      "body_hash": "8d2db0c97d",
-     "label": "Pick table header text colour, using the brand flip when the header is a brand shade"
+     "label": "Picks table header text color via brand shade match or pick_fg_mono on the header background."
     },
     "themes/utils/css_writer.py::_write_fonts_css": {
-     "body_hash": "bafe573da2",
-     "label": "Write public/css/fonts.css for the Theme Editor page"
+     "body_hash": "00746516bf",
+     "label": "Publishes fonts.css via write_public_css_file without a hash sidecar for the editor page."
     },
     "themes/utils/css_writer.py::generate_css": {
      "body_hash": "17e35b4c35",
-     "label": "Build a full nce_theme.css for one theme payload"
+     "label": "Assembles full CSS string from one theme payload through all emitters for snapshots or tests."
     },
     "themes/utils/css_writer.py::generate_fonts_css": {
      "body_hash": "c1e022d229",
-     "label": "Build fonts.css with every curated font for the Theme Editor picker"
+     "label": "Builds the full curated-font @font-face sheet written as fonts.css for the Theme Editor."
     },
     "themes/utils/css_writer.py::generate_site_css": {
      "body_hash": "04e6b3cbc0",
-     "label": "Build site CSS with the Default theme on :root and Active themes scoped by slug"
+     "label": "Builds :root plus class layer from default payload and scoped var blocks for each Active slug."
     },
     "themes/utils/css_writer.py::publish_theme": {
-     "body_hash": "688821481a",
-     "label": "Rebuild and publish nce_theme.css and fonts.css, then store the CSS hash and clear caches"
+     "body_hash": "ddb30a0352",
+     "label": "Reloads Default and Active NCE Theme rows, regenerates nce_theme.css, and publish_css with css_hash."
     }
    }
   },
@@ -4759,76 +4877,73 @@
    }
   },
   "themes/utils/desk_css_writer.py": {
-   "body_hash": "0873f0f8dfac47f455853ae6e9ad09100d653bd89787ddaf812c966c2d8442fe",
+   "body_hash": "8d9cfc62b6a7e4b9fceb582e7461bf72cc258185ac9551e45fd9612949c85421",
    "header": {
     "format": 1,
     "gotchas": [
-     "Desk output is flat DESK_CSS_VARS on :root, not web OKLCH shade classes.",
-     "font_weight_body emits both --weight-regular and --font-weight-regular for v15/v16.",
-     ".bold override uses !important because Frappe's own rule is !important.",
-     "Selector is :root and [data-theme=\"light\"] so v15 Espresso light theme picks up vars.",
-     "font_family is emitted separately as --font-stack plus optional @font-face blocks."
+     "DESK_CSS_SELECTOR targets :root and [data-theme=light] because v15 Espresso re-declares vars after app_include_css.",
+     "Desk .bold rule uses !important to override Frappe's own !important bold styling.",
+     "--text-base and --font-weight-regular are v16 tokens; v15 may ignore some mapped vars."
     ],
     "keywords": [
      "nce_desk_theme.css",
-     "DESK_CSS_VARS",
      "publish_desk_theme",
-     "generate_desk_css",
-     "desk_css_hash",
-     "write_published_css",
-     "FONT_REGISTRY",
-     "--font-stack",
+     "DESK_CSS_VARS",
      "get_desk_theme_css_url",
-     "Site Theme Config",
-     "DESK_CSS_SELECTOR"
+     "desk_css_hash",
+     "DESK_CSS_SELECTOR",
+     "data-theme",
+     "font-stack",
+     "text_scale_mode",
+     "boot.py"
     ],
-    "purpose": "Builds and publishes Frappe Desk theme CSS (nce_desk_theme.css) from NCE Desk Theme JSON payloads.",
-    "read_when": "Open when mapping desk tokens to Frappe CSS variables, fonts, publish, or boot CSS URL."
+    "purpose": "Generates nce_desk_theme.css mapping NCE Desk Theme JSON onto Frappe Desk CSS variables and publishes it.",
+    "read_when": "Desk chrome colors, Frappe --bg-color vars, boot desk_theme_css_url, or desk publish vs web css_writer."
    },
    "labels": {
     "themes/utils/desk_css_writer.py::_apply_auto_text_scale": {
      "body_hash": "d8a3dc174f",
-     "label": "Derives text_xs, text_sm, and text_lg from font_size when mode is auto."
+     "label": "Derives text_xs, text_sm, and text_lg from font_size when text_scale_mode is auto."
     },
     "themes/utils/desk_css_writer.py::_desk_font_face_blocks": {
      "body_hash": "1943d99454",
-     "label": "Emits @font-face lines for registered variable fonts from FONT_REGISTRY."
+     "label": "Emits self-hosted @font-face rules for one FONT_REGISTRY desk body font."
     },
     "themes/utils/desk_css_writer.py::_desk_font_stack": {
      "body_hash": "503d3b1a71",
-     "label": "Turns a stored desk font name into a quoted CSS font-family stack."
+     "label": "Builds a CSS font-family stack for a named desk font or None for System Default."
     },
     "themes/utils/desk_css_writer.py::_emit_desk_var_block": {
      "body_hash": "8a0f1f00b8",
-     "label": "Prints one CSS block mapping DESK_CSS_VARS from payload for a selector."
+     "label": "Outputs one selector block setting DESK_CSS_VARS from a merged desk payload."
     },
     "themes/utils/desk_css_writer.py::_load_desk_payload": {
      "body_hash": "8ae25ad8a8",
-     "label": "Loads theme_json dict for an NCE Desk Theme document name."
+     "label": "Loads theme_json dict from an NCE Desk Theme record name or returns empty when missing."
     },
     "themes/utils/desk_css_writer.py::_read_desk_css_hash": {
-     "body_hash": "b307b10baa",
-     "label": "Reads the eight-character hash from nce_desk_theme.css.hash on disk."
+     "body_hash": "a33b845b9a",
+     "label": "Reads nce_desk_theme.css.hash via css_publish; used by patches backfilling desk_css_hash."
     },
     "themes/utils/desk_css_writer.py::_resolve_desk_token_value": {
      "body_hash": "3616b4acfd",
-     "label": "Returns trimmed payload string for a desk token key or None if empty."
+     "label": "Returns a trimmed payload string for a desk token key or None when unset."
     },
     "themes/utils/desk_css_writer.py::generate_desk_css": {
      "body_hash": "38fb255ac5",
-     "label": "Merges base and active desk payloads into font faces, vars, and DESK_CSS_RULES."
+     "label": "Merges base and Active desk themes into @font-face, var block, font-stack, and DESK_CSS_RULES output."
     },
     "themes/utils/desk_css_writer.py::get_desk_theme_css_url": {
      "body_hash": "8d982ac4ee",
-     "label": "Returns published desk CSS asset path with desk_css_hash cache buster."
+     "label": "Returns /assets/themes/css/nce_desk_theme.css with ?v= hash for extend_bootinfo desk_theme_css_url."
     },
     "themes/utils/desk_css_writer.py::publish_desk_theme": {
-     "body_hash": "fd181ce0b2",
-     "label": "Regenerates desk CSS from base plus Active themes and updates desk_css_hash."
+     "body_hash": "ee9adc85ff",
+     "label": "Rebuilds merged desk CSS from base plus Active themes and publish_css with desk_css_hash field."
     },
     "themes/utils/desk_css_writer.py::read_desk_css_hash": {
      "body_hash": "c9c5ee3c07",
-     "label": "Reads hash from Site Theme Config then falls back to the sidecar file."
+     "label": "Reads desk_css_hash from Site Theme Config first, then falls back to the published sidecar."
     }
    }
   },
@@ -4874,49 +4989,274 @@
     "read_when": "When changing shade generation, neutral warmth, or foreground contrast shared with the editor."
    }
   },
-  "themes/utils/theme_family.py": {
-   "body_hash": "497035ba71e0cf69259573b9509e086341e63bd01a7a661b71935dfa241e2316",
+  "themes/utils/theme_doc.py": {
+   "body_hash": "28848628b7db0279b35ddebba9ae570c7262a3e890dc6a00c1fecccde491c974",
    "header": {
     "format": 1,
     "gotchas": [
-     "Web is_active equals is_base; Desk is_active equals status Active.",
-     "Desk enforces a single Active theme; new Desk themes start Inactive and new Web themes start Active."
+     "in_setup is true during bench install or migrate so controllers skip republishing CSS."
     ],
     "keywords": [
-     "WEB_FAMILY",
-     "DESK_FAMILY",
-     "ThemeFamily",
-     "is_active_is_base",
-     "single_active",
-     "bundle_to_app",
+     "slugify_theme_name",
+     "in_setup",
+     "base_theme_json",
+     "other_record",
+     "in_install",
+     "in_migrate",
+     "theme_json",
+     "NCE Theme",
      "NCE Desk Theme"
     ],
-    "purpose": "ThemeFamily descriptors that parameterize Web and Desk CRUD, publish, seeding, and Base Theme bundling.",
-    "read_when": "When changing a behavior that differs between Web site tokens and Desk chrome."
+    "purpose": "Small shared helpers for NCE Theme and NCE Desk Theme controllers: slugs, install guards, and DB lookups.",
+    "read_when": "Why CSS skip runs during migrate, how Active theme slugs are formed, or base theme_json seeding."
+   },
+   "labels": {
+    "themes/utils/theme_doc.py::base_theme_json": {
+     "body_hash": "d310b2d4ee",
+     "label": "Fetches theme_json from a base theme record by doctype and name for seeding new themes."
+    },
+    "themes/utils/theme_doc.py::in_setup": {
+     "body_hash": "1523d29f23",
+     "label": "Returns true during frappe.flags in_install or in_migrate so on_update skips CSS publish."
+    },
+    "themes/utils/theme_doc.py::other_record": {
+     "body_hash": "f7d0a9e12d",
+     "label": "Finds another doctype record matching filters excluding the current name for uniqueness validation."
+    },
+    "themes/utils/theme_doc.py::slugify_theme_name": {
+     "body_hash": "a44041c615",
+     "label": "Produces lower-case hyphen slug from a theme name for Active web CSS data-nce-theme scoping."
+    }
+   }
+  },
+  "themes/utils/theme_family.py": {
+   "body_hash": "80f04cb903dd7531f6680cd2a13c68ee6dbee9609625bb442713679f3c88e293",
+   "header": {
+    "format": 1,
+    "gotchas": [
+     "Web is_active_is_base true; Desk uses status Active with single_active enforcement on save.",
+     "Desk load_bundled_base_payload is None; web bundles via bundle_base_theme_to_app."
+    ],
+    "keywords": [
+     "ThemeFamily",
+     "WEB_FAMILY",
+     "DESK_FAMILY",
+     "FAMILIES",
+     "theme_service",
+     "publish_theme",
+     "publish_desk_theme",
+     "DESK_TOKEN_FIELDS",
+     "TOKEN_FIELDS",
+     "is_active_is_base",
+     "single_active"
+    ],
+    "purpose": "WEB_FAMILY and DESK_FAMILY descriptors wiring theme_service to the right doctype, publish, parse, and bundle hooks.",
+    "read_when": "Parameterizing web vs desk CRUD in theme_service or api.py without duplicating family-specific logic."
+   },
+   "labels": {
+    "themes/utils/theme_family.py::ThemeFamily": {
+     "body_hash": "642301b268",
+     "label": "Frozen dataclass holding doctype, callbacks, and validation messages for one web or desk theme family."
+    },
+    "themes/utils/theme_family.py::_desk_bundle": {
+     "body_hash": "6691adb912",
+     "label": "Persists base desk theme payload to bundled JSON and default_desk_theme.py install fallback."
+    },
+    "themes/utils/theme_family.py::_desk_css_hash": {
+     "body_hash": "2bb12afd39",
+     "label": "Delegates to desk_css_writer.read_desk_css_hash for config plus sidecar fallback."
+    },
+    "themes/utils/theme_family.py::_desk_parse_payload": {
+     "body_hash": "8fc461bca8",
+     "label": "Filters API payload to DESK_TOKEN_FIELDS allowed on NCE Desk Theme records."
+    },
+    "themes/utils/theme_family.py::_desk_publish": {
+     "body_hash": "444aa406d9",
+     "label": "Calls desk_css_writer.publish_desk_theme to rebuild nce_desk_theme.css after desk changes."
+    },
+    "themes/utils/theme_family.py::_desk_seed_payload": {
+     "body_hash": "94c7737375",
+     "label": "Loads JSON seed from the site base NCE Desk Theme theme_json for desk defaults."
+    },
+    "themes/utils/theme_family.py::_get_desk_base": {
+     "body_hash": "c70f52e279",
+     "label": "Returns Site Theme Config base_desk_theme link for desk family operations."
+    },
+    "themes/utils/theme_family.py::_get_web_base": {
+     "body_hash": "17e9dcb3a9",
+     "label": "Returns Site Theme Config base theme link name for web family operations."
+    },
+    "themes/utils/theme_family.py::_set_desk_base": {
+     "body_hash": "17d4ef77d7",
+     "label": "Writes Site Theme Config base_desk_theme link when seeding or changing desk base."
+    },
+    "themes/utils/theme_family.py::_set_web_base": {
+     "body_hash": "1c24ebcc4e",
+     "label": "Writes Site Theme Config base theme link when promoting or syncing default web theme."
+    },
+    "themes/utils/theme_family.py::_web_bundle": {
+     "body_hash": "3d0101a946",
+     "label": "Persists base web theme payload to bundled JSON and default_theme.py install fallback."
+    },
+    "themes/utils/theme_family.py::_web_bundled_payload": {
+     "body_hash": "31006ecc86",
+     "label": "Loads shipped base_theme.json or embedded fallback for restore-base flows."
+    },
+    "themes/utils/theme_family.py::_web_css_hash": {
+     "body_hash": "f610dd54bc",
+     "label": "Reads published web css_hash from Site Theme Config single."
+    },
+    "themes/utils/theme_family.py::_web_parse_payload": {
+     "body_hash": "708239bb4e",
+     "label": "Filters API payload to TOKEN_FIELDS and resolves neutral warmth via theme_color_utils."
+    },
+    "themes/utils/theme_family.py::_web_publish": {
+     "body_hash": "ec4b6269a5",
+     "label": "Calls css_writer.publish_theme to rebuild nce_theme.css after web theme changes."
+    },
+    "themes/utils/theme_family.py::_web_seed_payload": {
+     "body_hash": "cfbc0cca8a",
+     "label": "Loads JSON seed from the site base NCE Theme theme_json for new web theme defaults."
+    },
+    "themes/utils/theme_family.py::invoke_read_desk_css_hash": {
+     "body_hash": "fa27320439",
+     "label": "Callable wrapper exposing read_desk_css_hash on DESK_FAMILY.read_css_hash."
+    },
+    "themes/utils/theme_family.py::invoke_read_web_css_hash": {
+     "body_hash": "ae57023bd5",
+     "label": "Callable wrapper exposing read_web_css_hash on WEB_FAMILY.read_css_hash."
+    },
+    "themes/utils/theme_family.py::read_desk_css_hash": {
+     "body_hash": "b440698675",
+     "label": "Public desk hash reader wired into DESK_FAMILY for API and cache URLs."
+    },
+    "themes/utils/theme_family.py::read_web_css_hash": {
+     "body_hash": "c7824ecad3",
+     "label": "Public accessor for Site Theme Config css_hash used by the web editor API contract."
+    }
    }
   },
   "themes/utils/theme_service.py": {
-   "body_hash": "f7ed467fcb472374d7e2693dc0f63f372dde8921681993f8c1687e5e28a0c43c",
+   "body_hash": "b31bac0104b7b59ffbef085b684dcb50f6fd32724c4b65ac70bd55ccaec16bea",
    "header": {
     "format": 1,
     "gotchas": [
-     "A wrong save_as_base password must not raise AuthenticationError; it is reported as a validation error.",
-     "is_base_theme is deprecated and copies is_default_theme; do not use it in new code.",
-     "The Default theme may be renamed but cannot be deleted.",
-     "set_base promotes a theme to the Default :root driver; save_as_base also bundles that payload into app source."
+     "is_base_theme and site_base_theme are deprecated aliases; use is_default_theme in new code.",
+     "save_as_base uses ValidationError on wrong password, not AuthenticationError (avoids logout).",
+     "Default theme may be renamed but cannot be deleted; inactive non-Default cannot be renamed while Active.",
+     "Desk get_active_editor_response errors when no Active row; Web is_active follows status, Desk Default counts as active when is_active_is_base."
     ],
     "keywords": [
-     "set_base",
+     "ThemeFamily",
+     "get_editor_response",
      "save_as_base",
      "is_default_theme",
-     "is_base_theme",
-     "get_restore_base_payload",
-     "AuthenticationError",
      "_promote_to_default",
-     "regenerate_css"
+     "theme_service",
+     "NCE Theme",
+     "NCE Desk Theme",
+     "legacy editor flags",
+     "regenerate_css",
+     "slugify_theme_name",
+     "theme CRUD",
+     "editor payload"
     ],
-    "purpose": "Shared Web and Desk CRUD that promotes the Default Theme, publishes CSS, and can bundle the repo Base Theme.",
-    "read_when": "When changing save, promote-to-Default, Active status, rename, or delete rules."
+    "purpose": "Family-parameterized CRUD and editor payloads for NCE Web and Desk themes, used by themes API.",
+    "read_when": "Changing theme save, Default promotion, active status, editor responses, or rename/delete rules for Web or Desk."
+   },
+   "labels": {
+    "themes/utils/theme_service.py::_assert_theme_deletable": {
+     "body_hash": "4ddd5e6cd1",
+     "label": "Blocks delete for Default theme or Active desk themes before delete runs."
+    },
+    "themes/utils/theme_service.py::_assert_theme_renameable": {
+     "body_hash": "36d9d6c503",
+     "label": "Blocks rename for Active non-Default desk themes while allowing Default rename."
+    },
+    "themes/utils/theme_service.py::_deactivate_other": {
+     "body_hash": "a653a4dc3c",
+     "label": "Sets other Active themes Inactive when a family allows only one Active theme."
+    },
+    "themes/utils/theme_service.py::_default_theme_name": {
+     "body_hash": "3fa75d66d0",
+     "label": "Looks up the name of the single Default theme document for a family, if any."
+    },
+    "themes/utils/theme_service.py::_editor_css_hash": {
+     "body_hash": "df7f5bc42f",
+     "label": "Returns published css hash when the theme drives live CSS for that family."
+    },
+    "themes/utils/theme_service.py::_is_active": {
+     "body_hash": "1192759473",
+     "label": "Derives editor is_active from family rules (Default-only for web base, Active status for desk)."
+    },
+    "themes/utils/theme_service.py::_is_default_theme_record": {
+     "body_hash": "487d9eb46a",
+     "label": "Treats the is_default field as the sole signal that a row is the site Default (:root) theme."
+    },
+    "themes/utils/theme_service.py::_legacy_editor_flags": {
+     "body_hash": "8e4fa5b97d",
+     "label": "Adds is_default_theme plus deprecated is_base_theme and site_* keys for older editor clients."
+    },
+    "themes/utils/theme_service.py::_promote_to_default": {
+     "body_hash": "f6b7a95d22",
+     "label": "Moves is_default to one theme, clears the previous Default, and updates Site Theme Config."
+    },
+    "themes/utils/theme_service.py::_require_password": {
+     "body_hash": "31278c4acc",
+     "label": "Verifies the current user's password before save_as_base without triggering session logout."
+    },
+    "themes/utils/theme_service.py::create": {
+     "body_hash": "ba0bd41537",
+     "label": "Inserts a new theme merged from seed payload; used by create_theme API methods."
+    },
+    "themes/utils/theme_service.py::delete": {
+     "body_hash": "fbb7032405",
+     "label": "Deletes a theme after deletability checks; desk delete API delegates here."
+    },
+    "themes/utils/theme_service.py::get_active_editor_response": {
+     "body_hash": "f594ceffe0",
+     "label": "Returns editor payload for the desk theme with status Active."
+    },
+    "themes/utils/theme_service.py::get_base_editor_response": {
+     "body_hash": "07c3bbc23b",
+     "label": "Returns editor payload for the site's Default theme; backs get_base_theme_editor API methods."
+    },
+    "themes/utils/theme_service.py::get_editor_response": {
+     "body_hash": "0e01a3f7dc",
+     "label": "Builds full editor JSON for one theme; whitelisted API get_theme_editor and desk variants call this."
+    },
+    "themes/utils/theme_service.py::get_restore_base_payload": {
+     "body_hash": "4853577350",
+     "label": "Supplies bundled or seed JSON so the UI can restore to the app base theme fixture."
+    },
+    "themes/utils/theme_service.py::list_themes": {
+     "body_hash": "81324ab950",
+     "label": "Lists all themes in a family with is_default_theme, deprecated alias, and is_active flags."
+    },
+    "themes/utils/theme_service.py::regenerate_css": {
+     "body_hash": "e139c86bf0",
+     "label": "Republishes CSS for the current Default theme when base is configured."
+    },
+    "themes/utils/theme_service.py::rename": {
+     "body_hash": "79fe1fe8e3",
+     "label": "Updates theme_name and slug via SQL for permitted themes; API rename_theme calls this."
+    },
+    "themes/utils/theme_service.py::save": {
+     "body_hash": "063b564048",
+     "label": "Parses and stores theme_json, optional status change, and returns css_hash when base or Active."
+    },
+    "themes/utils/theme_service.py::save_as_base": {
+     "body_hash": "484bde0d60",
+     "label": "Password-gated Default promotion, CSS publish, and optional bundle into app source files."
+    },
+    "themes/utils/theme_service.py::set_active": {
+     "body_hash": "68d6a06f83",
+     "label": "Marks one desk theme Active, deactivates others, and republishes desk CSS."
+    },
+    "themes/utils/theme_service.py::set_base": {
+     "body_hash": "23d924f32d",
+     "label": "Promotes a theme to Default and republishes its CSS via the family publish hook."
+    }
    }
   },
   "themes/utils/theme_tokens.py": {

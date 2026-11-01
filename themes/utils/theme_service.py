@@ -25,6 +25,11 @@ from themes.utils.theme_family import DESK_FAMILY, ThemeFamily, WEB_FAMILY
 # ─── AGENT:internals ─── Default theme detection, legacy API flags, is_active semantics
 
 
+def _require_theme(family: ThemeFamily, theme: str) -> None:
+    if not frappe.db.exists(family.doctype, theme):
+        frappe.throw(_(family.theme_exists_label).format(theme))
+
+
 def _is_default_theme_record(*, is_default: int | bool | None) -> bool:
     """True when this row is the Default theme (site :root fallback). Keyed on is_default only."""
     return bool(is_default)
@@ -43,8 +48,7 @@ def _default_theme_name(family: ThemeFamily) -> Optional[str]:
 
 def _promote_to_default(family: ThemeFamily, theme: str) -> None:
     """Move is_default to theme and sync Site Theme Config pointer. Exactly one Default per family."""
-    if not frappe.db.exists(family.doctype, theme):
-        frappe.throw(_(family.theme_exists_label).format(theme))
+    _require_theme(family, theme)
     current = _default_theme_name(family)
     if current and current != theme:
         frappe.db.set_value(family.doctype, current, "is_default", 0, update_modified=False)
@@ -103,8 +107,7 @@ def _editor_css_hash(family: ThemeFamily, *, is_default: bool, status: str) -> O
 
 
 def get_editor_response(family: ThemeFamily, theme_name: str) -> dict:
-    if not frappe.db.exists(family.doctype, theme_name):
-        frappe.throw(_(family.theme_exists_label).format(theme_name))
+    _require_theme(family, theme_name)
     theme = frappe.get_doc(family.doctype, theme_name)
     is_default = _is_default_theme_record(is_default=theme.is_default)
     result = {
@@ -127,16 +130,20 @@ def get_base_editor_response(family: ThemeFamily) -> dict:
     return get_editor_response(family, default)
 
 
-def get_active_editor_response(family: ThemeFamily) -> dict:
-    active = frappe.get_all(
+def active_theme_name(family: ThemeFamily) -> str:
+    names = frappe.get_all(
         family.doctype,
         filters={"status": "Active"},
         limit=1,
         pluck="name",
     )
-    if not active:
+    if not names:
         frappe.throw(_("No active desk theme set."))
-    return get_editor_response(family, active[0])
+    return names[0]
+
+
+def get_active_editor_response(family: ThemeFamily) -> dict:
+    return get_editor_response(family, active_theme_name(family))
 
 
 def get_restore_base_payload(family: ThemeFamily) -> dict:
@@ -165,8 +172,7 @@ def save(
     payload,
     status: Optional[str] = None,
 ) -> dict:
-    if not frappe.db.exists(family.doctype, theme):
-        frappe.throw(_(family.theme_exists_label).format(theme))
+    _require_theme(family, theme)
     clean = family.parse_payload(payload)
     doc = frappe.get_doc(family.doctype, theme)
     doc.theme_json = json.dumps(clean, default=str)
@@ -221,8 +227,7 @@ def set_base(family: ThemeFamily, theme: str) -> dict:
 
 def save_as_base(family: ThemeFamily, theme: str, password: str) -> dict:
     _require_password(password)
-    if not frappe.db.exists(family.doctype, theme):
-        frappe.throw(_(family.theme_exists_label).format(theme))
+    _require_theme(family, theme)
     if family.bundle_to_app is None:
         frappe.throw(_("Bundling is not supported for this theme family"))
     payload = json.loads(frappe.db.get_value(family.doctype, theme, "theme_json") or "{}")
@@ -238,8 +243,7 @@ def save_as_base(family: ThemeFamily, theme: str, password: str) -> dict:
 
 
 def set_active(family: ThemeFamily, theme: str) -> dict:
-    if not frappe.db.exists(family.doctype, theme):
-        frappe.throw(_(family.theme_exists_label).format(theme))
+    _require_theme(family, theme)
     _deactivate_other(family, theme)
     doc = frappe.get_doc(family.doctype, theme)
     doc.status = "Active"
@@ -319,6 +323,5 @@ def delete(family: ThemeFamily, theme: str) -> dict:
 def regenerate_css(family: ThemeFamily) -> dict:
     base = family.get_base_theme_name()
     if not base:
-        msg = "No base desk theme set" if family.key == "desk" else "No base theme set"
-        frappe.throw(_(msg))
+        frappe.throw(_(family.no_base_short_message))
     return family.publish(base)
