@@ -44,6 +44,12 @@ _TABLE_LINE_COLOR_FIELDS = (
 	("table_row_divider_color_class", "Horizontal Divider Colour"),
 	("table_col_divider_color_class", "Vertical Divider Colour"),
 )
+_TABLE_CHECKS = (
+	(_TABLE_BG_FIELDS, lambda v: bool(BG_RE.match(v)), "background class"),
+	(_TABLE_FG_FIELDS, lambda v: v in ("mono", "tonal"), "text type"),
+	(_TABLE_LINE_WIDTH_FIELDS, lambda v: v in BORDER_WIDTHS, "border width class"),
+	(_TABLE_LINE_COLOR_FIELDS, lambda v: bool(BORDER_COLOR_RE.match(v)), "border colour class"),
+)
 
 
 class VueComponent(Document):
@@ -56,30 +62,13 @@ class VueComponent(Document):
 						_("Row {0}: {1} is not a valid {2}.").format(row.idx, value, label)
 					)
 
-		for fieldname, label in _TABLE_BG_FIELDS:
-			value = (self.get(fieldname) or "").strip()
-			if value and not BG_RE.match(value):
-				frappe.throw(
-					_("Table {0}: {1} is not a valid {2}.").format(label, value, "background class")
-				)
-		for fieldname, label in _TABLE_FG_FIELDS:
-			value = (self.get(fieldname) or "").strip()
-			if value and value not in ("mono", "tonal"):
-				frappe.throw(
-					_("Table {0}: {1} is not a valid {2}.").format(label, value, "text type")
-				)
-		for fieldname, label in _TABLE_LINE_WIDTH_FIELDS:
-			value = (self.get(fieldname) or "").strip()
-			if value and value not in BORDER_WIDTHS:
-				frappe.throw(
-					_("Table {0}: {1} is not a valid {2}.").format(label, value, "border width class")
-				)
-		for fieldname, label in _TABLE_LINE_COLOR_FIELDS:
-			value = (self.get(fieldname) or "").strip()
-			if value and not BORDER_COLOR_RE.match(value):
-				frappe.throw(
-					_("Table {0}: {1} is not a valid {2}.").format(label, value, "border colour class")
-				)
+		for fields, check, kind in _TABLE_CHECKS:
+			for fieldname, label in fields:
+				value = (self.get(fieldname) or "").strip()
+				if value and not check(value):
+					frappe.throw(
+						_("Table {0}: {1} is not a valid {2}.").format(label, value, kind)
+					)
 
 		rows = normalise_groups([r.as_dict() for r in self.elements])
 		for i, row in enumerate(self.elements):

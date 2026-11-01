@@ -9,8 +9,10 @@ from frappe import _
 from themes.utils.component_css_writer import declarations_for, publish_component_css, table_css_for
 from themes.utils.component_scan import inherit_table_usage, iter_vue_files, mark_roots, scan_vue_file
 from themes.utils.component_summary import build_summary
-from themes.utils.component_sync import ALWAYS_EXCLUDED_APPS, merge_elements
+from themes.utils.component_sync import ALWAYS_EXCLUDED_APPS, OVERRIDE_FIELDS, merge_elements
 from themes.utils.design_mode import (
+	TABLE_CLASS_FIELDS,
+	TABLE_FG_FIELDS,
 	TABLE_VALUE_FIELDS,
 	build_selector_map,
 	build_table_map,
@@ -35,6 +37,9 @@ ELEMENT_FIELDS = (
 	"override_border_width_class",
 	"override_border_color_class",
 )
+
+
+# ─── Scanning ───
 
 
 def _is_frappe_branded(app: str) -> bool:
@@ -123,6 +128,10 @@ def _used_by(component_name: str, exclude_name: str) -> list[str]:
 	return sorted(names)
 
 
+def _row_value(row, key):
+	return row.get(key) if isinstance(row, dict) else getattr(row, key, None)
+
+
 def apply_root_flags() -> None:
 	rows = frappe.get_all(
 		"Vue Component",
@@ -130,20 +139,12 @@ def apply_root_flags() -> None:
 	)
 	scans: list[dict] = []
 	for row in rows:
-		if isinstance(row, dict):
-			scans.append({
-				"name": row["name"],
-				"app": row.get("app") or "",
-				"component_name": row.get("component_name") or "",
-				"uses_components": row.get("uses_components") or "",
-			})
-		else:
-			scans.append({
-				"name": row.name,
-				"app": row.app or "",
-				"component_name": row.component_name or "",
-				"uses_components": row.uses_components or "",
-			})
+		scans.append({
+			"name": _row_value(row, "name"),
+			"app": _row_value(row, "app") or "",
+			"component_name": _row_value(row, "component_name") or "",
+			"uses_components": _row_value(row, "uses_components") or "",
+		})
 	mark_roots(scans)
 	for scan in scans:
 		frappe.db.set_value(
@@ -169,6 +170,14 @@ def _refresh_all_summaries() -> None:
 			_used_by(doc.component_name, doc.name),
 		)
 		frappe.db.set_value("Vue Component", doc.name, "summary", text, update_modified=False)
+
+
+def _save_without_publish(doc, ignore_permissions: bool = False) -> None:
+	doc.flags.skip_css_publish = True
+	if ignore_permissions:
+		doc.save(ignore_permissions=True)
+	else:
+		doc.save()
 
 
 @frappe.whitelist()
@@ -207,16 +216,14 @@ def rescan_all() -> dict:
 
 	for doc, scan in pending:
 		_apply_scan(doc, scan)
-		doc.flags.skip_css_publish = True
-		doc.save(ignore_permissions=True)
+		_save_without_publish(doc, ignore_permissions=True)
 
 	for row in frappe.get_all("Vue Component", fields=["name", "component_key", "status"]):
 		if row.component_key in seen or row.status == "Missing":
 			continue
 		doc = frappe.get_doc("Vue Component", row.name)
 		_apply_scan(doc, None)
-		doc.flags.skip_css_publish = True
-		doc.save(ignore_permissions=True)
+		_save_without_publish(doc, ignore_permissions=True)
 		missing += 1
 
 	apply_root_flags()
@@ -295,6 +302,9 @@ def components_inside(name: str) -> list[dict]:
 	return result
 
 
+# ─── Preview and publish ───
+
+
 @frappe.whitelist()
 def get_preview_theme() -> dict:
 	frappe.only_for("System Manager")
@@ -307,11 +317,14 @@ def get_preview_theme() -> dict:
 	return {"theme": theme_name or "", "slug": slug or ""}
 
 
+def _parse_json_arg(value):
+	return frappe.parse_json(value) if isinstance(value, str) else value
+
+
 @frappe.whitelist()
 def preview_declarations(rows) -> dict:
 	_require_design()
-	if isinstance(rows, str):
-		rows = frappe.parse_json(rows)
+	rows = _parse_json_arg(rows)
 	result: dict[str, str] = {}
 	for row in rows:
 		key = row.get("key")
@@ -350,17 +363,7 @@ def open_vue_components() -> dict:
 	}
 
 
-_TABLE_CLASS_FIELDS = (
-	"table_header_bg_class", "table_row_bg_class", "table_row_alt_bg_class",
-	"table_header_line_class", "table_header_line_color_class",
-	"table_row_divider_class", "table_row_divider_color_class",
-	"table_col_divider_class", "table_col_divider_color_class",
-)
-_TABLE_FG_FIELDS = ("table_header_fg_type", "table_row_fg_type", "table_row_alt_fg_type")
-_DESIGN_VALUE_FIELDS = (
-	"override_bg_class", "override_fg_type", "override_text_class",
-	"override_border_width_class", "override_border_color_class",
-)
+# ─── Design Mode ───
 
 
 def can_design(user: str | None = None) -> bool:
@@ -422,7 +425,7 @@ def get_design_mode_map() -> dict:
 	for r in frappe.get_all(
 		"Vue Component Element",
 		filters={"parenttype": "Vue Component", "element_status": "Present"},
-		fields=["parent", "selector_class", "tag", "line", "is_dynamic", "keep_default", *_DESIGN_VALUE_FIELDS],
+		fields=["parent", "selector_class", "tag", "line", "is_dynamic", "keep_default", *OVERRIDE_FIELDS],
 	):
 		p = parents.get(r.parent)
 		if not p:
@@ -452,11 +455,14 @@ def _components_with_selector(selector: str) -> list[str]:
 	return sorted(present)
 
 
+def _publish_and_hash() -> str:
+	return publish_component_css().get("css_hash") or ""
+
+
 @frappe.whitelist()
 def save_design_change(selector: str, values) -> dict:
 	_require_design()
-	if isinstance(values, str):
-		values = frappe.parse_json(values)
+	values = _parse_json_arg(values)
 	selector = (selector or "").strip()
 	if selector in _protected_classes():
 		frappe.throw(_("{0} is set per panel on the Page Panel's Colours tab.").format(selector))
@@ -468,38 +474,33 @@ def save_design_change(selector: str, values) -> dict:
 		for row in doc.elements:
 			if row.element_status != "Present" or (row.selector_class or "").strip() != selector:
 				continue
-			for f in _DESIGN_VALUE_FIELDS:
+			for f in OVERRIDE_FIELDS:
 				row.set(f, (values.get(f) or "").strip())
 			row.keep_default = 1 if values.get("keep_default") else 0
-		doc.flags.skip_css_publish = True
-		doc.save()
-	result = publish_component_css()
-	return {"components": names, "css_hash": result.get("css_hash") or ""}
+		_save_without_publish(doc)
+	return {"components": names, "css_hash": _publish_and_hash()}
 
 
 @frappe.whitelist()
 def revert_design_components(names) -> dict:
 	_require_design()
-	if isinstance(names, str):
-		names = frappe.parse_json(names)
+	names = _parse_json_arg(names)
 	reverted = []
 	for name in names or []:
 		if not frappe.db.exists("Vue Component", name):
 			continue
 		doc = frappe.get_doc("Vue Component", name)
 		for row in doc.elements:
-			for f in _DESIGN_VALUE_FIELDS:
+			for f in OVERRIDE_FIELDS:
 				row.set(f, "")
 			row.keep_default = 0
-		for f in _TABLE_CLASS_FIELDS:
+		for f in TABLE_CLASS_FIELDS:
 			doc.set(f, "")
-		for f in _TABLE_FG_FIELDS:
+		for f in TABLE_FG_FIELDS:
 			doc.set(f, "mono")
-		doc.flags.skip_css_publish = True
-		doc.save()
+		_save_without_publish(doc)
 		reverted.append(name)
-	result = publish_component_css()
-	return {"reverted": reverted, "css_hash": result.get("css_hash") or ""}
+	return {"reverted": reverted, "css_hash": _publish_and_hash()}
 
 
 def _table_parent(name: str) -> dict:
@@ -516,8 +517,7 @@ def _table_parent(name: str) -> dict:
 @frappe.whitelist()
 def preview_design_table(name: str, values) -> dict:
 	_require_design()
-	if isinstance(values, str):
-		values = frappe.parse_json(values)
+	values = _parse_json_arg(values)
 	parent = dict(_table_parent(name))
 	parent.update(clean_table_values(values))
 	parent["status"] = "Present"
@@ -528,13 +528,10 @@ def preview_design_table(name: str, values) -> dict:
 @frappe.whitelist()
 def save_design_table(name: str, values) -> dict:
 	_require_design()
-	if isinstance(values, str):
-		values = frappe.parse_json(values)
+	values = _parse_json_arg(values)
 	_table_parent(name)
 	doc = frappe.get_doc("Vue Component", name)
 	for f, v in clean_table_values(values).items():
 		doc.set(f, v)
-	doc.flags.skip_css_publish = True
-	doc.save()
-	result = publish_component_css()
-	return {"name": name, "css_hash": result.get("css_hash") or ""}
+	_save_without_publish(doc)
+	return {"name": name, "css_hash": _publish_and_hash()}
