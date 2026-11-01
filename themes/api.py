@@ -59,7 +59,7 @@ def get_base_theme_editor():
 def get_active_theme_editor():
     """DEPRECATED — remove after callers confirmed gone.
 
-    Legacy alias for get_base_theme_editor(). Still called from frontend useTheme.ts.
+    Legacy alias for get_base_theme_editor(). Kept for external callers; this app's frontend no longer uses it.
     Prefer get_base_theme_editor() or get_theme_editor(theme).
     """
     return get_base_theme_editor()

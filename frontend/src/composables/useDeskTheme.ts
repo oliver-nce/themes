@@ -2,6 +2,7 @@
 //
 import { ref } from "vue"
 import { createResource } from "frappe-ui"
+import { namedFontStack } from "@/utils/fonts"
 
 export const DESK_VAR_MAP: Record<string, string> = {
 	bg_color: "--bg-color",
@@ -47,20 +48,8 @@ export const DESK_VAR_MAP: Record<string, string> = {
 	// font_family is handled separately (needs CSS stack conversion)
 }
 
-const DESK_FONT_GENERIC: Record<string, string> = {
-	Inter: "sans-serif",
-	"Source Sans 3": "sans-serif",
-	"Public Sans": "sans-serif",
-	"Open Sans": "sans-serif",
-	Roboto: "sans-serif",
-	Nunito: "sans-serif",
-	"Source Serif 4": "serif",
-	"JetBrains Mono": "monospace",
-}
-
 export function deskFontStack(name: string): string {
-	if (!name || name === "System Default") return ""
-	return `'${name}', ${DESK_FONT_GENERIC[name] || "sans-serif"}`
+	return namedFontStack(name)
 }
 
 const themeLoaded = ref(false)

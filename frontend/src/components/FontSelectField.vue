@@ -38,6 +38,7 @@ Font family dropdown that previews each option in its own CSS font stack.
 
 <script setup lang="ts">
 import { ref, onMounted, onBeforeUnmount } from "vue"
+import { fontStack } from "@/utils/fonts"
 
 defineProps<{
 	label: string
@@ -48,25 +49,6 @@ defineProps<{
 const emit = defineEmits<{
 	"update:modelValue": [value: string]
 }>()
-
-// Generic fallback per curated family — mirrors FONT_REGISTRY in css_writer.py.
-const FONT_GENERIC: Record<string, string> = {
-	Inter: "sans-serif",
-	"Source Sans 3": "sans-serif",
-	"Public Sans": "sans-serif",
-	"Open Sans": "sans-serif",
-	Roboto: "sans-serif",
-	Nunito: "sans-serif",
-	"Source Serif 4": "serif",
-	"JetBrains Mono": "monospace",
-}
-
-function fontStack(name: string): string {
-	if (!name || name === "System Default") {
-		return "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif"
-	}
-	return `'${name}', ${FONT_GENERIC[name] || "sans-serif"}`
-}
 
 const open = ref(false)
 const rootEl = ref<HTMLElement | null>(null)

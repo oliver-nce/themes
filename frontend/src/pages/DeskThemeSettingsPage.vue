@@ -782,8 +782,16 @@ import FontSelectField from "@/components/FontSelectField.vue"
 import PasswordField from "@/components/PasswordField.vue"
 import SizeSlider from "@/components/SizeSlider.vue"
 import SwatchPicker from "@/components/SwatchPicker.vue"
-import { applyDeskThemeVars, deskPayloadToCssVars, deskFontStack } from "@/composables/useDeskTheme"
+import { applyDeskThemeVars, deskPayloadToCssVars } from "@/composables/useDeskTheme"
 import { useThemeEditor, type ThemeAvailabilityStatus } from "@/composables/useThemeEditor"
+import { fontStack as fontCSS } from "@/utils/fonts"
+import {
+	BODY_WEIGHT_MAX,
+	BODY_WEIGHT_MIN,
+	clampBodyWeight,
+	weightDisplayLabel,
+} from "@/utils/fontWeight"
+import { PREVIEW_POPUP_FEATURES } from "@/utils/previewWindow"
 
 const ALL_FIELDS = [
 	"theme_name",
@@ -915,23 +923,6 @@ const tabs = [
 const FONT_OPTIONS = ["Inter", "Source Sans 3", "Public Sans", "Open Sans", "Roboto", "Nunito", "Source Serif 4", "JetBrains Mono", "System Default"]
 const fontOptions = FONT_OPTIONS
 
-const BODY_WEIGHT_MIN = 100
-const BODY_WEIGHT_MAX = 900
-
-function clampBodyWeight(raw: unknown): number {
-	const n = Number.parseInt(String(raw ?? "400"), 10)
-	if (!Number.isFinite(n)) return 400
-	return Math.min(BODY_WEIGHT_MAX, Math.max(BODY_WEIGHT_MIN, n))
-}
-
-function weightDisplayLabel(n: number): string {
-	if (n <= 350) return `${n} — Light`
-	if (n <= 450) return `${n} — Regular`
-	if (n <= 550) return `${n} — Medium`
-	if (n <= 650) return `${n} — Semi-bold`
-	return `${n} — Bold`
-}
-
 const bodyWeightDisplay = computed(() =>
 	weightDisplayLabel(clampBodyWeight(form.font_weight_body)),
 )
@@ -939,10 +930,6 @@ const bodyWeightDisplay = computed(() =>
 const boldWeightDisplay = computed(() =>
 	weightDisplayLabel(clampBodyWeight(form.font_weight_bold)),
 )
-
-function fontCSS(name: string): string {
-	return deskFontStack(name) || "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif"
-}
 
 const brandColors = [
 	{ key: "primary_color" as FormKey, label: "Primary" },
@@ -1238,7 +1225,7 @@ function openPreview() {
 		pushToPreview()
 		return
 	}
-	previewWin = window.open("/desk-themes/preview", "desk-themes-preview", "popup=yes,width=1200,height=900,left=100,top=60,scrollbars=yes,resizable=yes")
+	previewWin = window.open("/desk-themes/preview", "desk-themes-preview", PREVIEW_POPUP_FEATURES)
 	if (previewWin) previewWin.addEventListener("load", () => pushToPreview())
 }
 

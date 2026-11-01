@@ -419,7 +419,7 @@ Site Theme Editor for colours, typography, layout, live CSS variables, and base 
 							:key="r"
 							class="w-16 h-16 border-2 cursor-pointer transition-all"
 							:class="form.border_radius === r ? 'border-blue-500 bg-blue-50' : 'border-gray-200 bg-gray-50 hover:border-gray-300'"
-							:style="{ borderRadius: radiusMap[r] }"
+							:style="{ borderRadius: BORDER_RADIUS_MAP[r] }"
 							@click="form.border_radius = r"
 						>
 							<span class="flex items-center justify-center h-full text-xs text-gray-500 font-medium">{{ r }}</span>
@@ -857,6 +857,14 @@ import SwatchPicker from "@/components/SwatchPicker.vue"
 import ShadowDirectionDial from "@/components/ShadowDirectionDial.vue"
 import ThemeClassCatalogPanel from "@/components/ThemeClassCatalogPanel.vue"
 import { buildThemeShadow } from "@/utils/shadowBuild"
+import { fontStack as fontCSS } from "@/utils/fonts"
+import {
+	BODY_WEIGHT_MAX,
+	BODY_WEIGHT_MIN,
+	clampBodyWeight,
+	weightDisplayLabel,
+} from "@/utils/fontWeight"
+import { PREVIEW_POPUP_FEATURES } from "@/utils/previewWindow"
 import {
 	BORDER_RADIUS_MAP,
 	BORDER_WIDTH_MAP,
@@ -904,7 +912,7 @@ function openPreview() {
 	previewWin = window.open(
 		"/themes/preview",
 		"themes-preview",
-		"popup=yes,width=1200,height=900,left=100,top=60,scrollbars=yes,resizable=yes",
+		PREVIEW_POPUP_FEATURES,
 	)
 	if (previewWin) {
 		previewWin.addEventListener("load", () => pushToPreview())
@@ -1356,25 +1364,9 @@ function normalizeFontChoice(name: string): string {
 const fontOptions = [...FONT_OPTIONS]
 const sizeOptions = ["12px", "13px", "14px", "15px", "16px", "18px"]
 const lineHeightOptions = ["tight", "snug", "normal", "relaxed", "loose"]
-const BODY_WEIGHT_MIN = 100
-const BODY_WEIGHT_MAX = 900
-
-function clampBodyWeight(raw: unknown): number {
-	const n = Number.parseInt(String(raw ?? "400"), 10)
-	if (!Number.isFinite(n)) return 400
-	return Math.min(BODY_WEIGHT_MAX, Math.max(BODY_WEIGHT_MIN, n))
-}
-
 const bodyWeightNumber = computed(() => clampBodyWeight(form.font_weight_body))
 
-const bodyWeightDisplay = computed(() => {
-	const n = bodyWeightNumber.value
-	if (n <= 350) return `${n} — Light`
-	if (n <= 450) return `${n} — Regular`
-	if (n <= 550) return `${n} — Medium`
-	if (n <= 650) return `${n} — Semi-bold`
-	return `${n} — Bold`
-})
+const bodyWeightDisplay = computed(() => weightDisplayLabel(bodyWeightNumber.value))
 
 function onBodyWeightInput(e: Event) {
 	form.font_weight_body = String((e.target as HTMLInputElement).value)
@@ -1407,45 +1399,10 @@ const sidebarOptions = ["200px", "220px", "240px", "260px", "280px"]
 const containerOptions = ["960px", "1024px", "1152px", "1280px", "1440px", "full"]
 const transitionOptions = ["fast", "normal", "slow"]
 
-const radiusMap: Record<string, string> = {
-	none: "0",
-	sm: "0.125rem",
-	md: "0.375rem",
-	lg: "0.5rem",
-	"x-lg": "0.75rem",
-	full: "0.75rem",
-}
-
-const lineHeightMap: Record<string, string> = {
-	tight: "1.25",
-	snug: "1.375",
-	normal: "1.5",
-	relaxed: "1.625",
-	loose: "2",
-}
-
-// ─── AGENT:computed-ui ─── fontCSS, lineHeightCSS, FONT_GENERIC
-
-const FONT_GENERIC: Record<string, string> = {
-	Inter: "sans-serif",
-	"Source Sans 3": "sans-serif",
-	"Public Sans": "sans-serif",
-	"Open Sans": "sans-serif",
-	Roboto: "sans-serif",
-	Nunito: "sans-serif",
-	"Source Serif 4": "serif",
-	"JetBrains Mono": "monospace",
-}
-
-function fontCSS(name: string): string {
-	if (!name || name === "System Default") {
-		return "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif"
-	}
-	return `'${name}', ${FONT_GENERIC[name] || "sans-serif"}`
-}
+// ─── AGENT:computed-ui ─── fontCSS, lineHeightCSS
 
 const lineHeightCSS = computed(
-	() => lineHeightMap[form.line_height] || "1.5",
+	() => LINE_HEIGHT_MAP[form.line_height] || "1.5",
 )
 
 // ─── AGENT:dialog-state ─── confirmDialog, saveAsDialog, renameDialog, deleteDialog, systemTab
