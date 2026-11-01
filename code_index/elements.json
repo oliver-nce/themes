@@ -2,7 +2,7 @@
 "_meta": {
 "description": "The single authoritative code index of this project: every function, class, method, route, test, Vue component, CSS section and doc section with a label, plus each file's purpose. Query it with the shared code-index tool (find / show / callers); do not read this file whole. Generated: never edit by hand; hand-written notes live in code_index/project.json.",
 "generator": "_Project support files/code-index/codeindex.py",
-"count": 1323,
+"count": 1332,
 "project_sha256": "69ed9bd33e3667cacec4984d7aaf00e86d1167071b7c0f7916ee05d2458bf936",
 "headers_sha256": "f84c632a19d0ac940f4ed1b3e28bde8f625ce27f11a4a53fc84a9c02367f8384"
 },
@@ -2283,23 +2283,10 @@
 },
 "themes/themes/doctype/nce_desk_theme/nce_desk_theme.py": {
 "purpose": "NCE Desk Theme controller that allows one Default and one Active theme, then republishes desk CSS.",
-"read_when": "When changing desk theme save rules or when desk CSS is republished.",
-"gotchas": [
-"Throws if another desk theme is already marked default or already Active.",
-"on_update and on_trash skip publishing during install or migrate."
-],
-"keywords": [
-"NCEDeskTheme",
-"is_default",
-"base_desk_theme",
-"publish_desk_theme",
-"theme_json",
-"already active",
-"in_migrate"
-],
 "depends_on": [
 "themes/utils/desk_css_writer.py",
-"themes/utils/site_theme_config_helpers.py"
+"themes/utils/site_theme_config_helpers.py",
+"themes/utils/theme_doc.py"
 ]
 },
 "themes/themes/doctype/nce_theme/__init__.py": {
@@ -2307,23 +2294,10 @@
 },
 "themes/themes/doctype/nce_theme/nce_theme.py": {
 "purpose": "NCE Theme controller that keeps a single Default theme and republishes web CSS on update or trash.",
-"read_when": "When changing web theme validation or when nce_theme.css is republished from the document.",
-"gotchas": [
-"Throws if another theme is already marked default.",
-"on_update and on_trash skip publishing during install or migrate."
-],
-"keywords": [
-"NCETheme",
-"is_default",
-"publish_theme",
-"theme_json",
-"get_site_base_theme_name",
-"already marked default",
-"in_migrate"
-],
 "depends_on": [
 "themes/utils/css_writer.py",
-"themes/utils/site_theme_config_helpers.py"
+"themes/utils/site_theme_config_helpers.py",
+"themes/utils/theme_doc.py"
 ]
 },
 "themes/themes/doctype/site_theme_config/__init__.py": {
@@ -2331,23 +2305,11 @@
 },
 "themes/themes/doctype/site_theme_config/site_theme_config.py": {
 "purpose": "Site Theme Config controller that checks the theme links exist and republishes web and desk CSS on update.",
-"read_when": "When changing what happens after the site theme pointers are saved.",
-"gotchas": [
-"Publishing is skipped during install or migrate.",
-"An empty base_theme falls back to the legacy active_theme field."
-],
-"keywords": [
-"SiteThemeConfig",
-"base_theme",
-"base_desk_theme",
-"active_theme",
-"publish_theme",
-"publish_desk_theme"
-],
 "depends_on": [
 "themes/utils/css_writer.py",
 "themes/utils/desk_css_writer.py",
-"themes/utils/site_theme_config_helpers.py"
+"themes/utils/site_theme_config_helpers.py",
+"themes/utils/theme_doc.py"
 ]
 },
 "themes/themes/doctype/theme_component_settings/__init__.py": {
@@ -2537,25 +2499,7 @@
 ]
 },
 "themes/utils/component_css_writer.py": {
-"purpose": "Generates and publishes nce_component_overrides.css from Vue Component Desk colour overrides and table rules.",
-"read_when": "Debugging component override CSS, table styling output, or publish_component_css called from component_api.",
-"gotchas": [
-"HEADER warns generated CSS must not be edited manually; change overrides in Desk Vue Component."
-],
-"keywords": [
-"generate_component_css",
-"publish_component_css",
-"nce_component_overrides.css",
-"declarations_for",
-"table_css_for",
-"theme_table_bundle_for",
-"write_published_css",
-"Vue Component",
-"override_bg_class",
-"SELECTOR_RE",
-"has_override",
-"component_api"
-],
+"purpose": "Generate published CSS for Vue Component colour overrides.",
 "depends_on": [
 "themes/utils/component_sync.py",
 "themes/utils/css_publish.py"
@@ -2625,43 +2569,10 @@
 ]
 },
 "themes/utils/css_publish.py": {
-"purpose": "Shared writer that saves published theme CSS and an 8-character SHA-1 hash sidecar for cache busting.",
-"read_when": "When changing how web or desk CSS files and their hash sidecars are written.",
-"gotchas": [
-"A missing or unreadable hash can never break boot; hooks.py falls back to the bare CSS path.",
-"Cache busting and Site Theme Config css_hash updates stay in the callers because Web and Desk side effects differ."
-],
-"keywords": [
-"write_published_css",
-"css_hash_for",
-"nce_theme.css",
-"nce_desk_theme.css",
-"sha1",
-"sidecar",
-"cache-busting"
-]
+"purpose": "Shared CSS publish plumbing for Web and Desk theme writers."
 },
 "themes/utils/css_writer.py": {
-"purpose": "Builds and publishes web nce_theme.css so the Default theme drives :root and Active themes are scoped.",
-"read_when": "When changing web CSS variables, theme- utility classes, fonts, or how the Default theme is published.",
-"gotchas": [
-"Utility classes are gated by fields present in the default payload; the default defines all standard roles.",
-"Unregistered font names, including System Default, emit no @font-face rules.",
-"custom_css is only added to the :root block, never to scoped Active theme blocks.",
-"Keep shade and colour logic in step with frontend/src/utils/color-shades.ts and src/widget/constants.ts."
-],
-"keywords": [
-"generate_site_css",
-"generate_css",
-"publish_theme",
-"data-nce-theme",
-"FONT_REGISTRY",
-"Default theme",
-"theme-bg",
-"nce_theme.css",
-"fonts.css",
-"theme-table"
-],
+"purpose": "Web theme CSS generation and publish (nce_theme.css → --nce-* tokens).",
 "depends_on": [
 "themes/utils/css_publish.py",
 "themes/utils/site_theme_config_helpers.py",
@@ -2721,28 +2632,7 @@
 ]
 },
 "themes/utils/desk_css_writer.py": {
-"purpose": "Builds and publishes Frappe Desk theme CSS (nce_desk_theme.css) from NCE Desk Theme JSON payloads.",
-"read_when": "Open when mapping desk tokens to Frappe CSS variables, fonts, publish, or boot CSS URL.",
-"gotchas": [
-"Desk output is flat DESK_CSS_VARS on :root, not web OKLCH shade classes.",
-"font_weight_body emits both --weight-regular and --font-weight-regular for v15/v16.",
-".bold override uses !important because Frappe's own rule is !important.",
-"Selector is :root and [data-theme=\"light\"] so v15 Espresso light theme picks up vars.",
-"font_family is emitted separately as --font-stack plus optional @font-face blocks."
-],
-"keywords": [
-"nce_desk_theme.css",
-"DESK_CSS_VARS",
-"publish_desk_theme",
-"generate_desk_css",
-"desk_css_hash",
-"write_published_css",
-"FONT_REGISTRY",
-"--font-stack",
-"get_desk_theme_css_url",
-"Site Theme Config",
-"DESK_CSS_SELECTOR"
-],
+"purpose": "Desk theme CSS generation and publish (nce_desk_theme.css → Frappe Desk vars).",
 "depends_on": [
 "themes/utils/css_publish.py",
 "themes/utils/site_theme_config_helpers.py",
@@ -2786,22 +2676,11 @@
 "themes/utils/theme_tokens.py"
 ]
 },
+"themes/utils/theme_doc.py": {
+"purpose": "Shared helpers for the NCE Theme and NCE Desk Theme controllers and services."
+},
 "themes/utils/theme_family.py": {
-"purpose": "ThemeFamily descriptors that parameterize Web and Desk CRUD, publish, seeding, and Base Theme bundling.",
-"read_when": "When changing a behavior that differs between Web site tokens and Desk chrome.",
-"gotchas": [
-"Web is_active equals is_base; Desk is_active equals status Active.",
-"Desk enforces a single Active theme; new Desk themes start Inactive and new Web themes start Active."
-],
-"keywords": [
-"WEB_FAMILY",
-"DESK_FAMILY",
-"ThemeFamily",
-"is_active_is_base",
-"single_active",
-"bundle_to_app",
-"NCE Desk Theme"
-],
+"purpose": "Theme family descriptors — parameterize Web vs Desk CRUD without duplicating logic.",
 "depends_on": [
 "themes/utils/bundle_base_desk_theme.py",
 "themes/utils/bundle_base_theme.py",
@@ -2810,29 +2689,14 @@
 "themes/utils/desk_css_writer.py",
 "themes/utils/site_theme_config_helpers.py",
 "themes/utils/theme_color_utils.py",
+"themes/utils/theme_doc.py",
 "themes/utils/theme_tokens.py"
 ]
 },
 "themes/utils/theme_service.py": {
-"purpose": "Shared Web and Desk CRUD that promotes the Default Theme, publishes CSS, and can bundle the repo Base Theme.",
-"read_when": "When changing save, promote-to-Default, Active status, rename, or delete rules.",
-"gotchas": [
-"A wrong save_as_base password must not raise AuthenticationError; it is reported as a validation error.",
-"is_base_theme is deprecated and copies is_default_theme; do not use it in new code.",
-"The Default theme may be renamed but cannot be deleted.",
-"set_base promotes a theme to the Default :root driver; save_as_base also bundles that payload into app source."
-],
-"keywords": [
-"set_base",
-"save_as_base",
-"is_default_theme",
-"is_base_theme",
-"get_restore_base_payload",
-"AuthenticationError",
-"_promote_to_default",
-"regenerate_css"
-],
+"purpose": "Family-parameterized theme CRUD — single implementation for Web and Desk.",
 "depends_on": [
+"themes/utils/theme_doc.py",
 "themes/utils/theme_family.py"
 ]
 },
@@ -17939,13 +17803,13 @@
 "name": "NCEDeskTheme",
 "qualname": "NCEDeskTheme",
 "sig": "(Document)",
-"hash": "1e479da125",
+"hash": "a359986523",
 "extends": [
 "Document"
 ],
 "calls": [],
 "label": "Manage desk themes with JSON configuration and theme publishing",
-"label_source": "generated",
+"label_source": "generated-stale",
 "label_hash": "1e479da125"
 },
 {
@@ -17955,12 +17819,13 @@
 "name": "before_insert",
 "qualname": "NCEDeskTheme.before_insert",
 "sig": "(self)",
-"hash": "3a96b80e90",
+"hash": "eee8976bbc",
 "calls": [
-"themes/utils/site_theme_config_helpers.py::get_site_base_desk_theme_name"
+"themes/utils/site_theme_config_helpers.py::get_site_base_desk_theme_name",
+"themes/utils/theme_doc.py::base_theme_json"
 ],
 "label": "Initialize theme JSON from base desk theme on creation",
-"label_source": "generated",
+"label_source": "generated-stale",
 "label_hash": "3a96b80e90"
 },
 {
@@ -17970,10 +17835,12 @@
 "name": "before_save",
 "qualname": "NCEDeskTheme.before_save",
 "sig": "(self)",
-"hash": "2dd2195fbb",
-"calls": [],
+"hash": "962ac73ad0",
+"calls": [
+"themes/utils/theme_doc.py::slugify_theme_name"
+],
 "label": "Generate slug from theme name before saving",
-"label_source": "generated",
+"label_source": "generated-stale",
 "label_hash": "2dd2195fbb"
 },
 {
@@ -17983,10 +17850,12 @@
 "name": "validate",
 "qualname": "NCEDeskTheme.validate",
 "sig": "(self)",
-"hash": "02ce18afdf",
-"calls": [],
+"hash": "b17d0ffd2a",
+"calls": [
+"themes/utils/theme_doc.py::other_record"
+],
 "label": "Ensure only one default and one active desk theme",
-"label_source": "generated",
+"label_source": "generated-stale",
 "label_hash": "02ce18afdf"
 },
 {
@@ -17996,13 +17865,14 @@
 "name": "on_update",
 "qualname": "NCEDeskTheme.on_update",
 "sig": "(self)",
-"hash": "87231530ab",
+"hash": "eb85215aa3",
 "calls": [
 "themes/utils/desk_css_writer.py::publish_desk_theme",
-"themes/utils/site_theme_config_helpers.py::get_site_base_desk_theme_name"
+"themes/utils/site_theme_config_helpers.py::get_site_base_desk_theme_name",
+"themes/utils/theme_doc.py::in_setup"
 ],
 "label": "Publish desk theme CSS when status or configuration changes",
-"label_source": "generated",
+"label_source": "generated-stale",
 "label_hash": "87231530ab"
 },
 {
@@ -18012,13 +17882,14 @@
 "name": "on_trash",
 "qualname": "NCEDeskTheme.on_trash",
 "sig": "(self)",
-"hash": "487f847064",
+"hash": "1c3b789a28",
 "calls": [
 "themes/utils/desk_css_writer.py::publish_desk_theme",
-"themes/utils/site_theme_config_helpers.py::get_site_base_desk_theme_name"
+"themes/utils/site_theme_config_helpers.py::get_site_base_desk_theme_name",
+"themes/utils/theme_doc.py::in_setup"
 ],
 "label": "Republish desk theme CSS when deleting active or base theme",
-"label_source": "generated",
+"label_source": "generated-stale",
 "label_hash": "487f847064"
 },
 {
@@ -18028,13 +17899,13 @@
 "name": "NCETheme",
 "qualname": "NCETheme",
 "sig": "(Document)",
-"hash": "88b5944ed1",
+"hash": "1b78c425ff",
 "extends": [
 "Document"
 ],
 "calls": [],
 "label": "Manage themes with JSON configuration and theme publishing",
-"label_source": "generated",
+"label_source": "generated-stale",
 "label_hash": "88b5944ed1"
 },
 {
@@ -18044,12 +17915,13 @@
 "name": "before_insert",
 "qualname": "NCETheme.before_insert",
 "sig": "(self)",
-"hash": "ff83d0f33f",
+"hash": "811fec16ea",
 "calls": [
-"themes/utils/site_theme_config_helpers.py::get_site_base_theme_name"
+"themes/utils/site_theme_config_helpers.py::get_site_base_theme_name",
+"themes/utils/theme_doc.py::base_theme_json"
 ],
 "label": "Initialize theme JSON from base theme on creation",
-"label_source": "generated",
+"label_source": "generated-stale",
 "label_hash": "ff83d0f33f"
 },
 {
@@ -18059,10 +17931,12 @@
 "name": "before_save",
 "qualname": "NCETheme.before_save",
 "sig": "(self)",
-"hash": "2dd2195fbb",
-"calls": [],
+"hash": "962ac73ad0",
+"calls": [
+"themes/utils/theme_doc.py::slugify_theme_name"
+],
 "label": "Generate slug from theme name before saving",
-"label_source": "generated",
+"label_source": "generated-stale",
 "label_hash": "2dd2195fbb"
 },
 {
@@ -18072,10 +17946,12 @@
 "name": "validate",
 "qualname": "NCETheme.validate",
 "sig": "(self)",
-"hash": "381f669ea3",
-"calls": [],
+"hash": "bd9be3d000",
+"calls": [
+"themes/utils/theme_doc.py::other_record"
+],
 "label": "Ensure only one default theme exists",
-"label_source": "generated",
+"label_source": "generated-stale",
 "label_hash": "381f669ea3"
 },
 {
@@ -18085,13 +17961,14 @@
 "name": "on_update",
 "qualname": "NCETheme.on_update",
 "sig": "(self)",
-"hash": "7c7e7f266c",
+"hash": "eaed03a5ea",
 "calls": [
 "themes/utils/css_writer.py::publish_theme",
-"themes/utils/site_theme_config_helpers.py::get_site_base_theme_name"
+"themes/utils/site_theme_config_helpers.py::get_site_base_theme_name",
+"themes/utils/theme_doc.py::in_setup"
 ],
 "label": "Publish theme CSS when status or configuration changes",
-"label_source": "generated",
+"label_source": "generated-stale",
 "label_hash": "7c7e7f266c"
 },
 {
@@ -18101,13 +17978,14 @@
 "name": "on_trash",
 "qualname": "NCETheme.on_trash",
 "sig": "(self)",
-"hash": "98f268d6cc",
+"hash": "cb571d61a5",
 "calls": [
 "themes/utils/css_writer.py::publish_theme",
-"themes/utils/site_theme_config_helpers.py::get_site_base_theme_name"
+"themes/utils/site_theme_config_helpers.py::get_site_base_theme_name",
+"themes/utils/theme_doc.py::in_setup"
 ],
 "label": "Republish theme CSS when deleting active or base theme",
-"label_source": "generated",
+"label_source": "generated-stale",
 "label_hash": "98f268d6cc"
 },
 {
@@ -18117,13 +17995,13 @@
 "name": "SiteThemeConfig",
 "qualname": "SiteThemeConfig",
 "sig": "(Document)",
-"hash": "9feb7c6af9",
+"hash": "04732c6c07",
 "extends": [
 "Document"
 ],
 "calls": [],
 "label": "Validate and publish site-wide theme configuration",
-"label_source": "generated",
+"label_source": "generated-stale",
 "label_hash": "9feb7c6af9"
 },
 {
@@ -18149,15 +18027,16 @@
 "name": "on_update",
 "qualname": "SiteThemeConfig.on_update",
 "sig": "(self)",
-"hash": "5bf8de2d22",
+"hash": "e202c94740",
 "calls": [
 "themes/utils/css_writer.py::publish_theme",
 "themes/utils/desk_css_writer.py::publish_desk_theme",
 "themes/utils/site_theme_config_helpers.py::get_site_base_desk_theme_name",
-"themes/utils/site_theme_config_helpers.py::get_site_base_theme_name"
+"themes/utils/site_theme_config_helpers.py::get_site_base_theme_name",
+"themes/utils/theme_doc.py::in_setup"
 ],
 "label": "Publish theme and desk theme CSS when site config updates",
-"label_source": "generated",
+"label_source": "generated-stale",
 "label_hash": "5bf8de2d22"
 },
 {
@@ -19113,18 +18992,18 @@
 "name": "publish_component_css",
 "qualname": "publish_component_css",
 "sig": "() -> dict",
-"hash": "615f4d8b64",
+"hash": "892e9cba5e",
 "calls": [
 "themes/utils/component_css_writer.py::generate_component_css",
 "themes/utils/component_css_writer.py::table_css_for",
 "themes/utils/component_css_writer.py::theme_table_bundle_for",
-"themes/utils/css_publish.py::write_published_css"
+"themes/utils/css_publish.py::publish_css"
 ],
 "tested_by": [
 "themes/tests/test_backend_characterization.py::TestComponentPublishTail.test_publish_component_css_header_only_when_no_rows"
 ],
 "label": "Loads all Vue Component records, merges element, bundle, and table CSS, writes file via css_publish, clears Frappe cache.",
-"label_source": "header"
+"label_source": "header-stale"
 },
 {
 "id": "themes/utils/component_scan.py::_is_generic_class",
@@ -19600,20 +19479,86 @@
 "label_hash": "7a1b62c2d6"
 },
 {
+"id": "themes/utils/css_publish.py::public_css_path",
+"file": "themes/utils/css_publish.py",
+"kind": "function",
+"name": "public_css_path",
+"qualname": "public_css_path",
+"sig": "(css_filename: str) -> str",
+"hash": "0d433d8810",
+"calls": [],
+"label": "Absolute path of public/css/<css_filename> (does not create the folder).",
+"label_source": "docstring"
+},
+{
+"id": "themes/utils/css_publish.py::write_public_css_file",
+"file": "themes/utils/css_publish.py",
+"kind": "function",
+"name": "write_public_css_file",
+"qualname": "write_public_css_file",
+"sig": "(css_filename: str, css: str) -> str",
+"hash": "db0e76f74c",
+"calls": [
+"themes/utils/css_publish.py::_public_css_dir"
+],
+"label": "Write public/css/<css_filename> without a hash sidecar; return its path.",
+"label_source": "docstring"
+},
+{
+"id": "themes/utils/css_publish.py::read_published_css_hash",
+"file": "themes/utils/css_publish.py",
+"kind": "function",
+"name": "read_published_css_hash",
+"qualname": "read_published_css_hash",
+"sig": "(css_filename: str) -> str | None",
+"hash": "4031d688e5",
+"calls": [
+"themes/utils/css_publish.py::public_css_path"
+],
+"label": "Hash from the <css_filename>.hash sidecar, or None when missing or empty.",
+"label_source": "docstring"
+},
+{
+"id": "themes/utils/css_publish.py::bust_asset_cache",
+"file": "themes/utils/css_publish.py",
+"kind": "function",
+"name": "bust_asset_cache",
+"qualname": "bust_asset_cache",
+"sig": "() -> None",
+"hash": "ba059be4d4",
+"calls": [],
+"label": "Drop Frappe's cached assets map and caches so new CSS URLs are served.",
+"label_source": "docstring"
+},
+{
 "id": "themes/utils/css_publish.py::write_published_css",
 "file": "themes/utils/css_publish.py",
 "kind": "function",
 "name": "write_published_css",
 "qualname": "write_published_css",
 "sig": "(css_filename: str, css: str) -> str",
-"hash": "ef0ea465f4",
+"hash": "58352147a8",
 "calls": [
-"themes/utils/css_publish.py::_public_css_dir",
-"themes/utils/css_publish.py::css_hash_for"
+"themes/utils/css_publish.py::css_hash_for",
+"themes/utils/css_publish.py::write_public_css_file"
 ],
-"label": "Write CSS and hash sidecar file for published themes",
-"label_source": "generated",
-"label_hash": "ef0ea465f4"
+"label": "Write <css_filename> and its .hash sidecar; return the css_hash.",
+"label_source": "docstring"
+},
+{
+"id": "themes/utils/css_publish.py::publish_css",
+"file": "themes/utils/css_publish.py",
+"kind": "function",
+"name": "publish_css",
+"qualname": "publish_css",
+"sig": "(css_filename: str, css: str, hash_field: str | None=None) -> str",
+"hash": "3047ba1cf1",
+"calls": [
+"themes/utils/css_publish.py::bust_asset_cache",
+"themes/utils/css_publish.py::write_published_css"
+],
+"label": "Write the CSS and sidecar, store the hash on Site Theme Config.<hash_field> if given, bust caches.",
+"label_source": "docstring"
 },
 {
 "id": "themes/utils/css_writer.py::_resolve_font_name",
@@ -20123,12 +20068,13 @@
 "name": "_write_fonts_css",
 "qualname": "_write_fonts_css",
 "sig": "() -> str",
-"hash": "bafe573da2",
+"hash": "00746516bf",
 "calls": [
+"themes/utils/css_publish.py::write_public_css_file",
 "themes/utils/css_writer.py::generate_fonts_css"
 ],
-"label": "Write public/css/fonts.css for the Theme Editor page",
-"label_source": "header"
+"label": "Write the all-curated-fonts stylesheet consumed only by the editor page.",
+"label_source": "docstring"
 },
 {
 "id": "themes/utils/css_writer.py::publish_theme",
@@ -20137,9 +20083,9 @@
 "name": "publish_theme",
 "qualname": "publish_theme",
 "sig": "(theme_name: str) -> dict",
-"hash": "688821481a",
+"hash": "ddb30a0352",
 "calls": [
-"themes/utils/css_publish.py::write_published_css",
+"themes/utils/css_publish.py::publish_css",
 "themes/utils/css_writer.py::_write_fonts_css",
 "themes/utils/css_writer.py::generate_site_css",
 "themes/utils/site_theme_config_helpers.py::get_site_base_theme_name",
@@ -20153,8 +20099,8 @@
 "themes/tests/test_backend_characterization.py::TestNCEThemeController.test_on_update_skips_publish_during_migrate",
 "themes/tests/test_backend_characterization.py::TestSiteThemeConfigController.test_on_update_skips_during_install"
 ],
-"label": "Rebuild and publish nce_theme.css and fonts.css, then store the CSS hash and clear caches",
-"label_source": "header"
+"label": "Rebuild nce_theme.css from current DB state (Default theme → :root + Active scoped palettes).",
+"label_source": "docstring"
 },
 {
 "id": "themes/utils/default_desk_theme.py::load_bundled_base_desk_theme_payload",
@@ -20375,14 +20321,16 @@
 "name": "_read_desk_css_hash",
 "qualname": "_read_desk_css_hash",
 "sig": "() -> str | None",
-"hash": "b307b10baa",
-"calls": [],
+"hash": "a33b845b9a",
+"calls": [
+"themes/utils/css_publish.py::read_published_css_hash"
+],
 "tested_by": [
 "themes/tests/test_backend_characterization.py::TestDeskPublishTail.test_read_desk_css_hash_from_sidecar_after_publish",
 "themes/tests/test_backend_characterization.py::TestDeskPublishTail.test_read_desk_css_hash_none_when_sidecar_missing"
 ],
 "label": "Reads the eight-character hash from nce_desk_theme.css.hash on disk.",
-"label_source": "header"
+"label_source": "header-stale"
 },
 {
 "id": "themes/utils/desk_css_writer.py::publish_desk_theme",
@@ -20391,9 +20339,9 @@
 "name": "publish_desk_theme",
 "qualname": "publish_desk_theme",
 "sig": "(theme_name: str | None=None) -> dict",
-"hash": "fd181ce0b2",
+"hash": "ee9adc85ff",
 "calls": [
-"themes/utils/css_publish.py::write_published_css",
+"themes/utils/css_publish.py::publish_css",
 "themes/utils/desk_css_writer.py::generate_desk_css",
 "themes/utils/site_theme_config_helpers.py::get_site_base_desk_theme_name"
 ],
@@ -20404,8 +20352,8 @@
 "themes/tests/test_backend_characterization.py::TestNCEDeskThemeController.test_on_update_publishes_when_active",
 "themes/tests/test_backend_characterization.py::TestNCEDeskThemeController.test_on_update_skips_publish_during_install"
 ],
-"label": "Regenerates desk CSS from base plus Active themes and updates desk_css_hash.",
-"label_source": "header"
+"label": "Rebuild nce_desk_theme.css from current DB state (base merged with Active).",
+"label_source": "docstring"
 },
 {
 "id": "themes/utils/site_theme_config_helpers.py::get_site_base_theme_name",
@@ -21016,6 +20964,57 @@
 "label_hash": "08d660bfc2"
 },
 {
+"id": "themes/utils/theme_doc.py::slugify_theme_name",
+"file": "themes/utils/theme_doc.py",
+"kind": "function",
+"name": "slugify_theme_name",
+"qualname": "slugify_theme_name",
+"sig": "(theme_name: Optional[str]) -> str",
+"hash": "a44041c615",
+"calls": [],
+"label": "Lower-case, hyphen-separated slug used to scope Active theme CSS.",
+"label_source": "docstring"
+},
+{
+"id": "themes/utils/theme_doc.py::in_setup",
+"file": "themes/utils/theme_doc.py",
+"kind": "function",
+"name": "in_setup",
+"qualname": "in_setup",
+"sig": "() -> bool",
+"hash": "1523d29f23",
+"calls": [],
+"label": "True during bench install or migrate, when controllers must not republish CSS.",
+"label_source": "docstring"
+},
+{
+"id": "themes/utils/theme_doc.py::base_theme_json",
+"file": "themes/utils/theme_doc.py",
+"kind": "function",
+"name": "base_theme_json",
+"qualname": "base_theme_json",
+"sig": "(doctype: str, base_name: Optional[str]) -> Optional[str]",
+"hash": "d310b2d4ee",
+"calls": [],
+"tested_by": [
+"themes/tests/test_backend_characterization.py::TestBundleOutput.test_web_bundle_writes_json_and_default_theme_py"
+],
+"label": "theme_json of the base theme record, or None when there is no such record.",
+"label_source": "docstring"
+},
+{
+"id": "themes/utils/theme_doc.py::other_record",
+"file": "themes/utils/theme_doc.py",
+"kind": "function",
+"name": "other_record",
+"qualname": "other_record",
+"sig": "(doctype: str, filters: dict, exclude_name: str) -> Optional[str]",
+"hash": "f7d0a9e12d",
+"calls": [],
+"label": "Name of the first record matching filters other than exclude_name.",
+"label_source": "docstring"
+},
+{
 "id": "themes/utils/theme_family.py::ThemeFamily",
 "file": "themes/utils/theme_family.py",
 "kind": "class",
@@ -21069,15 +21068,16 @@
 "name": "_web_seed_payload",
 "qualname": "_web_seed_payload",
 "sig": "()",
-"hash": "7d71100394",
+"hash": "cfbc0cca8a",
 "calls": [
-"themes/utils/site_theme_config_helpers.py::get_site_base_theme_name"
+"themes/utils/site_theme_config_helpers.py::get_site_base_theme_name",
+"themes/utils/theme_doc.py::base_theme_json"
 ],
 "wired_by": [
 "themes/utils/theme_family.py"
 ],
 "label": "Load default web theme seed payload from database",
-"label_source": "generated",
+"label_source": "generated-stale",
 "label_hash": "7d71100394"
 },
 {
@@ -21087,15 +21087,16 @@
 "name": "_desk_seed_payload",
 "qualname": "_desk_seed_payload",
 "sig": "()",
-"hash": "f7b650c0b1",
+"hash": "94c7737375",
 "calls": [
-"themes/utils/site_theme_config_helpers.py::get_site_base_desk_theme_name"
+"themes/utils/site_theme_config_helpers.py::get_site_base_desk_theme_name",
+"themes/utils/theme_doc.py::base_theme_json"
 ],
 "wired_by": [
 "themes/utils/theme_family.py"
 ],
 "label": "Load default desk theme seed payload from database",
-"label_source": "generated",
+"label_source": "generated-stale",
 "label_hash": "f7b650c0b1"
 },
 {
@@ -21671,15 +21672,16 @@
 "name": "rename",
 "qualname": "rename",
 "sig": "(family: ThemeFamily, theme: str, theme_name: str) -> dict",
-"hash": "7d34bf3784",
+"hash": "79fe1fe8e3",
 "calls": [
+"themes/utils/theme_doc.py::slugify_theme_name",
 "themes/utils/theme_service.py::_assert_theme_renameable"
 ],
 "tested_by": [
 "themes/tests/test_theme_service_default.py::TestDefaultThemeFlag.test_rename_allowed_for_default_even_when_active"
 ],
 "label": "Rename theme with slug generation and duplicate check",
-"label_source": "generated",
+"label_source": "generated-stale",
 "label_hash": "7d34bf3784"
 },
 {

@@ -76,23 +76,17 @@ def _desk_parse_payload(payload):
 def _web_seed_payload():
     import json
 
-    import frappe
+    from themes.utils.theme_doc import base_theme_json
 
-    base = get_site_base_theme_name()
-    if base and frappe.db.exists("NCE Theme", base):
-        return json.loads(frappe.db.get_value("NCE Theme", base, "theme_json") or "{}")
-    return {}
+    return json.loads(base_theme_json("NCE Theme", get_site_base_theme_name()) or "{}")
 
 
 def _desk_seed_payload():
     import json
 
-    import frappe
+    from themes.utils.theme_doc import base_theme_json
 
-    base = get_site_base_desk_theme_name()
-    if base and frappe.db.exists("NCE Desk Theme", base):
-        return json.loads(frappe.db.get_value("NCE Desk Theme", base, "theme_json") or "{}")
-    return {}
+    return json.loads(base_theme_json("NCE Desk Theme", get_site_base_desk_theme_name()) or "{}")
 
 
 def _web_css_hash():

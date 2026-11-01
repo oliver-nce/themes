@@ -12,13 +12,13 @@ AGENT NAVIGATION — grep "AGENT:" in this file
 from __future__ import annotations
 
 import json
-import re
 from typing import Optional
 
 import frappe
 from frappe import _
 from frappe.utils.password import check_password
 
+from themes.utils.theme_doc import slugify_theme_name
 from themes.utils.theme_family import DESK_FAMILY, ThemeFamily, WEB_FAMILY
 
 
@@ -295,7 +295,7 @@ def rename(family: ThemeFamily, theme: str, theme_name: str) -> dict:
         return {"status": "ok", "theme": doc.name, "theme_name": doc.theme_name}
     if frappe.db.exists(family.doctype, {"theme_name": theme_name}):
         frappe.throw(_(family.duplicate_theme_name_message).format(theme_name))
-    slug = re.sub(r"[^a-z0-9]+", "-", theme_name.lower()).strip("-")
+    slug = slugify_theme_name(theme_name)
     table = f"tab{family.doctype}"
     frappe.db.sql(
         f"""

@@ -10,6 +10,7 @@ from themes.utils.site_theme_config_helpers import (
     get_site_base_desk_theme_name,
     get_site_base_theme_name,
 )
+from themes.utils.theme_doc import in_setup
 
 
 class SiteThemeConfig(Document):
@@ -23,7 +24,7 @@ class SiteThemeConfig(Document):
             frappe.throw(_("NCE Desk Theme {0} does not exist").format(desk_base))
 
     def on_update(self):
-        if getattr(frappe.flags, "in_install", False) or getattr(frappe.flags, "in_migrate", False):
+        if in_setup():
             return
         base = self.get("base_theme") or get_site_base_theme_name()
         if base:
