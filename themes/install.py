@@ -16,12 +16,15 @@ from themes.utils.site_theme_config_helpers import get_site_base_theme_name, set
 from themes.utils.workspace_sync import sync_themes_workspace
 
 
-def _ensure_default_theme_doc(doctype: str, description: str, load_payload) -> str:
+def _ensure_default_theme_doc(
+    doctype: str, description: str, load_payload, *, mark_default: bool = False
+) -> str:
     if frappe.db.exists(doctype, "Default"):
         return "Default"
     theme = frappe.new_doc(doctype)
     theme.theme_name = "Default"
-    theme.is_default = 1
+    if mark_default:
+        theme.is_default = 1
     theme.status = "Active"
     theme.description = description
     theme.theme_json = json.dumps(load_payload(), default=str)
@@ -43,6 +46,7 @@ def _ensure_default_desk_theme():
         "NCE Desk Theme",
         "Default desk theme.",
         load_bundled_base_desk_theme_payload,
+        mark_default=True,
     )
 
 

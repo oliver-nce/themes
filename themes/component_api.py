@@ -63,7 +63,7 @@ def _excluded_apps() -> set[str]:
 	return excluded
 
 
-def theme_off_apps() -> set[str]:
+def _stored_off_apps() -> set[str]:
 	off: set[str] = set()
 	raw = frappe.db.get_single_value("Theme Component Settings", "theme_off_apps") or ""
 	for line in raw.splitlines():
@@ -71,6 +71,30 @@ def theme_off_apps() -> set[str]:
 		if app:
 			off.add(app)
 	off.discard("themes")
+	return off
+
+
+def _apps_with_valid_theme() -> set[str]:
+	valid_slugs = {row["slug"] for row in _active_theme_choices()}
+	slugs = theme_app_slugs()
+	return {app for app, slug in slugs.items() if slug in valid_slugs}
+
+
+def theme_off_apps() -> set[str]:
+	"""Apps treated as Apply off for gate, boot, component CSS, and bridge generation.
+
+	Union of the stored theme_off_apps list and every installed app (except the
+	Themes app and Frappe-branded apps) that has no valid Active theme chosen.
+	"""
+	off = _stored_off_apps()
+	themed = _apps_with_valid_theme()
+	for app in frappe.get_installed_apps():
+		if app == "themes":
+			continue
+		if _is_frappe_branded(app):
+			continue
+		if app not in themed:
+			off.add(app)
 	return off
 
 
@@ -147,17 +171,20 @@ def _route_prefixes_for_app(app: str) -> list[str]:
 @frappe.whitelist()
 def list_theme_apps() -> dict:
 	frappe.only_for("System Manager")
-	off = theme_off_apps()
+	stored_off = _stored_off_apps()
+	valid_slugs = {row["slug"] for row in _active_theme_choices()}
 	slugs = theme_app_slugs()
 	apps: list[dict] = []
 	for app in frappe.get_installed_apps():
 		if _is_frappe_branded(app) or app == "themes":
 			continue
+		raw_slug = slugs.get(app, "")
+		has_valid_theme = raw_slug in valid_slugs
 		apps.append({
 			"app": app,
 			"title": _theme_app_title(app),
-			"apply": app not in off,
-			"theme_slug": slugs.get(app, ""),
+			"apply": (app not in stored_off) and has_valid_theme,
+			"theme_slug": raw_slug if has_valid_theme else "",
 		})
 	apps.sort(key=lambda row: (row["title"], row["app"]))
 	return {"apps": apps, "active_themes": _active_theme_choices()}
@@ -175,8 +202,12 @@ def set_theme_app_apply(app: str, apply) -> dict:
 	if app == "themes":
 		frappe.throw(_("The Themes app always uses the site theme."))
 	on = str(apply).lower() in ("1", "true", "yes", "on")
-	off = theme_off_apps()
+	off = _stored_off_apps()
 	if on:
+		chosen = theme_app_slugs().get(app, "")
+		valid = {row["slug"] for row in _active_theme_choices()}
+		if chosen not in valid:
+			frappe.throw(_("Choose a theme for {0} first.").format(app))
 		off.discard(app)
 	else:
 		off.add(app)
@@ -202,15 +233,13 @@ def set_theme_app_theme(app: str, slug) -> dict:
 	if app == "themes":
 		frappe.throw(_("The Themes app always uses the site theme."))
 	slug = (slug or "").strip()
-	if slug:
-		valid = {row["slug"] for row in _active_theme_choices()}
-		if slug not in valid:
-			frappe.throw(_("Unknown or inactive theme slug: {0}").format(slug))
+	if not slug:
+		frappe.throw(_("Unknown or inactive theme slug: {0}").format(slug or ""))
+	valid = {row["slug"] for row in _active_theme_choices()}
+	if slug not in valid:
+		frappe.throw(_("Unknown or inactive theme slug: {0}").format(slug))
 	slugs = theme_app_slugs()
-	if slug:
-		slugs[app] = slug
-	else:
-		slugs.pop(app, None)
+	slugs[app] = slug
 	frappe.db.set_single_value(
 		"Theme Component Settings",
 		"app_theme_slugs",
@@ -487,13 +516,21 @@ def components_inside(name: str) -> list[dict]:
 @frappe.whitelist()
 def get_preview_theme() -> dict:
 	frappe.only_for("System Manager")
-	from themes.utils.site_theme_config_helpers import get_site_default_theme_name
-
-	theme_name = get_site_default_theme_name()
-	slug = ""
-	if theme_name:
-		slug = frappe.db.get_value("NCE Theme", theme_name, "slug") or ""
-	return {"theme": theme_name or "", "slug": slug or ""}
+	# Pickers and the design-mode map need a real theme slug. Use the first theme chosen for
+	# an app in the Applications tab; otherwise the first Active theme by name.
+	active = {
+		row.slug.strip(): row.name
+		for row in frappe.get_all(
+			"NCE Theme",
+			filters={"status": "Active"},
+			fields=["name", "slug"],
+			order_by="name asc",
+		)
+		if (row.slug or "").strip()
+	}
+	chosen = [s for _app, s in sorted(theme_app_slugs().items()) if s in active]
+	slug = chosen[0] if chosen else next(iter(active), "")
+	return {"theme": active.get(slug, ""), "slug": slug}
 
 
 def _parse_json_arg(value):

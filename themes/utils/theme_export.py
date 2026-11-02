@@ -382,16 +382,11 @@ def export_bundle_for(
 def list_export_theme_rows() -> list[dict]:
     """All NCE Theme rows for the export checklist (no desk family)."""
     import frappe
-    from themes.utils.theme_service import _is_default_theme_record
-
     rows = frappe.get_all(
         "NCE Theme",
-        fields=["name", "theme_name", "slug", "status", "is_default"],
+        fields=["name", "theme_name", "slug", "status"],
         order_by="theme_name asc",
     )
     for row in rows:
-        row["is_default_site_theme"] = _is_default_theme_record(
-            is_default=row.get("is_default")
-        )
         row["slug"] = (row.get("slug") or "").strip()
     return rows

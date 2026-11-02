@@ -677,25 +677,10 @@ def _write_fonts_css() -> str:
 
 
 def publish_theme(theme_name: str) -> dict:
-    """Rebuild nce_theme.css from current DB state (Default theme → :root + Active scoped palettes)."""
-    from themes.utils.site_theme_config_helpers import (
-        get_site_base_theme_name,
-        get_site_default_theme_name,
-        set_site_base_theme_name,
-    )
+    """Rebuild nce_theme.css from bundled base (:root) + Active scoped palettes."""
+    from themes.utils.default_theme import load_bundled_base_theme_payload
 
-    default_name = get_site_default_theme_name()
-    if default_name and get_site_base_theme_name() != default_name:
-        set_site_base_theme_name(default_name)
-    if default_name and frappe.db.exists("NCE Theme", default_name):
-        default_payload = json.loads(
-            frappe.db.get_value("NCE Theme", default_name, "theme_json") or "{}"
-        )
-    else:
-        default_name = theme_name
-        default_payload = json.loads(
-            frappe.db.get_value("NCE Theme", theme_name, "theme_json") or "{}"
-        )
+    default_payload = load_bundled_base_theme_payload()
 
     active_themes = []
     for row in frappe.get_all(
@@ -714,4 +699,4 @@ def publish_theme(theme_name: str) -> dict:
 
     publish_frappe_ui_bridge_css(default_payload)
     css_hash = publish_css("nce_theme.css", css, "css_hash")
-    return {"status": "ok", "theme": default_name, "css_hash": css_hash, "bytes": len(css)}
+    return {"status": "ok", "theme": "base", "css_hash": css_hash, "bytes": len(css)}

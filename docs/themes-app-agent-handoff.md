@@ -43,24 +43,23 @@ Supporting references:
 
 ### Phase 6 — Multi-theme scoped palettes (shipped)
 
-> **Terminology:** *Base Theme* = the repo seed/safety net (`themes/data/base_theme.json`, never rendered directly). *Default Theme* = the live `:root` fallback clients render. The `Site Theme Config.base_theme` field is **misnamed** — it holds the Default Theme. See `.cursor/rules/themes-glossary.mdc`.
+> **Terminology (web / NCE Theme):** There is **no Default theme** on the web side. *Base Theme* = bundled `themes/data/base_theme.json` — drives the site `:root` block, Restore to Base Theme, and Save as base theme (writes the fixture). **Desk** themes still have exactly one Default (`is_default`); unchanged. Leftover DB fields `Site Theme Config.base_theme` and NCE Theme `is_default` are unused on web; do not rely on them.
 
 - **`nce_theme.css` two-layer output:**
-  - `:root { --nce-* }` — site-wide **Default theme** (from the `Site Theme Config.base_theme` field — legacy name)
+  - `:root { --nce-* }` — from bundled **Base Theme** (`base_theme.json`), not from any NCE Theme row
   - `[data-nce-theme="<slug>"] { --nce-* }` — one block per `status = Active` theme
-  - Utility classes (`theme-bg-primary`, etc.) emitted **once** from the Default theme; they read vars in scope
-- **`publish_theme()`** always rebuilds the whole file from DB state (no partial publish)
-- **`base_theme`** field replaces `active_theme` on Site Theme Config (migration patch `rename_base_theme_and_status`); semantically it is the **Default theme** pointer
-- **Status model:** `Active` = published as scoped palette; `Inactive` = stored only, no CSS output
-- **New themes** seed `theme_json` from the current **Default theme** on insert
-- **Editor:** Rename / Delete for Inactive non-Default themes; "Set as base" on System tab (legacy label → makes a theme the Default); login gate on SPA (`themes/www/themes.py`)
-- **API:** `set_base_theme`, `save_as_base_theme`, `get_base_theme_editor` (code names use "base" but operate on the Default theme; + legacy aliases for `active_theme` names)
+  - Utility classes (`theme-bg-primary`, etc.) emitted **once** from the bundled base; they read vars in scope
+- **`publish_theme()`** rebuilds the whole file from bundled base + Active themes (returns `theme: "base"`)
+- **Status model:** `Active` = published scoped palette; `Inactive` = stored only, no CSS block
+- **New themes** may still seed `theme_json` from site base-theme helpers on insert (legacy path)
+- **Editor:** web list/editor responses use `is_active == (status == "Active")` only — no default/base site flags; login gate on SPA (`themes/www/themes.py`)
+- **Removed web APIs:** `set_base_theme`, `set_active_theme`, save-as-default flows tied to a site Default theme
 - **Frontend:** Vite hashed chunk filenames (cache-safe deploys)
 - **Helpers:** `utils/site_theme_config_helpers.py` reads `base_theme` / legacy `active_theme` during migration window
 
 ### Per-panel theming — shipped (Themes side)
 
-Downstream apps (e.g. NCE Events) opt in by setting `data-nce-theme="<slug>"` on a panel root. Omit the attribute (or use a missing/Inactive slug) → inherits `:root` base. No Themes-app changes required beyond the scoped palette blocks above.
+Downstream apps (e.g. NCE Events) opt in by setting `data-nce-theme="<slug>"` on a panel root. Panels with an **empty** theme must **not** assume a site Default — set an explicit slug or accept bundled `:root` only. No Themes-app changes required beyond the scoped palette blocks above.
 
 ### Border width tokens — shipped
 
@@ -79,12 +78,13 @@ See `THEME_CLASS_CONTRACT.json` → `border_and_focus` and `themes/CODE_INDEX.js
 ## Current architecture (summary)
 
 ```
+themes/data/base_theme.json  →  :root { --nce-* }  (always bundled base)
 NCE Theme (theme_name, slug, theme_json, status: Active|Inactive)
        ↓
-Site Theme Config (base_theme = Default theme pointer, css_hash)
+Site Theme Config (css_hash; base_theme field unused on web)
        ↓
 publish_theme() → generate_site_css()
-       → :root { --nce-* }                    (Default theme)
+       → :root { --nce-* }                    (bundled base)
        → [data-nce-theme="slug"] { --nce-* }  (each Active theme)
        → .theme-bg-primary, …                 (utility layer, once)
        → nce_theme.css
@@ -94,11 +94,11 @@ Vue Theme Editor (/themes/theme-settings)
 
 **User workflow:**
 
-1. Create **NCE Theme** → seeds from the Default theme's `theme_json`
-2. **Theme Editor** → edit tokens → **Save Changes** (republish if Active or the Default)
-3. **Set as base** (legacy label) → makes this theme the **Default** → `:root` fallback site-wide
-4. **Active** → included in next publish as `[data-nce-theme]` block (multiple Active themes allowed)
-5. **Inactive** → safe to edit/rename/delete without affecting live CSS
+1. Create **NCE Theme** → edit tokens in Theme Editor
+2. **Save Changes** → republish when status is **Active**
+3. **Restore to Base Theme** / **Save as base theme** → read or write bundled `base_theme.json` (not a Default row)
+4. **Active** → scoped `[data-nce-theme]` block on next publish (multiple Active themes allowed)
+5. **Inactive** → safe to edit/rename/delete (trash blocked if an app uses the slug)
 
 **Do not use Theme Version or Theme Settings** — removed in Phase 5.
 
@@ -152,7 +152,7 @@ Hard-refresh browser after deploy.
 | **Architecture spec** | `docs/theme-system/01-architecture.md` |
 | Editor API | `themes/api.py` |
 | CSS publish | `themes/utils/css_writer.py` (`generate_site_css`, `publish_theme`) |
-| Default theme helpers (the `base_theme` field — legacy name) | `themes/utils/site_theme_config_helpers.py` |
+| Bundled base + legacy site config helpers | `themes/utils/default_theme.py`, `themes/utils/site_theme_config_helpers.py` |
 | NCE Theme | `themes/themes/doctype/nce_theme/` |
 | Site config | `themes/themes/doctype/site_theme_config/` |
 | Vue editor | `frontend/src/pages/ThemeSettingsPage.vue` |
@@ -168,12 +168,12 @@ Hard-refresh browser after deploy.
 I'm working on the Themes Frappe app (repo: oliver-nce/themes, branch master).
 
 Read themes/CODE_INDEX.json first.
-Read docs/theme-system/01-architecture.md for current architecture (base_theme, scoped palettes, Active/Inactive).
+Read docs/theme-system/01-architecture.md for current architecture (bundled base, scoped palettes, Active/Inactive).
 
 Current state:
-- nce_theme.css: :root (base_theme) + [data-nce-theme] per Active theme + theme-* utility classes
-- Site Theme Config.base_theme is the site-wide default
-- Per-panel theming: downstream apps set data-nce-theme="<slug>" (shipped on Themes side)
+- nce_theme.css: :root from base_theme.json + [data-nce-theme] per Active theme + theme-* utility classes
+- Web side has no Default theme; Desk Default unchanged
+- Per-panel theming: downstream apps set data-nce-theme="<slug>" (no site Default fallback for empty theme)
 - Vue editor at /themes/theme-settings; login gate on SPA
 
 Staging site: manager.ncesoccer.com

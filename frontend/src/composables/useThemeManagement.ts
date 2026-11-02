@@ -17,8 +17,13 @@ export type ThemeManagementOptions = {
 	noun: string
 	/** Fallback name for "Save as new": "Theme" or "Desk Theme". */
 	untitledName: string
-	/** Whitelisted method that makes a theme the site base, e.g. "themes.api.set_base_theme". */
-	setBaseUrl: string
+	/**
+	 * When true (Desk editor), themes have a site Default designation, set-base API, and related UI.
+	 * When false (web Theme Settings), those features are omitted.
+	 */
+	hasDefaultTheme?: boolean
+	/** Whitelisted method that makes a theme the site Default; required when hasDefaultTheme is true. */
+	setBaseUrl?: string
 	themeOptionLabel: (t: any) => string
 	switchConfirmMessage: (pendingTheme: string, themes: any[]) => string
 	pickAfterDelete: (themes: any[]) => string | undefined
@@ -30,6 +35,7 @@ export function useThemeManagement(
 	options: ThemeManagementOptions,
 ) {
 	const { noun } = options
+	const hasDefaultTheme = options.hasDefaultTheme !== false
 
 	const route = useRoute()
 
@@ -65,6 +71,7 @@ export function useThemeManagement(
 
 	const editor = useThemeEditor(api, {
 		...hooks,
+		hasDefaultTheme,
 		tryLoadThemeFromQuery,
 		onCreateSuccess: (data) => {
 			saveAsDialog.open = false
@@ -102,6 +109,7 @@ export function useThemeManagement(
 	} = editor
 
 	const siteBaseThemeName = computed(() => {
+		if (!hasDefaultTheme) return ""
 		const row = themesList.data?.find((t: any) => t.name === siteBaseTheme.value)
 		return row?.theme_name || siteBaseTheme.value || ""
 	})
@@ -121,42 +129,44 @@ export function useThemeManagement(
 			!isDirty.value,
 	)
 
-	const canRenameTheme = computed(
-		() =>
-			canChangeStatus.value &&
-			(editorMeta.is_default_theme || savedThemeStatus.value === "Inactive"),
-	)
+	const canRenameTheme = computed(() => {
+		if (!canChangeStatus.value) return false
+		if (hasDefaultTheme) {
+			return editorMeta.is_default_theme || savedThemeStatus.value === "Inactive"
+		}
+		return savedThemeStatus.value === "Inactive"
+	})
 
-	const canDeleteTheme = computed(
-		() =>
-			canChangeStatus.value &&
-			savedThemeStatus.value === "Inactive" &&
-			!editorMeta.is_default_theme,
-	)
+	const canDeleteTheme = computed(() => {
+		if (!canChangeStatus.value || savedThemeStatus.value !== "Inactive") return false
+		return hasDefaultTheme ? !editorMeta.is_default_theme : true
+	})
 
 	const showRenameButton = computed(() => editorLoaded.value)
 
 	const showDeleteButton = computed(
-		() => editorLoaded.value && !editorMeta.is_default_theme,
+		() => editorLoaded.value && (hasDefaultTheme ? !editorMeta.is_default_theme : true),
 	)
 
 	const canSetAsDefaultTheme = computed(
-		() => canChangeStatus.value && !editorMeta.is_default_theme,
+		() => hasDefaultTheme && canChangeStatus.value && !editorMeta.is_default_theme,
 	)
 
 	const setDefaultBusy = ref(false)
 
-	const setDefaultThemeResource = createResource({
-		url: options.setBaseUrl,
-		auto: false,
-	})
+	const setDefaultThemeResource = hasDefaultTheme
+		? createResource({
+				url: options.setBaseUrl || "",
+				auto: false,
+			})
+		: null
 
 	async function requestSetAsDefaultTheme() {
-		if (!canSetAsDefaultTheme.value || !editingTheme.value) return
+		if (!hasDefaultTheme || !canSetAsDefaultTheme.value || !editingTheme.value) return
 		setDefaultBusy.value = true
 		switchError.value = ""
 		try {
-			const data = await setDefaultThemeResource.submit({ theme: editingTheme.value })
+			const data = await setDefaultThemeResource!.submit({ theme: editingTheme.value })
 			siteBaseTheme.value = data?.theme || editingTheme.value
 			editorMeta.is_default_theme = true
 			if (data?.css_hash) editorMeta.css_hash = data.css_hash
@@ -169,9 +179,11 @@ export function useThemeManagement(
 		}
 	}
 
-	const canSaveAsDefaultTheme = computed(
-		() => editorLoaded.value && editorMeta.is_default_theme && !loadingTheme.value,
-	)
+	const canSaveAsDefaultTheme = computed(() => {
+		if (!editorLoaded.value || loadingTheme.value) return false
+		if (hasDefaultTheme) return editorMeta.is_default_theme
+		return true
+	})
 
 	function openConfirmDialog(action: "switch" | "restore", pendingTheme = "") {
 		confirmDialog.action = action
@@ -387,8 +399,10 @@ export function useThemeManagement(
 			})
 			systemTab.password = ""
 			systemTab.success = `Base ${noun} saved and bundled into the app. Commit and push the themes app to ship it on new installs.`
-			siteBaseTheme.value = data?.theme || editingTheme.value
-			editorMeta.is_default_theme = true
+			if (hasDefaultTheme) {
+				siteBaseTheme.value = data?.theme || editingTheme.value
+				editorMeta.is_default_theme = true
+			}
 			if (data?.css_hash) editorMeta.css_hash = data.css_hash
 			themesList.reload()
 		} catch (err: any) {
@@ -401,6 +415,7 @@ export function useThemeManagement(
 
 	return {
 		...editor,
+		hasDefaultTheme,
 		route,
 		themeFromQuery,
 		tryLoadThemeFromQuery,

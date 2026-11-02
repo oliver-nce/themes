@@ -3,9 +3,9 @@
 
 AGENT NAVIGATION — grep "AGENT:" in this file
   AGENT:web-read      — get_theme_editor, get_base_theme_editor, get_base_theme_payload
-  AGENT:web-write     — save_theme, create_theme, set_base_theme, save_as_base_theme
+  AGENT:web-write     — save_theme, create_theme, save_as_base_theme
   AGENT:web-maintain  — list/rename/delete/regenerate_theme_css
-  AGENT:web-deprecated — get_active_theme_editor, save_active_theme, set_active_theme, save_as_default
+  AGENT:web-deprecated — get_active_theme_editor, save_active_theme
   AGENT:desk-*        — parallel desk_* endpoints (DESK_FAMILY)
 
 """
@@ -103,13 +103,6 @@ def create_theme(theme_name: str, payload):
 
 
 @frappe.whitelist()
-def set_base_theme(theme: str):
-    """Promote theme to Default (is_default + Site Theme Config.base_theme) and regenerate nce_theme.css."""
-    _require_system_manager()
-    return svc.set_base(WEB_FAMILY, theme)
-
-
-@frappe.whitelist()
 def save_as_base_theme(theme: str, password: str):
     """Set base theme, publish CSS, and bundle payload into app source files."""
     _require_system_manager()
@@ -117,24 +110,6 @@ def save_as_base_theme(theme: str, password: str):
 
 
 # ─── AGENT:web-deprecated ─── legacy aliases; grep callers before removing
-
-
-@frappe.whitelist()
-def set_active_theme(theme: str):
-    """DEPRECATED — remove after callers confirmed gone.
-
-    Legacy alias for set_base_theme(). Prefer set_base_theme(theme).
-    """
-    return set_base_theme(theme)
-
-
-@frappe.whitelist()
-def save_as_default(theme: str):
-    """DEPRECATED — remove after callers confirmed gone.
-
-    Legacy alias for set_base_theme (no password). Prefer save_as_base_theme().
-    """
-    return set_base_theme(theme)
 
 
 # ─── AGENT:web-maintain ─── list, rename, delete, regenerate CSS

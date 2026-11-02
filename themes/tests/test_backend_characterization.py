@@ -262,7 +262,7 @@ class TestWebPublishTail(unittest.TestCase):
             frappe_mock.db.exists.return_value = True
             frappe_mock.db.get_value.return_value = "{}"
             frappe_mock.get_all.return_value = []
-            mock_set_base = MagicMock()
+            bundled_payload = {"primary_color": "#3B82F6"}
 
             with patch(
                 "themes.utils.css_writer.generate_site_css",
@@ -271,18 +271,14 @@ class TestWebPublishTail(unittest.TestCase):
                 "themes.utils.css_writer.generate_fonts_css",
                 return_value=fonts_css,
             ), patch(
-                "themes.utils.site_theme_config_helpers.get_site_default_theme_name",
-                return_value="Default",
+                "themes.utils.default_theme.load_bundled_base_theme_payload",
+                return_value=bundled_payload,
             ), patch(
-                "themes.utils.site_theme_config_helpers.get_site_base_theme_name",
-                return_value="Default",
-            ), patch(
-                "themes.utils.site_theme_config_helpers.set_site_base_theme_name",
-                mock_set_base,
+                "themes.utils.frappe_ui_bridge.publish_frappe_ui_bridge_css",
             ):
                 from themes.utils.css_writer import publish_theme
 
-                result = publish_theme("Default")
+                result = publish_theme("AnyTheme")
 
             app_path = frappe_mock.get_app_path.return_value
             theme_path = os.path.join(app_path, "public", "css", "nce_theme.css")
@@ -299,12 +295,11 @@ class TestWebPublishTail(unittest.TestCase):
         )
         frappe_mock.cache.delete_value.assert_called_with("assets_json")
         frappe_mock.clear_cache.assert_called()
-        mock_set_base.assert_not_called()
         self.assertEqual(
             result,
             {
                 "status": "ok",
-                "theme": "Default",
+                "theme": "base",
                 "css_hash": expected_hash,
                 "bytes": 3,
             },
@@ -335,9 +330,23 @@ class TestComponentPublishTail(unittest.TestCase):
         self.assertEqual(result["status"], "ok")
         tmp.cleanup()
 
-    def _publish_with_widget_parent(self, frappe_mock, theme_off_raw: str, parent_app: str = "custom_app"):
+    def _publish_with_widget_parent(
+        self,
+        frappe_mock,
+        theme_off_raw: str,
+        parent_app: str = "custom_app",
+        *,
+        app_theme_slugs_raw: str = "",
+        active_theme_slugs: list[str] | None = None,
+        installed_apps: list[str] | None = None,
+    ):
         _reload_modules("themes.utils.component_css_writer", "themes.component_api")
         tmp = _temp_app_layout(frappe_mock)
+        if installed_apps is None:
+            installed_apps = [parent_app]
+        frappe_mock.get_installed_apps.return_value = installed_apps
+        if active_theme_slugs is None:
+            active_theme_slugs = []
         parent = {
             "name": "VC-1",
             "app": parent_app,
@@ -367,6 +376,8 @@ class TestComponentPublishTail(unittest.TestCase):
                 return [parent]
             if doctype == "Vue Component Element":
                 return [element]
+            if doctype == "NCE Theme":
+                return [{"slug": slug, "theme_name": slug} for slug in active_theme_slugs]
             return []
 
         frappe_mock.get_all.side_effect = get_all_side_effect
@@ -374,13 +385,16 @@ class TestComponentPublishTail(unittest.TestCase):
         def get_single_side_effect(doctype, fieldname):
             if doctype == "Theme Component Settings" and fieldname == "theme_off_apps":
                 return theme_off_raw
+            if doctype == "Theme Component Settings" and fieldname == "app_theme_slugs":
+                return app_theme_slugs_raw
             return ""
 
         frappe_mock.db.get_single_value.side_effect = get_single_side_effect
 
-        from themes.utils.component_css_writer import publish_component_css
+        with patch("themes.component_api._is_frappe_branded", return_value=False):
+            from themes.utils.component_css_writer import publish_component_css
 
-        publish_component_css()
+            publish_component_css()
         app_path = frappe_mock.get_app_path.return_value
         css_path = os.path.join(app_path, "public", "css", "nce_component_overrides.css")
         with open(css_path, encoding="utf-8") as f:
@@ -395,7 +409,12 @@ class TestComponentPublishTail(unittest.TestCase):
 
     def test_publish_component_css_includes_app_when_theme_on(self):
         with fake_frappe() as frappe_mock:
-            tmp, css_text = self._publish_with_widget_parent(frappe_mock, "")
+            tmp, css_text = self._publish_with_widget_parent(
+                frappe_mock,
+                "",
+                app_theme_slugs_raw="custom_app=ocean",
+                active_theme_slugs=["ocean"],
+            )
             self.assertIn("widget-root", css_text)
         tmp.cleanup()
 
@@ -419,6 +438,163 @@ class TestComponentPublishTail(unittest.TestCase):
             from themes.component_api import theme_app_slugs
 
             self.assertEqual(theme_app_slugs(), {"nce_events": "ocean"})
+
+
+class TestThemeAppApplyGate(unittest.TestCase):
+    def _configure_theme_app_mocks(
+        self,
+        frappe_mock,
+        *,
+        theme_off_raw: str = "",
+        app_theme_slugs_raw: str = "",
+        active_theme_slugs: list[str] | None = None,
+        installed_apps: list[str] | None = None,
+    ):
+        if active_theme_slugs is None:
+            active_theme_slugs = ["ocean"]
+        if installed_apps is None:
+            installed_apps = ["themes", "frappe", "nce_events", "custom_app"]
+        frappe_mock.get_installed_apps.return_value = installed_apps
+
+        def get_all_side_effect(doctype, **kwargs):
+            if doctype == "NCE Theme":
+                return [{"slug": slug, "theme_name": slug.title()} for slug in active_theme_slugs]
+            return []
+
+        frappe_mock.get_all.side_effect = get_all_side_effect
+
+        def get_single_side_effect(doctype, fieldname):
+            if doctype == "Theme Component Settings" and fieldname == "theme_off_apps":
+                return theme_off_raw
+            if doctype == "Theme Component Settings" and fieldname == "app_theme_slugs":
+                return app_theme_slugs_raw
+            return ""
+
+        frappe_mock.db.get_single_value.side_effect = get_single_side_effect
+
+        def identity_whitelist(*args, **kwargs):
+            if args and callable(args[0]) and not kwargs:
+                return args[0]
+
+            def decorator(fn):
+                return fn
+
+            return decorator
+
+        frappe_mock.whitelist = identity_whitelist
+
+    @staticmethod
+    def _is_frappe_branded_stub(app: str) -> bool:
+        return app == "frappe"
+
+    def test_theme_off_apps_includes_unthemed_installed_app(self):
+        with fake_frappe() as frappe_mock:
+            self._configure_theme_app_mocks(
+                frappe_mock,
+                app_theme_slugs_raw="nce_events=ocean",
+            )
+            _reload_modules("themes.component_api")
+            with patch(
+                "themes.component_api._is_frappe_branded",
+                side_effect=self._is_frappe_branded_stub,
+            ):
+                from themes.component_api import theme_off_apps
+
+                off = theme_off_apps()
+            self.assertIn("custom_app", off)
+            self.assertNotIn("nce_events", off)
+
+    def test_theme_off_apps_excludes_valid_themed_and_not_stored_off(self):
+        with fake_frappe() as frappe_mock:
+            self._configure_theme_app_mocks(
+                frappe_mock,
+                app_theme_slugs_raw="nce_events=ocean\ncustom_app=ocean",
+            )
+            _reload_modules("themes.component_api")
+            with patch(
+                "themes.component_api._is_frappe_branded",
+                side_effect=self._is_frappe_branded_stub,
+            ):
+                from themes.component_api import theme_off_apps
+
+                off = theme_off_apps()
+            self.assertNotIn("nce_events", off)
+            self.assertNotIn("custom_app", off)
+
+    def test_theme_off_apps_stored_off_stays_off_with_valid_theme(self):
+        with fake_frappe() as frappe_mock:
+            self._configure_theme_app_mocks(
+                frappe_mock,
+                theme_off_raw="nce_events",
+                app_theme_slugs_raw="nce_events=ocean",
+            )
+            _reload_modules("themes.component_api")
+            with patch(
+                "themes.component_api._is_frappe_branded",
+                side_effect=self._is_frappe_branded_stub,
+            ):
+                from themes.component_api import theme_off_apps
+
+                off = theme_off_apps()
+            self.assertIn("nce_events", off)
+
+    def test_theme_off_apps_never_adds_themes_or_frappe_branded(self):
+        with fake_frappe() as frappe_mock:
+            self._configure_theme_app_mocks(frappe_mock, app_theme_slugs_raw="")
+            _reload_modules("themes.component_api")
+            with patch(
+                "themes.component_api._is_frappe_branded",
+                side_effect=self._is_frappe_branded_stub,
+            ):
+                from themes.component_api import theme_off_apps
+
+                off = theme_off_apps()
+            self.assertNotIn("themes", off)
+            self.assertNotIn("frappe", off)
+
+    def test_set_theme_app_apply_on_without_theme_throws(self):
+        with fake_frappe() as frappe_mock:
+            frappe_mock.only_for = MagicMock()
+            self._configure_theme_app_mocks(frappe_mock, app_theme_slugs_raw="")
+            _reload_modules("themes.component_api")
+            with patch(
+                "themes.component_api._is_frappe_branded",
+                side_effect=self._is_frappe_branded_stub,
+            ), patch("themes.component_api.publish_component_css", return_value={"status": "ok"}):
+                from themes.component_api import set_theme_app_apply
+
+                with self.assertRaises(FrappeThrow) as ctx:
+                    set_theme_app_apply("nce_events", 1)
+            self.assertEqual(str(ctx.exception), "Choose a theme for nce_events first.")
+
+    def test_set_theme_app_theme_empty_slug_throws(self):
+        with fake_frappe() as frappe_mock:
+            frappe_mock.only_for = MagicMock()
+            self._configure_theme_app_mocks(frappe_mock)
+            _reload_modules("themes.component_api")
+            with patch(
+                "themes.component_api._is_frappe_branded",
+                side_effect=self._is_frappe_branded_stub,
+            ):
+                from themes.component_api import set_theme_app_theme
+
+                with self.assertRaises(FrappeThrow):
+                    set_theme_app_theme("nce_events", "")
+
+    def test_set_theme_app_theme_unknown_slug_throws(self):
+        with fake_frappe() as frappe_mock:
+            frappe_mock.only_for = MagicMock()
+            self._configure_theme_app_mocks(frappe_mock)
+            _reload_modules("themes.component_api")
+            with patch(
+                "themes.component_api._is_frappe_branded",
+                side_effect=self._is_frappe_branded_stub,
+            ):
+                from themes.component_api import set_theme_app_theme
+
+                with self.assertRaises(FrappeThrow) as ctx:
+                    set_theme_app_theme("nce_events", "missing-slug")
+            self.assertEqual(str(ctx.exception), "Unknown or inactive theme slug: missing-slug")
 
 
 class TestNCEThemeController(unittest.TestCase):
@@ -475,14 +651,15 @@ class TestNCEThemeController(unittest.TestCase):
             doc.before_insert()
             self.assertEqual(doc.theme_json, '{"keep":true}')
 
-    def test_validate_rejects_second_default(self):
-        with fake_frappe() as frappe_mock:
+    def test_no_second_default_validation_on_web_theme(self):
+        with fake_frappe():
             _reload_modules(self.MODULE)
-            frappe_mock.db.get_all.return_value = ["Other"]
-            doc = self._theme_class()(name="Mine", is_default=True)
-            with self.assertRaises(FrappeThrow) as ctx:
-                doc.validate()
-            self.assertEqual(str(ctx.exception), "Another theme is already marked default: Other")
+            theme_cls = self._theme_class()
+            self.assertNotIn(
+                "validate",
+                theme_cls.__dict__,
+                "Web NCE Theme must not enforce a single Default theme",
+            )
 
     def test_on_update_skips_publish_during_install(self):
         with fake_frappe() as frappe_mock:
@@ -513,16 +690,27 @@ class TestNCEThemeController(unittest.TestCase):
                 doc.on_update()
             mock_publish.assert_called_once_with("ActiveOne")
 
-    def test_on_trash_publishes_base_or_self_when_active(self):
-        with fake_frappe() as frappe_mock:
+    def test_on_trash_publishes_when_active(self):
+        with fake_frappe():
+            _reload_modules(self.MODULE)
+            with patch("themes.utils.css_writer.publish_theme") as mock_publish:
+                doc = self._theme_class()(name="Trashed", status="Active", slug="trashed")
+                doc.on_trash()
+            mock_publish.assert_called_once_with("Trashed")
+
+    def test_on_trash_refuses_when_slug_assigned_to_app(self):
+        with fake_frappe():
             _reload_modules(self.MODULE)
             with patch(
-                f"{self.MODULE}.get_site_base_theme_name",
-                return_value="BaseTheme",
+                "themes.component_api.theme_app_slugs",
+                return_value={"nce_events": "in-use"},
             ), patch("themes.utils.css_writer.publish_theme") as mock_publish:
-                doc = self._theme_class()(name="Trashed", status="Active")
-                doc.on_trash()
-            mock_publish.assert_called_once_with("BaseTheme")
+                doc = self._theme_class()(name="Locked", status="Inactive", slug="in-use")
+                with self.assertRaises(FrappeThrow) as ctx:
+                    doc.on_trash()
+            mock_publish.assert_not_called()
+            self.assertIn("nce_events", str(ctx.exception))
+            self.assertIn("in-use", str(ctx.exception))
 
 
 class TestNCEDeskThemeController(unittest.TestCase):

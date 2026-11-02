@@ -9,12 +9,13 @@ import os
 import frappe
 
 from themes.utils.css_publish import public_css_path
+from themes.utils.default_theme import load_bundled_base_theme_payload
 
 
 def run():
     _check_site_theme_config_exists()
-    _check_default_theme()
-    _check_base_theme()
+    _check_active_web_theme()
+    _check_bundled_base_payload()
     _check_css_file()
     _check_css_hash()
     print("All fresh-install checks passed.")
@@ -29,42 +30,26 @@ def _check_site_theme_config_exists():
     print("PASS: Site Theme Config exists")
 
 
-def _check_default_theme():
-    default_name = frappe.get_all(
+def _check_active_web_theme():
+    names = frappe.get_all(
         "NCE Theme",
-        filters={"is_default": 1},
+        filters={"status": "Active"},
         pluck="name",
         limit=1,
     )
-    if not default_name:
-        raise Exception("No NCE Theme marked is_default=1")
-    theme = frappe.get_doc("NCE Theme", default_name[0])
-    if not theme.is_default:
-        raise Exception(f"NCE Theme {default_name[0]!r} is not marked is_default")
+    if not names:
+        raise Exception("No Active NCE Theme found")
+    theme = frappe.get_doc("NCE Theme", names[0])
     if theme.theme_json is None:
-        raise Exception(f"NCE Theme {default_name[0]!r} has no theme_json field")
-    print(f"PASS: Default NCE Theme {default_name[0]!r} exists with theme_json")
+        raise Exception(f"NCE Theme {names[0]!r} has no theme_json field")
+    print(f"PASS: Active NCE Theme {names[0]!r} exists with theme_json")
 
 
-def _check_base_theme():
-    from themes.utils.site_theme_config_helpers import get_site_base_theme_name
-
-    base = get_site_base_theme_name()
-    default_name = frappe.get_all(
-        "NCE Theme",
-        filters={"is_default": 1},
-        pluck="name",
-        limit=1,
-    )
-    if not base:
-        raise Exception("Site Theme Config.base_theme is not set")
-    if not default_name:
-        raise Exception("No NCE Theme marked is_default=1")
-    if base != default_name[0]:
-        raise Exception(
-            f"base_theme {base!r} does not match is_default theme {default_name[0]!r}"
-        )
-    print(f"PASS: base_theme matches Default theme ({base!r})")
+def _check_bundled_base_payload():
+    payload = load_bundled_base_theme_payload()
+    if not isinstance(payload, dict) or not payload:
+        raise Exception("Bundled base theme payload is empty or invalid")
+    print("PASS: bundled base theme payload loads")
 
 
 def _check_css_file():

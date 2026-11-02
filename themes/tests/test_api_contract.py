@@ -16,13 +16,9 @@ from themes.api import _desk_theme_editor_response, _theme_editor_response
 WEB_EDITOR_KEYS = {
     "theme": str,
     "theme_name": str,
+    "slug": str,
     "status": str,
-    "is_default_theme": bool,
-    "is_base_theme": bool,
     "is_active": bool,
-    "site_default_theme": (str, type(None)),
-    "site_base_theme": (str, type(None)),
-    "site_active_theme": (str, type(None)),
     "css_hash": (str, type(None)),
     "payload": dict,
 }
@@ -59,52 +55,46 @@ def _assert_shape(test_case: unittest.TestCase, data: dict, schema: dict, label:
 
 
 class TestApiContract(unittest.TestCase):
-    def test_web_editor_response_shape_when_default(self):
+    def test_web_editor_response_shape_when_active(self):
         theme_doc = SimpleNamespace(
-            name="Default",
-            theme_name="Default",
-            is_default=1,
+            name="Ocean",
+            theme_name="Ocean",
+            slug="ocean",
+            is_default=0,
             status="Active",
             theme_json='{"primary_color":"#3B82F6"}',
         )
         with patch("themes.utils.theme_service.frappe") as frappe_mock, patch(
-            "themes.utils.theme_service._default_theme_name",
-            return_value="Default",
-        ), patch("themes.utils.theme_family.read_web_css_hash", return_value="abc12345"):
-            frappe_mock.db.exists.return_value = True
-            frappe_mock.get_doc.return_value = theme_doc
-            frappe_mock.get_all.return_value = ["Default"]
-
-            result = _theme_editor_response("Default")
-
-        _assert_shape(self, result, WEB_EDITOR_KEYS, "web default")
-        self.assertTrue(result["is_default_theme"])
-        self.assertEqual(result["is_base_theme"], result["is_default_theme"])
-        self.assertTrue(result["is_active"])
-        self.assertEqual(result["site_default_theme"], "Default")
-        self.assertEqual(result["site_active_theme"], result["site_default_theme"])
-        self.assertEqual(result["css_hash"], "abc12345")
-
-    def test_web_editor_response_shape_when_not_default(self):
-        theme_doc = SimpleNamespace(
-            name="Alt Theme",
-            theme_name="Ocean",
-            is_default=0,
-            status="Active",
-            theme_json="{}",
-        )
-        with patch("themes.utils.theme_service.frappe") as frappe_mock, patch(
-            "themes.utils.theme_service._default_theme_name",
-            return_value="Default",
+            "themes.utils.theme_family.read_web_css_hash",
+            return_value="abc12345",
         ):
             frappe_mock.db.exists.return_value = True
             frappe_mock.get_doc.return_value = theme_doc
-            frappe_mock.get_all.return_value = ["Default"]
+
+            result = _theme_editor_response("Ocean")
+
+        _assert_shape(self, result, WEB_EDITOR_KEYS, "web active")
+        self.assertTrue(result["is_active"])
+        self.assertEqual(result["css_hash"], "abc12345")
+        self.assertNotIn("is_default_theme", result)
+        self.assertNotIn("site_default_theme", result)
+
+    def test_web_editor_response_shape_when_inactive(self):
+        theme_doc = SimpleNamespace(
+            name="Alt Theme",
+            theme_name="Ocean",
+            slug="ocean",
+            is_default=0,
+            status="Inactive",
+            theme_json="{}",
+        )
+        with patch("themes.utils.theme_service.frappe") as frappe_mock:
+            frappe_mock.db.exists.return_value = True
+            frappe_mock.get_doc.return_value = theme_doc
 
             result = _theme_editor_response("Alt Theme")
 
-        _assert_shape(self, result, WEB_EDITOR_KEYS, "web non-default")
-        self.assertFalse(result["is_default_theme"])
+        _assert_shape(self, result, WEB_EDITOR_KEYS, "web inactive")
         self.assertFalse(result["is_active"])
         self.assertIsNone(result["css_hash"])
 
@@ -174,28 +164,23 @@ class TestApiContract(unittest.TestCase):
         self.assertFalse(result["is_active"])
         self.assertIsNone(result["css_hash"])
 
-    def test_web_list_row_legacy_aliases_match_default(self):
+    def test_web_list_row_active_follows_status(self):
         row = {
-            "name": "Default",
-            "theme_name": "Default",
-            "is_default": 1,
+            "name": "Ocean",
+            "theme_name": "Ocean",
             "status": "Active",
         }
-        row["is_default_theme"] = bool(row["is_default"])
-        row["is_base_theme"] = row["is_default_theme"]
-        row["is_active"] = row["is_default_theme"]
-        self.assertTrue(row["is_default_theme"])
-        self.assertEqual(row["is_active"], row["is_default_theme"])
+        row["is_active"] = row["status"] == "Active"
+        self.assertTrue(row["is_active"])
 
-    def test_web_list_row_renamed_default_not_by_name(self):
+    def test_web_list_row_inactive_not_active(self):
         row = {
-            "name": "Default",
-            "theme_name": "Corporate",
-            "is_default": 1,
-            "status": "Active",
+            "name": "Draft",
+            "theme_name": "Draft",
+            "status": "Inactive",
         }
-        row["is_default_theme"] = bool(row["is_default"])
-        self.assertTrue(row["is_default_theme"])
+        row["is_active"] = row["status"] == "Active"
+        self.assertFalse(row["is_active"])
 
     def test_desk_list_row_active_semantics(self):
         row = {
@@ -208,6 +193,29 @@ class TestApiContract(unittest.TestCase):
         row["is_active"] = row["status"] == "Active"
         self.assertFalse(row["is_default_theme"])
         self.assertTrue(row["is_active"])
+
+    def test_list_export_theme_rows_omit_default_site_flag(self):
+        import frappe
+
+        from themes.utils.theme_export import list_export_theme_rows
+
+        with patch.object(
+            frappe,
+            "get_all",
+            return_value=[
+                {
+                    "name": "Ocean",
+                    "theme_name": "Ocean",
+                    "slug": " ocean ",
+                    "status": "Active",
+                },
+            ],
+        ):
+            rows = list_export_theme_rows()
+
+        self.assertEqual(len(rows), 1)
+        self.assertEqual(rows[0]["slug"], "ocean")
+        self.assertNotIn("is_default_site_theme", rows[0])
 
 
 if __name__ == "__main__":

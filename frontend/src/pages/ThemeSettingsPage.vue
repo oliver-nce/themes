@@ -13,6 +13,7 @@ Site Theme Editor for colours, typography, layout, live CSS variables, and base 
 			status-label="For panels:"
 			radio-name="theme-availability"
 			restore-target="Theme"
+			:has-default-theme="false"
 			:theme-option-label="themeOptionLabel"
 			@preview="openPreview"
 			@restore="requestRestoreToBase"
@@ -496,14 +497,10 @@ Site Theme Editor for colours, typography, layout, live CSS variables, and base 
 				</EditorSection>
 
 				<EditorSection title="Published CSS">
-					<p v-if="editorMeta.is_default_theme && editorMeta.css_hash" class="text-sm text-gray-600">
-						Site base theme published to <code>nce_theme.css</code>
-						(hash: {{ editorMeta.css_hash }})
+					<p v-if="editorMeta.css_hash" class="text-sm text-gray-600">
+						Stylesheet hash: {{ editorMeta.css_hash }}
 					</p>
-					<p v-else-if="editorMeta.is_default_theme" class="text-sm text-gray-400">
-						Save to publish CSS to the site
-					</p>
-					<p v-else class="text-sm text-gray-500">
+					<p class="text-sm text-gray-500">
 						Saving updates this theme only. Active themes are included in the shared CSS file.
 					</p>
 				</EditorSection>
@@ -608,9 +605,6 @@ Site Theme Editor for colours, typography, layout, live CSS variables, and base 
 									/>
 									<span>
 										{{ theme.theme_name }}
-										<span v-if="theme.is_default_site_theme" class="text-gray-400">
-											(site default)
-										</span>
 										<span v-if="theme.slug" class="block text-xs text-gray-400">{{
 											theme.slug
 										}}</span>
@@ -664,7 +658,7 @@ Site Theme Editor for colours, typography, layout, live CSS variables, and base 
 				</EditorSection>
 			</div>
 
-			<!-- AGENT:TAB system — class catalog + Save Default to app -->
+			<!-- AGENT:TAB system — class catalog + Save as base theme to app -->
 			<div v-show="activeTab === 'system'" class="editor-tab">
 				<ThemeClassCatalogPanel
 					:css-hash="editorMeta.css_hash"
@@ -674,11 +668,8 @@ Site Theme Editor for colours, typography, layout, live CSS variables, and base 
 
 				<EditorSection
 					title="Save as base theme"
-					hint="Rare release action: sets the site base theme, rebuilds CSS, and writes bundled files into the app for new installs. Commit and push after running."
+					hint="Rare release action: bundles the current theme as the app base theme, rebuilds CSS, and writes install fixtures for new sites. Commit and push after running."
 				>
-					<p v-if="!canSaveAsDefaultTheme" class="text-sm text-gray-500 mb-3">
-						Only available when editing the Default (site base) theme.
-					</p>
 					<p class="text-sm text-gray-600 mb-3">
 						Editing <strong>{{ editorMeta.theme_name || "—" }}</strong>.
 						Requires your account password.
@@ -735,10 +726,10 @@ Site Theme Editor for colours, typography, layout, live CSS variables, and base 
 			<ThemeDialog :open="saveBaseThemeDialog.open" title="Save as Base Theme" @close="closeSaveBaseThemeDialog">
 				<div class="text-sm text-gray-600 mt-2 space-y-3">
 					<p>
-						This action will save any current change to the Default Theme.
+						This action saves any current editor changes, then writes the bundled base theme into the Themes application code.
 					</p>
 					<p>
-						The theme will be saved in the Themes application code. If the application is installed on another Frappe Bench, or migrated from one Bench to another Site, this saved theme will become the Default Theme for that installation.
+						New installs (or sites that restore from that bundle) load this base theme when you use Restore to Base Theme.
 					</p>
 				</div>
 				<p v-if="saveBaseThemeDialog.error" class="text-sm text-red-600 mt-3">{{ saveBaseThemeDialog.error }}</p>
@@ -817,7 +808,7 @@ Site Theme Editor for colours, typography, layout, live CSS variables, and base 
 			</ThemeDialog>
 
 			<ThemeDialog :open="renameDialog.open" title="Rename theme" @close="closeRenameDialog">
-				<p class="text-sm text-gray-600 mt-2">Only inactive themes that are not the site base can be renamed.</p>
+				<p class="text-sm text-gray-600 mt-2">Only inactive themes can be renamed.</p>
 				<input
 					v-model="renameDialog.name"
 					type="text"
@@ -1073,7 +1064,6 @@ type ExportThemeRow = {
 	theme_name: string
 	slug: string
 	status: string
-	is_default_site_theme: boolean
 }
 
 const exportThemes = ref<ExportThemeRow[]>([])
@@ -1112,25 +1102,18 @@ function isExportThemeSelected(name: string): boolean {
 	return exportSelectedNames.value.includes(name)
 }
 
+// A theme without a slug can only be the starting theme (the first one ticked), because
+// users can only switch to themes that have a slug.
 function exportCheckboxDisabled(theme: ExportThemeRow): boolean {
 	if (exportThemeHasSlug(theme)) return false
-	return !theme.is_default_site_theme
+	if (isExportThemeSelected(theme.name)) return false
+	return exportSelectedNames.value.length > 0
 }
 
 const exportDownloadDisabled = computed(() => exportSelectedNames.value.length === 0)
 
-const exportDefaultThemeName = computed(() => {
-	const selected = exportSelectedNames.value
-	if (!selected.length) return ""
-	const siteDefault = exportThemes.value.find(
-		(theme) => theme.is_default_site_theme && selected.includes(theme.name),
-	)
-	if (siteDefault) return siteDefault.name
-	for (const theme of exportThemes.value) {
-		if (selected.includes(theme.name)) return theme.name
-	}
-	return selected[0]
-})
+// The starting theme is the first theme ticked.
+const exportDefaultThemeName = computed(() => exportSelectedNames.value[0] ?? "")
 
 const exportStartsWithLine = computed(() => {
 	const defaultName = exportDefaultThemeName.value
@@ -1144,12 +1127,8 @@ const exportStartsWithLine = computed(() => {
 })
 
 function initExportSelection(themes: ExportThemeRow[]) {
-	const siteDefault = themes.find((theme) => theme.is_default_site_theme)
-	if (siteDefault) {
-		exportSelectedNames.value = [siteDefault.name]
-	} else {
-		exportSelectedNames.value = []
-	}
+	void themes
+	exportSelectedNames.value = []
 	exportDownloadMessage.value = ""
 }
 
@@ -1335,14 +1314,8 @@ const restoreToBaseDialog = reactive({
 	error: "",
 })
 
-function themeOptionLabel(t: {
-	theme_name: string
-	is_default_theme?: boolean
-	is_base_theme?: boolean
-	is_active?: boolean
-}) {
-	const isDefault = t.is_default_theme ?? t.is_base_theme ?? t.is_active
-	return isDefault ? `${t.theme_name} · Default` : t.theme_name
+function themeOptionLabel(t: { theme_name: string }) {
+	return t.theme_name
 }
 
 // ─── AGENT:payload-serialization ─── buildPayloadFromForm, canonicalPayload, applyPayloadToForm
@@ -1560,7 +1533,9 @@ const manager = useThemeManagement(
 		defaultSavedStatus: "Active",
 		notFoundMessage: "Theme not found.",
 		loadErrorMessage: "Failed to load theme. Check permissions.",
-		useLegacyIsActive: true,
+		pickInitialTheme: (data) =>
+			(data.find((t) => t.is_active)?.name as string | undefined) ||
+			(data[0]?.name as string | undefined),
 		onEditorLoaded: (data) => {
 			if (data.theme_name) form.theme_name = data.theme_name as string
 		},
@@ -1568,12 +1543,12 @@ const manager = useThemeManagement(
 	{
 		noun: "theme",
 		untitledName: "Theme",
-		setBaseUrl: "themes.api.set_base_theme",
+		hasDefaultTheme: false,
 		themeOptionLabel,
 		switchConfirmMessage: (p, themes) =>
 			`Save your changes before switching to "${themes.find((t) => t.name === p)?.theme_name || p}"?`,
 		pickAfterDelete: (themes) =>
-			themes.find((t) => t.is_default_theme || t.is_base_theme)?.name || themes[0]?.name,
+			themes.find((t) => t.is_active)?.name || themes[0]?.name,
 	},
 )
 
@@ -1582,7 +1557,6 @@ const {
 	editorLoaded,
 	editorError,
 	switchError,
-	siteBaseTheme,
 	editorMeta,
 	isDirty,
 	themesList,
@@ -1613,8 +1587,7 @@ const submitSaveAsBaseTheme = saveAsBaseTheme
 // ─── AGENT:restore-to-app-fixture ─── loads data/base_theme.json into editor (unsaved preview)
 
 async function requestRestoreToBase() {
-	if (!siteBaseTheme.value) return
-	// Load data/base_theme.json into the Site Theme Editor form without saving.
+	// Load bundled base theme payload into the Site Theme Editor form without saving.
 	// If the editor has unsaved changes, confirm before replacing them.
 	if (isDirty.value) {
 		restoreToBaseDialog.error = ""

@@ -13,6 +13,7 @@ Desk Theme Editor for NCE Desk Theme colours, shape, typography, Gantt, and live
 			status-label="For Desk:"
 			radio-name="desk-theme-availability"
 			restore-target="Desk Theme"
+			:has-default-theme="true"
 			restore-blocked-on-base
 			:theme-option-label="themeOptionLabel"
 			@preview="openPreview"
@@ -1168,6 +1169,7 @@ const manager = useThemeManagement(
 	{
 		noun: "desk theme",
 		untitledName: "Desk Theme",
+		hasDefaultTheme: true,
 		setBaseUrl: "themes.api.set_base_desk_theme",
 		themeOptionLabel,
 		switchConfirmMessage: () => "Save your changes before switching desk themes?",

@@ -1,5 +1,5 @@
 <!--
-Theme editor header: title, base-theme status, availability radios, theme picker and action buttons.
+Theme editor header: title, availability radios, theme picker and action buttons (optional Default-theme status for Desk).
 
 -->
 
@@ -11,12 +11,17 @@ Theme editor header: title, base-theme status, availability radios, theme picker
 				<h1 class="editor-title">{{ title }}</h1>
 				<p class="editor-subtitle mt-0.5">
 					Editing <strong>{{ editorMeta.theme_name || "—" }}</strong>
-					<span v-if="editingTheme && siteBaseTheme && editingTheme !== siteBaseTheme" class="editor-warn">
-						· not the site base {{ noun }}
-					</span>
-					<span v-if="siteBaseThemeName" class="editor-muted">
-						· Site base: <strong>{{ siteBaseThemeName }}</strong>
-					</span>
+					<template v-if="hasDefaultTheme">
+						<span
+							v-if="editingTheme && siteBaseTheme && editingTheme !== siteBaseTheme"
+							class="editor-warn"
+						>
+							· not the site base {{ noun }}
+						</span>
+						<span v-if="siteBaseThemeName" class="editor-muted">
+							· Site base: <strong>{{ siteBaseThemeName }}</strong>
+						</span>
+					</template>
 				</p>
 				<div
 					v-if="editorLoaded"
@@ -92,7 +97,11 @@ Theme editor header: title, base-theme status, availability radios, theme picker
 					<Button
 						variant="solid"
 						class="theme-btn theme-btn-quiet bg-primary-100 text-primary-100-fg border border-border hover:bg-row-alt"
-						:disabled="loadingTheme || !siteBaseTheme || (restoreBlockedOnBase && editingTheme === siteBaseTheme)"
+						:disabled="
+							loadingTheme ||
+							(hasDefaultTheme && !siteBaseTheme) ||
+							(restoreBlockedOnBase && editingTheme === siteBaseTheme)
+						"
 						@click="emit('restore')"
 					>
 						Restore to Base {{ restoreTarget }}
@@ -106,7 +115,7 @@ Theme editor header: title, base-theme status, availability radios, theme picker
 						Save as new {{ noun }}
 					</Button>
 					<Button
-						v-if="canSetAsDefaultTheme"
+						v-if="hasDefaultTheme && canSetAsDefaultTheme"
 						variant="solid"
 						class="theme-btn theme-btn-quiet bg-primary-100 text-primary-100-fg border border-border hover:bg-row-alt"
 						:loading="setDefaultBusy"
@@ -151,8 +160,12 @@ const props = defineProps<{
 	/** Completes the "Restore to Base …" button label, e.g. "Theme" or "Desk Theme". */
 	restoreTarget: string
 	restoreBlockedOnBase?: boolean
+	/** When false (web Theme Settings), hide Default-theme designation UI and set-base actions. */
+	hasDefaultTheme?: boolean
 	themeOptionLabel: (t: any) => string
 }>()
+
+const hasDefaultTheme = props.hasDefaultTheme !== false
 
 const emit = defineEmits<{ preview: []; restore: [] }>()
 

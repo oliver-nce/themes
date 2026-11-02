@@ -27,12 +27,15 @@ export type ThemeEditorLoadHooks = {
 	notFoundMessage: string
 	loadErrorMessage: string
 	useLegacyIsActive?: boolean
+	/** When false, editor responses omit site-default / base-theme designation fields (web editor). */
+	hasDefaultTheme?: boolean
 	onEditorLoaded?: (data: Record<string, unknown>) => void
 	onCreateSuccess?: (data: Record<string, unknown>) => void
 	onCreateError?: (err: { message?: string }) => void
 }
 
 export function useThemeEditor(api: ThemeEditorApiConfig, hooks: ThemeEditorLoadHooks) {
+	const hasDefaultTheme = hooks.hasDefaultTheme !== false
 	const loadingTheme = ref(false)
 	const saving = ref(false)
 	const statusSaving = ref(false)
@@ -56,7 +59,7 @@ export function useThemeEditor(api: ThemeEditorApiConfig, hooks: ThemeEditorLoad
 	})
 
 	function readIsDefaultTheme(data: Record<string, unknown> | null | undefined): boolean {
-		if (!data) return false
+		if (!hasDefaultTheme || !data) return false
 		if (data.is_default_theme !== undefined) return !!data.is_default_theme
 		if (data.is_base_theme !== undefined) return !!data.is_base_theme
 		if (hooks.useLegacyIsActive && data.is_active !== undefined) return !!data.is_active
@@ -64,7 +67,7 @@ export function useThemeEditor(api: ThemeEditorApiConfig, hooks: ThemeEditorLoad
 	}
 
 	function readSiteDefaultTheme(data: Record<string, unknown> | null | undefined): string {
-		if (!data) return ""
+		if (!hasDefaultTheme || !data) return ""
 		return (
 			(data.site_default_theme as string) ||
 			(data.site_base_theme as string) ||
@@ -104,8 +107,10 @@ export function useThemeEditor(api: ThemeEditorApiConfig, hooks: ThemeEditorLoad
 			if (hooks.tryLoadThemeFromQuery(data)) return
 			const pick =
 				hooks.pickInitialTheme?.(data) ||
-				(data.find((t) => t.is_default_theme || t.is_base_theme)?.name as string | undefined) ||
-				(data.find((t) => t.is_active)?.name as string | undefined) ||
+				(hasDefaultTheme
+					? (data.find((t) => t.is_default_theme || t.is_base_theme)?.name as string | undefined) ||
+						(data.find((t) => t.is_active)?.name as string | undefined)
+					: (data.find((t) => t.is_active)?.name as string | undefined)) ||
 				(data[0]?.name as string | undefined)
 			if (pick) loadTheme(pick)
 		},

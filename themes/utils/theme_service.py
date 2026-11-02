@@ -57,6 +57,23 @@ def _promote_to_default(family: ThemeFamily, theme: str) -> None:
     frappe.clear_cache(doctype=family.doctype)
 
 
+_WEB_DEFAULT_FLAG_KEYS = (
+    "is_default_theme",
+    "site_default_theme",
+    "is_base_theme",
+    "site_base_theme",
+    "site_active_theme",
+)
+
+
+def _strip_web_default_flags(family: ThemeFamily, data: dict) -> dict:
+    """The web (NCE Theme) side has no Default theme; drop the flags. Desk keeps them."""
+    if family.key == "web":
+        for key in _WEB_DEFAULT_FLAG_KEYS:
+            data.pop(key, None)
+    return data
+
+
 def _legacy_editor_flags(
     family: ThemeFamily,
     *,
@@ -90,12 +107,16 @@ def _require_password(password: str) -> None:
 
 
 def _is_active(family: ThemeFamily, *, is_default: bool, status: str) -> bool:
+    if family.key == "web":
+        return status == "Active"
     if family.is_active_is_base:
         return is_default
     return status == "Active"
 
 
 def _editor_css_hash(family: ThemeFamily, *, is_default: bool, status: str) -> Optional[str]:
+    if family.key == "web":
+        return family.read_css_hash() if status == "Active" else None
     if family.is_active_is_base:
         return family.read_css_hash() if is_default else None
     if is_default or status == "Active":
@@ -120,7 +141,7 @@ def get_editor_response(family: ThemeFamily, theme_name: str) -> dict:
         "payload": json.loads(theme.theme_json or "{}"),
         **_legacy_editor_flags(family, is_default=is_default, status=theme.status),
     }
-    return result
+    return _strip_web_default_flags(family, result)
 
 
 def get_base_editor_response(family: ThemeFamily) -> dict:
@@ -191,6 +212,7 @@ def save(
         "is_base_theme": is_default,  # deprecated alias
         "is_active": _is_active(family, is_default=is_default, status=doc.status),
     }
+    _strip_web_default_flags(family, result)
     base = family.get_base_theme_name()
     if base == theme or doc.status == "Active":
         result["css_hash"] = family.read_css_hash()
@@ -231,6 +253,15 @@ def save_as_base(family: ThemeFamily, theme: str, password: str) -> dict:
     if family.bundle_to_app is None:
         frappe.throw(_("Bundling is not supported for this theme family"))
     payload = json.loads(frappe.db.get_value(family.doctype, theme, "theme_json") or "{}")
+    if family.key == "web":
+        bundle_result = family.bundle_to_app(payload)
+        return {
+            "status": "ok",
+            "theme": theme,
+            "bundled": True,
+            **family.publish(theme),
+            **bundle_result,
+        }
     publish_result = set_base(family, theme)
     bundle_result = family.bundle_to_app(payload)
     return {
@@ -268,6 +299,9 @@ def list_themes(family: ThemeFamily) -> list[dict]:
             is_default=is_default,
             status=row["status"],
         )
+        if family.key == "web":
+            for key in ("is_default", "is_default_theme", "is_base_theme"):
+                row.pop(key, None)
     return rows
 
 
@@ -276,7 +310,7 @@ def list_themes(family: ThemeFamily) -> list[dict]:
 
 def _assert_theme_deletable(family: ThemeFamily, theme: str):
     doc = frappe.get_doc(family.doctype, theme)
-    if bool(doc.is_default):
+    if family.key != "web" and bool(doc.is_default):
         frappe.throw(_("The Default theme cannot be deleted."))
     if doc.status == "Active":
         frappe.throw(_(family.active_manage_error))
@@ -285,7 +319,7 @@ def _assert_theme_deletable(family: ThemeFamily, theme: str):
 
 def _assert_theme_renameable(family: ThemeFamily, theme: str):
     doc = frappe.get_doc(family.doctype, theme)
-    if doc.status == "Active" and not bool(doc.is_default):
+    if doc.status == "Active" and (family.key == "web" or not bool(doc.is_default)):
         frappe.throw(_(family.active_manage_error))
     return doc
 
@@ -321,6 +355,8 @@ def delete(family: ThemeFamily, theme: str) -> dict:
 
 
 def regenerate_css(family: ThemeFamily) -> dict:
+    if family.key == "web":
+        return family.publish("")
     base = family.get_base_theme_name()
     if not base:
         frappe.throw(_(family.no_base_short_message))
