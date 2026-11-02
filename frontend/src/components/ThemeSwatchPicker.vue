@@ -19,6 +19,8 @@ const props = defineProps<{
 	themeField: string
 	valueField: string
 	fgTypeField?: string
+	/** Themes style key this field edits (defaults to valueField), e.g. table_header_bg_color. */
+	styleKey?: string
 	open: boolean
 	getField?: (name: string) => unknown
 	setField?: (name: string, value: unknown) => void
@@ -71,6 +73,7 @@ function openPicker() {
 		getThemeSlug: () => readField(props.themeField),
 		getValue: () => readField(props.valueField),
 		setValue: (className) => writeField(props.valueField, className),
+		styleKey: props.styleKey ?? props.valueField,
 		onClose: () => emit("update:open", false),
 	}
 

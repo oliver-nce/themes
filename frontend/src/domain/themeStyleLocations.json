@@ -1,0 +1,270 @@
+{
+  "_about": "Reverse lookup: where each theme style class (theme-<kind>-<role>-<shade>) is edited in the Themes app. Key is '<kind>.<role>'; the shade is chosen with that role's colour. tab = Theme Settings tab id; section = element id to scroll to; field = optional finer anchor (theme-style-field-<field>). 'fields' is keyed by the Themes style key a host passes as styleKey (e.g. table_header_bg_color), and takes priority over 'styles'.",
+  "styles": {
+    "bg.primary": {
+      "tab": "colors",
+      "section": "theme-style-primary",
+      "label": "Colours > Primary"
+    },
+    "bg.secondary": {
+      "tab": "colors",
+      "section": "theme-style-secondary",
+      "label": "Colours > Secondary"
+    },
+    "bg.neutral": {
+      "tab": "colors",
+      "section": "theme-style-neutral",
+      "label": "Colours > Neutral"
+    },
+    "bg.accent": {
+      "tab": "colors",
+      "section": "theme-style-status",
+      "label": "Colours > Status Colours > Accent",
+      "field": "accent_color"
+    },
+    "bg.success": {
+      "tab": "colors",
+      "section": "theme-style-status",
+      "label": "Colours > Status Colours > Success",
+      "field": "success_color"
+    },
+    "bg.info": {
+      "tab": "colors",
+      "section": "theme-style-status",
+      "label": "Colours > Status Colours > Info",
+      "field": "info_color"
+    },
+    "bg.warning": {
+      "tab": "colors",
+      "section": "theme-style-status",
+      "label": "Colours > Status Colours > Warning",
+      "field": "warning_color"
+    },
+    "bg.danger": {
+      "tab": "colors",
+      "section": "theme-style-status",
+      "label": "Colours > Status Colours > Danger",
+      "field": "danger_color"
+    },
+    "text.primary": {
+      "tab": "colors",
+      "section": "theme-style-primary",
+      "label": "Colours > Primary"
+    },
+    "text.secondary": {
+      "tab": "colors",
+      "section": "theme-style-secondary",
+      "label": "Colours > Secondary"
+    },
+    "text.neutral": {
+      "tab": "colors",
+      "section": "theme-style-neutral",
+      "label": "Colours > Neutral"
+    },
+    "text.accent": {
+      "tab": "colors",
+      "section": "theme-style-status",
+      "label": "Colours > Status Colours > Accent",
+      "field": "accent_color"
+    },
+    "text.success": {
+      "tab": "colors",
+      "section": "theme-style-status",
+      "label": "Colours > Status Colours > Success",
+      "field": "success_color"
+    },
+    "text.info": {
+      "tab": "colors",
+      "section": "theme-style-status",
+      "label": "Colours > Status Colours > Info",
+      "field": "info_color"
+    },
+    "text.warning": {
+      "tab": "colors",
+      "section": "theme-style-status",
+      "label": "Colours > Status Colours > Warning",
+      "field": "warning_color"
+    },
+    "text.danger": {
+      "tab": "colors",
+      "section": "theme-style-status",
+      "label": "Colours > Status Colours > Danger",
+      "field": "danger_color"
+    },
+    "border.primary": {
+      "tab": "colors",
+      "section": "theme-style-primary",
+      "label": "Colours > Primary"
+    },
+    "border.secondary": {
+      "tab": "colors",
+      "section": "theme-style-secondary",
+      "label": "Colours > Secondary"
+    },
+    "border.neutral": {
+      "tab": "colors",
+      "section": "theme-style-neutral",
+      "label": "Colours > Neutral"
+    },
+    "border.accent": {
+      "tab": "colors",
+      "section": "theme-style-status",
+      "label": "Colours > Status Colours > Accent",
+      "field": "accent_color"
+    },
+    "border.success": {
+      "tab": "colors",
+      "section": "theme-style-status",
+      "label": "Colours > Status Colours > Success",
+      "field": "success_color"
+    },
+    "border.info": {
+      "tab": "colors",
+      "section": "theme-style-status",
+      "label": "Colours > Status Colours > Info",
+      "field": "info_color"
+    },
+    "border.warning": {
+      "tab": "colors",
+      "section": "theme-style-status",
+      "label": "Colours > Status Colours > Warning",
+      "field": "warning_color"
+    },
+    "border.danger": {
+      "tab": "colors",
+      "section": "theme-style-status",
+      "label": "Colours > Status Colours > Danger",
+      "field": "danger_color"
+    }
+  },
+  "fields": {
+    "table_header_bg_color": {
+      "tab": "layout",
+      "section": "theme-style-tables",
+      "field": "table_header_bg_color",
+      "label": "Layout > Tables > Header row"
+    },
+    "row_color": {
+      "tab": "layout",
+      "section": "theme-style-tables",
+      "field": "row_color",
+      "label": "Layout > Tables > Row (main / even)"
+    },
+    "row_alt_color": {
+      "tab": "layout",
+      "section": "theme-style-tables",
+      "field": "row_alt_color",
+      "label": "Layout > Tables > Row (alternate / odd)"
+    },
+    "table_row_divider_color": {
+      "tab": "layout",
+      "section": "theme-style-tables",
+      "field": "table_row_divider_color",
+      "label": "Layout > Tables > Horizontal line"
+    },
+    "table_col_divider_color": {
+      "tab": "layout",
+      "section": "theme-style-tables",
+      "field": "table_col_divider_color",
+      "label": "Layout > Tables > Vertical line"
+    },
+    "background_color": {
+      "tab": "colors",
+      "section": "theme-style-surfaces",
+      "field": "background_color",
+      "label": "Colours > Surfaces > Page Background"
+    },
+    "surface_color": {
+      "tab": "colors",
+      "section": "theme-style-surfaces",
+      "field": "surface_color",
+      "label": "Colours > Surfaces > Card / Panel"
+    },
+    "border_color": {
+      "tab": "colors",
+      "section": "theme-style-surfaces",
+      "field": "border_color",
+      "label": "Colours > Surfaces > Borders"
+    },
+    "text_color": {
+      "tab": "typography",
+      "section": "theme-style-text",
+      "field": "text_color",
+      "label": "Typography > Text Colours > Body Text"
+    },
+    "heading_color": {
+      "tab": "typography",
+      "section": "theme-style-text",
+      "field": "heading_color",
+      "label": "Typography > Text Colours > Heading"
+    },
+    "muted_color": {
+      "tab": "typography",
+      "section": "theme-style-text",
+      "field": "muted_color",
+      "label": "Typography > Text Colours > Muted"
+    },
+    "link_color": {
+      "tab": "typography",
+      "section": "theme-style-text",
+      "field": "link_color",
+      "label": "Typography > Text Colours > Links"
+    },
+    "focus_color": {
+      "tab": "typography",
+      "section": "theme-style-text",
+      "field": "focus_color",
+      "label": "Typography > Text Colours > Focus Ring"
+    },
+    "table_header_bg_class": {
+      "tab": "layout",
+      "section": "theme-style-tables",
+      "field": "table_header_bg_color",
+      "label": "Layout > Tables > Header row"
+    },
+    "table_row_bg_class": {
+      "tab": "layout",
+      "section": "theme-style-tables",
+      "field": "row_color",
+      "label": "Layout > Tables > Row (main / even)"
+    },
+    "table_row_alt_bg_class": {
+      "tab": "layout",
+      "section": "theme-style-tables",
+      "field": "row_alt_color",
+      "label": "Layout > Tables > Row (alternate / odd)"
+    },
+    "table_row_divider_color_class": {
+      "tab": "layout",
+      "section": "theme-style-tables",
+      "field": "table_row_divider_color",
+      "label": "Layout > Tables > Horizontal line"
+    },
+    "table_col_divider_color_class": {
+      "tab": "layout",
+      "section": "theme-style-tables",
+      "field": "table_col_divider_color",
+      "label": "Layout > Tables > Vertical line"
+    },
+    "table_header_line_color_class": {
+      "tab": "layout",
+      "section": "theme-style-tables",
+      "label": "Layout > Tables > Header underline"
+    },
+    "table_header_line_class": {
+      "tab": "layout",
+      "section": "theme-style-tables",
+      "label": "Layout > Tables > Header underline"
+    },
+    "table_row_divider_class": {
+      "tab": "layout",
+      "section": "theme-style-tables",
+      "label": "Layout > Tables > Horizontal thickness"
+    },
+    "table_col_divider_class": {
+      "tab": "layout",
+      "section": "theme-style-tables",
+      "label": "Layout > Tables > Vertical thickness"
+    }
+  }
+}

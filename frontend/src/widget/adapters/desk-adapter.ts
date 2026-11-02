@@ -70,6 +70,8 @@ export type DeskThemeSwatchPickerOpts = {
 	valueField: string
 	/** Optional; defaults to valueField with `_bg_class` → `_fg_type`. */
 	fgTypeField?: string
+	/** Optional Themes style key this field edits (e.g. table_header_bg_color); defaults to valueField. */
+	styleKey?: string
 	/** Optional; hides Kind radios and locks output to this kind (e.g. border line colors). */
 	lockKind?: ThemeKind
 	onClose?: () => void
@@ -104,6 +106,7 @@ export async function openDeskThemeSwatchPicker(
 
 	const coreOpts: ThemeSwatchPickerCoreOpts = {
 		getThemeSlug: () => cachedSlug,
+		styleKey: opts.styleKey ?? valueField,
 		getValue: () => String(frm.doc[valueField] ?? ""),
 		setValue: (className: string) => {
 			try {

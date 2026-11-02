@@ -224,3 +224,19 @@
 		grid-column: 1 / -1;
 	}
 }
+
+.nce-theme-swatch-picker__link-btn {
+	font: inherit;
+	font-size: 0.75rem;
+	margin-left: 0.75rem;
+	padding: 0;
+	border: 0;
+	background: none;
+	color: var(--tsp-heading);
+	text-decoration: underline;
+	cursor: pointer;
+}
+
+.nce-theme-swatch-picker__link-btn:hover {
+	opacity: 0.8;
+}

@@ -54,8 +54,12 @@ export function useThemeManagement(
 	function tryLoadThemeFromQuery(themes: any[]): boolean {
 		const q = themeFromQuery()
 		if (!q || !themes?.length) return false
-		if (!themes.some((t) => t.name === q)) return false
-		loadTheme(q)
+		const lower = q.toLowerCase()
+		const hit =
+			themes.find((t) => t.name === q) ||
+			themes.find((t) => String(t.slug || "").toLowerCase() === lower)
+		if (!hit) return false
+		loadTheme(hit.name)
 		return true
 	}
 

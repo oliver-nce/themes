@@ -15,6 +15,7 @@ import {
 	composeOverlayFgClass,
 	composeThemeClass,
 	parseFgType,
+	parseThemeClass,
 	resolveInitialState,
 	shadesForRole,
 	type ParsedThemeClass,
@@ -30,6 +31,8 @@ export type ThemeSwatchPickerCoreOpts = {
 	setFgType?: (fgType: ThemeFgType) => void
 	/** When set, hides Kind radios and always emits theme-{lockKind}-* classes. */
 	lockKind?: ThemeKind
+	/** Themes style key this picker edits (e.g. "table_header_bg_color"); used by Show in Themes App. */
+	styleKey?: string
 	onClose?: (result: ThemeSwatchPickerCloseResult) => void
 }
 
@@ -242,6 +245,27 @@ function buildModal(
 	selectedValue.className = "nce-theme-swatch-picker__selected-value"
 	statusMain.append(selectedLabel, selectedValue)
 
+	const showInAppBtn = document.createElement("button")
+	showInAppBtn.type = "button"
+	showInAppBtn.className = "nce-theme-swatch-picker__link-btn"
+	showInAppBtn.textContent = "Show in Themes App"
+	showInAppBtn.addEventListener("click", () => {
+		const params = new URLSearchParams()
+		if (initialSlug) params.set("theme", initialSlug)
+		if (opts.styleKey) params.set("style", opts.styleKey)
+		const parsed = parseThemeClass(selectedValue.textContent || "")
+		if (parsed) {
+			params.set("role", parsed.role)
+			params.set("kind", parsed.kind)
+			params.set("shade", String(parsed.shade))
+		}
+		const url = `${window.location.origin}/themes/theme-settings?${params.toString()}`
+		// Fixed tab name: reuses the Themes tab this button opened earlier, else opens a new tab.
+		const win = window.open(url, "nce-themes-app")
+		win?.focus()
+	})
+	statusMain.append(showInAppBtn)
+
 	const actions = document.createElement("div")
 	actions.className = "nce-theme-swatch-picker__actions"
 
@@ -253,7 +277,7 @@ function buildModal(
 	const saveBtn = document.createElement("button")
 	saveBtn.type = "button"
 	saveBtn.className = "nce-theme-swatch-picker__btn nce-theme-swatch-picker__btn--primary"
-	saveBtn.textContent = "Save"
+	saveBtn.textContent = "Apply"
 
 	actions.append(cancelBtn, saveBtn)
 	status.append(statusMain, actions)

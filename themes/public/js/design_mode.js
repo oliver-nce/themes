@@ -548,6 +548,7 @@
 				onDraftChanged();
 			},
 			lockKind: kind || "bg",
+			styleKey: field,
 		};
 		if (kind === "bg" && fgField) {
 			opts.getFgType = function () {

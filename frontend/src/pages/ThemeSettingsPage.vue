@@ -56,7 +56,7 @@ Site Theme Editor for colours, typography, layout, live CSS variables, and base 
 
 			<!-- AGENT:TAB colours — brand (primary/secondary panels), neutral warmth, status, surface pickers -->
 			<div v-show="activeTab === 'colors'" class="editor-tab">
-				<EditorSection title="Primary">
+				<EditorSection id="theme-style-primary" title="Primary">
 					<template #actions>
 						<label
 							class="flex items-center gap-2 cursor-pointer text-sm font-medium text-gray-700 shrink-0"
@@ -102,7 +102,7 @@ Site Theme Editor for colours, typography, layout, live CSS variables, and base 
 					/>
 				</EditorSection>
 
-				<EditorSection title="Secondary">
+				<EditorSection id="theme-style-secondary" title="Secondary">
 					<BrandColorPicker
 						label="Secondary"
 						v-model:fg-preview-mode="secondaryFgPreviewMode"
@@ -133,7 +133,7 @@ Site Theme Editor for colours, typography, layout, live CSS variables, and base 
 					/>
 				</EditorSection>
 
-				<EditorSection title="Neutral" hint="Greyscale for structural surfaces, dividers, and body content that should not carry brand meaning.">
+				<EditorSection id="theme-style-neutral" title="Neutral" hint="Greyscale for structural surfaces, dividers, and body content that should not carry brand meaning.">
 					<NeutralColorPicker
 						label="Neutral"
 						:warmth="form.neutral_color_warmth"
@@ -142,6 +142,7 @@ Site Theme Editor for colours, typography, layout, live CSS variables, and base 
 				</EditorSection>
 
 				<EditorSection
+					id="theme-style-status"
 					title="Status Colours"
 					hint="Standard success, info, warning, and danger colours. Pick from primary, secondary, or gray swatches to override."
 					collapsible
@@ -160,6 +161,7 @@ Site Theme Editor for colours, typography, layout, live CSS variables, and base 
 						<SwatchPicker
 							v-for="c in statusColors"
 							:key="c.key"
+							:id="`theme-style-field-${c.key}`"
 							:label="c.label"
 							:model-value="form[c.key]"
 							:default-value="DEFAULTS[c.key]"
@@ -174,11 +176,12 @@ Site Theme Editor for colours, typography, layout, live CSS variables, and base 
 					</div>
 				</EditorSection>
 
-				<EditorSection title="Surfaces">
+				<EditorSection id="theme-style-surfaces" title="Surfaces">
 					<div class="grid grid-cols-1 md:grid-cols-3 gap-6">
 						<SwatchPicker
 							v-for="c in surfaceColors"
 							:key="c.key"
+							:id="`theme-style-field-${c.key}`"
 							:label="c.label"
 							:model-value="form[c.key]"
 							:default-value="DEFAULTS[c.key]"
@@ -232,11 +235,12 @@ Site Theme Editor for colours, typography, layout, live CSS variables, and base 
 					</div>
 				</EditorSection>
 
-				<EditorSection title="Text Colours">
+				<EditorSection id="theme-style-text" title="Text Colours">
 					<div class="grid grid-cols-1 md:grid-cols-3 gap-6">
 						<SwatchPicker
 							v-for="c in textColors"
 							:key="c.key"
+							:id="`theme-style-field-${c.key}`"
 							:label="c.label"
 							:model-value="form[c.key]"
 							:default-value="DEFAULTS[c.key]"
@@ -326,6 +330,7 @@ Site Theme Editor for colours, typography, layout, live CSS variables, and base 
 				</EditorSection>
 
 				<EditorSection
+					id="theme-style-tables"
 					title="Tables"
 					hint="Row striping, header, and cell dividers. Class theme-table on a &lt;table&gt; applies the full bundle. Line thickness uses Thin / Normal / Strong — the same tiers as Line Widths above."
 				>
@@ -333,6 +338,7 @@ Site Theme Editor for colours, typography, layout, live CSS variables, and base 
 						<SwatchPicker
 							v-for="c in tableColors"
 							:key="c.key"
+							:id="`theme-style-field-${c.key}`"
 							:label="c.label"
 							:model-value="form[c.key]"
 							:default-value="DEFAULTS[c.key]"
@@ -507,7 +513,7 @@ Site Theme Editor for colours, typography, layout, live CSS variables, and base 
 			<div v-show="activeTab === 'applications'" class="editor-tab">
 				<EditorSection
 					title="Apply theme"
-					hint="Choose the Active theme for each app. Default uses the site theme. Turning Apply off stops that theme on the app. Design-mode component settings stay saved and apply again only when Apply is turned back on."
+					hint="Choose a theme for each app, then turn Apply on. An app with Apply off, or with no theme chosen, keeps the stock Frappe look. Design-mode component settings stay saved and apply again only when Apply is turned back on."
 				>
 					<p v-if="themeAppsError" class="text-sm text-red-600 mb-2">{{ themeAppsError }}</p>
 					<p
@@ -531,12 +537,12 @@ Site Theme Editor for colours, typography, layout, live CSS variables, and base 
 							</span>
 							<div class="flex items-center gap-3 shrink-0">
 								<select
-									class="text-sm border border-gray-200 rounded-md px-2 py-1 bg-white"
+									class="text-sm border border-gray-200 rounded-md px-2 py-1 pr-8 bg-white w-56"
 									:value="row.theme_slug"
 									:disabled="row.busy"
 									@change="onThemeAppTheme(row, ($event.target as HTMLSelectElement).value)"
 								>
-									<option value="">Default</option>
+									<option value="" disabled>Choose a theme…</option>
 									<option
 										v-for="t in activeThemes"
 										:key="t.slug"
@@ -556,8 +562,10 @@ Site Theme Editor for colours, typography, layout, live CSS variables, and base 
 									<input
 										type="checkbox"
 										class="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+										:class="{ 'opacity-50': !row.theme_slug }"
 										:checked="row.apply"
-										:disabled="row.busy"
+										:disabled="row.busy || !row.theme_slug"
+										:title="!row.theme_slug ? 'Choose a theme first' : ''"
 										@change="onThemeAppApply(row, ($event.target as HTMLInputElement).checked)"
 									/>
 								</label>
@@ -754,6 +762,31 @@ Site Theme Editor for colours, typography, layout, live CSS variables, and base 
 				</div>
 			</ThemeDialog>
 
+			<ThemeDialog :open="restoreToBaseDialog.open" title="Replace unsaved changes?" @close="closeRestoreToBaseDialog">
+				<p class="text-sm text-gray-600 mt-2">
+					Restore to Base Theme will replace your unsaved changes in the editor with the base theme. Nothing is saved until you click Save Changes. Revert returns to the saved theme.
+				</p>
+				<p v-if="restoreToBaseDialog.error" class="text-sm text-red-600 mt-3">{{ restoreToBaseDialog.error }}</p>
+				<div class="flex flex-wrap gap-2 justify-end mt-5">
+					<Button
+						variant="solid"
+						class="bg-primary-100 text-primary-100-fg border border-border hover:bg-row-alt"
+						:disabled="restoreToBaseDialog.busy"
+						@click="closeRestoreToBaseDialog"
+					>
+						Cancel
+					</Button>
+					<Button
+						variant="solid"
+						class="bg-primary text-primary-fg border border-primary"
+						:loading="restoreToBaseDialog.busy"
+						@click="confirmRestoreToBaseReplace"
+					>
+						Replace
+					</Button>
+				</div>
+			</ThemeDialog>
+
 			<ThemeDialog :open="saveAsDialog.open" title="Save as new theme" @close="closeSaveAsDialog">
 				<p class="text-sm text-gray-600 mt-2">Create a new theme from the current settings.</p>
 				<input
@@ -840,6 +873,8 @@ Site Theme Editor for colours, typography, layout, live CSS variables, and base 
 </template>
 
 <script setup lang="ts">
+import { useRoute } from "vue-router"
+import { locateThemeStyle, locateThemeStyleField } from "@/domain/themeStyleLocations"
 import { ref, reactive, watch, computed, onUnmounted, onMounted, nextTick } from "vue"
 import { createResource } from "frappe-ui"
 import { useThemeManagement } from "@/composables/useThemeManagement"
@@ -1294,6 +1329,12 @@ const saveBaseThemeDialog = reactive({
 	error: "",
 })
 
+const restoreToBaseDialog = reactive({
+	open: false,
+	busy: false,
+	error: "",
+})
+
 function themeOptionLabel(t: {
 	theme_name: string
 	is_default_theme?: boolean
@@ -1573,16 +1614,34 @@ const submitSaveAsBaseTheme = saveAsBaseTheme
 
 async function requestRestoreToBase() {
 	if (!siteBaseTheme.value) return
-	// Skip the confirm dialog: save any current changes first, then load the
-	// app base into the editor. If the save fails, abort so edits aren't lost.
+	// Load data/base_theme.json into the Site Theme Editor form without saving.
+	// If the editor has unsaved changes, confirm before replacing them.
 	if (isDirty.value) {
-		try {
-			await handleSave()
-		} catch {
-			return
-		}
+		restoreToBaseDialog.error = ""
+		restoreToBaseDialog.open = true
+		return
 	}
 	await restoreToBaseConfirmed()
+}
+
+function closeRestoreToBaseDialog() {
+	if (restoreToBaseDialog.busy) return
+	restoreToBaseDialog.open = false
+	restoreToBaseDialog.error = ""
+}
+
+async function confirmRestoreToBaseReplace() {
+	restoreToBaseDialog.busy = true
+	restoreToBaseDialog.error = ""
+	try {
+		await restoreToBaseConfirmed()
+		restoreToBaseDialog.open = false
+	} catch (err: any) {
+		const msg = err?.message || "Could not restore base theme."
+		restoreToBaseDialog.error = msg
+	} finally {
+		restoreToBaseDialog.busy = false
+	}
 }
 
 // ─── AGENT:save-default-to-app ─── bundle base_theme.json + publish nce_theme.css (System tab)
@@ -1638,6 +1697,38 @@ function applyLiveThemeVars() {
 watch(form, () => {
 	applyLiveThemeVars()
 }, { deep: true })
+
+const route = useRoute()
+
+// Deep link from the swatch picker's "Show in Themes App": ?kind= and ?role= pick the
+// tab and section that edit that style.
+async function scrollToQueryRole() {
+	const loc =
+		locateThemeStyleField(String(route.query.style || "")) ||
+		locateThemeStyle(String(route.query.kind || "bg"), String(route.query.role || ""))
+	if (!loc) return
+	activeTab.value = loc.tab
+	await nextTick()
+	const el =
+		(loc.field && document.getElementById(`theme-style-field-${loc.field}`)) ||
+		document.getElementById(loc.section)
+	if (!el) return
+	el.scrollIntoView({ behavior: "smooth", block: "center" })
+	// Pulse an outline on the target so it is easy to spot (no CSS needed).
+	const ring = "var(--nce-color-primary, #2563eb)"
+	el.animate(
+		[
+			{ boxShadow: `0 0 0 3px ${ring}`, offset: 0 },
+			{ boxShadow: `0 0 0 3px ${ring}`, offset: 0.7 },
+			{ boxShadow: `0 0 0 3px transparent`, offset: 1 },
+		],
+		{ duration: 2500, delay: 400, easing: "ease-out" },
+	)
+}
+
+watch(editorLoaded, (loaded) => {
+	if (loaded) void scrollToQueryRole()
+})
 
 onMounted(() => {
 	if (themesList.data?.length) {
