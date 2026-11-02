@@ -65,11 +65,13 @@ def _font_stack(name):
     return f"'{name}', {generic}"
 
 
-def _font_face_blocks(name):
+def _font_face_blocks(name, font_base_url=None):
     """Return @font-face rule lines for one registered variable font (both subsets).
 
     Unregistered names (e.g. "System Default" or a legacy font) yield nothing.
     """
+    if font_base_url is None:
+        font_base_url = FONT_BASE_URL
     entry = FONT_REGISTRY.get(name)
     if not entry:
         return []
@@ -82,7 +84,7 @@ def _font_face_blocks(name):
             "\tfont-style: normal;",
             "\tfont-display: swap;",
             "\tfont-weight: 100 900;",
-            f"\tsrc: url('{FONT_BASE_URL}/{slug}/{subset}-wght-normal.woff2') format('woff2');",
+            f"\tsrc: url('{font_base_url}/{slug}/{subset}-wght-normal.woff2') format('woff2');",
             f"\tunicode-range: {unicode_range};",
             "}",
         ]
@@ -101,25 +103,25 @@ def _collect_font_names(payloads):
     return names
 
 
-def _emit_font_faces(g, lines):
+def _emit_font_faces(g, lines, font_base_url=None):
     """Emit @font-face rules for the active body + heading fonts (deduplicated)."""
     names = _collect_font_names([{"get": g}])
     if not names:
         return
     lines.append("/* ── Self-hosted variable fonts (active body + heading) ── */")
     for n in names:
-        lines += _font_face_blocks(n)
+        lines += _font_face_blocks(n, font_base_url=font_base_url)
     lines.append("")
 
 
-def _emit_font_faces_multi(payloads, lines):
+def _emit_font_faces_multi(payloads, lines, font_base_url=None):
     """Emit @font-face rules for fonts used across multiple theme payloads."""
     names = _collect_font_names(payloads)
     if not names:
         return
     lines.append("/* ── Self-hosted variable fonts (active body + heading) ── */")
     for n in names:
-        lines += _font_face_blocks(n)
+        lines += _font_face_blocks(n, font_base_url=font_base_url)
     lines.append("")
 
 
@@ -708,5 +710,8 @@ def publish_theme(theme_name: str) -> dict:
 
     css = generate_site_css(default_payload, active_themes)
     _write_fonts_css()
+    from themes.utils.frappe_ui_bridge import publish_frappe_ui_bridge_css
+
+    publish_frappe_ui_bridge_css(default_payload)
     css_hash = publish_css("nce_theme.css", css, "css_hash")
     return {"status": "ok", "theme": default_name, "css_hash": css_hash, "bytes": len(css)}

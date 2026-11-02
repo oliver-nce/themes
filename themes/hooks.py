@@ -16,6 +16,12 @@ app_logo_url = "/assets/themes/images/logo.jpg"
 # any Frappe Desk elements — downstream apps opt-in by referencing the tokens.
 
 
+def _css_dir() -> str:
+    import os
+
+    return os.path.join(os.path.dirname(os.path.abspath(__file__)), "public", "css")
+
+
 def _css_url(css_filename: str) -> str:
     """Return /assets/themes/css/<css_filename> with a ?v=<hash> cache-buster when available.
 
@@ -28,12 +34,7 @@ def _css_url(css_filename: str) -> str:
     try:
         import os
 
-        hash_path = os.path.join(
-            os.path.dirname(os.path.abspath(__file__)),
-            "public",
-            "css",
-            f"{css_filename}.hash",
-        )
+        hash_path = os.path.join(_css_dir(), f"{css_filename}.hash")
         with open(hash_path) as f:
             css_hash = f.read().strip()
         if css_hash:
@@ -43,29 +44,51 @@ def _css_url(css_filename: str) -> str:
     return base_url
 
 
-app_include_css = [
-    _css_url("nce_theme.css"),
-    _css_url("nce_component_overrides.css"),
-    "/assets/themes/css/nce_desk_theme.css",
-    "/assets/themes/dist/theme-swatch-picker.css",
-]
+def _app_include_css():
+    return [
+        _css_url("nce_theme.css"),
+        _css_url("nce_frappe_ui_bridge.css"),
+        _css_url("nce_component_overrides.css"),
+        _css_url("nce_desk_theme.css"),
+        "/assets/themes/dist/theme-swatch-picker.css",
+    ]
+
+
+def _web_include_css():
+    return [
+        _css_url("nce_theme.css"),
+        _css_url("nce_frappe_ui_bridge.css"),
+        _css_url("nce_component_overrides.css"),
+        "/assets/themes/dist/theme-swatch-picker.css",
+    ]
+
+
+# PEP 562: Frappe reloads hooks via inspect.getmembers after clear_cache(), but module-level
+# lists would stay frozen from first import. __getattr__ recomputes URLs on each access so
+# theme saves pick up new .hash sidecars without a server restart.
+def __getattr__(name):
+    if name == "app_include_css":
+        return _app_include_css()
+    if name == "web_include_css":
+        return _web_include_css()
+    raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
+
+
+def __dir__():
+    return sorted(set(globals()) | {"app_include_css", "web_include_css"})
 
 app_include_js = [
     "/assets/themes/dist/theme-swatch-picker.umd.js?v=20261101",
     "/assets/themes/js/desk_theme_loader.js",
-    "/assets/themes/js/design_mode.js?v=20261101n",
+    "/assets/themes/js/theme_app_gate.js?v=20261102f",
+    "/assets/themes/js/design_mode.js?v=20261102e",
 ]
 
 web_include_js = [
     "/assets/themes/dist/theme-swatch-picker.umd.js?v=20261101",
-    "/assets/themes/js/design_mode.js?v=20261101n",
+    "/assets/themes/js/theme_app_gate.js?v=20261102f",
+    "/assets/themes/js/design_mode.js?v=20261102e",
 ]
-web_include_css = [
-    _css_url("nce_theme.css"),
-    _css_url("nce_component_overrides.css"),
-    "/assets/themes/dist/theme-swatch-picker.css",
-]
-
 permission_query_conditions = {
     "Vue Component": "themes.component_api.vue_component_permission_query",
 }

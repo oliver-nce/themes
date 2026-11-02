@@ -5,6 +5,8 @@
  "engine": "InnoDB",
  "field_order": [
   "excluded_apps",
+  "theme_off_apps",
+  "app_theme_slugs",
   "design_mode_section",
   "design_mode_enabled",
   "protected_classes"
@@ -15,6 +17,18 @@
    "fieldname": "excluded_apps",
    "fieldtype": "Small Text",
    "label": "Excluded Apps"
+  },
+  {
+   "description": "One app name per line. These apps do not receive the site theme. Design-mode component settings stay saved.",
+   "fieldname": "theme_off_apps",
+   "fieldtype": "Small Text",
+   "label": "Theme off apps"
+  },
+  {
+   "description": "One app=slug line. Slug is an Active NCE Theme. Empty means the site Default theme. The themes app is not listed.",
+   "fieldname": "app_theme_slugs",
+   "fieldtype": "Small Text",
+   "label": "App theme slugs"
   },
   {
    "fieldname": "design_mode_section",

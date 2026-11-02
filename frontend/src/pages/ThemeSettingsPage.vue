@@ -353,7 +353,10 @@ Site Theme Editor for colours, typography, layout, live CSS variables, and base 
 						/>
 					</div>
 					<div class="mt-4 overflow-hidden rounded-lg border border-gray-200">
-						<table class="theme-table nce-editor-table-preview w-full text-sm">
+						<table
+							class="theme-table nce-editor-table-preview w-full text-sm"
+							:style="liveVars"
+						>
 							<thead>
 								<tr>
 									<th class="px-3 py-2 text-left font-semibold">ID</th>
@@ -497,6 +500,159 @@ Site Theme Editor for colours, typography, layout, live CSS variables, and base 
 					<p v-else class="text-sm text-gray-500">
 						Saving updates this theme only. Active themes are included in the shared CSS file.
 					</p>
+				</EditorSection>
+			</div>
+
+			<!-- AGENT:TAB applications — per-app Apply theme toggle -->
+			<div v-show="activeTab === 'applications'" class="editor-tab">
+				<EditorSection
+					title="Apply theme"
+					hint="Choose the Active theme for each app. Default uses the site theme. Turning Apply off stops that theme on the app. Design-mode component settings stay saved and apply again only when Apply is turned back on."
+				>
+					<p v-if="themeAppsError" class="text-sm text-red-600 mb-2">{{ themeAppsError }}</p>
+					<p
+						v-if="themeAppsResource.loading && !themeApps.length"
+						class="text-sm text-gray-400"
+					>
+						Loading applications…
+					</p>
+					<p v-else-if="!themeApps.length && !themeAppsError" class="text-sm text-gray-400">
+						No applications to list.
+					</p>
+					<ul v-else-if="themeApps.length" class="divide-y divide-gray-200">
+						<li
+							v-for="row in themeApps"
+							:key="row.app"
+							class="flex items-center justify-between gap-4 py-2"
+						>
+							<span class="text-sm text-gray-800">
+								{{ row.title }}
+								<span v-if="row.title !== row.app" class="text-gray-400"> {{ row.app }}</span>
+							</span>
+							<div class="flex items-center gap-3 shrink-0">
+								<select
+									class="text-sm border border-gray-200 rounded-md px-2 py-1 bg-white"
+									:value="row.theme_slug"
+									:disabled="row.busy"
+									@change="onThemeAppTheme(row, ($event.target as HTMLSelectElement).value)"
+								>
+									<option value="">Default</option>
+									<option
+										v-for="t in activeThemes"
+										:key="t.slug"
+										:value="t.slug"
+									>
+										{{ t.theme_name }}
+									</option>
+									<option
+										v-if="row.theme_slug && !activeThemes.some((t) => t.slug === row.theme_slug)"
+										:value="row.theme_slug"
+									>
+										{{ row.theme_slug }}
+									</option>
+								</select>
+								<label class="flex items-center gap-2 text-sm text-gray-700">
+									Apply
+									<input
+										type="checkbox"
+										class="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+										:checked="row.apply"
+										:disabled="row.busy"
+										@change="onThemeAppApply(row, ($event.target as HTMLInputElement).checked)"
+									/>
+								</label>
+							</div>
+						</li>
+					</ul>
+				</EditorSection>
+
+				<EditorSection
+					title="Export for developers"
+					hint="Download a small bundle a developer can save in their own app so it can use these themes without the Themes app. Nothing in any app is changed."
+				>
+					<p v-if="exportThemesError" class="text-sm text-red-600 mb-2">{{ exportThemesError }}</p>
+					<p
+						v-if="exportThemesResource.loading && !exportThemes.length"
+						class="text-sm text-gray-400"
+					>
+						Loading themes for export…
+					</p>
+					<p v-else-if="!exportThemes.length && !exportThemesError" class="text-sm text-gray-400">
+						No themes available to export.
+					</p>
+					<template v-else-if="exportThemes.length">
+						<ul class="divide-y divide-gray-200 mb-4">
+							<li
+								v-for="theme in exportThemes"
+								:key="theme.name"
+								class="py-2"
+							>
+								<label
+									class="flex items-start gap-2 text-sm"
+									:class="exportCheckboxDisabled(theme) ? 'text-gray-400' : 'text-gray-800'"
+								>
+									<input
+										type="checkbox"
+										class="mt-0.5 rounded border-gray-300 text-blue-600 focus:ring-blue-500 disabled:opacity-50"
+										:checked="isExportThemeSelected(theme.name)"
+										:disabled="exportCheckboxDisabled(theme)"
+										@change="onExportThemeToggle(theme, ($event.target as HTMLInputElement).checked)"
+									/>
+									<span>
+										{{ theme.theme_name }}
+										<span v-if="theme.is_default_site_theme" class="text-gray-400">
+											(site default)
+										</span>
+										<span v-if="theme.slug" class="block text-xs text-gray-400">{{
+											theme.slug
+										}}</span>
+										<span
+											v-if="exportCheckboxDisabled(theme)"
+											class="block text-xs text-gray-400"
+										>
+											needs a slug to be chosen by users
+										</span>
+									</span>
+								</label>
+							</li>
+						</ul>
+
+						<p
+							v-if="exportSelectedNames.length"
+							class="text-sm text-gray-500 mb-4"
+						>
+							{{ exportStartsWithLine }}
+						</p>
+
+						<label class="flex items-start gap-2 text-sm text-gray-800 mb-4">
+							<input
+								v-model="exportIncludeFrappeUiBridge"
+								type="checkbox"
+								class="mt-0.5 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+							/>
+							<span>
+								Also include the Frappe UI colour mapping
+								<span class="block text-xs text-gray-500">
+									Makes Frappe UI components in your app follow the theme.
+								</span>
+							</span>
+						</label>
+
+						<Button
+							variant="solid"
+							class="bg-primary text-primary-fg border border-primary"
+							:disabled="exportDownloadDisabled"
+							@click="downloadExportBundle"
+						>
+							Download bundle
+						</Button>
+						<p v-if="exportDownloadDisabled" class="text-sm text-gray-500 mt-2">
+							Tick at least one theme to export.
+						</p>
+						<p v-if="exportDownloadMessage" class="text-sm text-gray-600 mt-2">
+							{{ exportDownloadMessage }}
+						</p>
+					</template>
 				</EditorSection>
 			</div>
 
@@ -685,6 +841,7 @@ Site Theme Editor for colours, typography, layout, live CSS variables, and base 
 
 <script setup lang="ts">
 import { ref, reactive, watch, computed, onUnmounted, onMounted, nextTick } from "vue"
+import { createResource } from "frappe-ui"
 import { useThemeManagement } from "@/composables/useThemeManagement"
 import { effectiveRoleHex, resolveNeutralIntoPayload } from "@/utils/color-shades"
 import { STATUS_COLOR_DEFAULTS, STATUS_COLOR_KEYS } from "@/composables/useThemeDefaults"
@@ -797,8 +954,202 @@ const tabs = [
 	{ id: "typography", label: "Typography" },
 	{ id: "layout", label: "Layout" },
 	{ id: "advanced", label: "Advanced" },
+	{ id: "applications", label: "Applications" },
 	{ id: "system", label: "System" },
 ]
+
+type ThemeAppRow = {
+	app: string
+	title: string
+	apply: boolean
+	theme_slug: string
+	busy: boolean
+}
+
+const themeApps = ref<ThemeAppRow[]>([])
+const themeAppsError = ref("")
+const activeThemes = ref<Array<{ slug: string; theme_name: string }>>([])
+
+const themeAppsResource = createResource({
+	url: "themes.component_api.list_theme_apps",
+	auto: true,
+	onSuccess(data: {
+		apps?: Array<{ app: string; title: string; apply: boolean; theme_slug?: string }>
+		active_themes?: Array<{ slug: string; theme_name: string }>
+	}) {
+		themeAppsError.value = ""
+		activeThemes.value = data?.active_themes || []
+		themeApps.value = (data?.apps || []).map((row) => ({
+			app: row.app,
+			title: row.title,
+			apply: row.apply,
+			theme_slug: row.theme_slug ?? "",
+			busy: false,
+		}))
+	},
+	onError(err: { message?: string }) {
+		themeAppsError.value = err?.message || "Could not load applications."
+	},
+})
+
+const setThemeAppResource = createResource({
+	url: "themes.component_api.set_theme_app_apply",
+	auto: false,
+})
+
+const setThemeSlugResource = createResource({
+	url: "themes.component_api.set_theme_app_theme",
+	auto: false,
+})
+
+async function onThemeAppApply(row: ThemeAppRow, apply: boolean) {
+	const previous = row.apply
+	row.apply = apply
+	row.busy = true
+	themeAppsError.value = ""
+	try {
+		await setThemeAppResource.submit({ app: row.app, apply: apply ? 1 : 0 })
+	} catch (err) {
+		row.apply = previous
+		themeAppsError.value = (err as { message?: string })?.message || "Could not update " + row.title
+	} finally {
+		row.busy = false
+	}
+}
+
+async function onThemeAppTheme(row: ThemeAppRow, slug: string) {
+	const previous = row.theme_slug
+	row.theme_slug = slug
+	row.busy = true
+	themeAppsError.value = ""
+	try {
+		await setThemeSlugResource.submit({ app: row.app, slug })
+	} catch (err) {
+		row.theme_slug = previous
+		themeAppsError.value =
+			(err as { message?: string })?.message || "Could not update theme for " + row.title
+	} finally {
+		row.busy = false
+	}
+}
+
+type ExportThemeRow = {
+	name: string
+	theme_name: string
+	slug: string
+	status: string
+	is_default_site_theme: boolean
+}
+
+const exportThemes = ref<ExportThemeRow[]>([])
+const exportThemesError = ref("")
+const exportSelectedNames = ref<string[]>([])
+const exportIncludeFrappeUiBridge = ref(false)
+const exportDownloadMessage = ref("")
+const exportThemesTabLoaded = ref(false)
+
+const exportThemesResource = createResource({
+	url: "themes.api.list_export_themes",
+	auto: false,
+	onSuccess(data: ExportThemeRow[] | null | undefined) {
+		exportThemesError.value = ""
+		const list = Array.isArray(data) ? data : []
+		exportThemes.value = list
+		initExportSelection(list)
+	},
+	onError(err: { message?: string }) {
+		exportThemesError.value = err?.message || "Could not load themes for export."
+	},
+})
+
+watch(activeTab, (tab) => {
+	if (tab === "applications" && !exportThemesTabLoaded.value) {
+		exportThemesTabLoaded.value = true
+		exportThemesResource.reload()
+	}
+})
+
+function exportThemeHasSlug(theme: ExportThemeRow): boolean {
+	return Boolean(theme.slug?.trim())
+}
+
+function isExportThemeSelected(name: string): boolean {
+	return exportSelectedNames.value.includes(name)
+}
+
+function exportCheckboxDisabled(theme: ExportThemeRow): boolean {
+	if (exportThemeHasSlug(theme)) return false
+	return !theme.is_default_site_theme
+}
+
+const exportDownloadDisabled = computed(() => exportSelectedNames.value.length === 0)
+
+const exportDefaultThemeName = computed(() => {
+	const selected = exportSelectedNames.value
+	if (!selected.length) return ""
+	const siteDefault = exportThemes.value.find(
+		(theme) => theme.is_default_site_theme && selected.includes(theme.name),
+	)
+	if (siteDefault) return siteDefault.name
+	for (const theme of exportThemes.value) {
+		if (selected.includes(theme.name)) return theme.name
+	}
+	return selected[0]
+})
+
+const exportStartsWithLine = computed(() => {
+	const defaultName = exportDefaultThemeName.value
+	if (!defaultName) return ""
+	const theme = exportThemes.value.find((row) => row.name === defaultName)
+	const label = theme?.theme_name ?? defaultName
+	if (exportSelectedNames.value.length === 1) {
+		return `Starts with: ${label}.`
+	}
+	return `Starts with: ${label}. Users can switch to the others.`
+})
+
+function initExportSelection(themes: ExportThemeRow[]) {
+	const siteDefault = themes.find((theme) => theme.is_default_site_theme)
+	if (siteDefault) {
+		exportSelectedNames.value = [siteDefault.name]
+	} else {
+		exportSelectedNames.value = []
+	}
+	exportDownloadMessage.value = ""
+}
+
+function onExportThemeToggle(theme: ExportThemeRow, checked: boolean) {
+	const names = new Set(exportSelectedNames.value)
+	if (checked) {
+		names.add(theme.name)
+	} else {
+		names.delete(theme.name)
+	}
+	exportSelectedNames.value = [...names]
+	exportDownloadMessage.value = ""
+}
+
+function downloadExportBundle() {
+	const defaultTheme = exportDefaultThemeName.value
+	if (!exportSelectedNames.value.length || !defaultTheme) return
+	const themesJson = JSON.stringify(exportSelectedNames.value)
+	const bridge = exportIncludeFrappeUiBridge.value ? 1 : 0
+	const url =
+		"/api/method/themes.api.export_theme_bundle?themes=" +
+		encodeURIComponent(themesJson) +
+		"&default_theme=" +
+		encodeURIComponent(defaultTheme) +
+		"&include_frappe_ui_bridge=" +
+		String(bridge)
+	const link = document.createElement("a")
+	link.href = url
+	link.download = ""
+	document.body.appendChild(link)
+	link.click()
+	link.remove()
+	exportDownloadMessage.value =
+		"Downloading nce-themes zip. Open README.txt inside for the three steps."
+}
 
 const ALL_FIELDS = WEB_THEME_FIELDS
 type FormKey = WebThemeFormKey
@@ -1266,16 +1617,18 @@ async function confirmSaveAsBaseTheme() {
 	}
 }
 
-// Push live theme vars to the page + preview window (debounced preview push)
+// Live --nce-* vars for in-editor samples + preview window (debounced preview push)
 let pushTimer: ReturnType<typeof setTimeout> | null = null
+const liveVars = ref<Record<string, string>>({})
 
 function applyLiveThemeVars() {
 	if (!editorLoaded.value) return
 	const vars = computeCSSVariables()
-	const root = document.documentElement
+	const next: Record<string, string> = {}
 	for (const [key, value] of Object.entries(vars)) {
-		if (value) root.style.setProperty(key, value)
+		if (value) next[key] = value
 	}
+	liveVars.value = next
 	if (pushTimer) clearTimeout(pushTimer)
 	pushTimer = setTimeout(pushToPreview, 80)
 }

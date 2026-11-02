@@ -335,6 +335,91 @@ class TestComponentPublishTail(unittest.TestCase):
         self.assertEqual(result["status"], "ok")
         tmp.cleanup()
 
+    def _publish_with_widget_parent(self, frappe_mock, theme_off_raw: str, parent_app: str = "custom_app"):
+        _reload_modules("themes.utils.component_css_writer", "themes.component_api")
+        tmp = _temp_app_layout(frappe_mock)
+        parent = {
+            "name": "VC-1",
+            "app": parent_app,
+            "component_name": "Widget",
+            "status": "Present",
+            "has_table": 0,
+            "table_selector": "",
+            "table_scope_class": "",
+            "theme_table_targets": "",
+        }
+        element = {
+            "parent": "VC-1",
+            "element_key": "root",
+            "selector_class": "widget-root",
+            "line": 1,
+            "element_status": "Present",
+            "keep_default": 0,
+            "override_bg_class": "theme-bg-primary-300",
+            "override_fg_type": "mono",
+            "override_text_class": "",
+            "override_border_width_class": "",
+            "override_border_color_class": "",
+        }
+
+        def get_all_side_effect(doctype, **kwargs):
+            if doctype == "Vue Component":
+                return [parent]
+            if doctype == "Vue Component Element":
+                return [element]
+            return []
+
+        frappe_mock.get_all.side_effect = get_all_side_effect
+
+        def get_single_side_effect(doctype, fieldname):
+            if doctype == "Theme Component Settings" and fieldname == "theme_off_apps":
+                return theme_off_raw
+            return ""
+
+        frappe_mock.db.get_single_value.side_effect = get_single_side_effect
+
+        from themes.utils.component_css_writer import publish_component_css
+
+        publish_component_css()
+        app_path = frappe_mock.get_app_path.return_value
+        css_path = os.path.join(app_path, "public", "css", "nce_component_overrides.css")
+        with open(css_path, encoding="utf-8") as f:
+            css_text = f.read()
+        return tmp, css_text
+
+    def test_publish_component_css_skips_theme_off_app(self):
+        with fake_frappe() as frappe_mock:
+            tmp, css_text = self._publish_with_widget_parent(frappe_mock, "custom_app")
+            self.assertNotIn("widget-root", css_text)
+        tmp.cleanup()
+
+    def test_publish_component_css_includes_app_when_theme_on(self):
+        with fake_frappe() as frappe_mock:
+            tmp, css_text = self._publish_with_widget_parent(frappe_mock, "")
+            self.assertIn("widget-root", css_text)
+        tmp.cleanup()
+
+    def test_theme_off_apps_ignores_themes_app(self):
+        with fake_frappe() as frappe_mock:
+            tmp, css_text = self._publish_with_widget_parent(
+                frappe_mock, "themes", parent_app="themes"
+            )
+            self.assertIn("widget-root", css_text)
+        tmp.cleanup()
+
+    def test_theme_app_slugs_parsing(self):
+        with fake_frappe() as frappe_mock:
+            def get_single_side_effect(doctype, fieldname):
+                if doctype == "Theme Component Settings" and fieldname == "app_theme_slugs":
+                    return "nce_events=ocean\nthemes=skip\nbadline\n"
+                return ""
+
+            frappe_mock.db.get_single_value.side_effect = get_single_side_effect
+            _reload_modules("themes.component_api")
+            from themes.component_api import theme_app_slugs
+
+            self.assertEqual(theme_app_slugs(), {"nce_events": "ocean"})
+
 
 class TestNCEThemeController(unittest.TestCase):
     MODULE = "themes.themes.doctype.nce_theme.nce_theme"

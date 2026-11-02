@@ -148,6 +148,31 @@ def regenerate_theme_css():
 
 
 @frappe.whitelist()
+def list_export_themes():
+    """Return all NCE Themes for the developer export checklist."""
+    _require_system_manager()
+    from themes.utils.theme_export import list_export_theme_rows
+
+    return list_export_theme_rows()
+
+
+@frappe.whitelist()
+def export_theme_bundle(themes, default_theme=None, include_frappe_ui_bridge=0):
+    """Build a downloadable nce-themes/ zip snapshot for use without the Themes app."""
+    _require_system_manager()
+    from themes.utils.theme_export import export_bundle_for
+
+    filename, zip_bytes = export_bundle_for(
+        themes,
+        default_theme=default_theme,
+        include_bridge=bool(int(include_frappe_ui_bridge or 0)),
+    )
+    frappe.response["filename"] = filename
+    frappe.response["filecontent"] = zip_bytes
+    frappe.response["type"] = "download"
+
+
+@frappe.whitelist()
 def list_themes():
     """Return all NCE Themes with site-base flag."""
     _require_system_manager()

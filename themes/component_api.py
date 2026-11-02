@@ -63,6 +63,185 @@ def _excluded_apps() -> set[str]:
 	return excluded
 
 
+def theme_off_apps() -> set[str]:
+	off: set[str] = set()
+	raw = frappe.db.get_single_value("Theme Component Settings", "theme_off_apps") or ""
+	for line in raw.splitlines():
+		app = line.strip()
+		if app:
+			off.add(app)
+	off.discard("themes")
+	return off
+
+
+def bridge_apps() -> set[str]:
+	off = theme_off_apps()
+	apps: set[str] = set()
+	for app in frappe.get_installed_apps():
+		if app == "themes":
+			continue
+		if _is_frappe_branded(app):
+			continue
+		if app in off:
+			continue
+		apps.add(app)
+	return apps
+
+
+def theme_app_slugs() -> dict[str, str]:
+	slugs: dict[str, str] = {}
+	raw = frappe.db.get_single_value("Theme Component Settings", "app_theme_slugs") or ""
+	for line in raw.splitlines():
+		line = line.strip()
+		if not line or "=" not in line:
+			continue
+		app, slug = line.split("=", 1)
+		app = app.strip()
+		slug = slug.strip()
+		if not app or not slug or app == "themes":
+			continue
+		slugs[app] = slug
+	return slugs
+
+
+def _active_theme_choices() -> list[dict]:
+	choices: list[dict] = []
+	for row in frappe.get_all(
+		"NCE Theme",
+		filters={"status": "Active"},
+		fields=["slug", "theme_name"],
+		order_by="theme_name asc",
+	):
+		slug = (row.get("slug") or "").strip()
+		if not slug:
+			continue
+		theme_name = (row.get("theme_name") or "").strip()
+		choices.append({"slug": slug, "theme_name": theme_name or slug})
+	return choices
+
+
+def _theme_app_title(app: str) -> str:
+	titles = frappe.get_hooks("app_title", app_name=app) or []
+	return titles[0] if titles else app
+
+
+def _route_prefixes_for_app(app: str) -> list[str]:
+	prefixes: list[str] = []
+	for entry in frappe.get_hooks("add_to_apps_screen", app_name=app) or []:
+		if not isinstance(entry, dict):
+			continue
+		route = (entry.get("route") or "").strip()
+		if route.startswith("/"):
+			prefixes.append(route)
+	for rule in frappe.get_hooks("website_route_rules", app_name=app) or []:
+		if not isinstance(rule, dict):
+			continue
+		from_route = (rule.get("from_route") or "").strip()
+		if "<" in from_route:
+			from_route = from_route.split("<", 1)[0]
+		if from_route.startswith("/"):
+			prefixes.append(from_route)
+	return prefixes
+
+
+@frappe.whitelist()
+def list_theme_apps() -> dict:
+	frappe.only_for("System Manager")
+	off = theme_off_apps()
+	slugs = theme_app_slugs()
+	apps: list[dict] = []
+	for app in frappe.get_installed_apps():
+		if _is_frappe_branded(app) or app == "themes":
+			continue
+		apps.append({
+			"app": app,
+			"title": _theme_app_title(app),
+			"apply": app not in off,
+			"theme_slug": slugs.get(app, ""),
+		})
+	apps.sort(key=lambda row: (row["title"], row["app"]))
+	return {"apps": apps, "active_themes": _active_theme_choices()}
+
+
+@frappe.whitelist()
+def set_theme_app_apply(app: str, apply) -> dict:
+	frappe.only_for("System Manager")
+	app = (app or "").strip()
+	installed = set(frappe.get_installed_apps())
+	if not app or app not in installed:
+		frappe.throw(_("Unknown app: {0}").format(app or ""))
+	if _is_frappe_branded(app):
+		frappe.throw(_("The theme cannot be toggled for app {0}.").format(app))
+	if app == "themes":
+		frappe.throw(_("The Themes app always uses the site theme."))
+	on = str(apply).lower() in ("1", "true", "yes", "on")
+	off = theme_off_apps()
+	if on:
+		off.discard(app)
+	else:
+		off.add(app)
+	frappe.db.set_single_value(
+		"Theme Component Settings",
+		"theme_off_apps",
+		"\n".join(sorted(off)),
+	)
+	frappe.db.commit()
+	publish_component_css()
+	return {"status": "ok", "app": app, "apply": on}
+
+
+@frappe.whitelist()
+def set_theme_app_theme(app: str, slug) -> dict:
+	frappe.only_for("System Manager")
+	app = (app or "").strip()
+	installed = set(frappe.get_installed_apps())
+	if not app or app not in installed:
+		frappe.throw(_("Unknown app: {0}").format(app or ""))
+	if _is_frappe_branded(app):
+		frappe.throw(_("The theme cannot be toggled for app {0}.").format(app))
+	if app == "themes":
+		frappe.throw(_("The Themes app always uses the site theme."))
+	slug = (slug or "").strip()
+	if slug:
+		valid = {row["slug"] for row in _active_theme_choices()}
+		if slug not in valid:
+			frappe.throw(_("Unknown or inactive theme slug: {0}").format(slug))
+	slugs = theme_app_slugs()
+	if slug:
+		slugs[app] = slug
+	else:
+		slugs.pop(app, None)
+	frappe.db.set_single_value(
+		"Theme Component Settings",
+		"app_theme_slugs",
+		"\n".join(f"{name}={value}" for name, value in sorted(slugs.items())),
+	)
+	frappe.db.commit()
+	return {"status": "ok", "app": app, "theme_slug": slug}
+
+
+@frappe.whitelist(allow_guest=True)
+def get_theme_app_gate() -> dict:
+	disabled = sorted(theme_off_apps())
+	route_prefixes: list[dict] = []
+	for app in frappe.get_installed_apps():
+		for prefix in _route_prefixes_for_app(app):
+			route_prefixes.append({"app": app, "prefix": prefix})
+	from themes.utils.css_publish import read_published_css_hash
+
+	return {
+		"disabled_apps": disabled,
+		"bridge_apps": sorted(bridge_apps()),
+		"route_prefixes": route_prefixes,
+		"component_css_hash": read_published_css_hash("nce_component_overrides.css") or "",
+		"app_themes": [
+			{"app": app, "slug": slug}
+			for app, slug in sorted(theme_app_slugs().items())
+		],
+		"active_themes": _active_theme_choices(),
+	}
+
+
 def _app_root(app: str) -> Path:
 	return Path(frappe.get_app_path(app)).parent
 

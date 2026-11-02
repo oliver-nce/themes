@@ -1,14 +1,16 @@
 // Design Mode: hover a Vue part and click Edit to change its colours. Turned on with the floating Design Mode button.
 (function () {
 	const METHOD = "/api/method/themes.component_api.";
-	const DIALOG_SRC = "/assets/themes/design_mode/design-dialog.js?v=20261101e";
-	const HOVER_INTENT_MS = 250;
+	const DIALOG_SRC = "/assets/themes/design_mode/design-dialog.js?v=20261102c";
+	const HOVER_INTENT_MS = 1000;
+	const HOVER_HOLD_MS = 5000;
 	const state = {
 		on: false,
 		map: null,
 		hoverEl: null,
 		popup: null,
 		sel: null,
+		themeChoices: [],
 	};
 
 	let fabEl = null;
@@ -23,6 +25,7 @@
 	const MAX_SIBLINGS = 300;
 	let intentTimer = null;
 	let intentEl = null;
+	let holdTimer = null;
 	let toastTimer = null;
 	let movePending = false;
 	let lastMoveEvent = null;
@@ -245,6 +248,7 @@
 		state.hoverEl = null;
 		if (editBtnEl) editBtnEl.style.display = "none";
 		state.sel = null;
+		clearHold();
 		clearIntent();
 		if (!state.popup) hideSiblings();
 	}
@@ -357,7 +361,22 @@
 		intentEl = null;
 	}
 
+	function clearHold() {
+		if (holdTimer) clearTimeout(holdTimer);
+		holdTimer = null;
+	}
+
+	function armHold() {
+		if (holdTimer || !state.sel) return;
+		holdTimer = setTimeout(function () {
+			holdTimer = null;
+			if (!state.on || state.popup) return;
+			hideOutline();
+		}, HOVER_HOLD_MS);
+	}
+
 	function applySelection(cand) {
+		clearHold();
 		state.sel = cand;
 		if (!cand) {
 			hideOutline();
@@ -432,16 +451,19 @@
 		if (!e || !state.on || state.popup) return;
 		if (e.target && e.target.closest && e.target.closest(".ndm-edit")) {
 			clearIntent();
+			clearHold();
 			return;
 		}
 		const cand = candidateFor(e.target);
 		if (!cand) {
 			clearIntent();
+			armHold();
 			return;
 		}
 		if (state.sel && cand.el === state.sel.el) {
 			if (cand.kind === "table") state.sel.partHit = cand.partHit;
 			clearIntent();
+			clearHold();
 			return;
 		}
 		if (!state.sel) {
@@ -449,6 +471,7 @@
 			applySelection(cand);
 			return;
 		}
+		armHold();
 		if (intentEl === cand.el) return;
 		clearIntent();
 		intentEl = cand.el;
@@ -810,6 +833,21 @@
 		return out;
 	}
 
+	function themeInUseLabel() {
+		const slug = (
+			document.documentElement.getAttribute("data-nce-theme") || ""
+		).trim();
+		if (!slug) return "Theme: Default";
+		const choices = state.themeChoices || [];
+		for (let i = 0; i < choices.length; i++) {
+			const choice = choices[i];
+			if (choice && choice.slug === slug) {
+				return "Theme: " + (choice.theme_name || slug);
+			}
+		}
+		return "Theme: " + slug;
+	}
+
 	function openPopup(hit, x, y) {
 		cancelPopup();
 		if (!dialogReady()) return;
@@ -823,7 +861,7 @@
 			container: ensureRoot(),
 			kind: "element",
 			title: (firstComp.component_name || "") + " › " + hit.selector,
-			subtitle: "<" + (entry.tag || "") + ">",
+			subtitle: themeInUseLabel(),
 			notes: notes,
 			disabled: !!entry.protected,
 			hasPart: false,
@@ -971,6 +1009,7 @@
 		cancelPopup();
 		document.removeEventListener("mousemove", onMouseMove, true);
 		window.removeEventListener("scroll", onScroll, true);
+		clearHold();
 		clearIntent();
 		state.sel = null;
 		hideSiblings();
@@ -1016,6 +1055,12 @@
 			presenceSelector = selectorFromMap(map);
 		} catch (err) {
 			return;
+		}
+		try {
+			const gate = await call("get_theme_app_gate");
+			state.themeChoices = (gate && gate.active_themes) || [];
+		} catch (err) {
+			state.themeChoices = [];
 		}
 		if (!presenceSelector) return;
 		ensureFab();

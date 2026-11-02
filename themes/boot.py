@@ -19,3 +19,10 @@ def extend_bootinfo(bootinfo):
 			bootinfo.nce_design_mode = {"enabled": True}
 	except Exception:
 		pass
+	try:
+		from themes.component_api import bridge_apps, theme_off_apps
+
+		bootinfo.nce_theme_disabled_apps = sorted(theme_off_apps())
+		bootinfo.nce_bridge_apps = sorted(bridge_apps())
+	except Exception:
+		pass

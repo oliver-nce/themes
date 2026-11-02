@@ -258,11 +258,14 @@ def generate_component_css(rows: list[dict]) -> str:
 def publish_component_css() -> dict:
 	import frappe
 
+	from themes.component_api import theme_off_apps
 	from themes.utils.css_publish import publish_css
 	from themes.utils.design_mode import TABLE_VALUE_FIELDS
 
+	off_apps = theme_off_apps()
 	_parent_fields = [
 		"name",
+		"app",
 		"component_name",
 		"status",
 		"has_table",
@@ -287,6 +290,8 @@ def publish_component_css() -> dict:
 		component_name = _row_value(p, "component_name")
 		if status != "Present":
 			continue
+		if (_row_value(p, "app") or "") in off_apps:
+			continue
 		rows.append({**dict(r), "component_name": component_name})
 	element_css = generate_component_css(rows)
 	sorted_parents = sorted(
@@ -298,6 +303,8 @@ def publish_component_css() -> dict:
 	for p in sorted_parents:
 		status = _row_value(p, "status")
 		if status != "Present":
+			continue
+		if (_row_value(p, "app") or "") in off_apps:
 			continue
 		parent_dict = dict(p) if isinstance(p, dict) else p.as_dict()
 		bundle = theme_table_bundle_for(parent_dict)

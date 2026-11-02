@@ -51,6 +51,8 @@ themes/public/css/nce_desk_theme.css.hash
 themes/public/css/nce_component_overrides.css
 themes/public/css/nce_component_overrides.css.hash
 themes/public/css/fonts.css
+themes/public/css/nce_frappe_ui_bridge.css
+themes/public/css/nce_frappe_ui_bridge.css.hash
 
 # Cursor AI rules (symlinked from shared config)
 .cursor/

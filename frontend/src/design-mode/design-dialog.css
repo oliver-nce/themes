@@ -40,8 +40,8 @@
 }
 .dd-sub {
 	font-size: 13px;
-	opacity: 0.8;
-	font-family: ui-monospace, monospace;
+	opacity: 0.85;
+	font-weight: 600;
 }
 .dd-x {
 	margin-left: auto;
