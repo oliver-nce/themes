@@ -162,7 +162,12 @@ def _pre_write_checks(
 		frappe.throw(_("App package directory is not writable for {0}.").format(app))
 	if not os.access(hooks_path, os.W_OK):
 		frappe.throw(_("hooks.py is not writable for app {0}.").format(app))
-	if nce_dir.is_dir() and not in_record:
+	# A folder already carrying Themes' managed hooks.py block was written by Themes
+	# (for example applied elsewhere, committed into the app's repo, then deployed to a
+	# site that has no apply record yet), so adopt it. Anything else is not ours.
+	hooks_source = _read_hooks_source(hooks_path)
+	hooks_has_block = MARK_BEGIN in hooks_source and MARK_END in hooks_source
+	if nce_dir.is_dir() and not in_record and not hooks_has_block:
 		frappe.throw(
 			_("An unmanaged nce-themes folder already exists for app {0}.").format(app)
 		)

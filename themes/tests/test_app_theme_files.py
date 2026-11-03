@@ -169,6 +169,38 @@ class TestAppThemeFilesApply(unittest.TestCase):
                     with self.assertRaises(FrappeThrow):
                         mod.apply_to_app("nce_events", "ocean")
 
+    def test_adopts_existing_folder_when_hooks_has_managed_block(self) -> None:
+        public_nce = self.fx.target_app / "public" / "nce-themes"
+        public_nce.mkdir()
+        (public_nce / "old.txt").write_text("x")
+        hooks_path = self.fx.target_app / "hooks.py"
+        hooks_path.write_text(
+            'app_name = "nce_events"\n' + f"{MARK_BEGIN}\nold = 1\n{MARK_END}\n",
+            encoding="utf-8",
+        )
+        with fake_frappe() as frappe_mock:
+            self.fx.paths_for(frappe_mock)
+            frappe_mock.get_all.return_value = [{"name": "Ocean"}]
+            mod = _load_app_theme_files()
+            with patch(
+                "themes.utils.app_theme_files.build_export_files",
+                return_value=dict(MINIMAL_EXPORT),
+            ), patch(
+                "themes.utils.app_theme_files._load_theme_rows",
+                return_value=list(MINIMAL_ITEMS),
+            ):
+                with patch(
+                    "themes.component_api._is_frappe_branded",
+                    return_value=False,
+                ):
+                    result = mod.apply_to_app("nce_events", "ocean")
+        self.assertEqual(result["app"], "nce_events")
+        source = hooks_path.read_text(encoding="utf-8")
+        self.assertEqual(source.count(MARK_BEGIN), 1)
+        self.assertNotIn("old = 1", source)
+        record = json.loads((self.fx.site_private / "nce-themes-applied.json").read_text())
+        self.assertIn("nce_events", record)
+
     def test_refuses_themes_and_frappe_branded_apps(self) -> None:
         with fake_frappe() as frappe_mock:
             self.fx.paths_for(frappe_mock)
