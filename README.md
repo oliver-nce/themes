@@ -321,6 +321,46 @@ Open the editor at `/themes/theme-settings` or via Desk → Themes workspace →
 
 ---
 
+## Repository layout
+
+```
+themes/                      Frappe app package (Python modules, DocTypes, hooks, built assets)
+  hooks.py, api.py, component_api.py, init_theme.py, init_desk_theme.py, install.py
+  themes/                    Frappe module: DocTypes (NCE Theme, Vue Component, ...), pages, workspace
+  utils/                     CSS writers, colour maths, theme service
+  patches/                   Migration patches (listed in patches.txt)
+  public/                    Built assets served at /assets/themes/ (css, js, dist)
+  tests/                     Python unit tests
+frontend/                    Vue 3 source for the theme editor and the ThemeSwatchPicker widget
+docs/                        User and developer documentation, including THEME_CLASS_CONTRACT.json
+scripts/                     Helper scripts (run_tests.sh, export_*.py, workspace_fix.py, verify_fresh_install.py)
+.github/workflows/           CI (unit tests, bench install and migrate) and linters
+```
+
+Documentation:
+
+- [Theme system overview](docs/theme-system.md) and [topic index](docs/theme-system/INDEX.md)
+- [Theme class reference](docs/theme-classes-reference.md); the machine-readable catalog is [`docs/THEME_CLASS_CONTRACT.json`](docs/THEME_CLASS_CONTRACT.json)
+- [ThemeSwatchPicker](docs/theme-swatch-picker.md)
+- [Fresh-install verification](docs/fresh-install-verification.md)
+
+### Development
+
+```bash
+bash scripts/run_tests.sh                 # unit tests that need no bench
+# (the themes/tests suite stubs frappe, so it does not run under `bench run-tests`)
+pre-commit install                        # ruff, prettier, eslint
+```
+
+The helper scripts `scripts/workspace_fix.py` and `scripts/verify_fresh_install.py` are not importable modules. Run them through the bench console:
+
+```bash
+echo 'import runpy; runpy.run_path(frappe.get_app_path("themes", "..", "scripts", "workspace_fix.py"))["run"]()' | bench --site your-site console
+echo 'import runpy; runpy.run_path(frappe.get_app_path("themes", "..", "scripts", "verify_fresh_install.py"))["run"]()' | bench --site your-site console
+```
+
+---
+
 ## License
 
 Copyright (c) 2026 Oliver Reid. All rights reserved.

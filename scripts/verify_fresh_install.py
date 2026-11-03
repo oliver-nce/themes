@@ -1,6 +1,10 @@
 """Fresh-install verification for Task 13 step 6.
 
-Run: bench --site <site> execute themes.verify_fresh_install.run
+Not importable as a module (scripts/ is not a package), so `bench execute` cannot
+reach it. Run it through the console:
+
+    echo 'import runpy; runpy.run_path(frappe.get_app_path("themes", "..", "scripts", "verify_fresh_install.py"))["run"]()' \\
+      | bench --site <site> console
 
 """
 

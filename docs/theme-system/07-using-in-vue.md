@@ -24,7 +24,7 @@ Need a color/spacing/typography value in a Vue component?
 │
 ├─ Is the value known at author time?
 │  │
-│  ├─ YES → Is there a class for it in THEME_CLASS_CONTRACT.json?
+│  ├─ YES → Is there a class for it in docs/THEME_CLASS_CONTRACT.json?
 │  │  │
 │  │  ├─ YES (status: shipping) → use the theme- class
 │  │  ├─ var-only → use :style with var()
@@ -38,7 +38,7 @@ Need a color/spacing/typography value in a Vue component?
 ### Buttons
 
 Use **filled shade** buttons — not frappe-ui `variant="outline"` with page-background fill.
-See `button_hierarchy` in `THEME_CLASS_CONTRACT.json`.
+See `button_hierarchy` in `docs/THEME_CLASS_CONTRACT.json`.
 
 ```html
 <!-- main CTA — auto-paired mono fg -->

@@ -1,6 +1,10 @@
 """One-shot fix for stale Themes workspace — run on any site after Theme Version removal.
 
-bench --site <site> execute themes.workspace_fix.run
+Not importable as a module (scripts/ is not a package), so `bench execute` cannot
+reach it. Run it through the console:
+
+    echo 'import runpy; runpy.run_path(frappe.get_app_path("themes", "..", "scripts", "workspace_fix.py"))["run"]()' \\
+      | bench --site <site> console
 
 """
 

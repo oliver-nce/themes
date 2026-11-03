@@ -1,0 +1,31 @@
+name: Linters
+
+on:
+  pull_request: { }
+
+permissions:
+  contents: read
+
+concurrency:
+  group: linter-themes-${{ github.event.number }}
+  cancel-in-progress: true
+
+jobs:
+  linter:
+    name: Pre-commit (ruff, prettier, eslint)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      # Only files changed in the pull request are checked: the existing code base
+      # predates these linters and is not yet clean.
+      - uses: pre-commit/action@v3.0.1
+        with:
+          extra_args: --from-ref origin/${{ github.base_ref }} --to-ref ${{ github.sha }}

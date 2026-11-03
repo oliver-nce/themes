@@ -50,4 +50,4 @@ These let designers tune the family without changing the base hex.
 
 ## Neutral scale (separate path)
 
-The **neutral** role uses fixed OKLCH lightness targets (50 = just visible off-white, 950 = black, smooth steps between). At warmth 0 every stop is achromatic (C=0). **Warmth** (−100 cool → +100 warm) tints all stops including 600. See `plans/greyscale-coding.md` for history; targets were retuned for light-end separation.
+The **neutral** role uses fixed OKLCH lightness targets (50 = just visible off-white, 950 = black, smooth steps between). At warmth 0 every stop is achromatic (C=0). **Warmth** (−100 cool → +100 warm) tints all stops including 600. Targets were retuned for light-end separation.
