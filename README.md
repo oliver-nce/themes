@@ -345,7 +345,6 @@ Documentation:
 - [Theme class reference](docs/theme-classes-reference.md); the machine-readable catalog is [`docs/THEME_CLASS_CONTRACT.json`](docs/THEME_CLASS_CONTRACT.json)
 - [ThemeSwatchPicker](docs/theme-swatch-picker.md)
 - [Fresh-install verification](docs/fresh-install-verification.md)
-- Office documents in `docs/`: [Editor's Guide](docs/Themes_Editors_Guide.pptx), [Feature Showcase](docs/Themes_Feature_Showcase.pptx), [Frappe UI Theme Editor Manual](docs/Frappe_UI_Theme_Editor_Manual.docx), [Technical Design Note](docs/Themes_Technical_Design_Note.docx), [Developer Export Guide](docs/Themes_Developer_Export_Guide.pdf) (also as `.docx`)
 
 ### Development
 

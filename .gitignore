@@ -70,3 +70,9 @@ themes/CODE_INDEX.json
 
 # Office lock files
 ~$*
+
+# Reference documents kept locally only (not shipped on GitHub)
+docs/*.docx
+docs/*.pptx
+docs/*.pdf
+docs/logo.jpg
