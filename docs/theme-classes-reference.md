@@ -9,7 +9,7 @@ Copy-paste table of every theme-aware class this app ships. Drop the relevant se
 
 All emitted classes carry a **`theme-`** prefix so they never collide with Frappe Desk / Bootstrap / vanilla Tailwind class names (which would otherwise win the cascade on Desk pages). CSS variables are unchanged (`--nce-*`).
 
-Source of truth: `THEME_CLASS_CONTRACT.json`. If this file disagrees with the JSON, the JSON wins.
+Source of truth: `docs/THEME_CLASS_CONTRACT.json`. If this file disagrees with the JSON, the JSON wins.
 
 Status legend: **shipping** = use today · **var-only** = use `:style="{ … var(--…) }"`, no class yet · **proposed** = not yet implemented.
 
@@ -145,7 +145,7 @@ Example:
 1. Prefer the `theme-` class names over raw `var()`. Class names are the public API.
 2. Use `:style="{ … var(--nce-…) }"` only when the token name is dynamic.
 3. Never hardcode hex literals in components.
-4. For bg+text pairing, prefer `theme-bg-{role}` (auto `-fg`) or `theme-bg-{role}-100` for quiet buttons — see `button_hierarchy` in `THEME_CLASS_CONTRACT.json`.
+4. For bg+text pairing, prefer `theme-bg-{role}` (auto `-fg`) or `theme-bg-{role}-100` for quiet buttons — see `button_hierarchy` in `docs/THEME_CLASS_CONTRACT.json`.
 5. Buttons on panels: main CTA `theme-bg-primary`; Cancel/Revert `theme-bg-primary-100 theme-border` — never `variant=outline` with page bg fill (see `button_hierarchy` in JSON).
 6. For a row of buttons that must share text color regardless of background, put `text-white` (or `text-black`) on the parent and let it cascade. (`text-white`/`text-black` are vanilla fixed colors, not theme classes.)
 7. Don't drop the `theme-` prefix and don't add it to vanilla layout utilities (`flex`, `border-b`, `font-bold`).

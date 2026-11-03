@@ -268,7 +268,7 @@ Same approach — scoped or via library. If using a spinner inside the button, t
 
 ## See also
 
-- `THEME_CLASS_CONTRACT.json` — the full class catalog.
+- `docs/THEME_CLASS_CONTRACT.json` — the full class catalog.
 - `03-color-roles.md` — what each role means semantically.
 - `04-shade-scale.md` — when to use a shade vs. the base role.
 - `05-foreground-pairing.md` — how fg color is computed; mono vs tonal.

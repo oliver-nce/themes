@@ -1,0 +1,31 @@
+{
+	"env": {
+		"browser": true,
+		"node": true,
+		"es2022": true,
+		"jquery": true
+	},
+	"parserOptions": {
+		"ecmaVersion": 2022,
+		"sourceType": "module"
+	},
+	"extends": "eslint:recommended",
+	"rules": {
+		"indent": "off",
+		"no-unused-vars": ["warn", { "args": "none" }],
+		"no-redeclare": "warn",
+		"no-undef": "warn",
+		"semi": "warn"
+	},
+	"globals": {
+		"frappe": true,
+		"__": true,
+		"cur_frm": true,
+		"cur_page": true,
+		"cint": true,
+		"flt": true,
+		"locals": true,
+		"$": true,
+		"jQuery": true
+	}
+}

@@ -35,7 +35,10 @@ Phase 5 note: **Theme Version** and **Theme Settings** DocTypes are removed.
 ## 3. Automated checks
 
 ```bash
-bench --site themes-fresh-test.local execute themes.verify_fresh_install.run
+# scripts/ is not a Python package, so `bench execute` cannot import it.
+# Run the script through the bench console instead:
+echo 'import runpy; runpy.run_path(frappe.get_app_path("themes", "..", "scripts", "verify_fresh_install.py"))["run"]()' \
+  | bench --site themes-fresh-test.local console
 ```
 
 Expect printed `PASS` lines and exit code 0.
@@ -80,4 +83,4 @@ bench drop-site themes-fresh-test.local --force --no-backup
 
 ## Record results
 
-After running, note date, bench host, and pass/fail in `docs/themes-app-agent-handoff.md` under **Verification**.
+After running, note the date, bench host, and pass/fail in your release notes or the pull request description.

@@ -101,7 +101,7 @@ That is the entire public API. No default-value prop, no static slug prop, no ki
 
 The widget does **zero color math**. All colors come from `nce_theme.css`.
 
-- The modal wraps its content in `<div data-nce-theme="{slug}">`. Per `THEME_CLASS_CONTRACT.json` → `palette_scoping`, this scopes the `--nce-*` variables to that theme's palette.
+- The modal wraps its content in `<div data-nce-theme="{slug}">`. Per `docs/THEME_CLASS_CONTRACT.json` → `palette_scoping`, this scopes the `--nce-*` variables to that theme's palette.
 - Each swatch element is rendered with the literal class `theme-bg-{role}-{shade}` regardless of the current Kind radio.
 - Because the swatch sits inside the `data-nce-theme` wrapper, the CSS resolves to that theme's color — what the user sees is exactly what real rendered elements with that class will show on the host page when the host page is also scoped to that theme.
 
@@ -240,7 +240,7 @@ Themes/
 
 **Why ship from Themes, not nce_events.**
 
-1. **Code lives in the app whose domain it serves.** This widget's only purpose is to pick a theme-aware class. The contract it emits against (`THEME_CLASS_CONTRACT.json`), the CSS variables it depends on (`--nce-color-*`), and the utility classes it paints with are all owned by Themes. Putting the picker anywhere else means its correctness depends on a file in another repo.
+1. **Code lives in the app whose domain it serves.** This widget's only purpose is to pick a theme-aware class. The contract it emits against (`docs/THEME_CLASS_CONTRACT.json`), the CSS variables it depends on (`--nce-color-*`), and the utility classes it paints with are all owned by Themes. Putting the picker anywhere else means its correctness depends on a file in another repo.
 2. **Avoid dependency inversion.** `nce_events` depends on Themes. If the picker lived in `nce_events`, every other app wanting the picker would have to depend on `nce_events`, turning it into a horizontal utility library it isn't. Themes already *is* that horizontal utility everyone depends on.
 3. **Lockstep versioning.** When Gray becomes a real role, the edit to `SHADE_SCALE_FIELDS` in `css_writer.py` and the un-stubbing of the Gray row in the widget go in the same commit, same PR. Cross-repo coordination is avoided.
 
@@ -304,7 +304,7 @@ After implementation, before merging:
 | Shade stops | `themes/utils/css_writer.py` | `CURATED_SHADES = (50, 100, 200, 300, 400, 500, 600, 700, 800, 900, 950)` (line 51) |
 | Class emitter | `themes/utils/css_writer.py` | `_emit_role_shade_classes` (line 300) |
 | Foreground picker | `themes/utils/theme_color_utils.py` | `pick_fg_mono` |
-| Public class contract | `THEME_CLASS_CONTRACT.json` (project root) | `color_roles` |
+| Public class contract | `docs/THEME_CLASS_CONTRACT.json` | `color_roles` |
 | Existing hex-picker for reference | `Themes/frontend/src/components/SwatchPicker.vue` | full file |
 
 When any of those change, this spec and the widget implementation must be updated in lockstep.

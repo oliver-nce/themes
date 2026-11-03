@@ -31,6 +31,12 @@ select = [
     "UP",
     "B",
 ]
+ignore = [
+    "W191",  # tab indentation: conflicts with the tab-indent formatter below
+    "E101",
+    "E501",  # line length is enforced by ruff format, not the linter
+    "E741",
+]
 
 [tool.ruff.format]
 quote-style = "double"

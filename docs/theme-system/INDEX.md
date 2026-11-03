@@ -5,7 +5,7 @@ Router for the theme-system docs: read this index, then open only the one releva
 
 # Theme System — Documentation Index
 
-This folder explains HOW the theme system works. For the catalog of available classes, see `/THEME_CLASS_CONTRACT.json` or `/docs/theme-classes-reference.md` instead.
+This folder explains HOW the theme system works. For the catalog of available classes, see `docs/THEME_CLASS_CONTRACT.json` or `/docs/theme-classes-reference.md` instead.
 
 **Read this INDEX first. Then read ONLY the one file relevant to your question. Do NOT bulk-load this folder.**
 
@@ -17,7 +17,7 @@ This folder explains HOW the theme system works. For the catalog of available cl
 | How do multi-theme scoped palettes work? `data-nce-theme`? Default vs Active? | `01-architecture.md` |
 | What is the Base Theme vs the Default Theme? (repo seed vs live `:root`) | `01-architecture.md`, `.cursor/rules/themes-glossary.mdc` |
 | What's the naming convention for tokens and classes? | `02-token-naming.md` |
-| What border/line width classes exist? Thin vs normal vs strong? | `02-token-naming.md`, `THEME_CLASS_CONTRACT.json` → `border_and_focus` |
+| What border/line width classes exist? Thin vs normal vs strong? | `02-token-naming.md`, `docs/THEME_CLASS_CONTRACT.json` → `border_and_focus` |
 | How do I style table row dividers or tab underlines? | `07-using-in-vue.md` (directional CSS with width vars) |
 | What is primary vs secondary vs accent vs success/info/warning/danger? | `03-color-roles.md` |
 | How does the 11-stop shade scale work? Which stops have classes? | `04-shade-scale.md` |
@@ -43,7 +43,6 @@ Reusable picker that writes a single `theme-{kind}-{role}-{shade}` class string 
 | Concern | Location |
 |---|---|
 | Full spec (layout, API, embed targets, verification) | `../theme-swatch-picker.md` |
-| Agent handoff (current state, next tasks) | `../handoff-theme-swatch-picker.md` |
 | DOM core | `frontend/src/widget/theme-swatch-picker-core.ts` |
 | Vue wrapper | `frontend/src/components/ThemeSwatchPicker.vue` |
 | Desk API | `await frappe.ui.themeSwatchPicker.open({ frm, themeField, valueField })` — **`themeField` = Link doc name → slug lookup** |
@@ -67,8 +66,8 @@ Reusable picker that writes a single `theme-{kind}-{role}-{shade}` class string 
 | "pick a theme class" / "header_color" / "swatch picker" / "theme-text-secondary-500" | `../theme-swatch-picker.md` |
 | "theme field is Link not slug" / "Page Panel theme picker" | `../theme-swatch-picker.md` §3–§4 (Desk resolves Link → slug) |
 | "ThemeSwatchPicker Vue save" / "setField formData" / "picker won't persist" | `../theme-swatch-picker.md` §8.1 |
-| "table row border" / "divider thickness" / "line width" | `07-using-in-vue.md`, `THEME_CLASS_CONTRACT.json` → `border_and_focus` |
-| "what class should I use for X" | (use `THEME_CLASS_CONTRACT.json` instead) |
+| "table row border" / "divider thickness" / "line width" | `07-using-in-vue.md`, `docs/THEME_CLASS_CONTRACT.json` → `border_and_focus` |
+| "what class should I use for X" | (use `docs/THEME_CLASS_CONTRACT.json` instead) |
 | "how do themes work in this app" | `01-architecture.md` |
 | "I want to add a brand color" | `08-extending.md` |
 | "how do I give a panel its own colour palette" / "data-nce-theme" | `01-architecture.md` |
@@ -83,4 +82,4 @@ Reusable picker that writes a single `theme-{kind}-{role}-{shade}` class string 
 | OKLCH shade math | `frontend/src/utils/color-shades.ts`, `themes/utils/theme_color_utils.py` |
 | Live preview injection | `frontend/src/utils/theme-injector.ts` |
 | ThemeSwatchPicker widget | `../theme-swatch-picker.md`, `frontend/src/widget/` |
-| Class catalog | `THEME_CLASS_CONTRACT.json` (root) |
+| Class catalog | `docs/THEME_CLASS_CONTRACT.json` |

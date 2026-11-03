@@ -59,5 +59,11 @@ themes/public/css/nce_frappe_ui_bridge.css.hash
 Frappe Context
 .rules
 
-# Agent-local code index (Cursor context only — not for GitHub)
+# Agent / AI-assistant files: kept on the dev-notes branch only, never tracked on
+# release branches (version-15, version-16).
+.cursorrules
+AGENTS.md
+CLAUDE.md
+code_index/
+plans/
 themes/CODE_INDEX.json

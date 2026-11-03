@@ -7,8 +7,6 @@ Shared with css_writer: css_publish.publish_css() for the publish tail. Content 
 is intentionally different: flat DESK_CSS_VARS on :root,
 no OKLCH shade scale or theme-bg-* class layer.
 
-See themes/CODE_INDEX.json and plans/REFACTORING_PLAN.md for consolidation notes.
-
 """
 from __future__ import annotations
 

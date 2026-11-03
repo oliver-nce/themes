@@ -21,7 +21,7 @@ Example: add `brand2`.
 2. **`themes/utils/css_writer.py`** — add `"brand2_color": "color-brand2"` to `COLOR_FIELDS`, `SHADE_SCALE_FIELDS`, and `FG_ROLES`.
 3. **`frontend/src/utils/theme-injector.ts`** — add `"brand2_color"` to `FG_ROLES` and `ROLE_VAR`.
 4. **`frontend/tailwind.config.js`** — add `"brand2"` to the `ROLES` array (the `buildColorMap()` helper picks it up).
-5. **`THEME_CLASS_CONTRACT.json`** — add a `brand2` block under `color_roles` mirroring the other roles' structure. Set status to `shipping`.
+5. **`docs/THEME_CLASS_CONTRACT.json`** — add a `brand2` block under `color_roles` mirroring the other roles' structure. Set status to `shipping`.
 6. **`docs/theme-classes-reference.md`** — add `brand2` row to the Color Roles table.
 7. **`docs/theme-system/03-color-roles.md`** — describe what `brand2` means semantically.
 8. **`frontend/src/pages/ThemeSettingsPage.vue`** — add UI for `brand2` (mirror the secondary section).
@@ -33,7 +33,7 @@ The shade is already emitted as a CSS var; you're just adding the class alias.
 
 1. **`themes/utils/css_writer.py`** — add the stop to `CURATED_SHADES` so the `_emit_role_shade_classes` loop emits `.theme-bg-{role}-{stop}` etc.
 2. **`frontend/tailwind.config.js`** — add the stop to the SPA's `SHADES` array (editor SPA only).
-3. **`THEME_CLASS_CONTRACT.json`** — update the `shade_scale.status` field on each role to reflect the new curated set.
+3. **`docs/THEME_CLASS_CONTRACT.json`** — update the `shade_scale.status` field on each role to reflect the new curated set.
 4. **`docs/theme-system/04-shade-scale.md`** — update the curated list.
 5. Republish: `bench --site <s> execute themes.utils.css_writer.publish_theme --args "['NCE Theme Default']"` (and rebuild the SPA: `cd frontend && npm run build`).
 
@@ -42,7 +42,7 @@ The shade is already emitted as a CSS var; you're just adding the class alias.
 1. **Decide the CSS var**: e.g., `--nce-color-emphasis`.
 2. **`themes/utils/css_writer.py`** — emit the var, and emit the class with the `theme-` prefix (e.g. `.theme-text-emphasis`). Decide whether it gets shades and a fg pair.
 3. **`frontend/tailwind.config.js`** — map the equivalent class for the editor SPA.
-4. **`THEME_CLASS_CONTRACT.json`** — add the entry under the right top-level key.
+4. **`docs/THEME_CLASS_CONTRACT.json`** — add the entry under the right top-level key.
 5. **`docs/theme-classes-reference.md`** — add the row.
 
 ## Border width tokens (shipped reference)
@@ -61,7 +61,7 @@ To add or change the allowed px values:
 2. **`themes/utils/css_writer.py`** — `_emit_var_block()` reads the three fields; `_emit_semantic_classes()` emits the three classes.
 3. **`scripts/export_theme_tokens.py`** — regenerate `frontend/src/domain/theme-tokens.ts`.
 4. **`frontend/src/pages/ThemeSettingsPage.vue`** — Layout tab → Line Widths (`borderWidthOptions`).
-5. **`THEME_CLASS_CONTRACT.json`** + **`docs/theme-classes-reference.md`** — keep in sync.
+5. **`docs/THEME_CLASS_CONTRACT.json`** + **`docs/theme-classes-reference.md`** — keep in sync.
 
 Directional borders (table rows, tab underlines) are **not** emitted as `theme-border-b` classes. Downstream apps use:
 
@@ -79,7 +79,7 @@ The system currently ships `mono` and `tonal`. Adding `soft`:
 3. **`themes/utils/css_writer.py`** — emit `--nce-color-{role}-fg-soft` and per-shade variants in the existing loops.
 4. **`frontend/src/utils/theme-injector.ts`** — mirror at runtime.
 5. **`frontend/tailwind.config.js`** — add `${r}-fg-soft` to `buildColorMap()`.
-6. Update `THEME_CLASS_CONTRACT.json` and the reference docs.
+6. Update `docs/THEME_CLASS_CONTRACT.json` and the reference docs.
 
 ## Rules
 

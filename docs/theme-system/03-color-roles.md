@@ -5,7 +5,7 @@ Semantic guide for primary, secondary, accent, state colors, and structural neut
 
 # 03 — Color Roles
 
-For the complete class list see `THEME_CLASS_CONTRACT.json`. This file explains the *semantics* — what each role is *for*.
+For the complete class list see `docs/THEME_CLASS_CONTRACT.json`. This file explains the *semantics* — what each role is *for*.
 
 ## Brand roles
 

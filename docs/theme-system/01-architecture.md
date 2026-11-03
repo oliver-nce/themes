@@ -74,7 +74,7 @@ Two **different** concepts (full definitions: `.cursor/rules/themes-glossary.mdc
 - **Base Theme** — the known-good theme shipped **in the repo** (`themes/data/base_theme.json`), installed with the app. A **seed** (new installs, "Restore to Base Theme") and a **safety net** (the user can never end up with zero usable themes). **Client-side apps never render the Base Theme directly.** Updated via System tab → "Save as Base Theme".
 - **Default Theme** — the **live** DB theme that drives the site `:root` fallback — what clients actually render when no theme is assigned.
 
-> ⚠️ The field `Site Theme Config.base_theme` is **misnamed**: it holds the **Default Theme**, not the Base Theme. Rename to `default_theme` tracked in `plans/rename-base-theme-field-to-default.md`.
+> ⚠️ The field `Site Theme Config.base_theme` is **misnamed**: it holds the **Default Theme**, not the Base Theme. Rename to `default_theme`.
 
 ## NCE Theme — the data model
 
