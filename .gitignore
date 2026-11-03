@@ -67,3 +67,6 @@ CLAUDE.md
 code_index/
 plans/
 themes/CODE_INDEX.json
+
+# Office lock files
+~$*
