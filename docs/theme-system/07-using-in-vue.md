@@ -38,17 +38,17 @@ Need a color/spacing/typography value in a Vue component?
 ### Buttons
 
 Use **filled shade** buttons — not frappe-ui `variant="outline"` with page-background fill.
-See `button_hierarchy` in `THEME_CLASS_CONTRACT.json`.
+See `button_hierarchy` and `button_interaction` in `THEME_CLASS_CONTRACT.json`. Full recipes: `09-buttons.md`.
 
 ```html
-<!-- main CTA — auto-paired mono fg -->
-<button class="theme-bg-primary theme-rounded theme-p-sm">Submit</button>
+<!-- main CTA — auto-paired mono fg + interaction stack -->
+<button class="theme-bg-primary theme-rounded theme-p-sm theme-font-medium theme-hover-bg-primary theme-hover-border-primary theme-focus-ring theme-pressed theme-disabled-auto">Submit</button>
 
 <!-- quiet secondary (Cancel, Revert) on theme-bg-surface panels -->
-<button class="theme-bg-primary-100 theme-border theme-rounded theme-p-sm">Cancel</button>
+<button class="theme-bg-primary-100 theme-border theme-rounded theme-p-sm theme-font-medium theme-hover-bg-primary theme-hover-border-primary theme-focus-ring theme-pressed theme-disabled-auto">Cancel</button>
 
 <!-- stronger secondary (tabs, Go) when needed -->
-<button class="theme-bg-primary-500 theme-border-primary theme-rounded theme-p-sm">Go</button>
+<button class="theme-bg-primary-500 theme-border-primary theme-rounded theme-p-sm theme-font-medium theme-hover-bg-primary theme-hover-border-primary theme-focus-ring theme-pressed theme-disabled-auto">Go</button>
 
 <!-- wrong: page bg on a panel control -->
 <button class="…" style="background: var(--nce-color-bg)">…</button>
@@ -56,6 +56,48 @@ See `button_hierarchy` in `THEME_CLASS_CONTRACT.json`.
 <!-- wrong: hardcoded color -->
 <button class="theme-bg-primary text-white">…</button>
 ```
+
+Reusable component — map `variant` / `role` to the same class strings; bind `:disabled` so `theme-disabled-auto` applies:
+
+```vue
+<template>
+  <button
+    type="button"
+    :class="buttonClasses"
+    :disabled="disabled"
+  >
+    <slot />
+  </button>
+</template>
+
+<script setup>
+import { computed } from 'vue'
+
+const props = defineProps({
+  variant: { type: String, default: 'filled' }, // filled | soft | outline | ghost
+  role: { type: String, default: 'primary' },
+  disabled: { type: Boolean, default: false },
+})
+
+const interaction = computed(
+  () =>
+    `theme-font-medium theme-hover-bg-${props.role} theme-hover-border-${props.role} theme-focus-ring theme-pressed theme-disabled-auto`,
+)
+
+const buttonClasses = computed(() => {
+  const r = props.role
+  const base = {
+    filled: `theme-bg-${r} theme-rounded theme-p-sm`,
+    soft: `theme-bg-${r}-100 theme-border theme-rounded theme-p-sm`,
+    outline: `theme-text-${r} theme-border theme-border-${r} theme-rounded theme-p-sm`,
+    ghost: `theme-text-${r} theme-p-sm`,
+  }[props.variant] ?? `theme-text-${r} theme-p-sm`
+  return `${base} ${interaction.value}`
+})
+</script>
+```
+
+Don't add scoped `:hover` / `:focus-visible` rules on this component — those states live in `nce_theme.css`.
 
 ### Cards
 
@@ -144,6 +186,33 @@ The class name (which var to use) is dynamic per loop iteration → `:style` wit
 - Don't put raw hex into props or constants.
 - Don't drop the `theme-` prefix — bare names (`bg-primary`, `text-muted`, `border`) collide with Desk/Bootstrap and get overridden on Desk pages.
 - Don't reach for `text-white` / `text-black` unless you specifically need the fixed-color cascade (see 05).
+
+## Keeping This Instance changes
+
+A **This Instance** change from Design Mode is saved with a description of the element: the
+screen it was on (its browser path), its class, and whichever of these it has: an app key
+(`data-nce-key`), a name tag (`title`, `aria-label` or `name`), its words (up to 80 characters)
+and its surroundings (the nearest container with a `data-nce-key`, a stable `id`, an
+`aria-label` or a heading). Themes' `instance_apply.js` runs on every Desk and website screen,
+with Design Mode on or off. After every load, Vue redraw and route change, it writes
+`data-nce-instance` on each element that fits a saved description.
+
+- **Position is not used.** Moving an element does not move its style to another one.
+- **Several fits, all styled.** If several elements fit one description, all of them get the
+  change. The Design Mode popup says how many before you save.
+- **Nothing fits.** The note is reported in a toast and the browser console when Design Mode is
+  turned on (for example after the element's words change).
+- **The app's own `data-nce-instance` wins.** If your template renders `data-nce-instance`,
+  Themes never changes it and saves This Instance changes under that id.
+- **Give an element a stable identity with `data-nce-key`.** It is the strongest clue: when set,
+  it is the only one used.
+
+```html
+<button class="action-btn theme-bg-primary" data-nce-key="woo-new-product">New Woo Commerce Product</button>
+```
+
+- **Repeated elements (`v-for`)** share one description unless each copy has its own words, name
+  tag or `data-nce-key`. For example, `:data-nce-key="'action-' + action.name"`.
 
 ## Frappe Desk vs SPA
 

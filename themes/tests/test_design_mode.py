@@ -26,7 +26,9 @@ def _row(**kwargs: object) -> dict:
 		"override_text_class": "",
 		"override_border_width_class": "",
 		"override_border_color_class": "",
+		"override_button_size_class": "",
 		"keep_default": 0,
+		"override_important": 0,
 	}
 	base.update(kwargs)
 	return base
@@ -65,6 +67,19 @@ class TestDesignMode(unittest.TestCase):
 		self.assertEqual(entry["values"]["override_bg_class"], "theme-bg-accent")
 		self.assertEqual(entry["values"]["override_fg_type"], "tonal")
 		self.assertEqual(entry["tag"], "div")
+
+	def test_build_selector_map_includes_override_important(self) -> None:
+		rows = [
+			_row(
+				parent="P1",
+				component_name="Alpha",
+				line=1,
+				selector_class="x",
+				override_important=1,
+			),
+		]
+		entry = build_selector_map(rows, set())["x"]
+		self.assertEqual(entry["values"]["override_important"], 1)
 
 	def test_build_selector_map_protected_and_dynamic(self) -> None:
 		rows = [

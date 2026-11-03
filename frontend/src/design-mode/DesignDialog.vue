@@ -1,7 +1,58 @@
 <script setup lang="ts">
-import { nextTick, onBeforeUnmount, onMounted, reactive, ref } from "vue"
+import { computed, nextTick, onBeforeUnmount, onMounted, reactive, ref } from "vue"
+import { THEME_CLASS_CATALOG } from "../domain/theme-class-catalog"
+import {
+	isInstancePropertyOverridden,
+	isTableDividerRow,
+	resetInstanceStyleProperty,
+	setInstanceStyleOverride,
+	setStyleOverride,
+	styleRowsForDialog,
+	styleValueForTab,
+	type DialogStyleRow,
+	type StyleRow,
+	type StyleScopeTab,
+} from "./theme-style-rows"
 
 type PickKind = "bg" | "text" | "border"
+
+interface DeskThemeInfo {
+	name: string
+	theme_name: string
+}
+
+interface DeskSourceInfo {
+	cssVar: string
+	field: string
+	label: string
+}
+
+interface OriginalStylesDecl {
+	prop: string
+	value: string
+	important: boolean
+}
+
+interface OriginalStylesRule {
+	file: string
+	selector: string
+	decls: OriginalStylesDecl[]
+}
+
+interface OriginalStylesComputed {
+	label: string
+	value: string
+}
+
+interface OriginalStyles {
+	classes: { theme: string[]; other: string[] }
+	inline: OriginalStylesDecl[]
+	rules: OriginalStylesRule[]
+	unreadable: string[]
+	computed: OriginalStylesComputed[]
+	warnings: string[]
+	conflicts?: { label: string; line1: string; line2: string }[]
+}
 
 interface DialogModel {
 	kind: "element" | "table"
@@ -11,8 +62,16 @@ interface DialogModel {
 	disabled: boolean
 	hasPart: boolean
 	saving: boolean
+	sourceClasses?: string
 	draft: Record<string, unknown>
+	instanceDraft: Record<string, unknown>
+	styleTab: StyleScopeTab
+	instanceIdentity: string
 	themeDefaults: Record<string, { label: string; css?: string }>
+	deskSources: Record<string, DeskSourceInfo>
+	deskTheme: DeskThemeInfo | null
+	originalStyles: OriginalStyles | null
+	buttonSizes?: Record<string, string>
 	x: number
 	y: number
 }
@@ -20,9 +79,12 @@ interface DialogModel {
 interface DialogHandlers {
 	pick: (field: string, kind: PickKind, fgField: string | null) => void
 	changed: (field: string) => void
+	setStyleTab: (tab: StyleScopeTab) => void
 	save: () => void
 	cancel: () => void
 	revert: () => void
+	revertInstance: () => void
+	resetInstanceProperty: (propId: string) => void
 	openRecord: () => void
 	part: () => void
 }
@@ -35,40 +97,34 @@ const props = defineProps<{
 const box = ref<HTMLElement | null>(null)
 const pos = reactive({ left: 0, top: 0 })
 
-const BORDER_WIDTH_OPTIONS = [
-	{ value: "", label: "Theme default" },
-	{ value: "theme-border-thin", label: "Thin" },
-	{ value: "theme-border", label: "Normal" },
-	{ value: "theme-border-strong", label: "Strong" },
-] as const
+const catalogProperties = THEME_CLASS_CATALOG.properties
 
-const TABLE_BG_ROWS = [
-	{ label: "Header row", bgField: "table_header_bg_class", fgField: "table_header_fg_type" },
-	{ label: "Rows", bgField: "table_row_bg_class", fgField: "table_row_fg_type" },
-	{
-		label: "Alternate rows",
-		bgField: "table_row_alt_bg_class",
-		fgField: "table_row_alt_fg_type",
-	},
-] as const
+const styleRows = computed(() =>
+	styleRowsForDialog(props.model.kind, props.model.sourceClasses || ""),
+)
 
-const TABLE_LINE_ROWS = [
-	{
-		label: "Header underline",
-		widthField: "table_header_line_class",
-		colorField: "table_header_line_color_class",
-	},
-	{
-		label: "Row dividers",
-		widthField: "table_row_divider_class",
-		colorField: "table_row_divider_color_class",
-	},
-	{
-		label: "Column dividers",
-		widthField: "table_col_divider_class",
-		colorField: "table_col_divider_color_class",
-	},
-] as const
+const showKeepDefault = computed(
+	() => props.model.kind === "element" && Object.prototype.hasOwnProperty.call(props.model.draft, "keep_default"),
+)
+
+const appStylesOnly = computed(
+	() => showKeepDefault.value && !!props.model.draft.keep_default,
+)
+
+const rowsDisabled = computed(() => props.model.disabled || appStylesOnly.value)
+
+const onOriginalTab = computed(() => props.model.styleTab === "original")
+
+const catalogClasses = THEME_CLASS_CATALOG.classes
+
+function themeClassInfo(cls: string): string {
+	const propIds = catalogClasses[cls as keyof typeof catalogClasses]
+	if (!propIds) return " — (not a Themes style class)"
+	const labels = propIds.map(
+		(id) => catalogProperties[id as keyof typeof catalogProperties]?.label ?? id,
+	)
+	return " — " + labels.join(", ")
+}
 
 function draftStr(field: string): string {
 	const v = props.model.draft[field]
@@ -85,17 +141,132 @@ function themeText(field: string): string {
 	const label = themeLabel(field)
 	return label ? "Theme: " + label : "Theme default"
 }
-function widthOptionLabel(field: string, value: string, label: string): string {
+
+function deskSource(field: string): DeskSourceInfo | undefined {
+	return props.model.deskSources?.[field]
+}
+
+function showDeskSource(field: string): boolean {
+	return !!deskSource(field) && !draftStr(field)
+}
+
+function deskSourceLine(field: string): string {
+	const s = deskSource(field)
+	if (!s) return ""
+	return "Desk theme · " + s.label + " (" + s.cssVar + ")"
+}
+
+function openDeskThemeField(field: string) {
+	const theme = props.model.deskTheme
+	const s = deskSource(field)
+	if (!theme?.name || !s) return
+	const url =
+		window.location.origin +
+		"/desk-themes/theme-settings?theme=" +
+		encodeURIComponent(theme.name) +
+		"&field=" +
+		encodeURIComponent(s.field)
+	const w = window.open(url, "nce-themes-app")
+	if (w) w.focus()
+}
+function legacyFieldForProp(propId: string): string {
+	const prop = catalogProperties[propId as keyof typeof catalogProperties] as
+		| { legacyField?: string }
+		| undefined
+	return prop?.legacyField || ""
+}
+
+function widthOptionLabel(propId: string, value: string, label: string): string {
 	if (value !== "") return label
-	const t = themeLabel(field)
+	const t = themeLabel(legacyFieldForProp(propId))
 	return t ? "Theme: " + t : label
 }
 
-function bgClassText(bgField: string, fgField: string): string {
-	const bgClass = draftStr(bgField)
-	if (!bgClass) return themeText(bgField)
-	if (draftStr(fgField) === "tonal") return bgClass + " · tonal"
-	return bgClass
+const onInstanceTab = computed(() => props.model.styleTab === "instance")
+
+function styleValueForProp(propId: string): string {
+	return styleValueForTab(
+		props.model.draft,
+		props.model.instanceDraft,
+		props.model.styleTab,
+		propId,
+	)
+}
+
+function styleValue(row: StyleRow): string {
+	return styleValueForProp(row.id)
+}
+
+function propInherited(propId: string): boolean {
+	return onInstanceTab.value && !isInstancePropertyOverridden(props.model.instanceDraft, propId)
+}
+
+function styleRowInherited(row: DialogStyleRow): boolean {
+	if (isTableDividerRow(row)) {
+		return propInherited(row.widthPropId) && propInherited(row.colorPropId)
+	}
+	return propInherited(row.id)
+}
+
+function onStyleChoice(row: StyleRow, ev: Event) {
+	const t = ev.target as HTMLSelectElement
+	if (onInstanceTab.value) {
+		if (!t.value.trim()) resetInstanceStyleProperty(props.model.instanceDraft, row.id)
+		else setInstanceStyleOverride(props.model.instanceDraft, row.id, t.value)
+		props.handlers.changed("instance_style_overrides")
+		return
+	}
+	setStyleOverride(props.model.draft, row.id, t.value)
+	props.handlers.changed("theme_style_overrides")
+}
+
+function pickStyle(row: StyleRow) {
+	props.handlers.pick("style:" + row.id, row.pickKind || "border", row.fgField || null)
+}
+
+function pickDividerColor(row: DialogStyleRow & { kind: "table-divider" }) {
+	props.handlers.pick("style:" + row.colorPropId, "border", null)
+}
+
+function styleDisplayForProp(propId: string, inherited: boolean): string {
+	const v = styleValueForProp(propId)
+	if (inherited) {
+		return v ? "Component: " + v : "Component default"
+	}
+	if (v) return v
+	return "Theme default"
+}
+
+function styleDisplay(row: StyleRow): string {
+	return styleDisplayForProp(row.id, styleRowInherited(row))
+}
+
+function resetPropToComponent(propId: string) {
+	resetInstanceStyleProperty(props.model.instanceDraft, propId)
+	props.handlers.changed("instance_style_overrides")
+}
+
+function resetRowToComponent(row: StyleRow) {
+	resetPropToComponent(row.id)
+}
+
+function onDividerWidthChoice(row: DialogStyleRow & { kind: "table-divider" }, ev: Event) {
+	const t = ev.target as HTMLSelectElement
+	const propId = row.widthPropId
+	if (onInstanceTab.value) {
+		if (!t.value.trim()) resetInstanceStyleProperty(props.model.instanceDraft, propId)
+		else setInstanceStyleOverride(props.model.instanceDraft, propId, t.value)
+		props.handlers.changed("instance_style_overrides")
+		return
+	}
+	setStyleOverride(props.model.draft, propId, t.value)
+	props.handlers.changed("theme_style_overrides")
+}
+
+function setTab(tab: StyleScopeTab) {
+	if (props.model.styleTab === tab) return
+	props.model.styleTab = tab
+	props.handlers.setStyleTab(tab)
 }
 
 function clampPosition(left: number, top: number) {
@@ -140,10 +311,21 @@ function startDrag(e: MouseEvent) {
 	window.addEventListener("mouseup", onUp, true)
 }
 
+function sizeInfo(row: StyleRow): string {
+	if (row.id !== "button-size") return ""
+	return props.model.buttonSizes?.[styleValue(row) || "md"] || ""
+}
+
 function onKeep(e: Event) {
 	const t = e.target as HTMLInputElement
 	props.model.draft.keep_default = t.checked ? 1 : 0
 	props.handlers.changed("keep_default")
+}
+
+function onImportant(e: Event) {
+	const t = e.target as HTMLInputElement
+	props.model.draft.override_important = t.checked ? 1 : 0
+	props.handlers.changed("override_important")
 }
 
 onMounted(() => {
@@ -174,222 +356,271 @@ onBeforeUnmount(() => {
 			</button>
 		</div>
 		<div class="dd-body">
-			<div v-for="(note, i) in model.notes" :key="'n-' + i" class="dd-note">{{ note }}</div>
-			<div
-				v-if="model.kind === 'element' && model.draft.keep_default"
-				class="dd-note"
-			>
-				Keep default is on: this part uses the theme's own colours. The page shows it after
-				Save.
+			<template v-if="model.styleTab === 'component'">
+				<div v-for="(note, i) in model.notes" :key="'n-' + i" class="dd-note">{{ note }}</div>
+			</template>
+			<div v-if="styleRows.length" class="dd-tabs">
+				<button
+					type="button"
+					class="dd-tab"
+					:class="{ 'dd-tab-active': model.styleTab === 'component' }"
+					@click="setTab('component')"
+				>
+					This Component
+				</button>
+				<button
+					type="button"
+					class="dd-tab"
+					:class="{ 'dd-tab-active': model.styleTab === 'instance' }"
+					@click="setTab('instance')"
+				>
+					This Instance
+				</button>
+				<button
+					type="button"
+					class="dd-tab"
+					:class="{ 'dd-tab-active': model.styleTab === 'original' }"
+					@click="setTab('original')"
+				>
+					Original styles
+				</button>
 			</div>
-
-			<template v-if="model.kind === 'element'">
-				<div class="dd-section">Colours</div>
-				<div class="dd-row">
-					<span class="dd-row-label">Background</span>
-					<div
-						class="dd-chip"
-						:class="
-							draftStr('override_bg_class')
-								? draftStr('override_bg_class')
-								: themeCss('override_bg_class')
-									? undefined
-									: 'dd-chip-empty'
-						"
-						:style="
-							!draftStr('override_bg_class') && themeCss('override_bg_class')
-								? {
-										background: themeCss('override_bg_class'),
-										color: themeCss('override_text_class') || undefined,
-									}
-								: undefined
-						"
-					>
-						Aa
-					</div>
-					<div class="dd-class">
-						{{ bgClassText("override_bg_class", "override_fg_type") }}
-					</div>
-					<button
-						type="button"
-						class="dd-btn"
-						:disabled="model.disabled"
-						@click="handlers.pick('override_bg_class', 'bg', 'override_fg_type')"
-					>
-						Pick…
-					</button>
+			<template v-if="onOriginalTab">
+				<div
+					v-for="(warn, wi) in model.originalStyles?.warnings || []"
+					:key="'ow-' + wi"
+					class="dd-note"
+				>
+					{{ warn }}
 				</div>
-				<div class="dd-row">
-					<span class="dd-row-label">Text</span>
-					<div
-						class="dd-chip"
-						:class="draftStr('override_text_class') || undefined"
-						:style="
-							!draftStr('override_text_class') && themeCss('override_text_class')
-								? {
-										color: themeCss('override_text_class'),
-										background: themeCss('override_bg_class') || undefined,
-									}
-								: undefined
-						"
-					>
-						Aa
-					</div>
-					<div class="dd-class">
-						{{ draftStr("override_text_class") || themeText("override_text_class") }}
-					</div>
-					<button
-						type="button"
-						class="dd-btn"
-						:disabled="model.disabled"
-						@click="handlers.pick('override_text_class', 'text', null)"
-					>
-						Pick…
-					</button>
+				<div v-if="!model.originalStyles" class="dd-note">
+					Original styles are not available for this element.
 				</div>
-				<div class="dd-row">
-					<span class="dd-row-label">Border</span>
+				<div v-else class="dd-orig">
+					<div class="dd-section">Where the app overrides a Themes style</div>
+					<div v-if="!(model.originalStyles.conflicts || []).length">
+						None. The app does not set any style that Themes controls on this element.
+					</div>
+					<div
+						v-for="cf in model.originalStyles.conflicts || []"
+						:key="'cf-' + cf.label"
+						class="dd-orig-conflict"
+					>
+						<strong>{{ cf.label }}</strong>
+						<div>{{ cf.line1 }}</div>
+						<div>{{ cf.line2 }}</div>
+					</div>
+					<details class="dd-orig-all">
+					<summary>Show every original style</summary>
+					<div class="dd-section">Classes</div>
+					<div>Theme classes:</div>
+					<div v-if="model.originalStyles.classes.theme.length">
+						<div v-for="c in model.originalStyles.classes.theme" :key="'tc-' + c">
+							<code>{{ c }}</code>{{ themeClassInfo(c) }}
+						</div>
+					</div>
+					<div v-else>None</div>
+					<div>App classes:</div>
+					<div v-if="model.originalStyles.classes.other.length">
+						<code v-for="c in model.originalStyles.classes.other" :key="'ac-' + c">{{ c }}</code>
+					</div>
+					<div v-else>None</div>
+					<div class="dd-section">Inline style</div>
+					<template v-if="model.originalStyles.inline.length">
+						<div v-for="d in model.originalStyles.inline" :key="'in-' + d.prop">
+							{{ d.prop }}: {{ d.value }}
+							<span v-if="d.important" class="dd-orig-badge">!important</span>
+						</div>
+					</template>
+					<div v-else>None</div>
+					<div class="dd-section">App CSS rules</div>
+					<template v-if="model.originalStyles.rules.length">
+						<div v-for="(rule, ri) in model.originalStyles.rules" :key="'ru-' + ri">
+							<div class="dd-orig-file">{{ rule.file }}</div>
+							<div><code>{{ rule.selector }}</code></div>
+							<div v-for="d in rule.decls" :key="rule.selector + d.prop">
+								{{ d.prop }}: {{ d.value }}
+								<span v-if="d.important" class="dd-orig-badge">!important</span>
+							</div>
+						</div>
+					</template>
+					<div v-else>None found</div>
+					<template v-if="model.originalStyles.unreadable.length">
+						<div class="dd-section">Could not be read</div>
+						<div v-for="(href, ui) in model.originalStyles.unreadable" :key="'un-' + ui">
+							{{ href || "stylesheet on another site" }}
+						</div>
+					</template>
+					<div class="dd-section">Browser uses now</div>
+					<div
+						v-for="row in model.originalStyles.computed"
+						:key="'cs-' + row.label"
+						class="dd-orig-row"
+					>
+						<span>{{ row.label }}</span>
+						<span>{{ row.value }}</span>
+					</div>
+					</details>
+				</div>
+			</template>
+			<template v-else>
+				<div v-if="appStylesOnly" class="dd-note">
+					Use original app styles only is on: Themes adds no styles to this element. Its look
+					comes from the app's own code.
+				</div>
+				<div
+					v-if="model.styleTab === 'instance' && model.instanceIdentity"
+					class="dd-instance-id"
+				>
+					{{ model.instanceIdentity }}
+				</div>
+				<div v-if="styleRows.length" class="dd-section">Theme styles</div>
+				<div
+					v-for="(row, rowIdx) in styleRows"
+					:key="row.id"
+					class="dd-row"
+					:class="{
+						'dd-row-alt': rowIdx % 2 === 1,
+						'dd-row-inherited': styleRowInherited(row),
+						'dd-rows-off': appStylesOnly,
+					}"
+				>
+				<span class="dd-row-label">{{ row.label }}</span>
+				<template v-if="isTableDividerRow(row)">
 					<div
 						class="dd-chip dd-chip-border"
-						:class="
-							draftStr('override_border_color_class')
-								? draftStr('override_border_color_class')
-								: themeCss('override_border_color_class')
-									? undefined
-									: 'dd-chip-empty'
-						"
-						:style="
-							!draftStr('override_border_color_class') &&
-							themeCss('override_border_color_class')
-								? { borderColor: themeCss('override_border_color_class') }
-								: undefined
-						"
+						:class="styleValueForProp(row.colorPropId) || 'dd-chip-empty'"
 					></div>
 					<div class="dd-class">
 						<select
 							class="dd-select"
-							v-model="model.draft.override_border_width_class"
-							:disabled="model.disabled"
-							@change="handlers.changed('override_border_width_class')"
+							:value="styleValueForProp(row.widthPropId)"
+							:disabled="rowsDisabled"
+							@change="onDividerWidthChoice(row, $event)"
 						>
 							<option
-								v-for="opt in BORDER_WIDTH_OPTIONS"
-								:key="opt.value"
+								v-for="opt in row.options"
+								:key="row.widthPropId + (opt.value || 'default')"
 								:value="opt.value"
 							>
-								{{
-									widthOptionLabel(
-										"override_border_width_class",
-										opt.value,
-										opt.label,
-									)
-								}}
+								{{ widthOptionLabel(row.widthPropId, opt.value, opt.label) }}
 							</option>
 						</select>
 						<span>{{
-							draftStr("override_border_color_class") ||
-								themeText("override_border_color_class")
+							styleDisplayForProp(row.colorPropId, propInherited(row.colorPropId))
 						}}</span>
 					</div>
 					<button
+						v-if="onInstanceTab && !propInherited(row.widthPropId)"
 						type="button"
-						class="dd-btn"
-						:disabled="model.disabled"
-						@click="handlers.pick('override_border_color_class', 'border', null)"
+						class="dd-btn dd-btn-reset"
+						:disabled="rowsDisabled"
+						@click="resetPropToComponent(row.widthPropId)"
 					>
-						Pick…
+						Reset
 					</button>
-				</div>
-				<label class="dd-check">
-					<input
-						type="checkbox"
-						:checked="!!model.draft.keep_default"
-						:disabled="model.disabled"
-						@change="onKeep"
-					/>
-					Keep default
-				</label>
-			</template>
-
-			<template v-else-if="model.kind === 'table'">
-				<div class="dd-section">Rows</div>
-				<div v-for="row in TABLE_BG_ROWS" :key="row.bgField" class="dd-row">
-					<span class="dd-row-label">{{ row.label }}</span>
-					<div
-						class="dd-chip"
-						:class="
-							draftStr(row.bgField)
-								? draftStr(row.bgField)
-								: themeCss(row.bgField)
-									? undefined
-									: 'dd-chip-empty'
-						"
-						:style="
-							!draftStr(row.bgField) && themeCss(row.bgField)
-								? { background: themeCss(row.bgField) }
-								: undefined
-						"
+					<button
+						v-if="onInstanceTab && !propInherited(row.colorPropId)"
+						type="button"
+						class="dd-btn dd-btn-reset"
+						:disabled="rowsDisabled"
+						@click="resetPropToComponent(row.colorPropId)"
 					>
-						Aa
-					</div>
-					<div class="dd-class">{{ bgClassText(row.bgField, row.fgField) }}</div>
+						Reset
+					</button>
 					<button
 						type="button"
 						class="dd-btn"
-						:disabled="model.disabled"
-						@click="handlers.pick(row.bgField, 'bg', row.fgField)"
+						:disabled="rowsDisabled"
+						@click="pickDividerColor(row)"
 					>
-						Pick…
+						Colour…
 					</button>
-				</div>
-				<div class="dd-section">Lines</div>
-				<div v-for="row in TABLE_LINE_ROWS" :key="row.colorField" class="dd-row">
-					<span class="dd-row-label">{{ row.label }}</span>
-					<div
-						class="dd-chip dd-chip-border"
-						:class="
-							draftStr(row.colorField)
-								? draftStr(row.colorField)
-								: themeCss(row.colorField)
-									? undefined
-									: 'dd-chip-empty'
-						"
-						:style="
-							!draftStr(row.colorField) && themeCss(row.colorField)
-								? { borderColor: themeCss(row.colorField) }
-								: undefined
-						"
-					></div>
-					<div class="dd-class">
+				</template>
+				<template v-else-if="row.kind === 'color-role'">
+					<div class="dd-chip" :class="styleValue(row) || 'dd-chip-empty'">Aa</div>
+					<div class="dd-class">{{ styleDisplay(row) }}</div>
+					<button
+						v-if="onInstanceTab && !propInherited(row.id)"
+						type="button"
+						class="dd-btn dd-btn-reset"
+						:disabled="rowsDisabled"
+						@click="resetRowToComponent(row)"
+					>
+						Reset
+					</button>
+					<button
+						type="button"
+						class="dd-btn"
+						:disabled="rowsDisabled"
+						@click="pickStyle(row)"
+					>
+						Colour…
+					</button>
+				</template>
+				<template v-else>
+					<div class="dd-class dd-class-wide">
 						<select
 							class="dd-select"
-							v-model="model.draft[row.widthField]"
-							:disabled="model.disabled"
-							@change="handlers.changed(row.widthField)"
+							:value="styleValue(row)"
+							:disabled="rowsDisabled"
+							@change="onStyleChoice(row, $event)"
 						>
 							<option
-								v-for="opt in BORDER_WIDTH_OPTIONS"
-								:key="row.widthField + opt.value"
+								v-for="opt in row.options"
+								:key="row.id + (opt.value || 'default')"
 								:value="opt.value"
 							>
-								{{ widthOptionLabel(row.widthField, opt.value, opt.label) }}
+								{{ opt.label }}
 							</option>
 						</select>
-						<span>{{ draftStr(row.colorField) || themeText(row.colorField) }}</span>
+						<div v-if="sizeInfo(row)" class="dd-size-info">{{ sizeInfo(row) }}</div>
 					</div>
 					<button
+						v-if="onInstanceTab && !propInherited(row.id)"
 						type="button"
-						class="dd-btn"
-						:disabled="model.disabled"
-						@click="handlers.pick(row.colorField, 'border', null)"
+						class="dd-btn dd-btn-reset"
+						:disabled="rowsDisabled"
+						@click="resetRowToComponent(row)"
 					>
-						Pick…
+						Reset
 					</button>
+				</template>
 				</div>
 			</template>
 		</div>
+		<div v-if="showKeepDefault" class="dd-opts">
+			<label class="dd-check">
+				<input
+					type="checkbox"
+					:checked="!!model.draft.keep_default"
+					:disabled="model.disabled"
+					@change="onKeep"
+				/>
+				Use original app styles only
+			</label>
+			<label v-if="!appStylesOnly" class="dd-check">
+				<input
+					type="checkbox"
+					:checked="!!model.draft.override_important"
+					:disabled="model.disabled"
+					@change="onImportant"
+				/>
+				Override the app's !important (also for every instance)
+			</label>
+		</div>
 		<div class="dd-foot">
 			<button
+				v-if="model.styleTab === 'instance'"
+				type="button"
+				class="dd-link"
+				:disabled="model.disabled"
+				@click="handlers.revertInstance()"
+			>
+				Clear instance overrides…
+			</button>
+			<button
+				v-else
 				type="button"
 				class="dd-link"
 				:disabled="model.disabled"

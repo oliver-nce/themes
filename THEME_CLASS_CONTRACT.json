@@ -130,7 +130,8 @@
     "border_strong":  { "class": "theme-border-strong", "var": "--nce-color-border", "width_var": "--nce-border-width-strong", "purpose": "Heavier border for table headers, active tab underlines, prominent dividers. 2px default.", "status": "shipping" },
     "input_border":   { "class": "theme-border-input-border", "var": "--nce-color-border", "purpose": "Form input idle border color only — pair with theme-border for width.", "status": "shipping" },
     "input_focus":    { "class": "theme-border-input-focus", "var": "--nce-color-focus", "purpose": "Form input focused border color only.", "status": "shipping" },
-    "focus_ring":     { "class": "(manual — not emitted)", "var": "--nce-color-focus", "purpose": "Keyboard focus ring color.", "status": "var-only" },
+    "focus_ring":     { "class": "theme-focus-ring", "var": "--nce-color-focus", "width_var": "--nce-focus-ring-width", "offset_var": "--nce-focus-ring-offset", "enabled_var": "--nce-focus-ring-enabled", "setting": "focus_ring_enabled (Interaction tab, default on)", "purpose": "Keyboard focus outline on :focus-visible using focus token.", "status": "shipping" },
+    "focus_ring_roles": { "classes": "theme-focus-ring-{primary,secondary,accent,success,info,warning,danger,neutral}", "var": "--nce-color-{role}", "width_var": "--nce-focus-ring-width", "offset_var": "--nce-focus-ring-offset", "enabled_var": "--nce-focus-ring-enabled", "setting": "focus_ring_enabled (Interaction tab, default on)", "purpose": "Role-colored focus ring for buttons and controls.", "status": "shipping" },
     "border_width_thin_var":   { "class": "(var-only)", "var": "--nce-border-width-thin", "purpose": "Raw CSS var for thin border width. Use in directional CSS: border-bottom: var(--nce-border-width-thin) solid var(--nce-color-border)", "status": "var-only" },
     "border_width_var":        { "class": "(var-only)", "var": "--nce-border-width", "purpose": "Raw CSS var for normal border width.", "status": "var-only" },
     "border_width_strong_var": { "class": "(var-only)", "var": "--nce-border-width-strong", "purpose": "Raw CSS var for strong border width. Use for table headers, active tabs.", "status": "var-only" }
@@ -167,6 +168,12 @@
   "typography": {
     "font_body":    { "class": "theme-font-sans", "var": "--nce-font-family", "purpose": "Body font.", "status": "shipping" },
     "font_heading": { "class": "theme-font-heading", "var": "--nce-font-heading", "purpose": "Heading font.", "status": "shipping" },
+    "font_weights": {
+      "normal":   { "class": "theme-font-normal", "var": "--nce-font-weight", "purpose": "Body font weight (same as --nce-font-weight).", "status": "shipping" },
+      "medium":   { "class": "theme-font-medium", "var": "--nce-font-weight-medium", "purpose": "Medium weight for labels and quiet buttons.", "status": "shipping" },
+      "semibold": { "class": "theme-font-semibold", "var": "--nce-font-weight-semibold", "purpose": "Semibold emphasis.", "status": "shipping" },
+      "bold":     { "class": "theme-font-bold", "var": "--nce-font-weight-bold", "purpose": "Bold emphasis.", "status": "shipping" }
+    },
     "sizes": {
       "xs":   { "class": "theme-text-xs", "value": "calc(--nce-font-size * 0.75)", "status": "shipping" },
       "sm":   { "class": "theme-text-sm", "value": "calc(--nce-font-size * 0.875)", "status": "shipping" },
@@ -201,10 +208,111 @@
       "theme": { "class": "theme-duration-theme", "var": "--nce-transition-speed", "status": "shipping" }
     }
   },
+  "button_interaction": {
+    "hover_bg": {
+      "classes": "theme-hover-bg-{primary,secondary,accent,success,info,warning,danger,neutral}",
+      "purpose": "On :hover:not(:disabled), background + paired fg from hover_bg_shade token (default shade 100).",
+      "status": "shipping"
+    },
+    "hover_border": {
+      "classes": "theme-hover-border-{primary,secondary,accent,success,info,warning,danger,neutral}",
+      "purpose": "On :hover:not(:disabled), border-color from hover_border_shade token (default shade 500).",
+      "status": "shipping"
+    },
+    "focus_bg": {
+      "classes": "theme-focus-bg-{primary,secondary,accent,success,info,warning,danger,neutral}",
+      "enabled_var": "--nce-focus-fill-enabled",
+      "setting": "focus_fill_enabled (Interaction tab, default on)",
+      "purpose": "Opt-in on :focus-visible:not(:disabled): invert/fill background, text, and border to base role tokens. Combine with theme-focus-ring for the outline.",
+      "status": "shipping"
+    },
+    "button_outline": {
+      "setting": "button_outline_enabled (Interaction tab, default off)",
+      "purpose": "Theme-wide: when on, theme-btn and every scanned button element of apps using this theme is drawn as an outline button (transparent fill, primary border and text, outline hover). Weaker than This Component / This Instance changes.",
+      "status": "shipping"
+    },
+    "disabled": {
+      "theme_disabled": { "class": "theme-disabled", "var": "--nce-disabled-opacity", "purpose": "Static disabled look (opacity + not-allowed cursor).", "status": "shipping" },
+      "theme_disabled_auto": { "class": "theme-disabled-auto", "var": "--nce-disabled-opacity", "purpose": "Same as theme-disabled when applied to a :disabled control.", "status": "shipping" }
+    },
+    "pressed": {
+      "class": "theme-pressed",
+      "var": "--nce-pressed-shift",
+      "purpose": "On :active:not(:disabled), translateY by pressed_shift token.",
+      "status": "shipping"
+    }
+  },
+  "button_sizes": {
+    "default": {
+      "class": "theme-btn",
+      "purpose": "Complete button (medium size default): card surface fill, primary text, theme-border width and colour, theme-rounded-sm radius, primary hover (bg + border shades), focus ring and focus fill when enabled in Theme Settings. Design Mode sets Small/Large via override CSS vars, not extra classes.",
+      "vars": [
+        "--nce-btn-md-font-size",
+        "--nce-btn-md-pad-y",
+        "--nce-btn-md-pad-x",
+        "--nce-btn-md-min-height",
+        "--nce-color-surface",
+        "--nce-color-primary",
+        "--nce-color-border",
+        "--nce-border-width",
+        "--nce-border-radius",
+        "--nce-color-focus",
+        "--nce-focus-ring-width",
+        "--nce-focus-ring-offset"
+      ],
+      "status": "shipping"
+    },
+    "sm": {
+      "class": "theme-btn-sm",
+      "purpose": "Size-only alias (font-size, padding, min-height). Does not set fill, border, hover, or focus — use theme-btn or stack utilities.",
+      "vars": [
+        "--nce-btn-sm-font-size",
+        "--nce-btn-sm-pad-y",
+        "--nce-btn-sm-pad-x",
+        "--nce-btn-sm-min-height"
+      ],
+      "status": "shipping"
+    },
+    "md": {
+      "class": "theme-btn-md",
+      "purpose": "Size-only alias for medium metrics (same tokens as theme-btn sizing). Does not set fill, border, hover, or focus.",
+      "vars": [
+        "--nce-btn-md-font-size",
+        "--nce-btn-md-pad-y",
+        "--nce-btn-md-pad-x",
+        "--nce-btn-md-min-height"
+      ],
+      "status": "shipping"
+    },
+    "lg": {
+      "class": "theme-btn-lg",
+      "purpose": "Size-only alias (font-size, padding, min-height). Does not set fill, border, hover, or focus — use theme-btn or stack utilities.",
+      "vars": [
+        "--nce-btn-lg-font-size",
+        "--nce-btn-lg-pad-y",
+        "--nce-btn-lg-pad-x",
+        "--nce-btn-lg-min-height"
+      ],
+      "status": "shipping"
+    },
+    "design_mode_size": {
+      "field": "override_button_size_class",
+      "values": {
+        "medium": "",
+        "small": "sm",
+        "large": "lg"
+      },
+      "legacy_values": {
+        "theme-btn-sm": "sm",
+        "theme-btn-lg": "lg"
+      },
+      "note": "Published component CSS emits btn token overrides on the element selector; never writes theme-btn-sm or theme-btn-lg classes."
+    }
+  },
   "button_hierarchy": {
-    "purpose": "Filled shade buttons with auto mono fg — do not use frappe-ui variant=outline or page-background fill on controls that sit on panels.",
+    "purpose": "Filled shade buttons with auto mono fg — do not use frappe-ui variant=outline or page-background fill on controls that sit on panels. Pair fills with theme-hover-bg-{role}, theme-focus-ring or theme-focus-ring-{role}, theme-disabled-auto on native buttons, theme-pressed for tactile feedback, and theme-btn-sm / theme-btn-md / theme-btn-lg for consistent control sizing.",
     "main_cta": {
-      "classes": "theme-bg-primary theme-border-primary theme-rounded theme-p-sm",
+      "classes": "theme-bg-primary theme-border-primary theme-rounded theme-p-sm theme-hover-bg-primary theme-focus-ring theme-pressed theme-disabled-auto",
       "notes": "Submit, Apply, Perform Find. theme-bg-primary sets paired -fg automatically."
     },
     "quiet_secondary": {

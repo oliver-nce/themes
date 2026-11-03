@@ -19,6 +19,7 @@ from frappe import _
 
 from themes.utils.theme_family import DESK_FAMILY, WEB_FAMILY
 from themes.utils import theme_service as svc
+from themes.utils.editor_selection import get_last_editor_theme, set_last_editor_theme
 
 
 # ─── AGENT:test-shims ─── backward compat for tests (prefer theme_service directly)
@@ -36,6 +37,39 @@ def _desk_theme_editor_response(theme_name: str) -> dict:
 
 def _require_system_manager():
     frappe.only_for("System Manager")
+
+
+# ─── AGENT:editor-selection ─── per-user last opened theme (editor UI only)
+
+
+@frappe.whitelist()
+def get_editor_theme_selection():
+    """Return the current user's last opened site theme in the editor, or empty string."""
+    _require_system_manager()
+    return get_last_editor_theme(desk=False)
+
+
+@frappe.whitelist()
+def set_editor_theme_selection(theme: str):
+    """Remember the current user's last opened site theme in the editor."""
+    _require_system_manager()
+    set_last_editor_theme(theme, desk=False)
+    return {"ok": True}
+
+
+@frappe.whitelist()
+def get_editor_desk_theme_selection():
+    """Return the current user's last opened desk theme in the editor, or empty string."""
+    _require_system_manager()
+    return get_last_editor_theme(desk=True)
+
+
+@frappe.whitelist()
+def set_editor_desk_theme_selection(theme: str):
+    """Remember the current user's last opened desk theme in the editor."""
+    _require_system_manager()
+    set_last_editor_theme(theme, desk=True)
+    return {"ok": True}
 
 
 # ─── AGENT:web-read ─── load editor payloads (DB) and app fixture (restore)

@@ -256,7 +256,7 @@ Site Theme Editor for colours, typography, layout, live CSS variables, and base 
 					</div>
 				</EditorSection>
 
-				<EditorSection title="Size &amp; Weight">
+				<EditorSection id="theme-style-font-weights" title="Size &amp; Weight">
 					<div class="grid grid-cols-1 md:grid-cols-3 gap-6">
 						<SelectField
 							label="Base Font Size"
@@ -280,7 +280,7 @@ Site Theme Editor for colours, typography, layout, live CSS variables, and base 
 								max="900"
 								step="1"
 								:value="bodyWeightNumber"
-								@input="onBodyWeightInput"
+								@input="onFontWeightInput('font_weight_body', $event)"
 							/>
 							<div class="flex justify-between text-xs text-gray-400 mt-1 px-0.5">
 								<span>100</span>
@@ -288,6 +288,30 @@ Site Theme Editor for colours, typography, layout, live CSS variables, and base 
 								<span>700</span>
 								<span>900</span>
 							</div>
+						</div>
+					</div>
+					<div class="grid grid-cols-1 md:grid-cols-3 gap-6 mt-6" :style="liveVars">
+						<div v-for="w in extraFontWeightControls" :key="w.key">
+							<label class="block text-sm font-medium text-gray-700 mb-1.5">
+								{{ w.label }}
+								<span class="font-normal text-gray-500">({{ fontWeightDisplay(w.key) }})</span>
+							</label>
+							<input
+								type="range"
+								class="body-weight-slider w-full"
+								min="100"
+								max="900"
+								step="1"
+								:value="fontWeightNumber(w.key)"
+								@input="onFontWeightInput(w.key, $event)"
+							/>
+							<p
+								class="mt-2 text-sm text-gray-600"
+								:class="w.sampleClass"
+								:style="{ fontFamily: fontCSS(form.font_family) }"
+							>
+								{{ w.sampleText }}
+							</p>
 						</div>
 					</div>
 				</EditorSection>
@@ -473,6 +497,209 @@ Site Theme Editor for colours, typography, layout, live CSS variables, and base 
 				</EditorSection>
 			</div>
 
+			<!-- AGENT:TAB interaction — hover shades, focus ring, disabled opacity, pressed shift -->
+			<div v-show="activeTab === 'interaction'" class="editor-tab">
+				<EditorSection
+					id="theme-style-interaction-hover"
+					title="Hover"
+					hint="Background and border shades applied on :hover for buttons and controls that use the theme-hover-* classes."
+				>
+					<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+						<SelectField
+							label="Hover background shade"
+							:options="hoverBgShadeOptions"
+							v-model="form.hover_bg_shade"
+						/>
+						<SelectField
+							label="Hover border shade"
+							:options="hoverBorderShadeOptions"
+							v-model="form.hover_border_shade"
+						/>
+					</div>
+					<div class="flex items-center gap-3 mt-4">
+						<input
+							type="checkbox"
+							id="button_outline_enabled"
+							v-model="form.button_outline_enabled"
+							class="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+						/>
+						<div>
+							<label for="button_outline_enabled" class="text-sm font-medium text-gray-700">
+								Outline buttons
+							</label>
+							<p class="text-xs text-gray-500 mt-1">
+								Draw every button in apps using this theme as an outline button (transparent fill,
+								primary border and text). Design Mode changes and "Use original app styles only"
+								still win.
+							</p>
+						</div>
+					</div>
+				</EditorSection>
+
+				<EditorSection
+					id="theme-style-interaction-focus"
+					title="Focus Ring"
+					hint="Width and offset for theme-focus-ring; ring colour is the Focus Ring colour in the Colours tab (Typography > Text Colours)."
+				>
+					<div class="flex flex-col gap-4 mb-6">
+						<div class="flex items-center gap-3">
+							<input
+								type="checkbox"
+								id="focus_ring_enabled"
+								v-model="form.focus_ring_enabled"
+								class="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+							/>
+							<label for="focus_ring_enabled" class="text-sm font-medium text-gray-700">
+								Show focus ring
+							</label>
+						</div>
+						<div class="flex items-center gap-3">
+							<input
+								type="checkbox"
+								id="focus_fill_enabled"
+								v-model="form.focus_fill_enabled"
+								class="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+							/>
+							<label for="focus_fill_enabled" class="text-sm font-medium text-gray-700">
+								Fill button on focus
+							</label>
+						</div>
+					</div>
+					<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+						<SelectField
+							label="Ring width"
+							:options="focusRingWidthOptions"
+							v-model="form.focus_ring_width"
+						/>
+						<SelectField
+							label="Ring offset"
+							:options="focusRingOffsetOptions"
+							v-model="form.focus_ring_offset"
+						/>
+					</div>
+				</EditorSection>
+
+				<EditorSection
+					id="theme-style-interaction-disabled"
+					title="Disabled"
+					hint="Opacity for theme-disabled and theme-disabled-auto on inactive controls."
+				>
+					<SelectField
+						label="Disabled opacity"
+						:options="disabledOpacityOptions"
+						v-model="form.disabled_opacity"
+					/>
+				</EditorSection>
+
+				<EditorSection
+					id="theme-style-interaction-pressed"
+					title="Pressed"
+					hint="Vertical shift on :active for theme-pressed (simulates a pressed button)."
+				>
+					<SelectField
+						label="Pressed shift"
+						:options="pressedShiftOptions"
+						v-model="form.pressed_shift"
+					/>
+				</EditorSection>
+
+				<EditorSection id="theme-style-interaction-preview" title="Live preview">
+					<p class="text-sm text-gray-600 mb-3">
+						Hover or Tab onto a button to preview hover and focus styles.
+					</p>
+					<div
+						class="rounded-lg border border-gray-200 p-5 bg-white space-y-4 nce-interaction-preview"
+						v-bind="interactionFocusPreviewAttrs"
+						:style="interactionPreviewVars"
+					>
+						<div class="flex flex-wrap gap-3">
+							<button
+								type="button"
+								class="theme-bg-primary-100 theme-border theme-rounded theme-hover-bg-primary theme-focus-ring theme-pressed theme-p-sm text-sm cursor-pointer"
+							>
+								Primary
+							</button>
+							<button
+								type="button"
+								disabled
+								class="theme-bg-primary-100 theme-border theme-rounded theme-hover-bg-primary theme-focus-ring theme-pressed theme-disabled-auto theme-p-sm text-sm"
+							>
+								Primary (disabled)
+							</button>
+							<button
+								type="button"
+								class="theme-bg-neutral-100 theme-border theme-rounded theme-hover-bg-neutral theme-focus-ring theme-pressed theme-p-sm text-sm cursor-pointer"
+							>
+								Neutral
+							</button>
+							<button
+								type="button"
+								disabled
+								class="theme-bg-neutral-100 theme-border theme-rounded theme-hover-bg-neutral theme-focus-ring theme-pressed theme-disabled-auto theme-p-sm text-sm"
+							>
+								Neutral (disabled)
+							</button>
+						</div>
+						<div class="flex flex-wrap gap-4 text-sm" :style="{ fontFamily: fontCSS(form.font_family) }">
+							<span class="theme-font-normal">Normal weight</span>
+							<span class="theme-font-medium">Medium weight</span>
+							<span class="theme-font-semibold">Semibold weight</span>
+							<span class="theme-font-bold">Bold weight</span>
+						</div>
+					</div>
+				</EditorSection>
+
+				<EditorSection
+					id="theme-style-interaction-buttons"
+					title="Buttons"
+					hint="Choose a size on the left. The buttons update immediately when you change these settings, or Hover, Focus Ring, Disabled and Pressed above."
+				>
+					<div class="flex flex-row items-start gap-6">
+						<div
+							class="flex flex-col items-start gap-3 w-56 shrink-0 rounded-lg border border-gray-200 bg-white p-4 nce-interaction-preview"
+							v-bind="interactionFocusPreviewAttrs"
+							:style="interactionPreviewVars"
+						>
+							<button
+								v-for="row in buttonSizeRows"
+								:key="row.prefix"
+								type="button"
+								class="nce-size-choice"
+								:class="{ 'is-selected': selectedButtonSize === row.prefix }"
+								:style="buttonSizeStyle(row.prefix)"
+								@click="selectedButtonSize = row.prefix"
+							>
+								{{ row.label }}
+							</button>
+						</div>
+						<div class="flex-1 min-w-0 grid grid-cols-2 gap-4 content-start">
+							<div v-for="field in selectedButtonRow.fields" :key="field.key">
+								<label class="block text-sm font-medium text-gray-700 mb-1.5">{{
+									field.label
+								}}</label>
+								<select
+									class="w-full border border-gray-200 rounded-md px-3 py-2 text-sm bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+									:value="sizeChoice(field)"
+									@change="onSizeChoice(field, ($event.target as HTMLSelectElement).value)"
+								>
+									<option v-for="opt in buttonSizeOptions(field.kind)" :key="opt" :value="opt">
+										{{ opt }}
+									</option>
+									<option value="other">Other</option>
+								</select>
+								<input
+									v-if="sizeChoice(field) === 'other'"
+									v-model="form[field.key]"
+									type="text"
+									class="w-full border border-gray-200 rounded-md px-3 py-2 text-sm bg-white mt-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+									@blur="ensureCssPx(field.key)"
+								/>
+							</div>
+						</div>
+					</div>
+				</EditorSection>
+			</div>
+
 			<!-- AGENT:TAB advanced — custom_css, tailwind_overrides, dark_mode -->
 			<div v-show="activeTab === 'advanced'" class="editor-tab">
 				<EditorSection title="Custom CSS">
@@ -510,7 +737,7 @@ Site Theme Editor for colours, typography, layout, live CSS variables, and base 
 			<div v-show="activeTab === 'applications'" class="editor-tab">
 				<EditorSection
 					title="Apply theme"
-					hint="Choose a theme for each app, then turn Apply on. An app with Apply off, or with no theme chosen, keeps the stock Frappe look. Design-mode component settings stay saved and apply again only when Apply is turned back on."
+					hint="Choose a theme for each app, read the explanation, then turn Apply on. Apply copies the theme files into the app; unticking Apply removes them. An app with Apply off, or with no theme chosen, keeps the stock Frappe look."
 				>
 					<p v-if="themeAppsError" class="text-sm text-red-600 mb-2">{{ themeAppsError }}</p>
 					<p
@@ -526,46 +753,78 @@ Site Theme Editor for colours, typography, layout, live CSS variables, and base 
 						<li
 							v-for="row in themeApps"
 							:key="row.app"
-							class="flex items-center justify-between gap-4 py-2"
+							class="py-2"
 						>
-							<span class="text-sm text-gray-800">
-								{{ row.title }}
-								<span v-if="row.title !== row.app" class="text-gray-400"> {{ row.app }}</span>
-							</span>
-							<div class="flex items-center gap-3 shrink-0">
-								<select
-									class="text-sm border border-gray-200 rounded-md px-2 py-1 pr-8 bg-white w-56"
-									:value="row.theme_slug"
-									:disabled="row.busy"
-									@change="onThemeAppTheme(row, ($event.target as HTMLSelectElement).value)"
-								>
-									<option value="" disabled>Choose a theme…</option>
-									<option
-										v-for="t in activeThemes"
-										:key="t.slug"
-										:value="t.slug"
+							<div class="flex items-center justify-between gap-4">
+								<div class="min-w-0">
+									<span class="text-sm text-gray-800">
+										{{ row.title }}
+										<span v-if="row.title !== row.app" class="text-gray-400"> {{ row.app }}</span>
+									</span>
+									<p
+										v-if="row.files_status === 'removed_by_update'"
+										class="text-xs text-amber-700 mt-0.5"
 									>
-										{{ t.theme_name }}
-									</option>
-									<option
-										v-if="row.theme_slug && !activeThemes.some((t) => t.slug === row.theme_slug)"
+										Removed by an update - tick Apply again
+									</p>
+								</div>
+								<div class="flex items-center gap-3 shrink-0">
+									<select
+										class="text-sm border border-gray-200 rounded-md px-2 py-1 pr-8 bg-white w-56"
 										:value="row.theme_slug"
+										:disabled="row.busy"
+										@change="onThemeAppTheme(row, ($event.target as HTMLSelectElement).value)"
 									>
-										{{ row.theme_slug }}
-									</option>
-								</select>
-								<label class="flex items-center gap-2 text-sm text-gray-700">
-									Apply
-									<input
-										type="checkbox"
-										class="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-										:class="{ 'opacity-50': !row.theme_slug }"
-										:checked="row.apply"
-										:disabled="row.busy || !row.theme_slug"
-										:title="!row.theme_slug ? 'Choose a theme first' : ''"
-										@change="onThemeAppApply(row, ($event.target as HTMLInputElement).checked)"
-									/>
-								</label>
+										<option value="" disabled>Choose a theme…</option>
+										<option
+											v-for="t in activeThemes"
+											:key="t.slug"
+											:value="t.slug"
+										>
+											{{ t.theme_name }}
+										</option>
+										<option
+											v-if="row.theme_slug && !activeThemes.some((t) => t.slug === row.theme_slug)"
+											:value="row.theme_slug"
+										>
+											{{ row.theme_slug }}
+										</option>
+									</select>
+									<Button
+										variant="solid"
+										class="theme-btn theme-btn-quiet text-xs px-2 py-1 bg-primary-100 text-primary-100-fg border border-border hover:bg-row-alt shrink-0 w-24 justify-center"
+										:class="
+											!row.acknowledged
+												? 'font-semibold ring-1 ring-amber-400/80'
+												: ''
+										"
+										:disabled="row.busy"
+										@click="openApplyExplanationDialog(row)"
+									>
+										<template v-if="!row.acknowledged">
+											<span class="inline-flex items-center gap-1">
+												Must read
+												<span
+													class="inline-block w-1.5 h-1.5 rounded-full bg-amber-500 shrink-0"
+													aria-hidden="true"
+												/>
+											</span>
+										</template>
+										<template v-else>Read ✓</template>
+									</Button>
+									<label class="flex items-center gap-2 text-sm text-gray-700">
+										Apply
+										<input
+											type="checkbox"
+											class="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+											:class="{ 'opacity-50': themeAppApplyCheckboxMuted(row) }"
+											:checked="themeAppApplyChecked(row)"
+											:disabled="themeAppApplyCheckboxDisabled(row)"
+											:title="themeAppApplyCheckboxTitle(row)"
+											@change="onThemeAppApply(row, ($event.target as HTMLInputElement).checked)"
+										/>
+									</label>
+								</div>
 							</div>
 						</li>
 					</ul>
@@ -836,6 +1095,14 @@ Site Theme Editor for colours, typography, layout, live CSS variables, and base 
 				</div>
 			</ThemeDialog>
 
+			<ApplyExplanationDialog
+				:open="applyExplanationDialog.open"
+				:app="applyExplanationDialog.app"
+				:app-title="applyExplanationDialog.title"
+				@close="closeApplyExplanationDialog"
+				@acknowledged="onApplyExplanationAcknowledged"
+			/>
+
 			<ThemeDialog :open="deleteDialog.open" title="Delete theme" @close="closeDeleteDialog">
 				<p class="text-sm text-gray-600 mt-2">
 					Delete <strong>{{ editorMeta.theme_name }}</strong>? This cannot be undone.
@@ -882,6 +1149,7 @@ import ShadowDirectionDial from "@/components/ShadowDirectionDial.vue"
 import ThemeClassCatalogPanel from "@/components/ThemeClassCatalogPanel.vue"
 import ThemeEditorHeader from "@/components/ThemeEditorHeader.vue"
 import ThemeDialog from "@/components/ThemeDialog.vue"
+import ApplyExplanationDialog from "@/components/ApplyExplanationDialog.vue"
 import { fontStack as fontCSS } from "@/utils/fonts"
 import {
 	WEB_THEME_DEFAULTS,
@@ -891,6 +1159,7 @@ import {
 } from "@/domain/webThemeForm"
 import {
 	computeThemeCssVariables,
+	focusCheckEnabled,
 	isCorporateBrandPaletteMode,
 	normalizeBrandPaletteMode,
 	normalizeTableWidthTier,
@@ -899,7 +1168,7 @@ import {
 import {
 	BODY_WEIGHT_MAX,
 	BODY_WEIGHT_MIN,
-	clampBodyWeight,
+	clampFontWeight,
 	weightDisplayLabel,
 } from "@/utils/fontWeight"
 import { PREVIEW_POPUP_FEATURES } from "@/utils/previewWindow"
@@ -979,6 +1248,7 @@ const tabs = [
 	{ id: "colors", label: "Colours" },
 	{ id: "typography", label: "Typography" },
 	{ id: "layout", label: "Layout" },
+	{ id: "interaction", label: "Interaction" },
 	{ id: "advanced", label: "Advanced" },
 	{ id: "applications", label: "Applications" },
 	{ id: "system", label: "System" },
@@ -990,6 +1260,8 @@ type ThemeAppRow = {
 	apply: boolean
 	theme_slug: string
 	busy: boolean
+	acknowledged: boolean
+	files_status: string
 }
 
 const themeApps = ref<ThemeAppRow[]>([])
@@ -1000,7 +1272,14 @@ const themeAppsResource = createResource({
 	url: "themes.component_api.list_theme_apps",
 	auto: true,
 	onSuccess(data: {
-		apps?: Array<{ app: string; title: string; apply: boolean; theme_slug?: string }>
+		apps?: Array<{
+			app: string
+			title: string
+			apply: boolean
+			theme_slug?: string
+			acknowledged?: boolean
+			files_status?: string
+		}>
 		active_themes?: Array<{ slug: string; theme_name: string }>
 	}) {
 		themeAppsError.value = ""
@@ -1011,6 +1290,8 @@ const themeAppsResource = createResource({
 			apply: row.apply,
 			theme_slug: row.theme_slug ?? "",
 			busy: false,
+			acknowledged: row.acknowledged ?? false,
+			files_status: row.files_status ?? "not_applied",
 		}))
 	},
 	onError(err: { message?: string }) {
@@ -1028,6 +1309,50 @@ const setThemeSlugResource = createResource({
 	auto: false,
 })
 
+function themeAppApplyChecked(row: ThemeAppRow): boolean {
+	return row.apply && row.files_status !== "removed_by_update"
+}
+
+function themeAppApplyCheckboxDisabled(row: ThemeAppRow): boolean {
+	if (row.busy) return true
+	if (themeAppApplyChecked(row)) return false
+	return !row.theme_slug || !row.acknowledged
+}
+
+function themeAppApplyCheckboxMuted(row: ThemeAppRow): boolean {
+	if (row.busy) return false
+	if (themeAppApplyChecked(row)) return false
+	return !row.theme_slug || !row.acknowledged
+}
+
+function themeAppApplyCheckboxTitle(row: ThemeAppRow): string {
+	if (row.busy || themeAppApplyChecked(row)) return ""
+	if (!row.theme_slug) return "Choose a theme first"
+	if (!row.acknowledged) return "Read the explanation first"
+	return ""
+}
+
+const applyExplanationDialog = reactive({
+	open: false,
+	app: "",
+	title: "",
+})
+
+function openApplyExplanationDialog(row: ThemeAppRow) {
+	applyExplanationDialog.app = row.app
+	applyExplanationDialog.title = row.title
+	applyExplanationDialog.open = true
+}
+
+function closeApplyExplanationDialog() {
+	applyExplanationDialog.open = false
+}
+
+function onApplyExplanationAcknowledged(app: string) {
+	const row = themeApps.value.find((r) => r.app === app)
+	if (row) row.acknowledged = true
+}
+
 async function onThemeAppApply(row: ThemeAppRow, apply: boolean) {
 	const previous = row.apply
 	row.apply = apply
@@ -1035,6 +1360,7 @@ async function onThemeAppApply(row: ThemeAppRow, apply: boolean) {
 	themeAppsError.value = ""
 	try {
 		await setThemeAppResource.submit({ app: row.app, apply: apply ? 1 : 0 })
+		await themeAppsResource.reload()
 	} catch (err) {
 		row.apply = previous
 		themeAppsError.value = (err as { message?: string })?.message || "Could not update " + row.title
@@ -1259,13 +1585,206 @@ function normalizeFontChoice(name: string): string {
 const fontOptions = [...FONT_OPTIONS]
 const sizeOptions = ["12px", "13px", "14px", "15px", "16px", "18px"]
 const lineHeightOptions = ["tight", "snug", "normal", "relaxed", "loose"]
-const bodyWeightNumber = computed(() => clampBodyWeight(form.font_weight_body))
+const FONT_WEIGHT_KEYS = new Set<FormKey>([
+	"font_weight_body",
+	"font_weight_medium",
+	"font_weight_semibold",
+	"font_weight_bold",
+])
 
-const bodyWeightDisplay = computed(() => weightDisplayLabel(bodyWeightNumber.value))
+const extraFontWeightControls: Array<{
+	key: FormKey
+	label: string
+	sampleClass: string
+	sampleText: string
+}> = [
+	{
+		key: "font_weight_medium",
+		label: "Medium Weight",
+		sampleClass: "theme-font-medium",
+		sampleText: "Medium weight sample line",
+	},
+	{
+		key: "font_weight_semibold",
+		label: "Semibold Weight",
+		sampleClass: "theme-font-semibold",
+		sampleText: "Semibold weight sample line",
+	},
+	{
+		key: "font_weight_bold",
+		label: "Bold Weight",
+		sampleClass: "theme-font-bold",
+		sampleText: "Bold weight sample line",
+	},
+]
 
-function onBodyWeightInput(e: Event) {
-	form.font_weight_body = String((e.target as HTMLInputElement).value)
+function fontWeightFallback(key: FormKey): number {
+	return Number(DEFAULTS[key]) || 400
 }
+
+function fontWeightNumber(key: FormKey): number {
+	return clampFontWeight(form[key], fontWeightFallback(key))
+}
+
+function fontWeightDisplay(key: FormKey): string {
+	return weightDisplayLabel(fontWeightNumber(key))
+}
+
+const bodyWeightNumber = computed(() => fontWeightNumber("font_weight_body"))
+
+const bodyWeightDisplay = computed(() => fontWeightDisplay("font_weight_body"))
+
+function onFontWeightInput(key: FormKey, e: Event) {
+	form[key] = String((e.target as HTMLInputElement).value)
+}
+
+const hoverBgShadeOptions = ["50", "100", "200", "300"]
+const hoverBorderShadeOptions = ["400", "500", "600", "700"]
+const focusRingWidthOptions = ["1px", "2px", "3px", "4px"]
+const focusRingOffsetOptions = ["0px", "1px", "2px", "3px", "4px"]
+const disabledOpacityOptions = ["0.3", "0.4", "0.5", "0.6", "0.7"]
+const pressedShiftOptions = ["0px", "1px", "2px"]
+
+const selectedButtonSize = ref<"sm" | "md" | "lg">("md")
+
+const buttonSizeRows = [
+	{
+		label: "Small",
+		prefix: "sm" as const,
+		fields: [
+			{ key: "btn_sm_font_size" as const, label: "Font size", kind: "font" as const },
+			{ key: "btn_sm_min_height" as const, label: "Min height", kind: "min" as const },
+			{ key: "btn_sm_pad_y" as const, label: "Padding top/bottom", kind: "padY" as const },
+			{ key: "btn_sm_pad_x" as const, label: "Padding left/right", kind: "padX" as const },
+		],
+	},
+	{
+		label: "Medium",
+		prefix: "md" as const,
+		fields: [
+			{ key: "btn_md_font_size" as const, label: "Font size", kind: "font" as const },
+			{ key: "btn_md_min_height" as const, label: "Min height", kind: "min" as const },
+			{ key: "btn_md_pad_y" as const, label: "Padding top/bottom", kind: "padY" as const },
+			{ key: "btn_md_pad_x" as const, label: "Padding left/right", kind: "padX" as const },
+		],
+	},
+	{
+		label: "Large",
+		prefix: "lg" as const,
+		fields: [
+			{ key: "btn_lg_font_size" as const, label: "Font size", kind: "font" as const },
+			{ key: "btn_lg_min_height" as const, label: "Min height", kind: "min" as const },
+			{ key: "btn_lg_pad_y" as const, label: "Padding top/bottom", kind: "padY" as const },
+			{ key: "btn_lg_pad_x" as const, label: "Padding left/right", kind: "padX" as const },
+		],
+	},
+]
+
+const selectedButtonRow = computed(
+	() => buttonSizeRows.find((row) => row.prefix === selectedButtonSize.value) ?? buttonSizeRows[1],
+)
+
+function cssLength(raw: unknown, fallback: string): string {
+	const value = String(raw ?? "").trim()
+	if (!value) return fallback
+	return /^-?\d+(\.\d+)?$/.test(value) ? value + "px" : value
+}
+
+const sizeOptionLists = {
+	font: ["10px", "12px", "13px", "14px", "15px", "16px", "18px", "20px", "24px"],
+	padY: ["0px", "2px", "4px", "6px", "8px", "10px", "12px", "16px"],
+	padX: ["8px", "12px", "16px", "20px", "24px", "28px", "32px"],
+	min: ["24px", "28px", "32px", "36px", "40px", "44px", "48px", "56px"],
+} as const
+
+type SizeField = (typeof buttonSizeRows)[number]["fields"][number]
+
+function buttonSizeOptions(kind: SizeField["kind"]): readonly string[] {
+	return sizeOptionLists[kind]
+}
+
+const sizeOther = ref<Partial<Record<SizeField["key"], boolean>>>({})
+
+function sizeChoice(field: SizeField): string {
+	if (sizeOther.value[field.key]) return "other"
+	const value = cssLength(form[field.key], "")
+	return buttonSizeOptions(field.kind).includes(value) ? value : "other"
+}
+
+function onSizeChoice(field: SizeField, value: string) {
+	if (value === "other") {
+		sizeOther.value = { ...sizeOther.value, [field.key]: true }
+		return
+	}
+	sizeOther.value = { ...sizeOther.value, [field.key]: false }
+	form[field.key] = value
+}
+
+function ensureCssPx(key: SizeField["key"]) {
+	const current = String(form[key] ?? "").trim()
+	if (!current) return
+	form[key] = cssLength(current, current)
+}
+
+function buttonSizeStyle(prefix: "sm" | "md" | "lg") {
+	const fontKey = `btn_${prefix}_font_size` as const
+	const padYKey = `btn_${prefix}_pad_y` as const
+	const padXKey = `btn_${prefix}_pad_x` as const
+	const minKey = `btn_${prefix}_min_height` as const
+	return {
+		fontSize: cssLength(form[fontKey], DEFAULTS[fontKey]),
+		padding: `${cssLength(form[padYKey], DEFAULTS[padYKey])} ${cssLength(form[padXKey], DEFAULTS[padXKey])}`,
+		minHeight: cssLength(form[minKey], DEFAULTS[minKey]),
+	}
+}
+
+const buttonPreviewVars = computed(() => ({
+	"--nce-btn-sm-font-size": String(form.btn_sm_font_size || DEFAULTS.btn_sm_font_size),
+	"--nce-btn-sm-pad-y": String(form.btn_sm_pad_y || DEFAULTS.btn_sm_pad_y),
+	"--nce-btn-sm-pad-x": String(form.btn_sm_pad_x || DEFAULTS.btn_sm_pad_x),
+	"--nce-btn-sm-min-height": String(form.btn_sm_min_height || DEFAULTS.btn_sm_min_height),
+	"--nce-btn-md-font-size": String(form.btn_md_font_size || DEFAULTS.btn_md_font_size),
+	"--nce-btn-md-pad-y": String(form.btn_md_pad_y || DEFAULTS.btn_md_pad_y),
+	"--nce-btn-md-pad-x": String(form.btn_md_pad_x || DEFAULTS.btn_md_pad_x),
+	"--nce-btn-md-min-height": String(form.btn_md_min_height || DEFAULTS.btn_md_min_height),
+	"--nce-btn-lg-font-size": String(form.btn_lg_font_size || DEFAULTS.btn_lg_font_size),
+	"--nce-btn-lg-pad-y": String(form.btn_lg_pad_y || DEFAULTS.btn_lg_pad_y),
+	"--nce-btn-lg-pad-x": String(form.btn_lg_pad_x || DEFAULTS.btn_lg_pad_x),
+	"--nce-btn-lg-min-height": String(form.btn_lg_min_height || DEFAULTS.btn_lg_min_height),
+}))
+
+/** Map hover token shades onto the shades baked into published theme-hover-* rules (100 / 500). */
+const interactionFocusPreviewAttrs = computed(() => ({
+	"data-focus-ring-enabled": focusCheckEnabled(form.focus_ring_enabled) ? "1" : "0",
+	"data-focus-fill-enabled": focusCheckEnabled(form.focus_fill_enabled) ? "1" : "0",
+	"data-button-outline-enabled": form.button_outline_enabled ? "1" : "0",
+}))
+
+const interactionPreviewVars = computed(() => {
+	const vars: Record<string, string> = { ...liveVars.value }
+	const bgShade = String(form.hover_bg_shade || DEFAULTS.hover_bg_shade)
+	const borderShade = String(form.hover_border_shade || DEFAULTS.hover_border_shade)
+	for (const role of [
+		"primary",
+		"secondary",
+		"accent",
+		"success",
+		"info",
+		"warning",
+		"danger",
+		"neutral",
+	] as const) {
+		const bgHex = vars[`--nce-color-${role}-${bgShade}`]
+		const bgFg = vars[`--nce-color-${role}-${bgShade}-fg`]
+		if (bgHex) {
+			vars[`--nce-color-${role}-100`] = bgHex
+			if (bgFg) vars[`--nce-color-${role}-100-fg`] = bgFg
+		}
+		const borderHex = vars[`--nce-color-${role}-${borderShade}`]
+		if (borderHex) vars[`--nce-color-${role}-500`] = borderHex
+	}
+	return vars
+})
 const radiusOptions = ["none", "sm", "md", "lg", "x-lg"]
 const borderWidthOptions = ["0.5px", "1px", "2px", "3px"]
 const spacingOptions = ["tight", "normal", "relaxed"]
@@ -1324,7 +1843,15 @@ function buildPayloadFromForm(): Record<string, any> {
 	const payload: Record<string, any> = {}
 	for (const key of PAYLOAD_FIELDS) {
 		if (key === "neutral_color" || key === "neutral_color_shades") continue
-		payload[key] = key === "dark_mode" ? (form[key] ? 1 : 0) : form[key]
+		payload[key] =
+			key === "dark_mode" ||
+			key === "focus_ring_enabled" ||
+			key === "focus_fill_enabled" ||
+			key === "button_outline_enabled"
+				? form[key]
+					? 1
+					: 0
+				: form[key]
 	}
 	payload.brand_palette_mode = normalizeBrandPaletteMode(payload.brand_palette_mode)
 	if (isCorporateBrandPaletteMode(payload.brand_palette_mode)) {
@@ -1352,8 +1879,15 @@ function canonicalPayload(source: Record<string, any>): Record<string, any> {
 		if (val === undefined || val === null) {
 			val = DEFAULTS[key as FormKey]
 		}
-		if (key === "dark_mode") {
+		if (key === "dark_mode" || key === "button_outline_enabled") {
 			payload[key] = val === true || val === 1 || val === "1" ? 1 : 0
+		} else if (key === "focus_ring_enabled" || key === "focus_fill_enabled") {
+			payload[key] =
+				val === undefined || val === null || val === ""
+					? 1
+					: val === true || val === 1 || val === "1"
+						? 1
+						: 0
 		} else if (key.endsWith("_gamma")) {
 			payload[key] = Number(val) || 0
 		} else if (key.endsWith("_saturation")) {
@@ -1383,8 +1917,10 @@ function canonicalPayload(source: Record<string, any>): Record<string, any> {
 			).toUpperCase()
 		} else if (key.endsWith("_color") && typeof val === "string") {
 			payload[key] = val.toUpperCase()
-		} else if (key === "font_weight_body") {
-			payload[key] = String(clampBodyWeight(val ?? DEFAULTS.font_weight_body))
+		} else if (FONT_WEIGHT_KEYS.has(key as FormKey)) {
+			payload[key] = String(
+				clampFontWeight(val ?? DEFAULTS[key as FormKey], fontWeightFallback(key as FormKey)),
+			)
 		} else if (key === "shadow_opacity") {
 			payload[key] = clampShadowOpacity(val ?? DEFAULTS.shadow_opacity)
 		} else if (key === "shadow_direction") {
@@ -1421,6 +1957,10 @@ function applyPayloadToForm(payload: Record<string, any>) {
 		const val = payload[key]
 		if (key === "dark_mode") {
 			form[key] = !!val
+		} else if (key === "button_outline_enabled") {
+			form[key] = val === true || val === 1 || val === "1"
+		} else if (key === "focus_ring_enabled" || key === "focus_fill_enabled") {
+			form[key] = focusCheckEnabled(val)
 		} else if (key === "border_radius" && val === "full") {
 			form[key] = "x-lg"
 		} else if (
@@ -1428,8 +1968,8 @@ function applyPayloadToForm(payload: Record<string, any>) {
 			typeof val === "string"
 		) {
 			form[key] = normalizeFontChoice(val)
-		} else if (key === "font_weight_body") {
-			form[key] = String(clampBodyWeight(val))
+		} else if (FONT_WEIGHT_KEYS.has(key)) {
+			form[key] = String(clampFontWeight(val, fontWeightFallback(key)))
 		} else if (key === "shadow_opacity") {
 			form[key] = clampShadowOpacity(val ?? DEFAULTS.shadow_opacity)
 		} else if (key === "shadow_direction") {
@@ -1524,6 +2064,8 @@ const manager = useThemeManagement(
 		create: "themes.api.create_theme",
 		basePayload: "themes.api.get_base_theme_payload",
 		saveAsBase: "themes.api.save_as_base_theme",
+		getLastSelection: "themes.api.get_editor_theme_selection",
+		setLastSelection: "themes.api.set_editor_theme_selection",
 	},
 	{
 		applyPayloadToForm,
@@ -1533,6 +2075,7 @@ const manager = useThemeManagement(
 		defaultSavedStatus: "Active",
 		notFoundMessage: "Theme not found.",
 		loadErrorMessage: "Failed to load theme. Check permissions.",
+		selectionStorageKey: "nce-themes-editor-theme",
 		pickInitialTheme: (data) =>
 			(data.find((t) => t.is_active)?.name as string | undefined) ||
 			(data[0]?.name as string | undefined),
@@ -1675,6 +2218,19 @@ const route = useRoute()
 
 // Deep link from the swatch picker's "Show in Themes App": ?kind= and ?role= pick the
 // tab and section that edit that style.
+let queryHighlightDone = false
+
+// The link's ?theme= is a slug (or a theme name). The editor must be showing that theme
+// before anything is scrolled to or highlighted.
+function editorShowsQueryTheme(): boolean {
+	const want = String(route.query.theme || "").trim().toLowerCase()
+	if (!want) return true
+	return (
+		editorMeta.theme.toLowerCase() === want ||
+		String(editorMeta.slug || "").toLowerCase() === want
+	)
+}
+
 async function scrollToQueryRole() {
 	const loc =
 		locateThemeStyleField(String(route.query.style || "")) ||
@@ -1699,9 +2255,16 @@ async function scrollToQueryRole() {
 	)
 }
 
-watch(editorLoaded, (loaded) => {
-	if (loaded) void scrollToQueryRole()
-})
+watch(
+	[editorLoaded, () => editorMeta.theme, () => editorMeta.slug],
+	() => {
+		if (queryHighlightDone || !editorLoaded.value) return
+		if (!route.query.role && !route.query.style) return
+		if (!editorShowsQueryTheme()) return
+		queryHighlightDone = true
+		void scrollToQueryRole()
+	},
+)
 
 onMounted(() => {
 	if (themesList.data?.length) {
@@ -1857,6 +2420,54 @@ onMounted(() => {
 .editor-header :deep(.editor-actions .theme-btn:disabled) {
 	opacity: 0.45;
 	cursor: not-allowed;
+}
+
+.nce-size-choice {
+	box-sizing: border-box;
+	width: 100%;
+	text-align: center;
+	line-height: 1.4;
+	cursor: pointer;
+	background: var(--nce-color-primary, #1d4ed8);
+	color: var(--nce-color-primary-fg, #fff);
+	border: 1px solid var(--nce-color-primary, #1d4ed8);
+	border-radius: var(--nce-border-radius, 0.375rem);
+	transition: background 0.15s, color 0.15s, border-color 0.15s, transform 0.1s;
+}
+.nce-interaction-preview[data-button-outline-enabled="1"] .nce-size-choice:not(.is-selected) {
+	background-color: transparent;
+	border-color: var(--nce-color-primary, #1d4ed8);
+	color: var(--nce-color-primary, #1d4ed8);
+}
+.nce-size-choice:hover {
+	background: var(--nce-color-primary-100, #dbeafe);
+	color: var(--nce-color-primary-100-fg, var(--nce-color-primary, #1d4ed8));
+	border-color: var(--nce-color-primary-500, var(--nce-color-primary, #1d4ed8));
+}
+.nce-interaction-preview[data-focus-ring-enabled="1"] .nce-size-choice:focus-visible,
+.nce-interaction-preview[data-focus-ring-enabled="1"] .nce-size-choice.is-selected {
+	outline: var(--nce-focus-ring-width, 2px) solid var(--nce-color-focus, #3b82f6);
+	outline-offset: var(--nce-focus-ring-offset, 2px);
+}
+.nce-interaction-preview[data-focus-ring-enabled="0"] .nce-size-choice:focus-visible,
+.nce-interaction-preview[data-focus-ring-enabled="0"] .nce-size-choice.is-selected {
+	outline: none;
+	outline-offset: 0;
+}
+.nce-interaction-preview[data-focus-fill-enabled="1"] .nce-size-choice:focus-visible:not(:disabled) {
+	background-color: var(--nce-color-primary, #1d4ed8);
+	color: var(--nce-color-primary-fg, #fff);
+	border-color: var(--nce-color-primary, #1d4ed8);
+}
+.nce-interaction-preview[data-focus-ring-enabled="0"] .theme-focus-ring:focus-visible,
+.nce-interaction-preview[data-focus-ring-enabled="0"] .focus-ring:focus-visible,
+.nce-interaction-preview[data-focus-ring-enabled="0"] [class*="theme-focus-ring-"]:focus-visible,
+.nce-interaction-preview[data-focus-ring-enabled="0"] [class*="focus-ring-"]:focus-visible {
+	outline: none !important;
+	outline-offset: 0 !important;
+}
+.nce-size-choice:active {
+	transform: translateY(var(--nce-pressed-shift, 1px));
 }
 
 .body-weight-slider {

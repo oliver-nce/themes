@@ -73,16 +73,20 @@ Desk Theme Editor for NCE Desk Theme colours, shape, typography, Gantt, and live
 					:panel-help="deskPanelHelp.brand"
 				>
 					<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-						<SwatchPicker
+						<div
 							v-for="c in brandColors"
 							:key="c.key"
-							:label="c.label"
-							:model-value="form[c.key]"
-							:default-value="DEFAULTS[c.key]"
-							:primary-color="form.primary_color"
-							:secondary-color="form.brand_color"
-							@update:model-value="form[c.key] = $event"
-						/>
+							:id="`desk-field-${c.key}`"
+						>
+							<SwatchPicker
+								:label="c.label"
+								:model-value="form[c.key]"
+								:default-value="DEFAULTS[c.key]"
+								:primary-color="form.primary_color"
+								:secondary-color="form.brand_color"
+								@update:model-value="form[c.key] = $event"
+							/>
+						</div>
 					</div>
 				</EditorSection>
 
@@ -92,7 +96,7 @@ Desk Theme Editor for NCE Desk Theme colours, shape, typography, Gantt, and live
 					:panel-help="deskPanelHelp.backgrounds"
 				>
 					<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-						<div v-for="c in backgroundColors" :key="c.key">
+						<div v-for="c in backgroundColors" :key="c.key" :id="`desk-field-${c.key}`">
 							<SwatchPicker
 								:label="c.label"
 								:model-value="form[c.key]"
@@ -112,16 +116,20 @@ Desk Theme Editor for NCE Desk Theme colours, shape, typography, Gantt, and live
 					:panel-help="deskPanelHelp.text"
 				>
 					<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-						<SwatchPicker
+						<div
 							v-for="c in textColors"
 							:key="c.key"
-							:label="c.label"
-							:model-value="form[c.key]"
-							:default-value="DEFAULTS[c.key]"
-							:primary-color="form.primary_color"
-							:secondary-color="form.brand_color"
-							@update:model-value="form[c.key] = $event"
-						/>
+							:id="`desk-field-${c.key}`"
+						>
+							<SwatchPicker
+								:label="c.label"
+								:model-value="form[c.key]"
+								:default-value="DEFAULTS[c.key]"
+								:primary-color="form.primary_color"
+								:secondary-color="form.brand_color"
+								@update:model-value="form[c.key] = $event"
+							/>
+						</div>
 					</div>
 				</EditorSection>
 
@@ -131,16 +139,20 @@ Desk Theme Editor for NCE Desk Theme colours, shape, typography, Gantt, and live
 					:panel-help="deskPanelHelp.controlsBorders"
 				>
 					<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6">
-						<SwatchPicker
+						<div
 							v-for="c in inputBorderColors"
 							:key="c.key"
-							:label="c.label"
-							:model-value="form[c.key]"
-							:default-value="DEFAULTS[c.key]"
-							:primary-color="form.primary_color"
-							:secondary-color="form.brand_color"
-							@update:model-value="form[c.key] = $event"
-						/>
+							:id="`desk-field-${c.key}`"
+						>
+							<SwatchPicker
+								:label="c.label"
+								:model-value="form[c.key]"
+								:default-value="DEFAULTS[c.key]"
+								:primary-color="form.primary_color"
+								:secondary-color="form.brand_color"
+								@update:model-value="form[c.key] = $event"
+							/>
+						</div>
 					</div>
 				</EditorSection>
 			</div>
@@ -547,16 +559,20 @@ Desk Theme Editor for NCE Desk Theme colours, shape, typography, Gantt, and live
 		<div v-show="activeTab === 'gantt'" class="editor-tab">
 				<EditorSection title="Gantt chart" :panel-help="deskPanelHelp.gantt">
 					<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-						<SwatchPicker
+						<div
 							v-for="c in ganttColors"
 							:key="c.key"
-							:label="c.label"
-							:model-value="form[c.key]"
-							:default-value="DEFAULTS[c.key]"
-							:primary-color="form.primary_color"
-							:secondary-color="form.brand_color"
-							@update:model-value="form[c.key] = $event"
-						/>
+							:id="`desk-field-${c.key}`"
+						>
+							<SwatchPicker
+								:label="c.label"
+								:model-value="form[c.key]"
+								:default-value="DEFAULTS[c.key]"
+								:primary-color="form.primary_color"
+								:secondary-color="form.brand_color"
+								@update:model-value="form[c.key] = $event"
+							/>
+						</div>
 					</div>
 				</EditorSection>
 			</div>
@@ -639,7 +655,8 @@ Desk Theme Editor for NCE Desk Theme colours, shape, typography, Gantt, and live
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, watch, computed, onUnmounted, onMounted } from "vue"
+import { ref, reactive, watch, computed, onUnmounted, onMounted, nextTick } from "vue"
+import { useRoute } from "vue-router"
 import EditorSection, { type PanelHelpContent } from "@/components/EditorSection.vue"
 import FontSelectField from "@/components/FontSelectField.vue"
 import PasswordField from "@/components/PasswordField.vue"
@@ -667,6 +684,7 @@ import {
 	type DensityPresetId,
 	type DeskThemeFormKey,
 } from "@/domain/deskThemeForm"
+import { locateDeskField } from "@/domain/deskFieldLocations"
 
 const ALL_FIELDS = DESK_THEME_FIELDS
 const PAYLOAD_FIELDS = ALL_FIELDS.filter((k) => k !== "theme_name")
@@ -1148,12 +1166,15 @@ const manager = useThemeManagement(
 		create: "themes.api.create_desk_theme",
 		basePayload: "themes.api.get_base_desk_theme_payload",
 		saveAsBase: "themes.api.save_as_base_desk_theme",
+		getLastSelection: "themes.api.get_editor_desk_theme_selection",
+		setLastSelection: "themes.api.set_editor_desk_theme_selection",
 	},
 	{
 		applyPayloadToForm,
 		buildPayloadFromForm,
 		canonicalPayload,
 		applyLiveThemeVars: () => applyDeskThemeVars(computeCSSVariables()),
+		selectionStorageKey: "nce-themes-editor-desk-theme",
 		pickInitialTheme: (data) =>
 			(data.find((t) => t.is_default_theme || t.is_base_theme)?.name as string | undefined) ||
 			(data.find((t) => t.is_active)?.name as string | undefined) ||
@@ -1244,6 +1265,51 @@ watch(
 		pushTimer = setTimeout(pushToPreview, 80)
 	},
 	{ deep: true },
+)
+
+const route = useRoute()
+
+// Deep link: ?theme= and ?field= open the tab and scroll to that colour field.
+let queryHighlightDone = false
+
+function editorShowsQueryTheme(): boolean {
+	const want = String(route.query.theme || "").trim().toLowerCase()
+	if (!want) return true
+	return (
+		editorMeta.theme.toLowerCase() === want ||
+		String(editorMeta.slug || "").toLowerCase() === want
+	)
+}
+
+async function scrollToQueryField() {
+	const fieldKey = String(route.query.field || "").trim()
+	const loc = locateDeskField(fieldKey)
+	if (!loc) return
+	activeTab.value = loc.tab
+	await nextTick()
+	const el = document.getElementById(`desk-field-${fieldKey}`)
+	if (!el) return
+	el.scrollIntoView({ behavior: "smooth", block: "center" })
+	const ring = "var(--nce-color-primary, #2563eb)"
+	el.animate(
+		[
+			{ boxShadow: `0 0 0 3px ${ring}`, offset: 0 },
+			{ boxShadow: `0 0 0 3px ${ring}`, offset: 0.7 },
+			{ boxShadow: `0 0 0 3px transparent`, offset: 1 },
+		],
+		{ duration: 2500, delay: 400, easing: "ease-out" },
+	)
+}
+
+watch(
+	[editorLoaded, () => editorMeta.theme, () => editorMeta.slug],
+	() => {
+		if (queryHighlightDone || !editorLoaded.value) return
+		if (!route.query.field) return
+		if (!editorShowsQueryTheme()) return
+		queryHighlightDone = true
+		void scrollToQueryField()
+	},
 )
 
 onMounted(() => {

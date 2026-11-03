@@ -7,6 +7,8 @@
   "excluded_apps",
   "theme_off_apps",
   "app_theme_slugs",
+  "apply_explanation",
+  "apply_acknowledgements",
   "design_mode_section",
   "design_mode_enabled",
   "protected_classes"
@@ -25,10 +27,23 @@
    "label": "Theme off apps"
   },
   {
-   "description": "One app=slug line. Slug is an Active NCE Theme. Empty means the site Default theme. The themes app is not listed.",
+   "description": "One app=slug line. Slug is an Active NCE Theme. The themes app is not listed.",
    "fieldname": "app_theme_slugs",
    "fieldtype": "Small Text",
    "label": "App theme slugs"
+  },
+  {
+   "description": "Shown in the Must read popup on the Applications tab. Placeholders: {app}, {path}. Leave empty to use the built-in text. Editing it asks everyone to read it again.",
+   "fieldname": "apply_explanation",
+   "fieldtype": "Text Editor",
+   "label": "Apply explanation (Must read)"
+  },
+  {
+   "fieldname": "apply_acknowledgements",
+   "fieldtype": "Long Text",
+   "hidden": 1,
+   "label": "Apply acknowledgements",
+   "read_only": 1
   },
   {
    "fieldname": "design_mode_section",
@@ -51,7 +66,7 @@
   }
  ],
  "issingle": 1,
- "modified": "2026-11-01 14:00:00.000000",
+ "modified": "2026-11-02 16:30:00.000000",
  "modified_by": "Administrator",
  "module": "Themes",
  "name": "Theme Component Settings",

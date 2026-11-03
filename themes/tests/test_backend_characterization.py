@@ -369,6 +369,7 @@ class TestComponentPublishTail(unittest.TestCase):
             "override_text_class": "",
             "override_border_width_class": "",
             "override_border_color_class": "",
+            "override_button_size_class": "",
         }
 
         def get_all_side_effect(doctype, **kwargs):

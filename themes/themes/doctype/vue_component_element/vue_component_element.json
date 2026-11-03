@@ -16,11 +16,14 @@
   "element_status",
   "column_break_overrides",
   "keep_default",
+  "override_important",
   "override_bg_class",
   "override_fg_type",
   "override_text_class",
   "override_border_width_class",
-  "override_border_color_class"
+  "override_border_color_class",
+  "override_button_size_class",
+  "theme_style_overrides"
  ],
  "fields": [
   {
@@ -102,6 +105,12 @@
    "label": "Keep Theme Default"
   },
   {
+   "default": "0",
+   "fieldname": "override_important",
+   "fieldtype": "Check",
+   "label": "Override App !important"
+  },
+  {
    "columns": 2,
    "fieldname": "override_bg_class",
    "fieldtype": "Data",
@@ -129,10 +138,22 @@
    "fieldname": "override_border_color_class",
    "fieldtype": "Data",
    "label": "Border Colour"
+  },
+  {
+   "fieldname": "override_button_size_class",
+   "fieldtype": "Select",
+   "label": "Button Size",
+   "options": "\nsm\nlg"
+  },
+  {
+   "fieldname": "theme_style_overrides",
+   "fieldtype": "Long Text",
+   "label": "Theme Style Overrides",
+   "description": "JSON map of theme property id → override value (Design Mode)."
   }
  ],
  "istable": 1,
- "modified": "2026-10-31 00:00:00.000000",
+ "modified": "2026-11-03 13:30:00",
  "modified_by": "Administrator",
  "module": "Themes",
  "name": "Vue Component Element",

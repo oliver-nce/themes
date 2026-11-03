@@ -34,11 +34,14 @@ class TestDefaultThemeFlag(unittest.TestCase):
         with patch("themes.utils.theme_service.frappe") as frappe_mock:
             frappe_mock.get_doc.return_value = doc
             frappe_mock.db.exists.return_value = False
-            frappe_mock.db.sql = MagicMock()
+            frappe_mock.rename_doc.return_value = "Winter 2026"
             frappe_mock.clear_cache = MagicMock()
-            frappe_mock.session.user = "test@example.com"
             result = rename(WEB_FAMILY, "Default", "Winter 2026")
+            frappe_mock.rename_doc.assert_called_once_with(
+                "NCE Theme", "Default", "Winter 2026", force=True
+            )
         self.assertEqual(result["theme_name"], "Winter 2026")
+        self.assertEqual(result["theme"], "Winter 2026")
 
     def test_promote_moves_flag_and_pointer(self):
         family = SimpleNamespace(

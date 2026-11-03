@@ -53,6 +53,12 @@ class TestThemeExport(unittest.TestCase):
         self.assertIn(":where(:root)", css)
         self.assertNotRegex(css, r"(?<!\:where)\(:root\)")
 
+    def test_scope_slug_replaces_root_selector(self) -> None:
+        items = _items_default_plus_alt()[:1]
+        css = build_export_css(items, "Default", scope_slug="mine")
+        self.assertIn(':where([data-nce-theme="mine"])', css)
+        self.assertNotIn(":where(:root)", css)
+
     def test_scoped_theme_uses_data_nce_theme(self) -> None:
         items = _items_default_plus_alt(alt_slug="ocean")
         css = build_export_css(items, "Default")

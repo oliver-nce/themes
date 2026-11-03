@@ -170,12 +170,14 @@ The app emits a set of `theme-`-prefixed utility classes into `nce_theme.css`. T
   <p>Body copy — inherits --nce-color-text automatically.</p>
 </div>
 
-<!-- primary action button -->
-<button class="theme-bg-primary theme-rounded theme-p-sm">Submit</button>
+<!-- primary action button (hover, focus, pressed, disabled via theme- interaction classes) -->
+<button class="theme-bg-primary theme-rounded theme-p-sm theme-font-medium theme-hover-bg-primary theme-hover-border-primary theme-focus-ring theme-pressed theme-disabled-auto">Submit</button>
 
 <!-- quiet secondary button -->
-<button class="theme-bg-primary-100 theme-border theme-rounded theme-p-sm">Cancel</button>
+<button class="theme-bg-primary-100 theme-border theme-rounded theme-p-sm theme-font-medium theme-hover-bg-primary theme-hover-border-primary theme-focus-ring theme-pressed theme-disabled-auto">Cancel</button>
 ```
+
+Interaction utilities (`theme-hover-*`, `theme-focus-ring*`, `theme-disabled-auto`, `theme-pressed`, `theme-font-*`) are documented in `docs/theme-system/09-buttons.md`.
 
 ### Full shade scale in templates
 

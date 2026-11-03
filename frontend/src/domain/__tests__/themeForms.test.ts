@@ -29,6 +29,12 @@ describe("WEB_THEME schema", () => {
 		expect(WEB_THEME_FIELDS.length).toBeGreaterThan(0)
 		expect(Object.keys(WEB_THEME_DEFAULTS).length).toBeGreaterThan(0)
 	})
+
+	it("defaults keys cover every form field", () => {
+		for (const key of WEB_THEME_FIELDS) {
+			expect(WEB_THEME_DEFAULTS).toHaveProperty(key)
+		}
+	})
 })
 
 describe("DESK_THEME schema and density presets", () => {

@@ -6,7 +6,12 @@ from pathlib import Path
 import frappe
 from frappe import _
 
-from themes.utils.component_css_writer import declarations_for, publish_component_css, table_css_for
+from themes.utils.component_css_writer import (
+	declarations_for,
+	preview_css_for_selector,
+	publish_component_css,
+	table_css_for,
+)
 from themes.utils.component_scan import inherit_table_usage, iter_vue_files, mark_roots, scan_vue_file
 from themes.utils.component_summary import build_summary
 from themes.utils.component_sync import ALWAYS_EXCLUDED_APPS, OVERRIDE_FIELDS, merge_elements
@@ -31,11 +36,14 @@ ELEMENT_FIELDS = (
 	"is_dynamic",
 	"element_status",
 	"keep_default",
+	"override_important",
 	"override_bg_class",
 	"override_fg_type",
 	"override_text_class",
 	"override_border_width_class",
 	"override_border_color_class",
+	"override_button_size_class",
+	"theme_style_overrides",
 )
 
 
@@ -144,6 +152,25 @@ def _active_theme_choices() -> list[dict]:
 	return choices
 
 
+def _desk_theme_choice() -> dict:
+	empty = {"name": "", "theme_name": ""}
+	try:
+		from themes.utils.site_theme_config_helpers import get_site_base_desk_theme_name
+
+		name = get_site_base_desk_theme_name()
+		if not name:
+			return empty
+		name = str(name).strip()
+		if not name:
+			return empty
+		theme_name = frappe.db.get_value("NCE Desk Theme", name, "theme_name")
+		if theme_name is None:
+			return empty
+		return {"name": name, "theme_name": str(theme_name).strip()}
+	except Exception:
+		return empty
+
+
 def _theme_app_title(app: str) -> str:
 	titles = frappe.get_hooks("app_title", app_name=app) or []
 	return titles[0] if titles else app
@@ -174,6 +201,8 @@ def list_theme_apps() -> dict:
 	stored_off = _stored_off_apps()
 	valid_slugs = {row["slug"] for row in _active_theme_choices()}
 	slugs = theme_app_slugs()
+	from themes.utils import app_theme_files, apply_explanation
+
 	apps: list[dict] = []
 	for app in frappe.get_installed_apps():
 		if _is_frappe_branded(app) or app == "themes":
@@ -185,14 +214,14 @@ def list_theme_apps() -> dict:
 			"title": _theme_app_title(app),
 			"apply": (app not in stored_off) and has_valid_theme,
 			"theme_slug": raw_slug if has_valid_theme else "",
+			"files_status": app_theme_files.app_status(app),
+			"acknowledged": apply_explanation.is_acknowledged(app),
 		})
 	apps.sort(key=lambda row: (row["title"], row["app"]))
 	return {"apps": apps, "active_themes": _active_theme_choices()}
 
 
-@frappe.whitelist()
-def set_theme_app_apply(app: str, apply) -> dict:
-	frappe.only_for("System Manager")
+def _validate_theme_apply_app(app: str) -> str:
 	app = (app or "").strip()
 	installed = set(frappe.get_installed_apps())
 	if not app or app not in installed:
@@ -201,6 +230,38 @@ def set_theme_app_apply(app: str, apply) -> dict:
 		frappe.throw(_("The theme cannot be toggled for app {0}.").format(app))
 	if app == "themes":
 		frappe.throw(_("The Themes app always uses the site theme."))
+	return app
+
+
+@frappe.whitelist()
+def get_apply_explanation(app: str) -> dict:
+	frappe.only_for("System Manager")
+	app = _validate_theme_apply_app(app)
+	from themes.utils import apply_explanation
+
+	out = apply_explanation.render_explanation(app)
+	out["acknowledged"] = apply_explanation.is_acknowledged(app)
+	return out
+
+
+@frappe.whitelist()
+def acknowledge_apply_explanation(app: str, fingerprint: str) -> dict:
+	frappe.only_for("System Manager")
+	app = _validate_theme_apply_app(app)
+	from themes.utils import apply_explanation
+
+	current = apply_explanation.render_explanation(app)["fingerprint"]
+	if (fingerprint or "") != current:
+		frappe.throw(_("The explanation has changed. Please read it again."))
+	apply_explanation.write_ack(app, current)
+	frappe.db.commit()
+	return {"status": "ok", "app": app, "acknowledged": True}
+
+
+@frappe.whitelist()
+def set_theme_app_apply(app: str, apply) -> dict:
+	frappe.only_for("System Manager")
+	app = _validate_theme_apply_app(app)
 	on = str(apply).lower() in ("1", "true", "yes", "on")
 	off = _stored_off_apps()
 	if on:
@@ -208,8 +269,16 @@ def set_theme_app_apply(app: str, apply) -> dict:
 		valid = {row["slug"] for row in _active_theme_choices()}
 		if chosen not in valid:
 			frappe.throw(_("Choose a theme for {0} first.").format(app))
+		from themes.utils import app_theme_files, apply_explanation
+
+		if not apply_explanation.is_acknowledged(app):
+			frappe.throw(_("Read the explanation for {0} first.").format(app))
+		app_theme_files.apply_to_app(app, chosen)
 		off.discard(app)
 	else:
+		from themes.utils import app_theme_files
+
+		app_theme_files.remove_from_app(app)
 		off.add(app)
 	frappe.db.set_single_value(
 		"Theme Component Settings",
@@ -217,8 +286,22 @@ def set_theme_app_apply(app: str, apply) -> dict:
 		"\n".join(sorted(off)),
 	)
 	frappe.db.commit()
-	publish_component_css()
-	return {"status": "ok", "app": app, "apply": on}
+	if on:
+		try:
+			rescan_all()
+		except Exception:
+			frappe.log_error(title="Rescan after apply failed")
+			publish_component_css()
+	else:
+		publish_component_css()
+	from themes.utils import app_theme_files
+
+	return {
+		"status": "ok",
+		"app": app,
+		"apply": on,
+		"files_status": app_theme_files.app_status(app),
+	}
 
 
 @frappe.whitelist()
@@ -268,6 +351,7 @@ def get_theme_app_gate() -> dict:
 			for app, slug in sorted(theme_app_slugs().items())
 		],
 		"active_themes": _active_theme_choices(),
+		"desk_theme": _desk_theme_choice(),
 	}
 
 
@@ -546,7 +630,11 @@ def preview_declarations(rows) -> dict:
 		key = row.get("key")
 		if not key:
 			continue
-		result[key] = " ".join(declarations_for(row))
+		selector = (row.get("key") or row.get("selector_class") or "").strip()
+		if selector:
+			result[key] = preview_css_for_selector(selector, row)
+		else:
+			result[key] = " ".join(declarations_for(row))
 	return result
 
 
@@ -641,7 +729,17 @@ def get_design_mode_map() -> dict:
 	for r in frappe.get_all(
 		"Vue Component Element",
 		filters={"parenttype": "Vue Component", "element_status": "Present"},
-		fields=["parent", "selector_class", "tag", "line", "is_dynamic", "keep_default", *OVERRIDE_FIELDS],
+		fields=[
+			"parent",
+			"selector_class",
+			"tag",
+			"line",
+			"is_dynamic",
+			"keep_default",
+			"override_important",
+			"source_classes",
+			*OVERRIDE_FIELDS,
+		],
 	):
 		p = parents.get(r.parent)
 		if not p:
@@ -675,10 +773,128 @@ def _publish_and_hash() -> str:
 	return publish_component_css().get("css_hash") or ""
 
 
+def _save_instance_style(selector: str, instance_payload) -> str | None:
+	from themes.utils.instance_style import (
+		clean_fingerprint,
+		new_instance_id,
+		normalize_instance_id,
+		parse_instance_style_overrides,
+		sparse_json,
+	)
+
+	if instance_payload is None:
+		return None
+	if not isinstance(instance_payload, dict):
+		instance_payload = _parse_json_arg(instance_payload)
+	fp = clean_fingerprint(instance_payload)
+	instance_id = normalize_instance_id(instance_payload.get("instance_id"))
+	sparse = parse_instance_style_overrides(instance_payload.get("instance_style_overrides"))
+	if not sparse:
+		if instance_id and frappe.db.exists("Vue Component Instance Style", instance_id):
+			frappe.delete_doc("Vue Component Instance Style", instance_id, ignore_permissions=True)
+		return instance_id or None
+	if not instance_id:
+		instance_id = new_instance_id()
+	if frappe.db.exists("Vue Component Instance Style", instance_id):
+		doc = frappe.get_doc("Vue Component Instance Style", instance_id)
+		doc.selector_class = selector
+		doc.instance_style_overrides = sparse_json(sparse)
+		if fp["route"]:
+			doc.update(fp)
+		doc.save(ignore_permissions=True)
+	else:
+		doc = frappe.get_doc(
+			{
+				"doctype": "Vue Component Instance Style",
+				"instance_id": instance_id,
+				"selector_class": selector,
+				"instance_style_overrides": sparse_json(sparse),
+				**fp,
+			}
+		)
+		doc.insert(ignore_permissions=True)
+	return instance_id
+
+
 @frappe.whitelist()
-def save_design_change(selector: str, values) -> dict:
+def get_instance_style(instance_id: str) -> dict:
+	_require_design()
+	from themes.utils.instance_style import normalize_instance_id, parse_instance_style_overrides
+
+	iid = normalize_instance_id(instance_id)
+	_empty_fp = {
+		"route": "",
+		"nce_key": "",
+		"name_tag": "",
+		"label_text": "",
+		"context_key": "",
+		"fit_count": 0,
+	}
+	if not iid or not frappe.db.exists("Vue Component Instance Style", iid):
+		return {
+			"instance_id": iid or (instance_id or "").strip(),
+			"selector_class": "",
+			"overrides": {},
+			**_empty_fp,
+		}
+	doc = frappe.get_doc("Vue Component Instance Style", iid)
+	return {
+		"instance_id": doc.instance_id,
+		"selector_class": doc.selector_class or "",
+		"overrides": parse_instance_style_overrides(doc.instance_style_overrides),
+		"route": doc.route or "",
+		"nce_key": doc.nce_key or "",
+		"name_tag": doc.name_tag or "",
+		"label_text": doc.label_text or "",
+		"context_key": doc.context_key or "",
+		"fit_count": doc.fit_count or 0,
+	}
+
+
+@frappe.whitelist(allow_guest=True)
+def get_instances_for_route(route: str) -> list[dict]:
+	from themes.utils.instance_style import normalize_route, parse_instance_style_overrides
+
+	r = normalize_route(route)
+	if not r or not frappe.db.table_exists("Vue Component Instance Style"):
+		return []
+	rows = frappe.get_all(
+		"Vue Component Instance Style",
+		filters={"route": r},
+		fields=[
+			"instance_id",
+			"selector_class",
+			"nce_key",
+			"name_tag",
+			"label_text",
+			"context_key",
+			"instance_style_overrides",
+			"modified",
+		],
+	)
+	out: list[dict] = []
+	for row in rows:
+		if not parse_instance_style_overrides(row.get("instance_style_overrides")):
+			continue
+		out.append(
+			{
+				"instance_id": row.get("instance_id"),
+				"selector_class": row.get("selector_class") or "",
+				"nce_key": row.get("nce_key") or "",
+				"name_tag": row.get("name_tag") or "",
+				"label_text": row.get("label_text") or "",
+				"context_key": row.get("context_key") or "",
+				"modified": str(row.get("modified") or ""),
+			}
+		)
+	return out
+
+
+@frappe.whitelist()
+def save_design_change(selector: str, values, instance=None) -> dict:
 	_require_design()
 	values = _parse_json_arg(values)
+	instance_payload = _parse_json_arg(instance) if instance is not None else None
 	selector = (selector or "").strip()
 	if selector in _protected_classes():
 		frappe.throw(_("{0} is set per panel on the Page Panel's Colours tab.").format(selector))
@@ -690,11 +906,32 @@ def save_design_change(selector: str, values) -> dict:
 		for row in doc.elements:
 			if row.element_status != "Present" or (row.selector_class or "").strip() != selector:
 				continue
+			overrides = values.get("theme_style_overrides")
+			if isinstance(overrides, dict):
+				import json
+
+				row.theme_style_overrides = json.dumps(overrides)
+			else:
+				row.theme_style_overrides = (values.get("theme_style_overrides") or "").strip()
 			for f in OVERRIDE_FIELDS:
+				if f == "theme_style_overrides":
+					continue
 				row.set(f, (values.get(f) or "").strip())
+			from themes.utils.theme_class_catalog import (
+				parse_style_overrides,
+				sync_legacy_override_fields,
+			)
+
+			sync_legacy_override_fields(row, parse_style_overrides(row.theme_style_overrides))
 			row.keep_default = 1 if values.get("keep_default") else 0
+			row.override_important = 1 if values.get("override_important") else 0
 		_save_without_publish(doc)
-	return {"components": names, "css_hash": _publish_and_hash()}
+	assigned_instance_id = _save_instance_style(selector, instance_payload)
+	return {
+		"components": names,
+		"css_hash": _publish_and_hash(),
+		"instance_id": assigned_instance_id,
+	}
 
 
 @frappe.whitelist()
@@ -709,7 +946,9 @@ def revert_design_components(names) -> dict:
 		for row in doc.elements:
 			for f in OVERRIDE_FIELDS:
 				row.set(f, "")
+			row.theme_style_overrides = ""
 			row.keep_default = 0
+			row.override_important = 0
 		for f in TABLE_CLASS_FIELDS:
 			doc.set(f, "")
 		for f in TABLE_FG_FIELDS:
@@ -731,23 +970,41 @@ def _table_parent(name: str) -> dict:
 
 
 @frappe.whitelist()
-def preview_design_table(name: str, values) -> dict:
+def preview_design_table(name: str, values, instance=None) -> dict:
 	_require_design()
+	from themes.utils.component_css_writer import preview_table_css
+	from themes.utils.instance_style import parse_instance_style_overrides
+
 	values = _parse_json_arg(values)
+	instance_payload = _parse_json_arg(instance) if instance is not None else None
 	parent = dict(_table_parent(name))
 	parent.update(clean_table_values(values))
 	parent["status"] = "Present"
 	parent["has_table"] = 1
-	return {"css": table_css_for(parent)}
+	instance_id = None
+	sparse = None
+	if isinstance(instance_payload, dict):
+		instance_id = (instance_payload.get("instance_id") or "").strip() or None
+		sparse = parse_instance_style_overrides(instance_payload.get("instance_style_overrides"))
+		if sparse and not instance_id:
+			instance_id = "preview-instance"
+	return {"css": preview_table_css(parent, instance_id, sparse)}
 
 
 @frappe.whitelist()
-def save_design_table(name: str, values) -> dict:
+def save_design_table(name: str, values, instance=None) -> dict:
 	_require_design()
 	values = _parse_json_arg(values)
-	_table_parent(name)
+	parent = _table_parent(name)
+	selector = (parent.get("table_selector") or "").strip()
 	doc = frappe.get_doc("Vue Component", name)
 	for f, v in clean_table_values(values).items():
 		doc.set(f, v)
 	_save_without_publish(doc)
-	return {"name": name, "css_hash": _publish_and_hash()}
+	instance_payload = _parse_json_arg(instance) if instance is not None else None
+	assigned_instance_id = _save_instance_style(selector, instance_payload) if selector else None
+	return {
+		"name": name,
+		"css_hash": _publish_and_hash(),
+		"instance_id": assigned_instance_id,
+	}

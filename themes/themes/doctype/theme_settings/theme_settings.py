@@ -7,6 +7,7 @@ import math
 import os
 
 import frappe
+from frappe import _
 from frappe.model.document import Document
 from themes.utils.theme_color_utils import (
 	_hex_to_oklch,
@@ -168,6 +169,37 @@ COLOR_FIELDS = {
 	"row_alt_color": "color-row-alt",
 }
 
+FONT_WEIGHT_TOKEN_DEFAULTS = {
+	"font_weight_body": "400",
+	"font_weight_medium": "500",
+	"font_weight_semibold": "600",
+	"font_weight_bold": "700",
+}
+
+INTERACTION_TOKEN_DEFAULTS = {
+	"hover_bg_shade": "100",
+	"hover_border_shade": "500",
+	"focus_ring_width": "2px",
+	"focus_ring_offset": "2px",
+	"disabled_opacity": "0.5",
+	"pressed_shift": "1px",
+}
+
+BUTTON_SIZE_TOKEN_DEFAULTS = {
+	"btn_sm_font_size": "12px",
+	"btn_sm_pad_y": "2px",
+	"btn_sm_pad_x": "12px",
+	"btn_sm_min_height": "28px",
+	"btn_md_font_size": "14px",
+	"btn_md_pad_y": "4px",
+	"btn_md_pad_x": "20px",
+	"btn_md_min_height": "32px",
+	"btn_lg_font_size": "16px",
+	"btn_lg_pad_y": "8px",
+	"btn_lg_pad_x": "24px",
+	"btn_lg_min_height": "40px",
+}
+
 
 # Color fields that get a full Tailwind shade scale (50-950)
 SHADE_SCALE_FIELDS = {
@@ -182,6 +214,21 @@ SHADE_SCALE_FIELDS = {
 
 
 class ThemeSettings(Document):
+	def validate(self):
+		from themes.utils.theme_tokens import TOKEN_SELECT_OPTIONS
+
+		for fieldname, allowed in TOKEN_SELECT_OPTIONS.items():
+			value = self.get(fieldname)
+			if value is None or value == "":
+				continue
+			if value not in allowed:
+				frappe.throw(
+					_("{0} must be one of: {1}").format(
+						frappe.bold(fieldname),
+						", ".join(allowed),
+					)
+				)
+
 	def on_update(self):
 		css = self._generate_css()
 		self.db_set("compiled_css", css, update_modified=False)
@@ -227,8 +274,33 @@ class ThemeSettings(Document):
 		font_size = self.font_size or "14px"
 		lines.append(f"\t--nce-font-size: {font_size};")
 
-		font_weight = self.font_weight_body or "400"
+		font_weight = self.font_weight_body or FONT_WEIGHT_TOKEN_DEFAULTS["font_weight_body"]
 		lines.append(f"\t--nce-font-weight: {font_weight};")
+
+		for fieldname, default in FONT_WEIGHT_TOKEN_DEFAULTS.items():
+			if fieldname == "font_weight_body":
+				continue
+			value = self.get(fieldname) or default
+			suffix = fieldname.removeprefix("font_weight_")
+			lines.append(f"\t--nce-font-weight-{suffix}: {value};")
+
+		for fieldname, default in INTERACTION_TOKEN_DEFAULTS.items():
+			value = self.get(fieldname) or default
+			css_name = fieldname.replace("_", "-")
+			lines.append(f"\t--nce-{css_name}: {value};")
+
+		for fieldname in ("focus_ring_enabled", "focus_fill_enabled"):
+			raw = self.get(fieldname)
+			if raw in (0, False, "0"):
+				on = False
+			else:
+				on = True
+			lines.append(f"\t--nce-{fieldname.replace('_', '-')}: {1 if on else 0};")
+
+		for fieldname, default in BUTTON_SIZE_TOKEN_DEFAULTS.items():
+			value = self.get(fieldname) or default
+			css_name = fieldname.replace("_", "-")
+			lines.append(f"\t--nce-{css_name}: {value};")
 
 		lh = LINE_HEIGHT_MAP.get(self.line_height or "normal", "1.5")
 		lines.append(f"\t--nce-line-height: {lh};")

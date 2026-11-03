@@ -26,6 +26,13 @@ This folder explains HOW the theme system works. For the catalog of available cl
 | When do I use theme classes vs `:style` with `var()`? Examples for Vue. | `07-using-in-vue.md` |
 | How do I add a new role / shade / utility to the system? | `08-extending.md` |
 | Which classes for a button? Primary / outline / ghost / destructive? Decision tree + ready recipes. | `09-buttons.md` |
+| Button hover background / border (`theme-hover-bg-*`, `theme-hover-border-*`)? Interaction tab shades? | `09-buttons.md` → Interaction states |
+| Focus ring on buttons (`theme-focus-ring`, `theme-focus-ring-{role}`)? Width / offset tokens? | `09-buttons.md`, `THEME_CLASS_CONTRACT.json` → `border_and_focus.focus_ring` |
+| Opt-in focus fill / invert on keyboard focus (`theme-focus-bg-{role}`)? | `09-buttons.md` → Interaction states, `THEME_CLASS_CONTRACT.json` → `button_interaction.focus_bg` |
+| Disabled button look (`theme-disabled`, `theme-disabled-auto`)? | `09-buttons.md` → Interaction states |
+| Font weight utilities (`theme-font-medium`, etc.)? | `09-buttons.md`, `THEME_CLASS_CONTRACT.json` → `typography.font_weights` |
+| Pressed / active button shift (`theme-pressed`)? | `09-buttons.md` → Interaction states |
+| Button size / button height (`theme-btn-sm`, `theme-btn-md`, `theme-btn-lg`)? | `09-buttons.md` → Button sizes |
 | How do I let a user pick a theme class (e.g. `theme-text-secondary-500`) for a form field? ThemeSwatchPicker widget. | `../theme-swatch-picker.md` |
 | How does ThemeSwatchPicker paint swatches? `data-nce-theme` preview, output contract, Desk/Vue embed. | `../theme-swatch-picker.md` |
 
@@ -55,6 +62,7 @@ Reusable picker that writes a single `theme-{kind}-{role}-{shade}` class string 
 |---|---|
 | "buttons look wrong" / "text unreadable" / "contrast" | `05-foreground-pairing.md` |
 | "what classes for a button" / "primary vs secondary button" / "outline button" / "ghost button" | `09-buttons.md` |
+| "button hover" / "focus ring" / "disabled button" / "font weight" / "pressed button" | `09-buttons.md` → Interaction states |
 | "color picker preview" / "user-selected color at runtime" | `06-escape-hatch.md` |
 | "pick a theme class" / "header_color" / "swatch picker" / "theme-text-secondary-500" | `../theme-swatch-picker.md` |
 | "theme field is Link not slug" / "Page Panel theme picker" | `../theme-swatch-picker.md` §3–§4 (Desk resolves Link → slug) |

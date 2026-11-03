@@ -47,6 +47,7 @@ class TestComponentSync(unittest.TestCase):
 			"override_text_class": "",
 			"override_border_width_class": "",
 			"override_border_color_class": "",
+			"override_button_size_class": "",
 		}]
 		scanned = [{
 			"element_key": "card",
@@ -80,6 +81,7 @@ class TestComponentSync(unittest.TestCase):
 			"override_text_class": "",
 			"override_border_width_class": "",
 			"override_border_color_class": "",
+			"override_button_size_class": "",
 		}]
 		scanned = [{
 			"element_key": "card",
@@ -113,6 +115,7 @@ class TestComponentSync(unittest.TestCase):
 				"override_text_class": "",
 				"override_border_width_class": "",
 				"override_border_color_class": "",
+			"override_button_size_class": "",
 			},
 			{
 				"element_key": "gone",
@@ -130,6 +133,7 @@ class TestComponentSync(unittest.TestCase):
 				"override_text_class": "",
 				"override_border_width_class": "",
 				"override_border_color_class": "",
+			"override_button_size_class": "",
 			},
 		]
 		scanned = [{
@@ -164,6 +168,7 @@ class TestComponentSync(unittest.TestCase):
 			"override_text_class": "",
 			"override_border_width_class": "",
 			"override_border_color_class": "",
+			"override_button_size_class": "",
 		}]
 		scanned = [
 			{
@@ -203,6 +208,7 @@ class TestComponentSync(unittest.TestCase):
 				"override_text_class": "",
 				"override_border_width_class": "",
 				"override_border_color_class": "",
+			"override_button_size_class": "",
 			},
 			{
 				"element_key": "a",
@@ -215,6 +221,7 @@ class TestComponentSync(unittest.TestCase):
 				"override_text_class": "",
 				"override_border_width_class": "",
 				"override_border_color_class": "",
+			"override_button_size_class": "",
 			},
 		]
 		result = normalise_groups(rows)
@@ -233,6 +240,7 @@ class TestComponentSync(unittest.TestCase):
 			"override_text_class": "",
 			"override_border_width_class": "",
 			"override_border_color_class": "",
+			"override_button_size_class": "",
 		}]
 		self.assertFalse(needs_attention(rows, "Present"))
 
@@ -246,6 +254,7 @@ class TestComponentSync(unittest.TestCase):
 			"override_text_class": "",
 			"override_border_width_class": "",
 			"override_border_color_class": "",
+			"override_button_size_class": "",
 		}]
 		self.assertTrue(needs_attention(rows, "Present"))
 
@@ -259,6 +268,7 @@ class TestComponentSync(unittest.TestCase):
 			"override_text_class": "",
 			"override_border_width_class": "",
 			"override_border_color_class": "",
+			"override_button_size_class": "",
 		}]
 		self.assertTrue(needs_attention(rows, "Present"))
 
@@ -275,6 +285,7 @@ class TestComponentSync(unittest.TestCase):
 			"override_text_class": "",
 			"override_border_width_class": "",
 			"override_border_color_class": "",
+			"override_button_size_class": "",
 		}]
 		self.assertFalse(needs_attention(rows, "Present"))
 

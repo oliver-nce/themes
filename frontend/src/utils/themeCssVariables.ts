@@ -23,10 +23,18 @@ import {
 	pickFgTonal,
 	type ColorShade,
 } from "@/utils/color-shades"
+import { clampFontWeight } from "@/utils/fontWeight"
 import { fontStack } from "@/utils/fonts"
 import { buildThemeShadow } from "@/utils/shadowBuild"
 
 export type ThemeForm = Record<string, any>
+
+/** Theme Settings Check fields: empty / unset means on (default). */
+export function focusCheckEnabled(raw: unknown): boolean {
+	if (raw === undefined || raw === null || raw === "") return true
+	if (raw === false || raw === 0 || raw === "0") return false
+	return true
+}
 
 export function isCorporateBrandPaletteMode(mode: unknown): boolean {
 	return mode !== "flexible"
@@ -140,7 +148,40 @@ export function computeThemeCssVariables(
 	if (hf) vars["--nce-font-heading"] = fontStack(hf)
 
 	if (form.font_size) vars["--nce-font-size"] = form.font_size
-	if (form.font_weight_body) vars["--nce-font-weight"] = form.font_weight_body
+	if (form.font_weight_body) {
+		vars["--nce-font-weight"] = String(clampFontWeight(form.font_weight_body, 400))
+	}
+	if (form.font_weight_medium) {
+		vars["--nce-font-weight-medium"] = String(clampFontWeight(form.font_weight_medium, 500))
+	}
+	if (form.font_weight_semibold) {
+		vars["--nce-font-weight-semibold"] = String(clampFontWeight(form.font_weight_semibold, 600))
+	}
+	if (form.font_weight_bold) {
+		vars["--nce-font-weight-bold"] = String(clampFontWeight(form.font_weight_bold, 700))
+	}
+	if (form.hover_bg_shade) vars["--nce-hover-bg-shade"] = String(form.hover_bg_shade)
+	if (form.hover_border_shade) vars["--nce-hover-border-shade"] = String(form.hover_border_shade)
+	if (form.focus_ring_width) vars["--nce-focus-ring-width"] = String(form.focus_ring_width)
+	if (form.focus_ring_offset) vars["--nce-focus-ring-offset"] = String(form.focus_ring_offset)
+	vars["--nce-focus-ring-enabled"] = focusCheckEnabled(form.focus_ring_enabled) ? "1" : "0"
+	vars["--nce-focus-fill-enabled"] = focusCheckEnabled(form.focus_fill_enabled) ? "1" : "0"
+	if (form.disabled_opacity != null && form.disabled_opacity !== "") {
+		vars["--nce-disabled-opacity"] = String(form.disabled_opacity)
+	}
+	if (form.pressed_shift) vars["--nce-pressed-shift"] = String(form.pressed_shift)
+	if (form.btn_sm_font_size) vars["--nce-btn-sm-font-size"] = String(form.btn_sm_font_size)
+	if (form.btn_sm_pad_y) vars["--nce-btn-sm-pad-y"] = String(form.btn_sm_pad_y)
+	if (form.btn_sm_pad_x) vars["--nce-btn-sm-pad-x"] = String(form.btn_sm_pad_x)
+	if (form.btn_sm_min_height) vars["--nce-btn-sm-min-height"] = String(form.btn_sm_min_height)
+	if (form.btn_md_font_size) vars["--nce-btn-md-font-size"] = String(form.btn_md_font_size)
+	if (form.btn_md_pad_y) vars["--nce-btn-md-pad-y"] = String(form.btn_md_pad_y)
+	if (form.btn_md_pad_x) vars["--nce-btn-md-pad-x"] = String(form.btn_md_pad_x)
+	if (form.btn_md_min_height) vars["--nce-btn-md-min-height"] = String(form.btn_md_min_height)
+	if (form.btn_lg_font_size) vars["--nce-btn-lg-font-size"] = String(form.btn_lg_font_size)
+	if (form.btn_lg_pad_y) vars["--nce-btn-lg-pad-y"] = String(form.btn_lg_pad_y)
+	if (form.btn_lg_pad_x) vars["--nce-btn-lg-pad-x"] = String(form.btn_lg_pad_x)
+	if (form.btn_lg_min_height) vars["--nce-btn-lg-min-height"] = String(form.btn_lg_min_height)
 	if (form.line_height) vars["--nce-line-height"] = LINE_HEIGHT_MAP[form.line_height] || "1.5"
 	if (form.border_radius) vars["--nce-border-radius"] = BORDER_RADIUS_MAP[form.border_radius] || "0.375rem"
 	if (form.border_width_thin) vars["--nce-border-width-thin"] = BORDER_WIDTH_MAP[form.border_width_thin] || "0.5px"

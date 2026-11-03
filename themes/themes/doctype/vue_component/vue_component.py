@@ -74,6 +74,7 @@ class VueComponent(Document):
 		for i, row in enumerate(self.elements):
 			normalised = rows[i]
 			row.keep_default = normalised.get("keep_default")
+			row.override_important = normalised.get("override_important")
 			for field in OVERRIDE_FIELDS:
 				row.set(field, normalised.get(field))
 

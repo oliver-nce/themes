@@ -5,7 +5,7 @@ from themes.utils.component_sync import OVERRIDE_FIELDS, SELECTOR_RE
 
 DEFAULT_PROTECTED: tuple[str, ...] = ()
 
-ROW_VALUE_FIELDS = (*OVERRIDE_FIELDS, "keep_default")
+ROW_VALUE_FIELDS = (*OVERRIDE_FIELDS, "keep_default", "override_important")
 
 
 def parse_protected(text: str | None) -> set[str]:
@@ -16,7 +16,7 @@ def build_selector_map(rows: list[dict], protected: set[str]) -> dict:
 	"""Group element rows by selector_class for the page script.
 
 	rows: dicts with parent, component_name, app, file_path, selector_class, tag, line,
-	is_dynamic, the five override fields and keep_default.
+	is_dynamic, the override fields, keep_default, and override_important.
 	"""
 	ordered = sorted(rows, key=lambda r: ((r.get("component_name") or ""), int(r.get("line") or 0)))
 	result: dict[str, dict] = {}
@@ -31,9 +31,11 @@ def build_selector_map(rows: list[dict], protected: set[str]) -> dict:
 				"tag": row.get("tag") or "",
 				"is_dynamic": 0,
 				"protected": 1 if sel in protected else 0,
+				"source_classes": (row.get("source_classes") or "").strip(),
 				"values": {f: (row.get(f) or "") for f in OVERRIDE_FIELDS},
 			}
 			entry["values"]["keep_default"] = 1 if row.get("keep_default") else 0
+			entry["values"]["override_important"] = 1 if row.get("override_important") else 0
 			result[sel] = entry
 		if row.get("is_dynamic"):
 			entry["is_dynamic"] = 1

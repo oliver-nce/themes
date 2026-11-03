@@ -287,7 +287,7 @@ def set_active(family: ThemeFamily, theme: str) -> dict:
 def list_themes(family: ThemeFamily) -> list[dict]:
     rows = frappe.get_all(
         family.doctype,
-        fields=["name", "theme_name", "is_default", "status"],
+        fields=["name", "theme_name", "slug", "is_default", "status"],
         order_by="theme_name asc",
     )
     for row in rows:
@@ -324,6 +324,28 @@ def _assert_theme_renameable(family: ThemeFamily, theme: str):
     return doc
 
 
+def _rename_record(doctype: str, old_name: str, new_name: str) -> str:
+    """Rename a record with frappe.rename_doc.
+
+    Desk themes are linked only from the Site Theme Config single doctype. Frappe's
+    update_user_settings then builds an empty `IN ()` clause and MariaDB raises
+    ProgrammingError 1064. Single doctypes have no per-record user settings to fix,
+    so that step is skipped when every link field belongs to a single doctype.
+    """
+    from unittest import mock
+
+    try:
+        from frappe.model import rename_doc as rename_module
+    except ImportError:  # frappe stubbed out (unit tests)
+        return frappe.rename_doc(doctype, old_name, new_name, force=True)
+
+    link_fields = rename_module.get_link_fields(doctype)
+    if link_fields and all(f.get("issingle") for f in link_fields):
+        with mock.patch.object(rename_module, "update_user_settings", lambda *a, **k: None):
+            return frappe.rename_doc(doctype, old_name, new_name, force=True)
+    return frappe.rename_doc(doctype, old_name, new_name, force=True)
+
+
 def rename(family: ThemeFamily, theme: str, theme_name: str) -> dict:
     theme_name = (theme_name or "").strip()
     if not theme_name:
@@ -333,19 +355,19 @@ def rename(family: ThemeFamily, theme: str, theme_name: str) -> dict:
         return {"status": "ok", "theme": doc.name, "theme_name": doc.theme_name}
     if frappe.db.exists(family.doctype, {"theme_name": theme_name}):
         frappe.throw(_(family.duplicate_theme_name_message).format(theme_name))
-    slug = slugify_theme_name(theme_name)
-    table = f"tab{family.doctype}"
-    frappe.db.sql(
-        f"""
-        UPDATE `{table}`
-        SET theme_name = %(theme_name)s, slug = %(slug)s, modified = NOW(),
-            modified_by = %(user)s
-        WHERE name = %(name)s
-        """,
-        {"theme_name": theme_name, "slug": slug, "name": doc.name, "user": frappe.session.user},
+    # Records are named after theme_name (autoname field:theme_name), and Frappe forces
+    # theme_name back to the record name on every save. Rename the record itself so the
+    # new name sticks; changing only the theme_name column reverts on the next save.
+    old_name = doc.name
+    was_base = family.get_base_theme_name() == old_name
+    new_name = _rename_record(family.doctype, old_name, theme_name)
+    frappe.db.set_value(
+        family.doctype, new_name, "slug", slugify_theme_name(theme_name), update_modified=False
     )
+    if was_base:
+        family.set_base_theme_name(new_name)
     frappe.clear_cache(doctype=family.doctype)
-    return {"status": "ok", "theme": doc.name, "theme_name": theme_name}
+    return {"status": "ok", "theme": new_name, "theme_name": theme_name}
 
 
 def delete(family: ThemeFamily, theme: str) -> dict:

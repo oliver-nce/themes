@@ -55,6 +55,16 @@ TRANSITION_MAP = {
 	"slow": "300ms",
 }
 
+# Allowed stored values for interaction / typography token Select fields.
+TOKEN_SELECT_OPTIONS: dict[str, tuple[str, ...]] = {
+	"hover_bg_shade": ("50", "100", "200", "300"),
+	"hover_border_shade": ("400", "500", "600", "700"),
+	"focus_ring_width": ("1px", "2px", "3px", "4px"),
+	"focus_ring_offset": ("0px", "1px", "2px", "3px", "4px"),
+	"disabled_opacity": ("0.3", "0.4", "0.5", "0.6", "0.7"),
+	"pressed_shift": ("0px", "1px", "2px"),
+}
+
 GAMMA_SAT_ROLE_FIELDS = frozenset({"primary_color", "secondary_color"})
 BRAND_FG_FLIP_FIELDS = frozenset(
 	{
@@ -196,6 +206,30 @@ MIGRATED_FIELDS = list(COLOR_FIELDS.keys()) + [
 	"font_size",
 	"line_height",
 	"font_weight_body",
+	"font_weight_medium",
+	"font_weight_semibold",
+	"font_weight_bold",
+	"hover_bg_shade",
+	"hover_border_shade",
+	"focus_ring_enabled",
+	"focus_fill_enabled",
+	"button_outline_enabled",
+	"focus_ring_width",
+	"focus_ring_offset",
+	"disabled_opacity",
+	"pressed_shift",
+	"btn_sm_font_size",
+	"btn_sm_pad_y",
+	"btn_sm_pad_x",
+	"btn_sm_min_height",
+	"btn_md_font_size",
+	"btn_md_pad_y",
+	"btn_md_pad_x",
+	"btn_md_min_height",
+	"btn_lg_font_size",
+	"btn_lg_pad_y",
+	"btn_lg_pad_x",
+	"btn_lg_min_height",
 	"border_radius",
 	"border_width_thin",
 	"border_width",

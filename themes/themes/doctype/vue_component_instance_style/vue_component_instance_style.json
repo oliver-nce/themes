@@ -1,0 +1,101 @@
+{
+ "actions": [],
+ "autoname": "field:instance_id",
+ "creation": "2026-11-03 00:00:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "instance_id",
+  "selector_class",
+  "instance_style_overrides",
+  "route",
+  "nce_key",
+  "name_tag",
+  "label_text",
+  "context_key",
+  "fit_count"
+ ],
+ "fields": [
+  {
+   "fieldname": "instance_id",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Instance ID",
+   "reqd": 1,
+   "unique": 1
+  },
+  {
+   "fieldname": "selector_class",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Selector Class",
+   "reqd": 1
+  },
+  {
+   "description": "Sparse JSON map of theme property id → override value (Design Mode, This Instance tab).",
+   "fieldname": "instance_style_overrides",
+   "fieldtype": "Long Text",
+   "label": "Instance Style Overrides"
+  },
+  {
+   "description": "Browser path the change was saved on, e.g. /desk/nce-events/panel-page-mirrored.",
+   "fieldname": "route",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Screen",
+   "length": 200,
+   "search_index": 1
+  },
+  {
+   "fieldname": "nce_key",
+   "fieldtype": "Data",
+   "label": "App Key (data-nce-key)"
+  },
+  {
+   "description": "title, aria-label or name of the element at save.",
+   "fieldname": "name_tag",
+   "fieldtype": "Data",
+   "label": "Name Tag"
+  },
+  {
+   "fieldname": "label_text",
+   "fieldtype": "Small Text",
+   "label": "Words"
+  },
+  {
+   "description": "Nearest identified container, e.g. heading:Products.",
+   "fieldname": "context_key",
+   "fieldtype": "Data",
+   "label": "Surroundings",
+   "length": 200
+  },
+  {
+   "fieldname": "fit_count",
+   "fieldtype": "Int",
+   "label": "Fits At Save",
+   "read_only": 1
+  }
+ ],
+ "modified": "2026-11-03 12:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Themes",
+ "name": "Vue Component Instance Style",
+ "naming_rule": "By fieldname",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "title_field": "instance_id"
+}

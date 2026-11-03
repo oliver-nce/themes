@@ -1,7 +1,9 @@
 // Design Mode: hover a Vue part and click Edit to change its colours. Turned on with the floating Design Mode button.
 (function () {
 	const METHOD = "/api/method/themes.component_api.";
-	const DIALOG_SRC = "/assets/themes/design_mode/design-dialog.js?v=20261102c";
+	const DIALOG_SRC = "/assets/themes/design_mode/design-dialog.js?v=20261103o";
+	const INSTANCE_ATTR = "data-nce-instance";
+	const INSTANCE_AUTO_ATTR = "data-nce-instance-auto";
 	const HOVER_INTENT_MS = 1000;
 	const HOVER_HOLD_MS = 5000;
 	const state = {
@@ -11,6 +13,7 @@
 		popup: null,
 		sel: null,
 		themeChoices: [],
+		deskTheme: null,
 	};
 
 	let fabEl = null;
@@ -528,6 +531,99 @@
 		cancelPopup();
 	}
 
+	function styleOverridesBag(draft) {
+		return bagFromRaw(draft.theme_style_overrides);
+	}
+
+	function bagFromRaw(raw) {
+		if (raw && typeof raw === "object" && !Array.isArray(raw)) return raw;
+		if (typeof raw === "string" && raw.trim()) {
+			try {
+				return JSON.parse(raw);
+			} catch (e) {
+				return {};
+			}
+		}
+		return {};
+	}
+
+	var STYLE_LEGACY_FIELDS = {
+		"button-size": "override_button_size_class",
+		background: "override_bg_class",
+		"text-color": "override_text_class",
+		"border-width": "override_border_width_class",
+		"border-color": "override_border_color_class",
+		"table-header-row": "table_header_bg_class",
+		"table-rows": "table_row_bg_class",
+		"table-alternate-rows": "table_row_alt_bg_class",
+		"table-header-underline-width": "table_header_line_class",
+		"table-header-underline-color": "table_header_line_color_class",
+		"table-row-dividers-width": "table_row_divider_class",
+		"table-row-dividers-color": "table_row_divider_color_class",
+		"table-column-dividers-width": "table_col_divider_class",
+		"table-column-dividers-color": "table_col_divider_color_class",
+	};
+
+	var STYLE_FG_FIELDS = {
+		background: "override_fg_type",
+		"table-header-row": "table_header_fg_type",
+		"table-rows": "table_row_fg_type",
+		"table-alternate-rows": "table_row_alt_fg_type",
+	};
+
+	function setStyleOverride(draft, propId, value, legacyField) {
+		const bag = styleOverridesBag(draft);
+		const trimmed = (value || "").trim();
+		if (trimmed) bag[propId] = trimmed;
+		else delete bag[propId];
+		draft.theme_style_overrides = bag;
+		const leg = legacyField || STYLE_LEGACY_FIELDS[propId];
+		if (leg) draft[leg] = trimmed;
+	}
+
+	function instanceOverridesBag(instanceDraft) {
+		return bagFromRaw(instanceDraft.instance_style_overrides);
+	}
+
+	function setInstanceStyleOverride(instanceDraft, propId, value) {
+		const bag = instanceOverridesBag(instanceDraft);
+		const trimmed = (value || "").trim();
+		if (trimmed) bag[propId] = trimmed;
+		else delete bag[propId];
+		instanceDraft.instance_style_overrides = bag;
+	}
+
+	function activeStyleTab() {
+		if (!state.popup || !state.popup.handle || !state.popup.handle.getStyleTab) return "component";
+		return state.popup.handle.getStyleTab();
+	}
+
+	function instanceIdentityLabel(el, instanceId) {
+		const path = window.location.pathname || "";
+		if (instanceId) return path + " · " + INSTANCE_ATTR + "=" + instanceId;
+		return path + " · new instance (id assigned on Save)";
+	}
+
+	function buildInstanceSavePayload() {
+		if (!state.popup || !state.popup.handle) return null;
+		const instanceDraft = state.popup.handle.instanceDraft || {};
+		const sparse = instanceOverridesBag(instanceDraft);
+		const hadId = !!(state.popup.instanceId || "").trim();
+		if (!hadId && !Object.keys(sparse).length) return null;
+		const payload = { instance_style_overrides: sparse };
+		if (state.popup.instanceId) payload.instance_id = state.popup.instanceId;
+		if (state.popup.targetEl && window.nceInstanceApply) {
+			try {
+				const desc = window.nceInstanceApply.describe(state.popup.targetEl);
+				Object.assign(payload, desc);
+				payload.fit_count = window.nceInstanceApply.countFits(
+					Object.assign({ selector_class: state.popup.selector }, desc)
+				);
+			} catch (err) {}
+		}
+		return payload;
+	}
+
 	function openPickerFor(field, kind, fgField) {
 		if (!state.popup) return;
 		const picker = window.themeSwatchPicker;
@@ -536,26 +632,54 @@
 			return;
 		}
 		const d = state.popup.draft;
+		const inst = state.popup.handle.instanceDraft || {};
+		const onInstance = activeStyleTab() === "instance";
+		const styleProp = field.indexOf("style:") === 0 ? field.slice(6) : "";
 		const opts = {
 			getThemeSlug: function () {
 				return state.map.slug;
 			},
 			getValue: function () {
+				if (styleProp) {
+					if (onInstance) {
+						const ibag = instanceOverridesBag(inst);
+						if (Object.prototype.hasOwnProperty.call(ibag, styleProp)) return ibag[styleProp];
+						const bag = styleOverridesBag(d);
+						if (bag[styleProp]) return bag[styleProp];
+						const leg = STYLE_LEGACY_FIELDS[styleProp];
+						if (leg) return d[leg] || "";
+						return "";
+					}
+					const bag = styleOverridesBag(d);
+					if (bag[styleProp]) return bag[styleProp];
+					const leg = STYLE_LEGACY_FIELDS[styleProp];
+					if (leg) return d[leg] || "";
+					return "";
+				}
 				return d[field] || "";
 			},
 			setValue: function (cls) {
-				d[field] = cls || "";
+				if (styleProp) {
+					if (onInstance) {
+						setInstanceStyleOverride(inst, styleProp, cls || "");
+					} else {
+						setStyleOverride(d, styleProp, cls || "", STYLE_LEGACY_FIELDS[styleProp]);
+					}
+				} else {
+					d[field] = cls || "";
+				}
 				onDraftChanged();
 			},
 			lockKind: kind || "bg",
 			styleKey: field,
 		};
-		if (kind === "bg" && fgField) {
+		var fgKey = fgField || (styleProp ? STYLE_FG_FIELDS[styleProp] : "");
+		if (kind === "bg" && fgKey) {
 			opts.getFgType = function () {
-				return d[fgField] || "mono";
+				return d[fgKey] || "mono";
 			};
 			opts.setFgType = function (t) {
-				d[fgField] = t || "mono";
+				d[fgKey] = t || "mono";
 				onDraftChanged();
 			};
 		}
@@ -583,13 +707,38 @@
 		}
 	}
 
+	function revertInstancePopup() {
+		if (!state.popup) return;
+		if (
+			!window.confirm(
+				"Remove all style overrides for this instance? Component styles are unchanged."
+			)
+		) {
+			return;
+		}
+		const inst = state.popup.handle.instanceDraft;
+		if (inst) inst.instance_style_overrides = {};
+		onDraftChanged();
+	}
+
 	function dialogHandlers() {
 		return {
 			pick: openPickerFor,
 			changed: onDraftChanged,
+			setStyleTab: function () {
+				onDraftChanged();
+			},
 			save: savePopup,
 			cancel: cancelPopup,
 			revert: revertPopup,
+			revertInstance: revertInstancePopup,
+			resetInstanceProperty: function (propId) {
+				if (!state.popup || !state.popup.handle.instanceDraft) return;
+				const bag = instanceOverridesBag(state.popup.handle.instanceDraft);
+				delete bag[propId];
+				state.popup.handle.instanceDraft.instance_style_overrides = bag;
+				onDraftChanged();
+			},
 			openRecord: openRecord,
 			part: function () {
 				const hit = state.popup && state.popup.partHit;
@@ -625,18 +774,70 @@
 		return notes;
 	}
 
+	function joinClues(parts) {
+		if (parts.length === 1) return parts[0];
+		if (parts.length === 2) return parts[0] + " and " + parts[1];
+		return parts.slice(0, -1).join(", ") + " and " + parts[parts.length - 1];
+	}
+
+	function instanceFitNote(el, selector) {
+		if (!el || !window.nceInstanceApply) return "";
+		try {
+			const desc = window.nceInstanceApply.describe(el);
+			const n = window.nceInstanceApply.countFits(
+				Object.assign({ selector_class: selector }, desc)
+			);
+			const parts = [];
+			if (desc.nce_key) parts.push("its app key");
+			if (desc.name_tag) parts.push("its name tag");
+			if (desc.label_text) parts.push("its words '" + desc.label_text + "'");
+			if (desc.context_key) parts.push("its surroundings (" + desc.context_key + ")");
+			if (parts.length === 0) {
+				return (
+					"Nothing on this element tells it apart: a This Instance change applies to every ." +
+					selector +
+					" on this screen."
+				);
+			}
+			if (n > 1) {
+				return (
+					"This Instance description fits " +
+					n +
+					" elements on this screen. A This Instance change applies to all " +
+					n +
+					"."
+				);
+			}
+			return "This Instance is recognised by " + joinClues(parts) + ".";
+		} catch (err) {
+			return "";
+		}
+	}
+
 	async function updatePreview() {
 		if (!state.popup) return;
 		const s = state.popup.selector;
 		const d = state.popup.draft;
-		if (d.keep_default) {
+		const instDraft = state.popup.handle.instanceDraft || {};
+		const sparse = instanceOverridesBag(instDraft);
+		const previewRow = Object.assign({ key: s }, d);
+		if (Object.keys(sparse).length) {
+			if (!state.popup.previewInstanceId) {
+				state.popup.previewInstanceId =
+					state.popup.instanceId ||
+					"pv-" + Math.random().toString(36).slice(2, 14);
+			}
+			previewRow.instance_id = state.popup.previewInstanceId;
+			previewRow.instance_style_overrides = sparse;
+		}
+		if (d.keep_default && !Object.keys(sparse).length) {
 			const prev = document.getElementById("nce-design-preview");
 			if (prev) prev.textContent = "";
 			return;
 		}
 		try {
 			const res = await call("preview_declarations", {
-				rows: [Object.assign({ key: s }, d)],
+				rows: [previewRow],
 			});
 			const decls = (res && res[s]) || "";
 			let styleEl = document.getElementById("nce-design-preview");
@@ -646,7 +847,7 @@
 				document.head.appendChild(styleEl);
 			}
 			if (decls) {
-				styleEl.textContent = "." + s + "." + s + "." + s + "." + s + " { " + decls + " }";
+				styleEl.textContent = decls;
 			} else {
 				styleEl.textContent = "";
 			}
@@ -659,8 +860,22 @@
 		if (!state.popup || state.popup.kind !== "table") return;
 		const entry = state.popup.entry;
 		const draft = state.popup.draft;
+		const instDraft = state.popup.handle.instanceDraft || {};
+		const sparse = instanceOverridesBag(instDraft);
+		const args = { name: entry.name, values: draft };
+		if (Object.keys(sparse).length) {
+			if (!state.popup.previewInstanceId) {
+				state.popup.previewInstanceId =
+					state.popup.instanceId ||
+					"pv-" + Math.random().toString(36).slice(2, 14);
+			}
+			args.instance = {
+				instance_id: state.popup.previewInstanceId,
+				instance_style_overrides: sparse,
+			};
+		}
 		try {
-			const res = await call("preview_design_table", { name: entry.name, values: draft });
+			const res = await call("preview_design_table", args);
 			let styleEl = document.getElementById("nce-design-preview");
 			if (!styleEl) {
 				styleEl = document.createElement("style");
@@ -681,9 +896,28 @@
 		if (state.popup.kind === "table") {
 			const draft = state.popup.draft;
 			const entry = state.popup.entry;
+			const instancePayload = buildInstanceSavePayload();
 			try {
-				const res = await call("save_design_table", { name: entry.name, values: draft });
+				const args = { name: entry.name, values: draft };
+				if (instancePayload) args.instance = instancePayload;
+				const res = await call("save_design_table", args);
+				if (res.instance_id && state.popup.targetEl) {
+					state.popup.targetEl.setAttribute(INSTANCE_ATTR, res.instance_id);
+					state.popup.targetEl.setAttribute(INSTANCE_AUTO_ATTR, "1");
+					state.popup.instanceId = res.instance_id;
+				}
+				if (
+					instancePayload &&
+					!Object.keys(instancePayload.instance_style_overrides || {}).length
+				) {
+					if (state.popup.targetEl) {
+						state.popup.targetEl.removeAttribute(INSTANCE_ATTR);
+						state.popup.targetEl.removeAttribute(INSTANCE_AUTO_ATTR);
+					}
+					state.popup.instanceId = "";
+				}
 				reloadOverridesCss(res.css_hash);
+				if (window.nceInstanceApply) window.nceInstanceApply.refresh();
 				entry.values = Object.assign({}, draft);
 				const prev = document.getElementById("nce-design-preview");
 				if (prev) prev.remove();
@@ -700,9 +934,25 @@
 		const selector = state.popup.selector;
 		const draft = state.popup.draft;
 		const entry = state.popup.entry;
+		const instancePayload = buildInstanceSavePayload();
 		try {
-			const res = await call("save_design_change", { selector: selector, values: draft });
+			const args = { selector: selector, values: draft };
+			if (instancePayload) args.instance = instancePayload;
+			const res = await call("save_design_change", args);
+			if (res.instance_id && state.popup.targetEl) {
+				state.popup.targetEl.setAttribute(INSTANCE_ATTR, res.instance_id);
+				state.popup.targetEl.setAttribute(INSTANCE_AUTO_ATTR, "1");
+				state.popup.instanceId = res.instance_id;
+			}
+			if (instancePayload && !Object.keys(instancePayload.instance_style_overrides || {}).length) {
+				if (state.popup.targetEl) {
+					state.popup.targetEl.removeAttribute(INSTANCE_ATTR);
+					state.popup.targetEl.removeAttribute(INSTANCE_AUTO_ATTR);
+				}
+				state.popup.instanceId = "";
+			}
 			reloadOverridesCss(res.css_hash);
+			if (window.nceInstanceApply) window.nceInstanceApply.refresh();
 			entry.values = Object.assign({}, draft);
 			const prev = document.getElementById("nce-design-preview");
 			if (prev) prev.remove();
@@ -834,6 +1084,71 @@
 		return out;
 	}
 
+	function deskVarHex(cssVar) {
+		const raw = getComputedStyle(document.documentElement).getPropertyValue(cssVar).trim();
+		return cssColourToHex(raw);
+	}
+
+	function deskSourceForColour(colour, priorities) {
+		const el = cssColourToHex(colour);
+		if (el.transparent || !el.hex) return null;
+		for (let i = 0; i < priorities.length; i++) {
+			const p = priorities[i];
+			const v = deskVarHex(p.cssVar);
+			if (v.transparent || !v.hex) continue;
+			if (v.hex === el.hex) return { cssVar: p.cssVar, field: p.field, label: p.label };
+		}
+		return null;
+	}
+
+	function hasThemeClassOverride(draft, rowField) {
+		const v = draft[rowField];
+		if (!v) return false;
+		return String(v).indexOf("theme-") === 0;
+	}
+
+	function deskSourcesFor(el, draft) {
+		if (!el || !el.isConnected) return {};
+		const cs = getComputedStyle(el);
+		const out = {};
+		const bgPriorities = [
+			{ cssVar: "--fg-color", field: "fg_color", label: "Card / Form Surface" },
+			{ cssVar: "--bg-color", field: "bg_color", label: "Page Background" },
+			{ cssVar: "--surface-gray-2", field: "surface_gray_2", label: "Subtle Surface" },
+			{ cssVar: "--subtle-fg", field: "subtle_fg", label: "List Header Background" },
+			{ cssVar: "--control-bg", field: "control_bg", label: "Input Fields, Controls & Toolbar Buttons" },
+			{ cssVar: "--btn-default-bg", field: "btn_default_bg", label: "Workspace Quick List Buttons" },
+		];
+		const textPriorities = [
+			{ cssVar: "--text-color", field: "text_color", label: "Body Text" },
+			{ cssVar: "--heading-color", field: "heading_color", label: "Headings" },
+			{ cssVar: "--text-muted", field: "text_muted", label: "Muted Text" },
+			{ cssVar: "--text-light", field: "text_light", label: "Light Text" },
+		];
+		const borderPriorities = [
+			{ cssVar: "--border-color", field: "border_color", label: "Border" },
+			{ cssVar: "--dark-border-color", field: "dark_border_color", label: "Strong Border" },
+		];
+		if (!hasThemeClassOverride(draft, "override_bg_class")) {
+			const m = deskSourceForColour(cs.backgroundColor, bgPriorities);
+			if (m) out.override_bg_class = m;
+		}
+		if (!hasThemeClassOverride(draft, "override_text_class")) {
+			const m = deskSourceForColour(cs.color, textPriorities);
+			if (m) out.override_text_class = m;
+		}
+		const borderWidth = parseFloat(cs.borderTopWidth) || 0;
+		if (
+			borderWidth > 0 &&
+			cs.borderTopStyle !== "none" &&
+			!hasThemeClassOverride(draft, "override_border_color_class")
+		) {
+			const m = deskSourceForColour(cs.borderTopColor, borderPriorities);
+			if (m) out.override_border_color_class = m;
+		}
+		return out;
+	}
+
 	function themeInUseLabel() {
 		const slug = (
 			document.documentElement.getAttribute("data-nce-theme") || ""
@@ -849,7 +1164,233 @@
 		return "Theme: " + slug;
 	}
 
-	function openPopup(hit, x, y) {
+	// The active theme's button sizes, read from its CSS variables, for the Button size row.
+	function themeButtonSizes() {
+		const out = {};
+		try {
+			const cs = getComputedStyle(document.documentElement);
+			["sm", "md", "lg"].forEach(function (k) {
+				const v = function (n) {
+					return cs.getPropertyValue("--nce-btn-" + k + "-" + n).trim();
+				};
+				if (!v("font-size")) return;
+				out[k] =
+					v("font-size") + " text, " + v("pad-y") + " / " + v("pad-x") +
+					" padding, min " + v("min-height");
+			});
+		} catch (e) {}
+		return out;
+	}
+
+	function collectOriginalStyles(el, entry) {
+		try {
+			if (!el) return null;
+			const classes = { theme: [], other: [] };
+			const clsList = Array.from(el.classList);
+			for (let ci = 0; ci < clsList.length; ci++) {
+				const name = clsList[ci];
+				if (name.indexOf("theme-") === 0) classes.theme.push(name);
+				else classes.other.push(name);
+			}
+			const inline = [];
+			for (let si = 0; si < el.style.length; si++) {
+				const prop = el.style[si];
+				inline.push({
+					prop: prop,
+					value: el.style.getPropertyValue(prop).trim(),
+					important: el.style.getPropertyPriority(prop) === "important",
+				});
+			}
+			const rules = [];
+			const unreadable = [];
+			const skipSheetRe =
+				/nce_theme|nce_component_overrides|nce_desk_theme|nce_frappe_ui_bridge|design-dialog|nce-themes\.css/;
+			const matched = { count: 0 };
+
+			function declsFromStyle(style) {
+				// The browser expands a shorthand (border: 0 !important) into its
+				// longhands (border-top-color, ...). Show the shorthand the app wrote.
+				function shorthandOf(p) {
+					const cands = [];
+					if (/^border-(top|bottom)-(left|right)-radius$/.test(p)) {
+						cands.push("border-radius");
+					}
+					const m = /^border-(top|right|bottom|left)-(color|style|width)$/.exec(p);
+					if (m) cands.push("border-" + m[2]);
+					const parts = p.split("-");
+					for (let n = parts.length - 1; n >= 1; n--) {
+						cands.push(parts.slice(0, n).join("-"));
+					}
+					for (let ci = 0; ci < cands.length; ci++) {
+						const sv = style.getPropertyValue(cands[ci]);
+						if (sv && sv.trim()) return cands[ci];
+					}
+					return null;
+				}
+				const decls = [];
+				const seen = {};
+				for (let di = 0; di < style.length; di++) {
+					const raw = style[di];
+					const p = shorthandOf(raw) || raw;
+					if (seen[p]) continue;
+					seen[p] = true;
+					decls.push({
+						prop: p,
+						value: style.getPropertyValue(p).trim(),
+						important: style.getPropertyPriority(p) === "important",
+					});
+				}
+				return decls;
+			}
+
+			function walkRules(ruleList, sheet) {
+				if (!ruleList || matched.count >= 40) return;
+				for (let ri = 0; ri < ruleList.length; ri++) {
+					if (matched.count >= 40) return;
+					const rule = ruleList[ri];
+					if (rule.cssRules && rule.cssRules.length) {
+						if (rule.media) {
+							if (window.matchMedia(rule.media.mediaText).matches) {
+								walkRules(rule.cssRules, sheet);
+							}
+						} else {
+							walkRules(rule.cssRules, sheet);
+						}
+					}
+					if (!rule.selectorText) continue;
+					let matches = false;
+					try {
+						matches = el.matches(rule.selectorText);
+					} catch (matchErr) {
+						continue;
+					}
+					if (!matches || !rule.style || rule.style.length === 0) continue;
+					const href = sheet.href || "";
+					const file = href
+						? href.split("?")[0].split("/").pop()
+						: "style tag on this screen";
+					const themable = declsFromStyle(rule.style).filter(function (d) {
+						return /^(color|background|border|padding|font|min-height|height|outline|box-shadow)/.test(
+							d.prop
+						);
+					});
+					if (!themable.length) continue;
+					rules.push({
+						file: file,
+						selector: rule.selectorText,
+						decls: themable,
+					});
+					matched.count++;
+				}
+			}
+
+			const ownSheets = ["nce-design-mode-style", "nce-design-preview"]
+				.map(function (id) {
+					const node = document.getElementById(id);
+					return node && node.sheet;
+				})
+				.filter(Boolean);
+			const sheets = document.styleSheets;
+			for (let hi = 0; hi < sheets.length; hi++) {
+				const sheet = sheets[hi];
+				const href = sheet.href || "";
+				if (skipSheetRe.test(href)) continue;
+				if (ownSheets.indexOf(sheet) !== -1) continue;
+				let cssRules;
+				try {
+					cssRules = sheet.cssRules;
+				} catch (readErr) {
+					unreadable.push(href);
+					continue;
+				}
+				walkRules(cssRules, sheet);
+			}
+
+			const cs = getComputedStyle(el);
+			const computed = [
+				{ label: "Background", value: cs.getPropertyValue("background-color").trim() },
+				{ label: "Text colour", value: cs.getPropertyValue("color").trim() },
+				{
+					label: "Border width",
+					value: cs.getPropertyValue("border-top-width").trim(),
+				},
+				{
+					label: "Border colour",
+					value: cs.getPropertyValue("border-top-color").trim(),
+				},
+				{
+					label: "Corner radius",
+					value: cs.getPropertyValue("border-top-left-radius").trim(),
+				},
+				{ label: "Font", value: cs.getPropertyValue("font-family").trim() },
+				{ label: "Font size", value: cs.getPropertyValue("font-size").trim() },
+				{ label: "Font weight", value: cs.getPropertyValue("font-weight").trim() },
+				{ label: "Padding", value: cs.getPropertyValue("padding").trim() },
+			];
+
+			const warnings = [];
+			function shortVal(v) {
+				v = String(v || "");
+				return v.length > 50 ? v.slice(0, 47) + "..." : v;
+			}
+			// Which CSS properties each Themes style row controls.
+			const rowProps = [
+				{ label: "Background", re: /^background/ },
+				{ label: "Text colour", re: /^color$/ },
+				{ label: "Border width", re: /^border(-(top|right|bottom|left))?(-width)?$/ },
+				{ label: "Border colour", re: /^border(-(top|right|bottom|left))?(-color)?$/ },
+				{ label: "Corner radius", re: /^border(-(top|bottom)-(left|right))?-radius$/ },
+				{ label: "Button size", re: /^(padding|min-height|height)/ },
+			];
+			const conflicts = [];
+			for (let rp = 0; rp < rowProps.length; rp++) {
+				const spec = rowProps[rp];
+				let win = null;
+				for (let ri = 0; ri < rules.length; ri++) {
+					for (let dj = 0; dj < rules[ri].decls.length; dj++) {
+						const d = rules[ri].decls[dj];
+						if (!spec.re.test(d.prop)) continue;
+						if (!win || d.important || !win.important) {
+							win = { prop: d.prop, value: d.value, important: d.important, from: rules[ri].selector };
+						}
+					}
+				}
+				for (let ii = 0; ii < inline.length; ii++) {
+					if (spec.re.test(inline[ii].prop)) {
+						win = { prop: inline[ii].prop, value: inline[ii].value, important: true, from: "inline" };
+					}
+				}
+				if (!win) continue;
+				const who = win.from === "inline" ? "on this element itself" : "in " + win.from;
+				conflicts.push({
+					label: spec.label,
+					line1: "The app sets " + win.prop + " to " + shortVal(win.value) + " " + who + ".",
+					line2: win.important
+						? win.from !== "inline" && entry && entry.values && entry.values.override_important
+							? "It is marked !important, but your This Component setting overrides it."
+							: "It is marked !important, so Themes cannot change it. Tick \"Override the app's !important\" on This Component to take over."
+						: "Themes' theme-wide style gives way to it. A change saved on This Component or This Instance replaces it.",
+				});
+			}
+			if (entry && entry.is_dynamic) {
+				warnings.push("This element's colour is also set by code.");
+			}
+
+			return {
+				classes: classes,
+				inline: inline,
+				rules: rules,
+				unreadable: unreadable,
+				computed: computed,
+				warnings: warnings,
+				conflicts: conflicts,
+			};
+		} catch (outerErr) {
+			return null;
+		}
+	}
+
+	async function openPopup(hit, x, y) {
 		cancelPopup();
 		if (!dialogReady()) return;
 		const draft = Object.assign({}, hit.entry.values);
@@ -857,19 +1398,48 @@
 		const entry = hit.entry;
 		const firstComp = entry.components[0] || {};
 		const notes = elementPopupNotes(entry);
+		const fitNote = instanceFitNote(hit.el, hit.selector);
+		if (fitNote) notes.push(fitNote);
 		const themeDefaults = elementThemeDefaults(hit.el);
+		const deskSources = deskSourcesFor(hit.el, draft);
+		const deskSourceKeys = Object.keys(deskSources);
+		let subtitle = themeInUseLabel();
+		if (
+			deskSourceKeys.length > 0 &&
+			state.deskTheme &&
+			state.deskTheme.theme_name
+		) {
+			subtitle = "Desk theme: " + state.deskTheme.theme_name;
+		}
+		let instanceId = (hit.el.getAttribute(INSTANCE_ATTR) || "").trim();
+		let instanceOverrides = {};
+		if (instanceId) {
+			try {
+				const inst = await call("get_instance_style", { instance_id: instanceId });
+				instanceOverrides = inst.overrides || {};
+			} catch (err) {
+				toast(err.message, "err");
+			}
+		}
 		const handle = window.nceDesignDialog.open({
 			container: ensureRoot(),
 			kind: "element",
 			title: (firstComp.component_name || "") + " › " + hit.selector,
-			subtitle: themeInUseLabel(),
+			subtitle: subtitle,
 			notes: notes,
 			disabled: !!entry.protected,
 			hasPart: false,
+			sourceClasses: entry.source_classes || "",
 			draft: draft,
+			instanceDraft: { instance_style_overrides: instanceOverrides },
+			instanceIdentity: instanceIdentityLabel(hit.el, instanceId),
 			themeDefaults: themeDefaults,
+			deskSources: deskSources,
+			deskTheme: state.deskTheme,
 			x: x,
 			y: y,
+			originalStyles: collectOriginalStyles(hit.el, entry),
+			buttonSizes: themeButtonSizes(),
 			handlers: dialogHandlers(),
 		});
 		state.popup = {
@@ -878,6 +1448,8 @@
 			entry: entry,
 			draft: handle.draft,
 			handle: handle,
+			targetEl: hit.el,
+			instanceId: instanceId,
 			x: x,
 			y: y,
 		};
@@ -885,7 +1457,7 @@
 		document.addEventListener("mousedown", outsideMouseDownHandler, true);
 		hideOutline();
 		updatePreview();
-		showSiblings(hit.selector, null);
+		showSiblings(hit.selector, hit.el);
 	}
 
 	function tableThemeDefaults(selector) {
@@ -920,23 +1492,45 @@
 		};
 	}
 
-	function openTablePopup(selector, partHit, x, y) {
+	async function openTablePopup(selector, partHit, x, y) {
 		cancelPopup();
 		if (!dialogReady()) return;
 		const entry = state.map.tables[selector];
 		const draft = Object.assign({}, entry.values);
+		const targetEl =
+			state.sel && state.sel.kind === "table" && state.sel.el ? state.sel.el : null;
+		let instanceId = targetEl ? (targetEl.getAttribute(INSTANCE_ATTR) || "").trim() : "";
+		let instanceOverrides = {};
+		if (instanceId) {
+			try {
+				const inst = await call("get_instance_style", { instance_id: instanceId });
+				instanceOverrides = inst.overrides || {};
+			} catch (err) {
+				toast(err.message, "err");
+			}
+		}
+		const tableNotes = [
+			"Applies to every table drawn by " + entry.component_name + ".",
+		];
+		const tableFitNote = instanceFitNote(targetEl, selector);
+		if (tableFitNote) tableNotes.push(tableFitNote);
 		const handle = window.nceDesignDialog.open({
 			container: ensureRoot(),
 			kind: "table",
 			title: entry.component_name + " › table",
 			subtitle: "." + selector,
-			notes: ["Applies to every table drawn by " + entry.component_name + "."],
+			notes: tableNotes,
 			disabled: false,
 			hasPart: !!partHit,
 			draft: draft,
+			instanceDraft: { instance_style_overrides: instanceOverrides },
+			instanceIdentity: targetEl
+				? instanceIdentityLabel(targetEl, instanceId)
+				: instanceIdentityLabel(document.documentElement, instanceId),
 			themeDefaults: tableThemeDefaults(selector),
 			x: x,
 			y: y,
+			originalStyles: collectOriginalStyles(targetEl, null),
 			handlers: dialogHandlers(),
 		});
 		state.popup = {
@@ -946,6 +1540,8 @@
 			draft: handle.draft,
 			partHit: partHit,
 			handle: handle,
+			targetEl: targetEl,
+			instanceId: instanceId,
 			x: x,
 			y: y,
 		};
@@ -967,6 +1563,34 @@
 			}
 			turnOff();
 		}
+	}
+
+	function reportMissingInstances() {
+		if (!window.nceInstanceApply) return;
+		window.nceInstanceApply
+			.refresh()
+			.then(function () {
+				if (!state.on) return;
+				const missing = window.nceInstanceApply.missing();
+				if (!missing.length) return;
+				toast(
+					missing.length +
+						" This Instance change(s) saved for this screen fit no element. Details in the browser console.",
+					"err"
+				);
+				console.table(
+					missing.map(function (n) {
+						return {
+							instance_id: n.instance_id,
+							selector_class: n.selector_class,
+							name_tag: n.name_tag,
+							label_text: n.label_text,
+							context_key: n.context_key,
+						};
+					})
+				);
+			})
+			.catch(function () {});
 	}
 
 	async function turnOn() {
@@ -1004,6 +1628,7 @@
 		document.addEventListener("mousemove", onMouseMove, true);
 		window.addEventListener("scroll", onScroll, true);
 		updateFab();
+		reportMissingInstances();
 	}
 
 	function turnOff() {
@@ -1060,8 +1685,10 @@
 		try {
 			const gate = await call("get_theme_app_gate");
 			state.themeChoices = (gate && gate.active_themes) || [];
+			state.deskTheme = (gate && gate.desk_theme) || null;
 		} catch (err) {
 			state.themeChoices = [];
+			state.deskTheme = null;
 		}
 		if (!presenceSelector) return;
 		ensureFab();

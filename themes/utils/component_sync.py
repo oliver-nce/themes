@@ -10,9 +10,24 @@ BORDER_WIDTHS = {
 	"theme-border": "--nce-border-width",
 	"theme-border-strong": "--nce-border-width-strong",
 }
+BUTTON_SIZE_CLASSES = {
+	"sm": "sm",
+	"lg": "lg",
+	"theme-btn-sm": "sm",
+	"theme-btn-lg": "lg",
+}
+
+
+def normalize_button_size_class(raw: str) -> str:
+	"""Design Mode stores empty (medium), sm, or lg; accept legacy theme-btn-* values."""
+	s = (raw or "").strip()
+	return BUTTON_SIZE_CLASSES.get(s, s if s in ("", "sm", "lg") else "")
+
+
 ALWAYS_EXCLUDED_APPS = frozenset({"frappe", "themes"})
 OVERRIDE_FIELDS = ("override_bg_class", "override_fg_type", "override_text_class",
-	"override_border_width_class", "override_border_color_class")
+	"override_border_width_class", "override_border_color_class",
+	"override_button_size_class", "theme_style_overrides")
 
 ROLE_ALT = "|".join(ROLES)
 SHADE_ALT = "|".join(SHADES)
@@ -27,8 +42,12 @@ def group_key(row: dict) -> str:
 
 
 def has_override(row: dict) -> bool:
+	from themes.utils.theme_class_catalog import parse_style_overrides
+
+	if parse_style_overrides(row.get("theme_style_overrides")):
+		return True
 	for field in OVERRIDE_FIELDS:
-		if field == "override_fg_type":
+		if field in ("override_fg_type", "theme_style_overrides"):
 			continue
 		if (row.get(field) or "").strip():
 			return True
@@ -58,6 +77,7 @@ def normalise_groups(rows: list[dict]) -> list[dict]:
 		copy = dict(row)
 		first = canonical[group_key(row)]
 		copy["keep_default"] = first.get("keep_default")
+		copy["override_important"] = first.get("override_important")
 		for field in OVERRIDE_FIELDS:
 			copy[field] = first.get(field)
 		result.append(copy)
@@ -100,11 +120,14 @@ def merge_elements(existing: list[dict], scanned: list[dict]) -> list[dict]:
 				"is_dynamic": scan["is_dynamic"],
 				"element_status": "Present",
 				"keep_default": 0,
+				"override_important": 0,
 				"override_bg_class": "",
 				"override_fg_type": "",
 				"override_text_class": "",
 				"override_border_width_class": "",
 				"override_border_color_class": "",
+				"override_button_size_class": "",
+				"theme_style_overrides": "",
 			})
 
 	for row in existing:

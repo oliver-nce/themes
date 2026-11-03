@@ -10,7 +10,10 @@ Modal frame used by the theme editors: overlay, card and title; body and buttons
 		class="fixed inset-0 z-50 flex items-center justify-center bg-black/30 p-4"
 		@click.self="emit('close')"
 	>
-		<div class="bg-white rounded-lg shadow-xl p-5 max-w-md w-full">
+		<div
+			class="bg-white rounded-lg shadow-xl p-5 w-full"
+			:class="wide ? 'max-w-3xl' : 'max-w-md'"
+		>
 			<h3 class="text-base font-semibold text-gray-900">{{ title }}</h3>
 			<slot />
 		</div>
@@ -18,6 +21,6 @@ Modal frame used by the theme editors: overlay, card and title; body and buttons
 </template>
 
 <script setup lang="ts">
-defineProps<{ open: boolean; title: string }>()
+defineProps<{ open: boolean; title: string; wide?: boolean }>()
 const emit = defineEmits<{ close: [] }>()
 </script>

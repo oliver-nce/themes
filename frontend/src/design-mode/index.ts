@@ -7,14 +7,57 @@ import css from "./design-dialog.css?inline"
 
 type PickKind = "bg" | "text" | "border"
 
+export type StyleScopeTab = "component" | "instance" | "original"
+
+export interface OriginalStylesDecl {
+	prop: string
+	value: string
+	important: boolean
+}
+
+export interface OriginalStylesRule {
+	file: string
+	selector: string
+	decls: OriginalStylesDecl[]
+}
+
+export interface OriginalStylesComputed {
+	label: string
+	value: string
+}
+
+export interface OriginalStyles {
+	classes: { theme: string[]; other: string[] }
+	inline: OriginalStylesDecl[]
+	rules: OriginalStylesRule[]
+	unreadable: string[]
+	computed: OriginalStylesComputed[]
+	warnings: string[]
+	conflicts?: { label: string; line1: string; line2: string }[]
+}
+
 export interface DesignDialogHandlers {
 	pick: (field: string, kind: PickKind, fgField: string | null) => void
 	changed: (field: string) => void
+	setStyleTab: (tab: StyleScopeTab) => void
 	save: () => void
 	cancel: () => void
 	revert: () => void
+	revertInstance: () => void
+	resetInstanceProperty: (propId: string) => void
 	openRecord: () => void
 	part: () => void
+}
+
+export interface DeskThemeInfo {
+	name: string
+	theme_name: string
+}
+
+export interface DeskSourceInfo {
+	cssVar: string
+	field: string
+	label: string
 }
 
 export interface DesignDialogOpenOptions {
@@ -25,8 +68,16 @@ export interface DesignDialogOpenOptions {
 	notes?: string[]
 	disabled?: boolean
 	hasPart?: boolean
+	sourceClasses?: string
 	themeDefaults?: Record<string, { label: string; css?: string }>
+	deskSources?: Record<string, DeskSourceInfo>
+	deskTheme?: DeskThemeInfo | null
 	draft: Record<string, unknown>
+	instanceDraft?: Record<string, unknown>
+	styleTab?: StyleScopeTab
+	instanceIdentity?: string
+	originalStyles?: OriginalStyles | null
+	buttonSizes?: Record<string, string>
 	x: number
 	y: number
 	handlers: DesignDialogHandlers
@@ -34,6 +85,8 @@ export interface DesignDialogOpenOptions {
 
 export interface DesignDialogHandle {
 	draft: Record<string, unknown>
+	instanceDraft: Record<string, unknown>
+	getStyleTab: () => StyleScopeTab
 	setSaving: (v: boolean) => void
 	close: () => void
 	host: HTMLElement
@@ -121,9 +174,46 @@ export function open(opts: DesignDialogOpenOptions): DesignDialogHandle {
 		notes: opts.notes || [],
 		disabled: !!opts.disabled,
 		hasPart: !!opts.hasPart,
+		sourceClasses: opts.sourceClasses || "",
 		themeDefaults: opts.themeDefaults || {},
+		deskSources: opts.deskSources || {},
+		deskTheme: opts.deskTheme || null,
 		saving: false,
-		draft: Object.assign({}, opts.draft),
+		draft: (() => {
+			const draft = Object.assign({}, opts.draft)
+			const rawSize = String(draft.override_button_size_class ?? "")
+			if (rawSize === "theme-btn-sm") draft.override_button_size_class = "sm"
+			else if (rawSize === "theme-btn-lg") draft.override_button_size_class = "lg"
+			const rawOverrides = draft.theme_style_overrides
+			if (typeof rawOverrides === "string" && rawOverrides.trim()) {
+				try {
+					draft.theme_style_overrides = JSON.parse(rawOverrides)
+				} catch {
+					draft.theme_style_overrides = {}
+				}
+			} else if (!rawOverrides || typeof rawOverrides !== "object") {
+				draft.theme_style_overrides = {}
+			}
+			return draft
+		})(),
+		instanceDraft: (() => {
+			const inst = Object.assign({}, opts.instanceDraft || {})
+			const raw = inst.instance_style_overrides
+			if (typeof raw === "string" && raw.trim()) {
+				try {
+					inst.instance_style_overrides = JSON.parse(raw)
+				} catch {
+					inst.instance_style_overrides = {}
+				}
+			} else if (!raw || typeof raw !== "object") {
+				inst.instance_style_overrides = {}
+			}
+			return inst
+		})(),
+		styleTab: opts.styleTab || "component",
+		instanceIdentity: opts.instanceIdentity || "",
+		originalStyles: opts.originalStyles || null,
+		buttonSizes: opts.buttonSizes || {},
 		x: opts.x,
 		y: opts.y,
 	})
@@ -134,6 +224,10 @@ export function open(opts: DesignDialogOpenOptions): DesignDialogHandle {
 	const dialogHost = host
 	return {
 		draft: model.draft,
+		instanceDraft: model.instanceDraft,
+		getStyleTab() {
+			return model.styleTab
+		},
 		setSaving(v: boolean) {
 			model.saving = !!v
 		},

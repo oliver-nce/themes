@@ -11,6 +11,9 @@
 <script>window.csrf_token = "{{ frappe.session.csrf_token }}";</script>
 {%- endblock -%}
 
+{#- No website footer ("Built on Frappe") on the theme editor and its preview. -#}
+{%- block footer -%}{%- endblock -%}
+
 {%- block page_content -%}
 <div id="app"></div>
 {%- set _v = frappe.utils.now_datetime().timestamp() | int -%}

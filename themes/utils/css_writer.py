@@ -218,6 +218,16 @@ def _role_is_configured(g, field):
     return bool(g(field))
 
 
+def _check_enabled(g, field: str, *, default: bool = True) -> bool:
+    """Theme Settings Check fields: empty means default (usually on)."""
+    val = g(field)
+    if val is None or val == "":
+        return default
+    if val in (0, False, "0", "false", "False"):
+        return False
+    return True
+
+
 def _fg_flip_mono(g, field):
     """Single mono flip with fallback from dual-field themes."""
     for key in (f"{field}_fg_flip_mono", f"{field}_fg_flip_mono_2", f"{field}_fg_flip_mono_1"):
@@ -365,6 +375,31 @@ def _emit_var_block(g, lines, selector=":root", include_custom_css=True):
     lines.append(f"\t--nce-font-heading: {_font_stack(g('heading_font_family'))};")
     lines.append(f"\t--nce-font-size: {g('font_size') or '14px'};")
     lines.append(f"\t--nce-font-weight: {g('font_weight_body') or '400'};")
+    lines.append(f"\t--nce-font-weight-medium: {g('font_weight_medium') or '500'};")
+    lines.append(f"\t--nce-font-weight-semibold: {g('font_weight_semibold') or '600'};")
+    lines.append(f"\t--nce-font-weight-bold: {g('font_weight_bold') or '700'};")
+    lines.append(f"\t--nce-focus-ring-width: {g('focus_ring_width') or '2px'};")
+    lines.append(f"\t--nce-focus-ring-offset: {g('focus_ring_offset') or '2px'};")
+    ring_on = _check_enabled(g, "focus_ring_enabled")
+    fill_on = _check_enabled(g, "focus_fill_enabled")
+    lines.append(f"\t--nce-focus-ring-enabled: {'1' if ring_on else '0'};")
+    lines.append(f"\t--nce-focus-fill-enabled: {'1' if fill_on else '0'};")
+    lines.append(f"\t--nce-disabled-opacity: {g('disabled_opacity') or '0.5'};")
+    lines.append(f"\t--nce-pressed-shift: {g('pressed_shift') or '1px'};")
+    lines.append(f"\t--nce-hover-bg-shade: {g('hover_bg_shade') or '100'};")
+    lines.append(f"\t--nce-hover-border-shade: {g('hover_border_shade') or '500'};")
+    lines.append(f"\t--nce-btn-sm-font-size: {g('btn_sm_font_size') or '12px'};")
+    lines.append(f"\t--nce-btn-sm-pad-y: {g('btn_sm_pad_y') or '2px'};")
+    lines.append(f"\t--nce-btn-sm-pad-x: {g('btn_sm_pad_x') or '12px'};")
+    lines.append(f"\t--nce-btn-sm-min-height: {g('btn_sm_min_height') or '28px'};")
+    lines.append(f"\t--nce-btn-md-font-size: {g('btn_md_font_size') or '14px'};")
+    lines.append(f"\t--nce-btn-md-pad-y: {g('btn_md_pad_y') or '4px'};")
+    lines.append(f"\t--nce-btn-md-pad-x: {g('btn_md_pad_x') or '20px'};")
+    lines.append(f"\t--nce-btn-md-min-height: {g('btn_md_min_height') or '32px'};")
+    lines.append(f"\t--nce-btn-lg-font-size: {g('btn_lg_font_size') or '16px'};")
+    lines.append(f"\t--nce-btn-lg-pad-y: {g('btn_lg_pad_y') or '8px'};")
+    lines.append(f"\t--nce-btn-lg-pad-x: {g('btn_lg_pad_x') or '24px'};")
+    lines.append(f"\t--nce-btn-lg-min-height: {g('btn_lg_min_height') or '40px'};")
     lines.append(f"\t--nce-line-height: {LINE_HEIGHT_MAP.get(g('line_height') or 'normal', '1.5')};")
     lines.append(f"\t--nce-border-radius: {BORDER_RADIUS_MAP.get(g('border_radius') or 'md', '0.375rem')};")
     lines.append(f"\t--nce-border-width-thin: {BORDER_WIDTH_MAP.get(g('border_width_thin') or '0.5px', '0.5px')};")
@@ -449,6 +484,159 @@ def _emit_role_shade_classes(g, lines):
 def _emit_prefixed_rule(lines, theme_class: str, legacy_class: str, declarations: str) -> None:
     """Emit theme- class plus legacy unprefixed alias (Desk consumers may use either)."""
     lines.append(f".{theme_class}, .{legacy_class} {{ {declarations} }}")
+
+
+def _emit_prefixed_pseudo_rule(lines, theme_selector: str, legacy_selector: str, declarations: str) -> None:
+    """Like _emit_prefixed_rule for selectors that include pseudo-classes."""
+    lines.append(f"{theme_selector}, {legacy_selector} {{ {declarations} }}")
+
+
+def _emit_button_focus_bg_rule(lines, role: str, var: str) -> None:
+    """Opt-in :focus-visible fill using base role tokens (pair with theme-focus-ring)."""
+    pseudo = ":focus-visible:not(:disabled)"
+    selectors = f"button.theme-focus-bg-{role}{pseudo}, .theme-focus-bg-{role}{pseudo}"
+    decl = (
+        f"background-color: var(--nce-{var}); "
+        f"color: var(--nce-{var}-fg); "
+        f"border-color: var(--nce-{var});"
+    )
+    lines.append(f"{selectors} {{ {decl} }}")
+
+
+def _curated_shade_from_payload(g, field: str, default: str) -> int | None:
+    raw = g(field) or default
+    try:
+        shade = int(raw)
+    except (TypeError, ValueError):
+        return None
+    return shade if shade in CURATED_SHADES else None
+
+
+def _emit_font_weight_classes(lines):
+    """Font-weight utilities tied to --nce-font-weight* tokens."""
+    lines.append("/* ── Font weight utilities ── */")
+    lines.append(".theme-font-normal { font-weight: var(--nce-font-weight); }")
+    lines.append(".theme-font-medium { font-weight: var(--nce-font-weight-medium); }")
+    lines.append(".theme-font-semibold { font-weight: var(--nce-font-weight-semibold); }")
+    lines.append(".theme-font-bold { font-weight: var(--nce-font-weight-bold); }")
+    lines.append("")
+
+
+def _emit_button_state_classes(g, lines):
+    """Hover, focus ring, disabled, and pressed interaction utilities."""
+    lines.append("/* ── Button / control interaction utilities ── */")
+    hover_bg = _curated_shade_from_payload(g, "hover_bg_shade", "100")
+    hover_border = _curated_shade_from_payload(g, "hover_border_shade", "500")
+    if hover_bg is not None:
+        for field, var in SHADE_SCALE_FIELDS.items():
+            if not _role_is_configured(g, field):
+                continue
+            role = var.replace("color-", "")
+            decl = (
+                f"background-color: var(--nce-{var}-{hover_bg}); "
+                f"color: var(--nce-{var}-{hover_bg}-fg);"
+            )
+            _emit_prefixed_pseudo_rule(
+                lines,
+                f".theme-hover-bg-{role}:hover:not(:disabled)",
+                f".hover-bg-{role}:hover:not(:disabled)",
+                decl,
+            )
+    if hover_border is not None:
+        for field, var in SHADE_SCALE_FIELDS.items():
+            if not _role_is_configured(g, field):
+                continue
+            role = var.replace("color-", "")
+            decl = f"border-color: var(--nce-{var}-{hover_border});"
+            _emit_prefixed_pseudo_rule(
+                lines,
+                f".theme-hover-border-{role}:hover:not(:disabled)",
+                f".hover-border-{role}:hover:not(:disabled)",
+                decl,
+            )
+    if _check_enabled(g, "focus_fill_enabled"):
+        for field, var in SHADE_SCALE_FIELDS.items():
+            if not _role_is_configured(g, field):
+                continue
+            role = var.replace("color-", "")
+            _emit_button_focus_bg_rule(lines, role, var)
+    if _check_enabled(g, "focus_ring_enabled"):
+        focus_decl = (
+            "outline: var(--nce-focus-ring-width) solid var(--nce-color-focus); "
+            "outline-offset: var(--nce-focus-ring-offset);"
+        )
+    else:
+        focus_decl = "outline: none; outline-offset: 0;"
+    _emit_prefixed_pseudo_rule(
+        lines, ".theme-focus-ring:focus-visible", ".focus-ring:focus-visible", focus_decl
+    )
+    for field, var in SHADE_SCALE_FIELDS.items():
+        if not _role_is_configured(g, field):
+            continue
+        role = var.replace("color-", "")
+        if _check_enabled(g, "focus_ring_enabled"):
+            role_focus = (
+                f"outline: var(--nce-focus-ring-width) solid var(--nce-{var}); "
+                "outline-offset: var(--nce-focus-ring-offset);"
+            )
+        else:
+            role_focus = "outline: none; outline-offset: 0;"
+        _emit_prefixed_pseudo_rule(
+            lines,
+            f".theme-focus-ring-{role}:focus-visible",
+            f".focus-ring-{role}:focus-visible",
+            role_focus,
+        )
+    disabled_decl = "opacity: var(--nce-disabled-opacity); cursor: not-allowed;"
+    lines.append(f".theme-disabled {{ {disabled_decl} }}")
+    lines.append(f".theme-disabled-auto:disabled {{ {disabled_decl} }}")
+    pressed_decl = "transform: translateY(var(--nce-pressed-shift));"
+    _emit_prefixed_pseudo_rule(
+        lines,
+        ".theme-pressed:active:not(:disabled)",
+        ".pressed:active:not(:disabled)",
+        pressed_decl,
+    )
+    lines.append("")
+
+
+def _emit_theme_btn_class(g, lines):
+    """Complete theme-btn: medium size, card fill, primary text, border, radius, hover, focus."""
+    from themes.utils.theme_class_catalog import theme_btn_emit_blocks
+
+    lines.append("/* ── theme-btn (complete button, medium default) ── */")
+    base = "button.theme-btn, .theme-btn"
+    hover_sel = "button.theme-btn:hover:not(:disabled), .theme-btn:hover:not(:disabled)"
+    focus_visible = (
+        "button.theme-btn:focus-visible:not(:disabled), "
+        ".theme-btn:focus-visible:not(:disabled)"
+    )
+    base_decls, hover_decls, focus_ring, focus_fill = theme_btn_emit_blocks(g)
+    lines.append(f"{base} {{")
+    for decl in base_decls:
+        lines.append(f"  {decl}")
+    lines.append("}")
+    if hover_decls:
+        lines.append(f"{hover_sel} {{ {' '.join(hover_decls)} }}")
+    lines.append(f"{focus_visible} {{ {' '.join(focus_ring)} }}")
+    if focus_fill:
+        lines.append(f"{focus_visible} {{ {' '.join(focus_fill)} }}")
+    lines.append("")
+
+
+def _emit_button_size_classes(lines):
+    """Size-only utilities for legacy markup (not combined with theme-btn)."""
+    lines.append("/* ── Button size utilities (size-only) ── */")
+    for size in ("sm", "md", "lg"):
+        sel = f"button.theme-btn-{size}, .theme-btn-{size}"
+        lines.append(f"{sel} {{")
+        lines.append(f"  font-size: var(--nce-btn-{size}-font-size);")
+        lines.append(f"  padding: var(--nce-btn-{size}-pad-y) var(--nce-btn-{size}-pad-x);")
+        lines.append(f"  min-height: var(--nce-btn-{size}-min-height);")
+        lines.append("  line-height: 1.4;")
+        lines.append("  box-sizing: border-box;")
+        lines.append("}")
+    lines.append("")
 
 
 def _emit_neutral_classes(g, lines):
@@ -636,6 +824,10 @@ def generate_css(payload: dict) -> str:
     _emit_role_bg_classes(g, lines)
     _emit_role_text_border_classes(g, lines)
     _emit_role_shade_classes(g, lines)
+    _emit_font_weight_classes(lines)
+    _emit_button_state_classes(g, lines)
+    _emit_theme_btn_class(g, lines)
+    _emit_button_size_classes(lines)
     _emit_neutral_classes(g, lines)
     _emit_table_classes(lines)
     _emit_shape_classes(lines)
@@ -655,6 +847,10 @@ def generate_site_css(default_payload: dict, active_themes: list[tuple[str, dict
     _emit_role_bg_classes(g, lines)
     _emit_role_text_border_classes(g, lines)
     _emit_role_shade_classes(g, lines)
+    _emit_font_weight_classes(lines)
+    _emit_button_state_classes(g, lines)
+    _emit_theme_btn_class(g, lines)
+    _emit_button_size_classes(lines)
     _emit_neutral_classes(g, lines)
     _emit_table_classes(lines)
     _emit_shape_classes(lines)
@@ -699,4 +895,9 @@ def publish_theme(theme_name: str) -> dict:
 
     publish_frappe_ui_bridge_css(default_payload)
     css_hash = publish_css("nce_theme.css", css, "css_hash")
+    try:
+        from themes.utils.component_css_writer import publish_component_css
+        publish_component_css()
+    except Exception:
+        frappe.log_error(title="Component CSS republish after theme publish failed")
     return {"status": "ok", "theme": "base", "css_hash": css_hash, "bytes": len(css)}

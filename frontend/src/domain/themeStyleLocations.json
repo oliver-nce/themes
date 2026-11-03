@@ -216,6 +216,150 @@
       "field": "focus_color",
       "label": "Typography > Text Colours > Focus Ring"
     },
+    "font_weight_medium": {
+      "tab": "typography",
+      "section": "theme-style-font-weights",
+      "field": "font_weight_medium",
+      "label": "Typography > Size & Weight > Medium Weight"
+    },
+    "font_weight_semibold": {
+      "tab": "typography",
+      "section": "theme-style-font-weights",
+      "field": "font_weight_semibold",
+      "label": "Typography > Size & Weight > Semibold Weight"
+    },
+    "font_weight_bold": {
+      "tab": "typography",
+      "section": "theme-style-font-weights",
+      "field": "font_weight_bold",
+      "label": "Typography > Size & Weight > Bold Weight"
+    },
+    "hover_bg_shade": {
+      "tab": "interaction",
+      "section": "theme-style-interaction-hover",
+      "field": "hover_bg_shade",
+      "label": "Interaction > Hover > Hover background shade"
+    },
+    "hover_border_shade": {
+      "tab": "interaction",
+      "section": "theme-style-interaction-hover",
+      "field": "hover_border_shade",
+      "label": "Interaction > Hover > Hover border shade"
+    },
+    "focus_ring_enabled": {
+      "tab": "interaction",
+      "section": "theme-style-interaction-focus",
+      "field": "focus_ring_enabled",
+      "label": "Interaction > Focus Ring > Show focus ring"
+    },
+    "focus_fill_enabled": {
+      "tab": "interaction",
+      "section": "theme-style-interaction-focus",
+      "field": "focus_fill_enabled",
+      "label": "Interaction > Focus Ring > Fill button on focus"
+    },
+    "button_outline_enabled": {
+      "tab": "interaction",
+      "section": "theme-style-interaction-hover",
+      "field": "button_outline_enabled",
+      "label": "Interaction > Hover > Outline buttons"
+    },
+    "focus_ring_width": {
+      "tab": "interaction",
+      "section": "theme-style-interaction-focus",
+      "field": "focus_ring_width",
+      "label": "Interaction > Focus Ring > Ring width"
+    },
+    "focus_ring_offset": {
+      "tab": "interaction",
+      "section": "theme-style-interaction-focus",
+      "field": "focus_ring_offset",
+      "label": "Interaction > Focus Ring > Ring offset"
+    },
+    "disabled_opacity": {
+      "tab": "interaction",
+      "section": "theme-style-interaction-disabled",
+      "field": "disabled_opacity",
+      "label": "Interaction > Disabled > Disabled opacity"
+    },
+    "pressed_shift": {
+      "tab": "interaction",
+      "section": "theme-style-interaction-pressed",
+      "field": "pressed_shift",
+      "label": "Interaction > Pressed > Pressed shift"
+    },
+    "btn_sm_font_size": {
+      "tab": "interaction",
+      "section": "theme-style-interaction-buttons",
+      "field": "btn_sm_font_size",
+      "label": "Interaction > Buttons > Small > Font size"
+    },
+    "btn_sm_pad_y": {
+      "tab": "interaction",
+      "section": "theme-style-interaction-buttons",
+      "field": "btn_sm_pad_y",
+      "label": "Interaction > Buttons > Small > Padding top/bottom"
+    },
+    "btn_sm_pad_x": {
+      "tab": "interaction",
+      "section": "theme-style-interaction-buttons",
+      "field": "btn_sm_pad_x",
+      "label": "Interaction > Buttons > Small > Padding left/right"
+    },
+    "btn_sm_min_height": {
+      "tab": "interaction",
+      "section": "theme-style-interaction-buttons",
+      "field": "btn_sm_min_height",
+      "label": "Interaction > Buttons > Small > Min height"
+    },
+    "btn_md_font_size": {
+      "tab": "interaction",
+      "section": "theme-style-interaction-buttons",
+      "field": "btn_md_font_size",
+      "label": "Interaction > Buttons > Medium > Font size"
+    },
+    "btn_md_pad_y": {
+      "tab": "interaction",
+      "section": "theme-style-interaction-buttons",
+      "field": "btn_md_pad_y",
+      "label": "Interaction > Buttons > Medium > Padding top/bottom"
+    },
+    "btn_md_pad_x": {
+      "tab": "interaction",
+      "section": "theme-style-interaction-buttons",
+      "field": "btn_md_pad_x",
+      "label": "Interaction > Buttons > Medium > Padding left/right"
+    },
+    "btn_md_min_height": {
+      "tab": "interaction",
+      "section": "theme-style-interaction-buttons",
+      "field": "btn_md_min_height",
+      "label": "Interaction > Buttons > Medium > Min height"
+    },
+    "btn_lg_font_size": {
+      "tab": "interaction",
+      "section": "theme-style-interaction-buttons",
+      "field": "btn_lg_font_size",
+      "label": "Interaction > Buttons > Large > Font size"
+    },
+    "btn_lg_pad_y": {
+      "tab": "interaction",
+      "section": "theme-style-interaction-buttons",
+      "field": "btn_lg_pad_y",
+      "label": "Interaction > Buttons > Large > Padding top/bottom"
+    },
+    "btn_lg_pad_x": {
+      "tab": "interaction",
+      "section": "theme-style-interaction-buttons",
+      "field": "btn_lg_pad_x",
+      "label": "Interaction > Buttons > Large > Padding left/right"
+    },
+    "btn_lg_min_height": {
+      "tab": "interaction",
+      "section": "theme-style-interaction-buttons",
+      "field": "btn_lg_min_height",
+      "label": "Interaction > Buttons > Large > Min height"
+    },
     "table_header_bg_class": {
       "tab": "layout",
       "section": "theme-style-tables",

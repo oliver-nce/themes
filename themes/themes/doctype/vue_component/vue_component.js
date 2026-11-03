@@ -179,6 +179,7 @@ function _vc_show_revert(savedElements, savedTable) {
 			"override_text_class",
 			"override_border_width_class",
 			"override_border_color_class",
+			"override_button_size_class",
 		].some((f) => ((row[f] || "").trim()));
 	});
 	if (elementsDirty) {
@@ -657,6 +658,7 @@ function _vc_bind_colours_events(frm, $wrapper) {
 						"override_text_class",
 						"override_border_width_class",
 						"override_border_color_class",
+						"override_button_size_class",
 					].forEach((f) => {
 						frappe.model.set_value(row.doctype, row.name, f, "");
 					});
@@ -963,6 +965,7 @@ function _vc_override_payload(row) {
 			override_text_class: "",
 			override_border_width_class: "",
 			override_border_color_class: "",
+			override_button_size_class: "",
 			keep_default: 1,
 		};
 	}
@@ -972,6 +975,7 @@ function _vc_override_payload(row) {
 		override_text_class: row.override_text_class || "",
 		override_border_width_class: row.override_border_width_class || "",
 		override_border_color_class: row.override_border_color_class || "",
+		override_button_size_class: row.override_button_size_class || "",
 		keep_default: row.keep_default || 0,
 	};
 }

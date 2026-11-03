@@ -113,6 +113,7 @@ class TestBuildSummary(unittest.TestCase):
 				"override_text_class": "theme-text-primary-600",
 				"override_border_width_class": "",
 				"override_border_color_class": "",
+				"override_button_size_class": "",
 			},
 			{
 				"element_key": "ppv2-fd-desc",
@@ -128,6 +129,7 @@ class TestBuildSummary(unittest.TestCase):
 				"override_text_class": "",
 				"override_border_width_class": "",
 				"override_border_color_class": "",
+				"override_button_size_class": "",
 			},
 			{
 				"element_key": "ppv2-fd-desc-2",
@@ -143,6 +145,7 @@ class TestBuildSummary(unittest.TestCase):
 				"override_text_class": "",
 				"override_border_width_class": "",
 				"override_border_color_class": "",
+				"override_button_size_class": "",
 			},
 			{
 				"element_key": "div@L30",
@@ -158,6 +161,7 @@ class TestBuildSummary(unittest.TestCase):
 				"override_text_class": "",
 				"override_border_width_class": "",
 				"override_border_color_class": "",
+				"override_button_size_class": "",
 			},
 		]
 		return comp, rows, ["PanelFormDialogBody"]

@@ -14,6 +14,10 @@ export type ThemeEditorApiConfig = {
 	create: string
 	basePayload: string
 	saveAsBase: string
+	/** Whitelisted method returning the user's last opened theme name (or ""). */
+	getLastSelection?: string
+	/** Whitelisted method to persist last opened theme name for this user. */
+	setLastSelection?: string
 }
 
 export type ThemeEditorLoadHooks = {
@@ -23,6 +27,8 @@ export type ThemeEditorLoadHooks = {
 	applyLiveThemeVars: () => void
 	tryLoadThemeFromQuery: (themes: unknown[]) => boolean
 	pickInitialTheme?: (themes: Array<Record<string, unknown>>) => string | undefined
+	/** Browser storage key so the open theme is restored after Frappe Clear Cache reloads the editor. */
+	selectionStorageKey?: string
 	defaultSavedStatus: ThemeAvailabilityStatus
 	notFoundMessage: string
 	loadErrorMessage: string
@@ -76,6 +82,61 @@ export function useThemeEditor(api: ThemeEditorApiConfig, hooks: ThemeEditorLoad
 		)
 	}
 
+	function rememberSelectedTheme(name: string) {
+		const key = hooks.selectionStorageKey
+		if (key && name) {
+			try {
+				localStorage.setItem(key, name)
+			} catch {
+				/* private browsing or blocked storage */
+			}
+		}
+		if (api.setLastSelection && name) {
+			void setLastSelectionResource.submit({ theme: name }).catch(() => {
+				/* fire-and-forget */
+			})
+		}
+	}
+
+	function themeNameInList(
+		themes: Array<Record<string, unknown>>,
+		name: string,
+	): string | undefined {
+		const trimmed = name.trim()
+		if (!trimmed) return undefined
+		const hit = themes.find((t) => t.name === trimmed)
+		return (hit?.name as string | undefined) || undefined
+	}
+
+	function storedThemeName(themes: Array<Record<string, unknown>>): string | undefined {
+		const key = hooks.selectionStorageKey
+		if (!key) return undefined
+		let stored = ""
+		try {
+			stored = localStorage.getItem(key) || ""
+		} catch {
+			return undefined
+		}
+		if (!stored) return undefined
+		return themeNameInList(themes, stored)
+	}
+
+	async function serverStoredThemeName(
+		themes: Array<Record<string, unknown>>,
+	): Promise<string | undefined> {
+		if (!api.getLastSelection) return undefined
+		try {
+			if (getLastSelectionResource.data === undefined && !getLastSelectionResource.error) {
+				await getLastSelectionResource.reload()
+			}
+			const raw = getLastSelectionResource.data
+			const stored = typeof raw === "string" ? raw : String(raw ?? "")
+			return themeNameInList(themes, stored)
+		} catch {
+			return undefined
+		}
+	}
+
 	function normalizeThemeStatus(status: string | undefined | null): ThemeAvailabilityStatus {
 		return status === "Inactive" ? "Inactive" : "Active"
 	}
@@ -98,14 +159,23 @@ export function useThemeEditor(api: ThemeEditorApiConfig, hooks: ThemeEditorLoad
 		return JSON.stringify(current) !== JSON.stringify(savedSnapshot.value)
 	})
 
+	const getLastSelectionResource = api.getLastSelection
+		? createResource({ url: api.getLastSelection, auto: false })
+		: null
+	const setLastSelectionResource = api.setLastSelection
+		? createResource({ url: api.setLastSelection, auto: false })
+		: { submit: async () => undefined } as ReturnType<typeof createResource>
+
 	const themesList = createResource({
 		url: api.list,
 		auto: true,
-		onSuccess(data: Array<Record<string, unknown>>) {
+		async onSuccess(data: Array<Record<string, unknown>>) {
 			listLoadError.value = ""
 			if (!data?.length || editingTheme.value) return
 			if (hooks.tryLoadThemeFromQuery(data)) return
 			const pick =
+				storedThemeName(data) ||
+				(await serverStoredThemeName(data)) ||
 				hooks.pickInitialTheme?.(data) ||
 				(hasDefaultTheme
 					? (data.find((t) => t.is_default_theme || t.is_base_theme)?.name as string | undefined) ||
@@ -134,6 +204,7 @@ export function useThemeEditor(api: ThemeEditorApiConfig, hooks: ThemeEditorLoad
 			}
 			editingTheme.value = (data.theme as string) || ""
 			selectedTheme.value = (data.theme as string) || ""
+			rememberSelectedTheme(selectedTheme.value)
 			siteBaseTheme.value = readSiteDefaultTheme(data) || siteBaseTheme.value
 			editorMeta.theme = (data.theme as string) || ""
 			editorMeta.theme_name = (data.theme_name as string) || (data.theme as string) || ""

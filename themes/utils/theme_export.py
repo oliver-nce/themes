@@ -90,8 +90,13 @@ def build_export_css(
     items: list[dict[str, Any]],
     default_name: str,
     include_bridge: bool = False,
+    scope_slug: str | None = None,
 ) -> str:
-    """Build nce-themes.css content (no custom CSS on the default theme)."""
+    """Build nce-themes.css content (no custom CSS on the default theme).
+
+    scope_slug: when set, the starting theme's variables apply only inside
+    [data-nce-theme="<slug>"] instead of :root (used when the file is written into an app).
+    """
     validate_export_items(items, default_name)
     default_item = _item_by_name(items, default_name)
     default_payload = default_item["payload"]
@@ -112,7 +117,10 @@ def build_export_css(
     all_payloads = [default_payload] + [i["payload"] for i in other_items]
     _emit_font_faces_multi(all_payloads, lines, font_base_url=EXPORT_FONT_URL_BASE)
 
-    _emit_var_block(g, lines, ":where(:root)", include_custom_css=False)
+    root_selector = (
+        f':where([data-nce-theme="{scope_slug}"])' if scope_slug else ":where(:root)"
+    )
+    _emit_var_block(g, lines, root_selector, include_custom_css=False)
     _emit_role_bg_classes(g, lines)
     _emit_role_text_border_classes(g, lines)
     _emit_role_shade_classes(g, lines)
@@ -281,6 +289,7 @@ def build_export_files(
     default_name: str,
     include_bridge: bool = False,
     fonts_dir: Path | None = None,
+    scope_slug: str | None = None,
 ) -> dict[str, bytes]:
     """Return zip member path → bytes for the full nce-themes/ tree."""
     validate_export_items(items, default_name)
@@ -290,7 +299,9 @@ def build_export_files(
     ]
 
     files: dict[str, bytes] = {}
-    css = build_export_css(items, default_name, include_bridge=include_bridge)
+    css = build_export_css(
+        items, default_name, include_bridge=include_bridge, scope_slug=scope_slug
+    )
     files[f"{EXPORT_ROOT}/nce-themes.css"] = css.encode("utf-8")
     files[f"{EXPORT_ROOT}/nce-theme-switcher.js"] = build_export_js(
         items, default_name
