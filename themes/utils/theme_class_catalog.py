@@ -16,7 +16,7 @@ from themes.utils.component_sync import (
 )
 
 ROOT = Path(__file__).resolve().parents[2]
-CONTRACT_PATH = ROOT / "THEME_CLASS_CONTRACT.json"
+CONTRACT_PATH = ROOT / "docs" / "THEME_CLASS_CONTRACT.json"
 
 # ── Property ids (stable API for theme_style_overrides keys) ──
 

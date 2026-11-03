@@ -27,10 +27,10 @@ This folder explains HOW the theme system works. For the catalog of available cl
 | How do I add a new role / shade / utility to the system? | `08-extending.md` |
 | Which classes for a button? Primary / outline / ghost / destructive? Decision tree + ready recipes. | `09-buttons.md` |
 | Button hover background / border (`theme-hover-bg-*`, `theme-hover-border-*`)? Interaction tab shades? | `09-buttons.md` → Interaction states |
-| Focus ring on buttons (`theme-focus-ring`, `theme-focus-ring-{role}`)? Width / offset tokens? | `09-buttons.md`, `THEME_CLASS_CONTRACT.json` → `border_and_focus.focus_ring` |
-| Opt-in focus fill / invert on keyboard focus (`theme-focus-bg-{role}`)? | `09-buttons.md` → Interaction states, `THEME_CLASS_CONTRACT.json` → `button_interaction.focus_bg` |
+| Focus ring on buttons (`theme-focus-ring`, `theme-focus-ring-{role}`)? Width / offset tokens? | `09-buttons.md`, `docs/THEME_CLASS_CONTRACT.json` → `border_and_focus.focus_ring` |
+| Opt-in focus fill / invert on keyboard focus (`theme-focus-bg-{role}`)? | `09-buttons.md` → Interaction states, `docs/THEME_CLASS_CONTRACT.json` → `button_interaction.focus_bg` |
 | Disabled button look (`theme-disabled`, `theme-disabled-auto`)? | `09-buttons.md` → Interaction states |
-| Font weight utilities (`theme-font-medium`, etc.)? | `09-buttons.md`, `THEME_CLASS_CONTRACT.json` → `typography.font_weights` |
+| Font weight utilities (`theme-font-medium`, etc.)? | `09-buttons.md`, `docs/THEME_CLASS_CONTRACT.json` → `typography.font_weights` |
 | Pressed / active button shift (`theme-pressed`)? | `09-buttons.md` → Interaction states |
 | Button size / button height (`theme-btn-sm`, `theme-btn-md`, `theme-btn-lg`)? | `09-buttons.md` → Button sizes |
 | How do I let a user pick a theme class (e.g. `theme-text-secondary-500`) for a form field? ThemeSwatchPicker widget. | `../theme-swatch-picker.md` |
