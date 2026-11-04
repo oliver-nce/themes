@@ -448,6 +448,59 @@
 		else openPopup(s.hit, x, y);
 	}
 
+	// Elements with CSS pointer-events:none never become e.target, so the browser hands us
+	// whatever is behind them. Find mapped elements that are pointer-events:none and sit under
+	// the cursor by geometry, so they still highlight and edit.
+	let inertSelectorKey = "";
+	let inertSelectorList = "";
+
+	function inertSelectorQuery() {
+		const sels = (state.map && state.map.selectors) || {};
+		const keys = Object.keys(sels);
+		const key = keys.length + ":" + (keys[0] || "");
+		if (key !== inertSelectorKey) {
+			inertSelectorKey = key;
+			inertSelectorList = keys
+				.map(function (k) {
+					return "." + CSS.escape(k);
+				})
+				.join(",");
+		}
+		return inertSelectorList;
+	}
+
+	function findInertTargetAt(x, y) {
+		const q = inertSelectorQuery();
+		if (!q) return null;
+		let nodes;
+		try {
+			nodes = document.querySelectorAll(q);
+		} catch (err) {
+			return null;
+		}
+		let best = null;
+		let bestArea = Infinity;
+		for (let i = 0; i < nodes.length; i++) {
+			const node = nodes[i];
+			if (node.closest("#nce-design-mode")) continue;
+			const r = node.getBoundingClientRect();
+			if (r.width === 0 || r.height === 0) continue;
+			if (x < r.left || x > r.right || y < r.top || y > r.bottom) continue;
+			if (window.getComputedStyle(node).pointerEvents !== "none") continue;
+			const area = r.width * r.height;
+			if (area < bestArea) {
+				best = node;
+				bestArea = area;
+			}
+		}
+		return best;
+	}
+
+	function resolveMoveTarget(e) {
+		const inert = findInertTargetAt(e.clientX, e.clientY);
+		return inert || e.target;
+	}
+
 	function onMouseMoveFrame() {
 		movePending = false;
 		const e = lastMoveEvent;
@@ -457,7 +510,8 @@
 			clearHold();
 			return;
 		}
-		const cand = candidateFor(e.target);
+		const moveTarget = resolveMoveTarget(e);
+		const cand = candidateFor(moveTarget);
 		if (!cand) {
 			clearIntent();
 			armHold();
@@ -478,7 +532,7 @@
 		if (intentEl === cand.el) return;
 		clearIntent();
 		intentEl = cand.el;
-		const t = e.target;
+		const t = moveTarget;
 		intentTimer = setTimeout(function () {
 			intentTimer = null;
 			intentEl = null;
