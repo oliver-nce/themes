@@ -475,118 +475,136 @@ onBeforeUnmount(() => {
 					{{ model.instanceIdentity }}
 				</div>
 				<div v-if="styleRows.length" class="dd-section">Theme styles</div>
-				<div
-					v-for="(row, rowIdx) in styleRows"
-					:key="row.id"
-					class="dd-row"
-					:class="{
-						'dd-row-alt': rowIdx % 2 === 1,
-						'dd-row-inherited': styleRowInherited(row),
-						'dd-rows-off': appStylesOnly,
-					}"
-				>
-				<span class="dd-row-label">{{ row.label }}</span>
-				<template v-if="isTableDividerRow(row)">
-					<div
-						class="dd-chip dd-chip-border"
-						:class="styleValueForProp(row.colorPropId) || 'dd-chip-empty'"
-					></div>
-					<div class="dd-class">
-						<select
-							class="dd-select"
-							:value="styleValueForProp(row.widthPropId)"
-							:disabled="rowsDisabled"
-							@change="onDividerWidthChoice(row, $event)"
+				<table v-if="styleRows.length" class="theme-table dd-style-table">
+					<tbody>
+						<tr
+							v-for="row in styleRows"
+							:key="row.id"
+							:class="{
+								'dd-row-inherited': styleRowInherited(row),
+								'dd-rows-off': appStylesOnly,
+							}"
 						>
-							<option
-								v-for="opt in row.options"
-								:key="row.widthPropId + (opt.value || 'default')"
-								:value="opt.value"
-							>
-								{{ widthOptionLabel(row.widthPropId, opt.value, opt.label) }}
-							</option>
-						</select>
-						<span>{{
-							styleDisplayForProp(row.colorPropId, propInherited(row.colorPropId))
-						}}</span>
-					</div>
-					<button
-						v-if="onInstanceTab && !propInherited(row.widthPropId)"
-						type="button"
-						class="dd-btn dd-btn-reset"
-						:disabled="rowsDisabled"
-						@click="resetPropToComponent(row.widthPropId)"
-					>
-						Reset
-					</button>
-					<button
-						v-if="onInstanceTab && !propInherited(row.colorPropId)"
-						type="button"
-						class="dd-btn dd-btn-reset"
-						:disabled="rowsDisabled"
-						@click="resetPropToComponent(row.colorPropId)"
-					>
-						Reset
-					</button>
-					<button
-						type="button"
-						class="dd-btn"
-						:disabled="rowsDisabled"
-						@click="pickDividerColor(row)"
-					>
-						Colour…
-					</button>
-				</template>
-				<template v-else-if="row.kind === 'color-role'">
-					<div class="dd-chip" :class="styleValue(row) || 'dd-chip-empty'">Aa</div>
-					<div class="dd-class">{{ styleDisplay(row) }}</div>
-					<button
-						v-if="onInstanceTab && !propInherited(row.id)"
-						type="button"
-						class="dd-btn dd-btn-reset"
-						:disabled="rowsDisabled"
-						@click="resetRowToComponent(row)"
-					>
-						Reset
-					</button>
-					<button
-						type="button"
-						class="dd-btn"
-						:disabled="rowsDisabled"
-						@click="pickStyle(row)"
-					>
-						Colour…
-					</button>
-				</template>
-				<template v-else>
-					<div class="dd-class dd-class-wide">
-						<select
-							class="dd-select"
-							:value="styleValue(row)"
-							:disabled="rowsDisabled"
-							@change="onStyleChoice(row, $event)"
-						>
-							<option
-								v-for="opt in row.options"
-								:key="row.id + (opt.value || 'default')"
-								:value="opt.value"
-							>
-								{{ opt.label }}
-							</option>
-						</select>
-						<div v-if="sizeInfo(row)" class="dd-size-info">{{ sizeInfo(row) }}</div>
-					</div>
-					<button
-						v-if="onInstanceTab && !propInherited(row.id)"
-						type="button"
-						class="dd-btn dd-btn-reset"
-						:disabled="rowsDisabled"
-						@click="resetRowToComponent(row)"
-					>
-						Reset
-					</button>
-				</template>
-				</div>
+							<td class="dd-row-label">{{ row.label }}</td>
+							<template v-if="isTableDividerRow(row)">
+								<td class="dd-swatch-cell">
+									<div
+										class="dd-chip dd-chip-border"
+										:class="styleValueForProp(row.colorPropId) || 'dd-chip-empty'"
+									></div>
+								</td>
+								<td>
+									<div class="dd-class">
+										<select
+											class="dd-select"
+											:value="styleValueForProp(row.widthPropId)"
+											:disabled="rowsDisabled"
+											@change="onDividerWidthChoice(row, $event)"
+										>
+											<option
+												v-for="opt in row.options"
+												:key="row.widthPropId + (opt.value || 'default')"
+												:value="opt.value"
+											>
+												{{ widthOptionLabel(row.widthPropId, opt.value, opt.label) }}
+											</option>
+										</select>
+										<span>{{
+											styleDisplayForProp(row.colorPropId, propInherited(row.colorPropId))
+										}}</span>
+									</div>
+								</td>
+								<td class="dd-actions">
+									<button
+										v-if="onInstanceTab && !propInherited(row.widthPropId)"
+										type="button"
+										class="dd-btn dd-btn-reset"
+										:disabled="rowsDisabled"
+										@click="resetPropToComponent(row.widthPropId)"
+									>
+										Reset
+									</button>
+									<button
+										v-if="onInstanceTab && !propInherited(row.colorPropId)"
+										type="button"
+										class="dd-btn dd-btn-reset"
+										:disabled="rowsDisabled"
+										@click="resetPropToComponent(row.colorPropId)"
+									>
+										Reset
+									</button>
+									<button
+										type="button"
+										class="dd-btn"
+										:disabled="rowsDisabled"
+										@click="pickDividerColor(row)"
+									>
+										Colour…
+									</button>
+								</td>
+							</template>
+							<template v-else-if="row.kind === 'color-role'">
+								<td class="dd-swatch-cell">
+									<div class="dd-chip" :class="styleValue(row) || 'dd-chip-empty'">Aa</div>
+								</td>
+								<td>
+									<div class="dd-class">{{ styleDisplay(row) }}</div>
+								</td>
+								<td class="dd-actions">
+									<button
+										v-if="onInstanceTab && !propInherited(row.id)"
+										type="button"
+										class="dd-btn dd-btn-reset"
+										:disabled="rowsDisabled"
+										@click="resetRowToComponent(row)"
+									>
+										Reset
+									</button>
+									<button
+										type="button"
+										class="dd-btn"
+										:disabled="rowsDisabled"
+										@click="pickStyle(row)"
+									>
+										Colour…
+									</button>
+								</td>
+							</template>
+							<template v-else>
+								<td colspan="2">
+									<div class="dd-class">
+										<select
+											class="dd-select"
+											:value="styleValue(row)"
+											:disabled="rowsDisabled"
+											@change="onStyleChoice(row, $event)"
+										>
+											<option
+												v-for="opt in row.options"
+												:key="row.id + (opt.value || 'default')"
+												:value="opt.value"
+											>
+												{{ opt.label }}
+											</option>
+										</select>
+										<div v-if="sizeInfo(row)" class="dd-size-info">{{ sizeInfo(row) }}</div>
+									</div>
+								</td>
+								<td class="dd-actions">
+									<button
+										v-if="onInstanceTab && !propInherited(row.id)"
+										type="button"
+										class="dd-btn dd-btn-reset"
+										:disabled="rowsDisabled"
+										@click="resetRowToComponent(row)"
+									>
+										Reset
+									</button>
+								</td>
+							</template>
+						</tr>
+					</tbody>
+				</table>
 			</template>
 		</div>
 		<div v-if="showKeepDefault" class="dd-opts">

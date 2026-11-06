@@ -1,7 +1,7 @@
 // Design Mode: hover a Vue part and click Edit to change its colours. Turned on with the floating Design Mode button.
 (function () {
 	const METHOD = "/api/method/themes.component_api.";
-	const DIALOG_SRC = "/assets/themes/design_mode/design-dialog.js?v=20261103o";
+	const DIALOG_SRC = "/assets/themes/design_mode/design-dialog.js?v=20261106a";
 	const INSTANCE_ATTR = "data-nce-instance";
 	const INSTANCE_AUTO_ATTR = "data-nce-instance-auto";
 	const HOVER_INTENT_MS = 1000;
@@ -726,6 +726,7 @@
 			},
 			lockKind: kind || "bg",
 			styleKey: field,
+			previewOnPick: true,
 		};
 		var fgKey = fgField || (styleProp ? STYLE_FG_FIELDS[styleProp] : "");
 		if (kind === "bg" && fgKey) {
@@ -744,6 +745,47 @@
 		if (!state.popup) return;
 		if (state.popup.kind === "table") updateTablePreview();
 		else updatePreview();
+	}
+
+	// This Instance preview CSS matches [data-nce-instance="…"]. A new instance
+	// only receives that attribute on Save, so stamp the preview id now.
+	function ensurePreviewInstance() {
+		if (!state.popup || !state.popup.targetEl) return;
+		if (!state.popup.previewInstanceId) {
+			state.popup.previewInstanceId =
+				state.popup.instanceId ||
+				"pv-" + Math.random().toString(36).slice(2, 14);
+		}
+		stampPreviewInstance();
+	}
+
+	function stampPreviewInstance() {
+		const popup = state.popup;
+		const el = popup && popup.targetEl;
+		const want = popup && popup.previewInstanceId;
+		if (!el || !want) return;
+		const cur = el.getAttribute(INSTANCE_ATTR) || "";
+		if (cur === want) return;
+		if (!popup.previewAttrAdded) {
+			popup.previewAttrPrevious = cur;
+			popup.previewAttrAdded = true;
+		}
+		el.setAttribute(INSTANCE_ATTR, want);
+	}
+
+	function clearPreviewInstance() {
+		const popup = state.popup;
+		const el = popup && popup.targetEl;
+		if (!popup || !popup.previewAttrAdded || !el) return;
+		const cur = el.getAttribute(INSTANCE_ATTR) || "";
+		if (cur === (popup.previewInstanceId || "")) {
+			if (popup.previewAttrPrevious) {
+				el.setAttribute(INSTANCE_ATTR, popup.previewAttrPrevious);
+			} else {
+				el.removeAttribute(INSTANCE_ATTR);
+			}
+		}
+		popup.previewAttrAdded = false;
 	}
 
 	function openRecord() {
@@ -868,8 +910,11 @@
 		}
 	}
 
+	let previewSeq = 0;
+
 	async function updatePreview() {
 		if (!state.popup) return;
+		const seq = ++previewSeq;
 		const s = state.popup.selector;
 		const d = state.popup.draft;
 		const instDraft = state.popup.handle.instanceDraft || {};
@@ -883,6 +928,7 @@
 			}
 			previewRow.instance_id = state.popup.previewInstanceId;
 			previewRow.instance_style_overrides = sparse;
+			stampPreviewInstance();
 		}
 		if (d.keep_default && !Object.keys(sparse).length) {
 			const prev = document.getElementById("nce-design-preview");
@@ -893,6 +939,7 @@
 			const res = await call("preview_declarations", {
 				rows: [previewRow],
 			});
+			if (seq !== previewSeq) return;
 			const decls = (res && res[s]) || "";
 			let styleEl = document.getElementById("nce-design-preview");
 			if (!styleEl) {
@@ -912,6 +959,7 @@
 
 	async function updateTablePreview() {
 		if (!state.popup || state.popup.kind !== "table") return;
+		const seq = ++previewSeq;
 		const entry = state.popup.entry;
 		const draft = state.popup.draft;
 		const instDraft = state.popup.handle.instanceDraft || {};
@@ -927,9 +975,11 @@
 				instance_id: state.popup.previewInstanceId,
 				instance_style_overrides: sparse,
 			};
+			stampPreviewInstance();
 		}
 		try {
 			const res = await call("preview_design_table", args);
+			if (seq !== previewSeq) return;
 			let styleEl = document.getElementById("nce-design-preview");
 			if (!styleEl) {
 				styleEl = document.createElement("style");
@@ -1081,6 +1131,7 @@
 
 	function cancelPopup() {
 		if (!state.popup) return;
+		clearPreviewInstance();
 		if (state.popup.handle) state.popup.handle.close();
 		const prev = document.getElementById("nce-design-preview");
 		if (prev) prev.remove();
@@ -1510,6 +1561,7 @@
 		outsideMouseDownHandler = onOutsideMouseDown;
 		document.addEventListener("mousedown", outsideMouseDownHandler, true);
 		hideOutline();
+		ensurePreviewInstance();
 		updatePreview();
 		showSiblings(hit.selector, hit.el);
 	}
@@ -1602,6 +1654,7 @@
 		outsideMouseDownHandler = onOutsideMouseDown;
 		document.addEventListener("mousedown", outsideMouseDownHandler, true);
 		hideOutline();
+		ensurePreviewInstance();
 		updateTablePreview();
 		showSiblings(selector, null);
 	}

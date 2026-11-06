@@ -78,18 +78,18 @@ def __dir__():
     return sorted(set(globals()) | {"app_include_css", "web_include_css"})
 
 app_include_js = [
-    "/assets/themes/dist/theme-swatch-picker.umd.js?v=20261101",
+    "/assets/themes/dist/theme-swatch-picker.umd.js?v=20261106d",
     "/assets/themes/js/desk_theme_loader.js",
     "/assets/themes/js/theme_app_gate.js?v=20261102f",
     "/assets/themes/js/instance_apply.js?v=20261103a",
-    "/assets/themes/js/design_mode.js?v=20261103o",
+    "/assets/themes/js/design_mode.js?v=20261106d",
 ]
 
 web_include_js = [
-    "/assets/themes/dist/theme-swatch-picker.umd.js?v=20261101",
+    "/assets/themes/dist/theme-swatch-picker.umd.js?v=20261106d",
     "/assets/themes/js/theme_app_gate.js?v=20261102f",
     "/assets/themes/js/instance_apply.js?v=20261103a",
-    "/assets/themes/js/design_mode.js?v=20261103o",
+    "/assets/themes/js/design_mode.js?v=20261106d",
 ]
 permission_query_conditions = {
     "Vue Component": "themes.component_api.vue_component_permission_query",

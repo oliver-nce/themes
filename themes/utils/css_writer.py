@@ -837,12 +837,26 @@ def generate_css(payload: dict) -> str:
     return "\n".join(lines)
 
 
-def generate_site_css(default_payload: dict, active_themes: list[tuple[str, dict]]) -> str:
+def generate_site_css(
+    default_payload: dict,
+    active_themes: list[tuple[str, dict]],
+    themes_app_payload: dict | None = None,
+) -> str:
     """default_payload → :root + class layer; active_themes = [(slug, payload), …] → scoped var blocks."""
     g = default_payload.get
     lines = []
-    _emit_font_faces_multi([default_payload] + [p for _, p in active_themes], lines)
+    font_payloads = [default_payload] + [p for _, p in active_themes]
+    if themes_app_payload:
+        font_payloads.append(themes_app_payload)
+    _emit_font_faces_multi(font_payloads, lines)
     _emit_var_block(g, lines, ":root", include_custom_css=True)
+    if themes_app_payload:
+        _emit_var_block(
+            themes_app_payload.get,
+            lines,
+            "#themes-app",
+            include_custom_css=False,
+        )
     # Classes are gated by fields present in the default payload — the default defines all standard roles.
     _emit_role_bg_classes(g, lines)
     _emit_role_text_border_classes(g, lines)
@@ -889,7 +903,14 @@ def publish_theme(theme_name: str) -> dict:
             continue
         active_themes.append((slug, json.loads(row.theme_json or "{}")))
 
-    css = generate_site_css(default_payload, active_themes)
+    themes_app_payload = None
+    themes_theme_json = frappe.db.get_single_value(
+        "Site Theme Config", "themes_theme_json"
+    )
+    if isinstance(themes_theme_json, str) and themes_theme_json.strip():
+        themes_app_payload = json.loads(themes_theme_json)
+
+    css = generate_site_css(default_payload, active_themes, themes_app_payload)
     _write_fonts_css()
     from themes.utils.frappe_ui_bridge import publish_frappe_ui_bridge_css
 
@@ -900,4 +921,10 @@ def publish_theme(theme_name: str) -> dict:
         publish_component_css()
     except Exception:
         frappe.log_error(title="Component CSS republish after theme publish failed")
+    try:
+        from themes.utils.app_theme_files import refresh_applied_exports
+
+        refresh_applied_exports()
+    except Exception:
+        frappe.log_error(title="Refresh applied theme exports after publish failed")
     return {"status": "ok", "theme": "base", "css_hash": css_hash, "bytes": len(css)}

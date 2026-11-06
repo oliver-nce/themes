@@ -126,7 +126,7 @@ watch(
 	font-weight: 600;
 	text-transform: uppercase;
 	letter-spacing: 0.05em;
-	color: var(--nce-color-muted, #6b7280);
+	color: var(--nce-color-text, #374151);
 	font-family: var(--nce-font-heading, inherit);
 }
 
@@ -219,7 +219,7 @@ watch(
 	padding: 0;
 	border: none;
 	background: transparent;
-	color: var(--nce-color-muted, #6b7280);
+	color: var(--nce-color-text, #374151);
 	font-size: 1.5rem;
 	line-height: 1;
 	cursor: pointer;
@@ -271,7 +271,7 @@ watch(
 
 .editor-section-chevron {
 	font-size: 0.625rem;
-	color: var(--nce-color-muted, #6b7280);
+	color: var(--nce-color-text, #374151);
 	transition: transform 0.15s ease;
 }
 
@@ -282,7 +282,7 @@ watch(
 .editor-section-hint {
 	margin: 0.375rem 0 0;
 	font-size: calc(var(--nce-font-size, 14px) * 0.8125);
-	color: var(--nce-color-muted, #6b7280);
+	color: var(--nce-color-text, #374151);
 	line-height: 1.4;
 }
 

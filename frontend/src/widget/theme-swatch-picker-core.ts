@@ -33,6 +33,8 @@ export type ThemeSwatchPickerCoreOpts = {
 	lockKind?: ThemeKind
 	/** Themes style key this picker edits (e.g. "table_header_bg_color"); used by Show in Themes App. */
 	styleKey?: string
+	/** Design Mode: push the colour onto the selected element as soon as a swatch or role is chosen. */
+	previewOnPick?: boolean
 	onClose?: (result: ThemeSwatchPickerCloseResult) => void
 }
 
@@ -45,6 +47,7 @@ type PickerState = ParsedThemeClass
 let rootEl: HTMLElement | null = null
 let escHandler: ((e: KeyboardEvent) => void) | null = null
 let closeCallback: ((result: ThemeSwatchPickerCloseResult) => void) | null = null
+let restoreOnCancel: (() => void) | null = null
 let cssInjected = false
 
 const KIND_LABELS: Record<ThemeKind, string> = {
@@ -322,10 +325,25 @@ function buildModal(
 		selectedValue.textContent = text
 	}
 
+	const pushLive = () => {
+		if (!opts.previewOnPick) return
+		const current = readState()
+		if (opts.setFgType) opts.setFgType(readFgType())
+		opts.setValue(composeThemeClass(current.kind, current.role, current.shade))
+	}
+
 	const selectShade = (shade: ThemeShade) => {
 		state = { ...readState(), shade }
 		previewShade = null
 		renderSwatches()
+		pushLive()
+	}
+
+	if (opts.previewOnPick) {
+		restoreOnCancel = () => {
+			if (opts.setFgType) opts.setFgType(initialFgType)
+			opts.setValue(committedValue)
+		}
 	}
 
 	const commitSelection = (): boolean => {
@@ -392,18 +410,21 @@ function buildModal(
 		input.addEventListener("change", () => {
 			state = readState()
 			renderSwatches()
+			pushLive()
 		})
 	}
 	for (const input of roleInputs.values()) {
 		input.addEventListener("change", () => {
 			state = readState()
 			renderSwatches()
+			pushLive()
 		})
 	}
 	for (const input of fgTypeInputs.values()) {
 		input.addEventListener("change", () => {
 			readFgType()
 			renderSwatches()
+			pushLive()
 		})
 	}
 
@@ -424,6 +445,17 @@ function buildModal(
 }
 
 export function close(result: ThemeSwatchPickerCloseResult = { saved: false }): void {
+	if (!result.saved && restoreOnCancel) {
+		const restore = restoreOnCancel
+		restoreOnCancel = null
+		try {
+			restore()
+		} catch (err) {
+			console.error("[themeSwatchPicker] restore failed:", err)
+		}
+	} else {
+		restoreOnCancel = null
+	}
 	if (escHandler) {
 		document.removeEventListener("keydown", escHandler)
 		escHandler = null

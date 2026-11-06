@@ -47,7 +47,7 @@ Site Theme Editor for colours, typography, layout, live CSS variables, and base 
 					:class="
 						activeTab === tab.id
 							? 'border-blue-600 text-blue-600'
-							: 'border-transparent text-gray-500 hover:text-gray-700'
+							: 'border-transparent editor-tab-idle'
 					"
 					@click="activeTab = tab.id"
 				>
@@ -499,178 +499,143 @@ Site Theme Editor for colours, typography, layout, live CSS variables, and base 
 
 			<!-- AGENT:TAB interaction — hover shades, focus ring, disabled opacity, pressed shift -->
 			<div v-show="activeTab === 'interaction'" class="editor-tab">
-				<EditorSection
-					id="theme-style-interaction-hover"
-					title="Hover"
-					hint="Background and border shades applied on :hover for buttons and controls that use the theme-hover-* classes."
-				>
-					<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-						<SelectField
-							label="Hover background shade"
-							:options="hoverBgShadeOptions"
-							v-model="form.hover_bg_shade"
-						/>
-						<SelectField
-							label="Hover border shade"
-							:options="hoverBorderShadeOptions"
-							v-model="form.hover_border_shade"
-						/>
-					</div>
-					<div class="flex items-center gap-3 mt-4">
-						<input
-							type="checkbox"
-							id="button_outline_enabled"
-							v-model="form.button_outline_enabled"
-							class="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-						/>
-						<div>
-							<label for="button_outline_enabled" class="text-sm font-medium text-gray-700">
-								Outline buttons
-							</label>
-							<p class="text-xs text-gray-500 mt-1">
-								Draw every button in apps using this theme as an outline button (transparent fill,
-								primary border and text). Design Mode changes and "Use original app styles only"
-								still win.
-							</p>
-						</div>
-					</div>
-				</EditorSection>
-
-				<EditorSection
-					id="theme-style-interaction-focus"
-					title="Focus Ring"
-					hint="Width and offset for theme-focus-ring; ring colour is the Focus Ring colour in the Colours tab (Typography > Text Colours)."
-				>
-					<div class="flex flex-col gap-4 mb-6">
-						<div class="flex items-center gap-3">
-							<input
-								type="checkbox"
-								id="focus_ring_enabled"
-								v-model="form.focus_ring_enabled"
-								class="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-							/>
-							<label for="focus_ring_enabled" class="text-sm font-medium text-gray-700">
-								Show focus ring
-							</label>
-						</div>
-						<div class="flex items-center gap-3">
-							<input
-								type="checkbox"
-								id="focus_fill_enabled"
-								v-model="form.focus_fill_enabled"
-								class="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-							/>
-							<label for="focus_fill_enabled" class="text-sm font-medium text-gray-700">
-								Fill button on focus
-							</label>
-						</div>
-					</div>
-					<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-						<SelectField
-							label="Ring width"
-							:options="focusRingWidthOptions"
-							v-model="form.focus_ring_width"
-						/>
-						<SelectField
-							label="Ring offset"
-							:options="focusRingOffsetOptions"
-							v-model="form.focus_ring_offset"
-						/>
-					</div>
-				</EditorSection>
-
-				<EditorSection
-					id="theme-style-interaction-disabled"
-					title="Disabled"
-					hint="Opacity for theme-disabled and theme-disabled-auto on inactive controls."
-				>
-					<SelectField
-						label="Disabled opacity"
-						:options="disabledOpacityOptions"
-						v-model="form.disabled_opacity"
-					/>
-				</EditorSection>
-
-				<EditorSection
-					id="theme-style-interaction-pressed"
-					title="Pressed"
-					hint="Vertical shift on :active for theme-pressed (simulates a pressed button)."
-				>
-					<SelectField
-						label="Pressed shift"
-						:options="pressedShiftOptions"
-						v-model="form.pressed_shift"
-					/>
-				</EditorSection>
-
-				<EditorSection id="theme-style-interaction-preview" title="Live preview">
-					<p class="text-sm text-gray-600 mb-3">
-						Hover or Tab onto a button to preview hover and focus styles.
-					</p>
-					<div
-						class="rounded-lg border border-gray-200 p-5 bg-white space-y-4 nce-interaction-preview"
-						v-bind="interactionFocusPreviewAttrs"
-						:style="interactionPreviewVars"
+				<div class="grid grid-cols-2 gap-4 items-stretch">
+					<EditorSection
+						id="theme-style-interaction-hover"
+						title="Hover"
+						hint="Background and border shades applied on :hover for buttons and controls that use the theme-hover-* classes."
 					>
-						<div class="flex flex-wrap gap-3">
-							<button
-								type="button"
-								class="theme-bg-primary-100 theme-border theme-rounded theme-hover-bg-primary theme-focus-ring theme-pressed theme-p-sm text-sm cursor-pointer"
-							>
-								Primary
-							</button>
-							<button
-								type="button"
-								disabled
-								class="theme-bg-primary-100 theme-border theme-rounded theme-hover-bg-primary theme-focus-ring theme-pressed theme-disabled-auto theme-p-sm text-sm"
-							>
-								Primary (disabled)
-							</button>
-							<button
-								type="button"
-								class="theme-bg-neutral-100 theme-border theme-rounded theme-hover-bg-neutral theme-focus-ring theme-pressed theme-p-sm text-sm cursor-pointer"
-							>
-								Neutral
-							</button>
-							<button
-								type="button"
-								disabled
-								class="theme-bg-neutral-100 theme-border theme-rounded theme-hover-bg-neutral theme-focus-ring theme-pressed theme-disabled-auto theme-p-sm text-sm"
-							>
-								Neutral (disabled)
-							</button>
+						<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+							<SelectField
+								label="Hover background shade"
+								:options="hoverBgShadeOptions"
+								v-model="form.hover_bg_shade"
+							/>
+							<SelectField
+								label="Hover border shade"
+								:options="hoverBorderShadeOptions"
+								v-model="form.hover_border_shade"
+							/>
 						</div>
-						<div class="flex flex-wrap gap-4 text-sm" :style="{ fontFamily: fontCSS(form.font_family) }">
-							<span class="theme-font-normal">Normal weight</span>
-							<span class="theme-font-medium">Medium weight</span>
-							<span class="theme-font-semibold">Semibold weight</span>
-							<span class="theme-font-bold">Bold weight</span>
+						<div class="flex items-center gap-3 mt-4">
+							<input
+								type="checkbox"
+								id="button_outline_enabled"
+								v-model="form.button_outline_enabled"
+								class="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+							/>
+							<div>
+								<label for="button_outline_enabled" class="text-sm font-medium text-gray-700">
+									Outline buttons
+								</label>
+								<p class="text-xs text-gray-500 mt-1">
+									Draw every button in apps using this theme as an outline button (transparent fill,
+									primary border and text). Design Mode changes and "Use original app styles only"
+									still win.
+								</p>
+							</div>
 						</div>
-					</div>
-				</EditorSection>
+					</EditorSection>
+
+					<EditorSection
+						id="theme-style-interaction-focus"
+						title="Focus Ring"
+						hint="Width and offset for theme-focus-ring; ring colour is the Focus Ring colour in the Colours tab (Typography > Text Colours)."
+					>
+						<div class="flex flex-col gap-4 mb-6">
+							<div class="flex items-center gap-3">
+								<input
+									type="checkbox"
+									id="focus_ring_enabled"
+									v-model="form.focus_ring_enabled"
+									class="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+								/>
+								<label for="focus_ring_enabled" class="text-sm font-medium text-gray-700">
+									Show focus ring
+								</label>
+							</div>
+							<div class="flex items-center gap-3">
+								<input
+									type="checkbox"
+									id="focus_fill_enabled"
+									v-model="form.focus_fill_enabled"
+									class="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+								/>
+								<label for="focus_fill_enabled" class="text-sm font-medium text-gray-700">
+									Fill button on focus
+								</label>
+							</div>
+						</div>
+						<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+							<SelectField
+								label="Ring width"
+								:options="focusRingWidthOptions"
+								v-model="form.focus_ring_width"
+							/>
+							<SelectField
+								label="Ring offset"
+								:options="focusRingOffsetOptions"
+								v-model="form.focus_ring_offset"
+							/>
+						</div>
+					</EditorSection>
+
+					<EditorSection
+						id="theme-style-interaction-disabled"
+						title="Disabled"
+						hint="Opacity for theme-disabled and theme-disabled-auto on inactive controls."
+					>
+						<SelectField
+							label="Disabled opacity"
+							:options="disabledOpacityOptions"
+							v-model="form.disabled_opacity"
+						/>
+					</EditorSection>
+
+					<EditorSection
+						id="theme-style-interaction-pressed"
+						title="Pressed"
+						hint="Vertical shift on :active for theme-pressed (simulates a pressed button)."
+					>
+						<SelectField
+							label="Pressed shift"
+							:options="pressedShiftOptions"
+							v-model="form.pressed_shift"
+						/>
+					</EditorSection>
+				</div>
 
 				<EditorSection
 					id="theme-style-interaction-buttons"
 					title="Buttons"
-					hint="Choose a size on the left. The buttons update immediately when you change these settings, or Hover, Focus Ring, Disabled and Pressed above."
+					hint="Choose a size on the left. The buttons update immediately when you change these settings. Filled and outline buttons share the same size settings."
 				>
 					<div class="flex flex-row items-start gap-6">
 						<div
-							class="flex flex-col items-start gap-3 w-56 shrink-0 rounded-lg border border-gray-200 bg-white p-4 nce-interaction-preview"
+							class="grid grid-cols-2 items-center gap-3 w-96 shrink-0 rounded-lg border border-gray-200 bg-white p-4 nce-interaction-preview"
 							v-bind="interactionFocusPreviewAttrs"
 							:style="interactionPreviewVars"
 						>
-							<button
-								v-for="row in buttonSizeRows"
-								:key="row.prefix"
-								type="button"
-								class="nce-size-choice"
-								:class="{ 'is-selected': selectedButtonSize === row.prefix }"
-								:style="buttonSizeStyle(row.prefix)"
-								@click="selectedButtonSize = row.prefix"
-							>
-								{{ row.label }}
-							</button>
+							<template v-for="row in buttonSizeRows" :key="row.prefix">
+								<button
+									type="button"
+									class="nce-size-choice"
+									:class="{ 'is-selected': selectedButtonSize === row.prefix }"
+									:style="buttonSizeStyle(row.prefix)"
+									@click="selectedButtonSize = row.prefix"
+								>
+									{{ row.label }}
+								</button>
+								<button
+									type="button"
+									class="nce-size-choice nce-size-choice-outline"
+									:class="{ 'is-selected': selectedButtonSize === row.prefix }"
+									:style="buttonSizeStyle(row.prefix)"
+									@click="selectedButtonSize = row.prefix"
+								>
+									{{ row.label }} outline
+								</button>
+							</template>
 						</div>
 						<div class="flex-1 min-w-0 grid grid-cols-2 gap-4 content-start">
 							<div v-for="field in selectedButtonRow.fields" :key="field.key">
@@ -700,6 +665,8 @@ Site Theme Editor for colours, typography, layout, live CSS variables, and base 
 				</EditorSection>
 			</div>
 
+			<!-- Advanced tab hidden. Uncomment the tabs entry and remove v-if="false" to restore. -->
+			<template v-if="false">
 			<!-- AGENT:TAB advanced — custom_css, tailwind_overrides, dark_mode -->
 			<div v-show="activeTab === 'advanced'" class="editor-tab">
 				<EditorSection title="Custom CSS">
@@ -732,6 +699,7 @@ Site Theme Editor for colours, typography, layout, live CSS variables, and base 
 					</p>
 				</EditorSection>
 			</div>
+			</template>
 
 			<!-- AGENT:TAB applications — per-app Apply theme toggle -->
 			<div v-show="activeTab === 'applications'" class="editor-tab">
@@ -947,6 +915,30 @@ Site Theme Editor for colours, typography, layout, live CSS variables, and base 
 						@click="requestSaveAsBaseTheme"
 					>
 						Save as base theme
+					</Button>
+				</EditorSection>
+
+				<EditorSection
+					title="Save as Themes Theme"
+					hint="Saves the theme you are editing onto the server and renders the Themes app in it. The Base theme is unchanged."
+				>
+					<p class="text-sm text-gray-600 mb-3">
+						Editing <strong>{{ editorMeta.theme_name || "—" }}</strong>.
+					</p>
+					<p v-if="saveAsThemesThemeState.error" class="text-sm text-red-600 mb-2">
+						{{ saveAsThemesThemeState.error }}
+					</p>
+					<p v-if="saveAsThemesThemeState.success" class="text-sm text-green-700 mb-2">
+						{{ saveAsThemesThemeState.success }}
+					</p>
+					<Button
+						variant="solid"
+						class="bg-primary text-primary-fg border border-primary"
+						:loading="saveAsThemesThemeState.busy"
+						:disabled="!canSaveAsDefaultTheme"
+						@click="saveAsThemesTheme"
+					>
+						Save as Themes Theme
 					</Button>
 				</EditorSection>
 			</div>
@@ -1228,12 +1220,32 @@ function resetBrandPaletteAdjustments() {
 	}
 }
 
-function pushToPreview() {
-	if (!previewWin || previewWin.closed) return
-	previewWin.postMessage({ type: "nce-theme-update", variables: computeCSSVariables() }, "*")
+// Live updates go over a BroadcastChannel so any open preview window gets them,
+// however it was opened (editor button, sidebar link, home card) or reloaded.
+const previewChannel = new BroadcastChannel("nce-theme-preview")
+previewChannel.onmessage = (event) => {
+	if (event.data?.type === "nce-preview-ready") pushToPreview()
 }
 
+function pushToPreview() {
+	const message = { type: "nce-theme-update", variables: computeCSSVariables() }
+	previewChannel.postMessage(message)
+	if (previewWin && !previewWin.closed) previewWin.postMessage(message, "*")
+}
+
+// A reloaded preview window asks the editor for the current (possibly unsaved) values.
+function handlePreviewReady(event: MessageEvent) {
+	if (event.data?.type !== "nce-preview-ready") return
+	;(event.source as Window | null)?.postMessage(
+		{ type: "nce-theme-update", variables: computeCSSVariables() },
+		"*",
+	)
+}
+window.addEventListener("message", handlePreviewReady)
+
 onUnmounted(() => {
+	window.removeEventListener("message", handlePreviewReady)
+	previewChannel.close()
 	if (previewWin && !previewWin.closed) previewWin.close()
 })
 
@@ -1248,8 +1260,8 @@ const tabs = [
 	{ id: "colors", label: "Colours" },
 	{ id: "typography", label: "Typography" },
 	{ id: "layout", label: "Layout" },
-	{ id: "interaction", label: "Interaction" },
-	{ id: "advanced", label: "Advanced" },
+	{ id: "interaction", label: "Buttons" },
+	// { id: "advanced", label: "Advanced" },
 	{ id: "applications", label: "Applications" },
 	{ id: "system", label: "System" },
 ]
@@ -1827,6 +1839,17 @@ const saveBaseThemeDialog = reactive({
 	error: "",
 })
 
+const saveAsThemesThemeState = reactive({
+	error: "",
+	success: "",
+	busy: false,
+})
+
+const saveAsThemesThemeResource = createResource({
+	url: "themes.api.save_as_themes_theme",
+	auto: false,
+})
+
 const restoreToBaseDialog = reactive({
 	open: false,
 	busy: false,
@@ -2110,6 +2133,7 @@ const {
 	deleteDialog,
 	systemTab,
 	canSaveAsDefaultTheme,
+	editingTheme,
 	closeConfirmDialog,
 	confirmSaveAndContinue,
 	confirmDiscardAndContinue,
@@ -2189,6 +2213,22 @@ async function confirmSaveAsBaseTheme() {
 		systemTab.error = msg
 	} finally {
 		saveBaseThemeDialog.busy = false
+	}
+}
+
+async function saveAsThemesTheme() {
+	if (!canSaveAsDefaultTheme.value || !editingTheme.value) return
+	saveAsThemesThemeState.error = ""
+	saveAsThemesThemeState.success = ""
+	saveAsThemesThemeState.busy = true
+	try {
+		await handleSave()
+		await saveAsThemesThemeResource.submit({ theme: editingTheme.value })
+		window.location.reload()
+	} catch (err: any) {
+		saveAsThemesThemeState.error = err?.message || "Could not save as Themes Theme."
+	} finally {
+		saveAsThemesThemeState.busy = false
 	}
 }
 
@@ -2276,12 +2316,15 @@ onMounted(() => {
 <style scoped>
 .section-title {
 	@apply text-sm font-semibold uppercase tracking-wide;
-	color: var(--nce-color-muted, #6b7280);
+	color: var(--nce-color-text, #374151);
 	font-family: var(--nce-font-heading, inherit);
 }
 
 .editor-panel {
 	padding: 1rem 1.25rem;
+	height: 100%;
+	display: flex;
+	flex-direction: column;
 	border-radius: var(--nce-border-radius, 0.375rem);
 	border: 1px solid var(--nce-color-border, #e5e7eb);
 	background: var(--nce-color-surface, #f9fafb);
@@ -2295,6 +2338,14 @@ onMounted(() => {
 	flex-direction: column;
 	gap: 1rem;
 	width: 100%;
+}
+
+.editor-tab-idle {
+	color: var(--nce-color-text, #374151);
+}
+
+.editor-tab-idle:hover {
+	color: var(--nce-color-text, #374151);
 }
 
 .editor-header {
@@ -2321,7 +2372,7 @@ onMounted(() => {
 
 .editor-header :deep(.editor-status-label) {
 	font-size: calc(var(--nce-font-size, 14px) * 0.875);
-	color: var(--nce-color-muted, #6b7280);
+	color: var(--nce-color-text, #374151);
 	font-family: var(--nce-font-family, inherit);
 }
 
@@ -2341,7 +2392,7 @@ onMounted(() => {
 
 .editor-header :deep(.editor-status-hint) {
 	font-size: calc(var(--nce-font-size, 14px) * 0.75);
-	color: var(--nce-color-muted, #6b7280);
+	color: var(--nce-color-text, #374151);
 }
 
 .editor-header :deep(.editor-status-hint-warn) {
@@ -2354,7 +2405,7 @@ onMounted(() => {
 }
 
 .editor-header :deep(.editor-muted) {
-	color: var(--nce-color-muted, #9ca3af);
+	color: var(--nce-color-text, #374151);
 }
 
 .editor-header :deep(.theme-select) {
@@ -2439,10 +2490,19 @@ onMounted(() => {
 	border-color: var(--nce-color-primary, #1d4ed8);
 	color: var(--nce-color-primary, #1d4ed8);
 }
+.nce-size-choice.nce-size-choice-outline {
+	background: transparent;
+	color: var(--nce-color-primary, #1d4ed8);
+	border-color: var(--nce-color-primary, #1d4ed8);
+}
 .nce-size-choice:hover {
 	background: var(--nce-color-primary-100, #dbeafe);
 	color: var(--nce-color-primary-100-fg, var(--nce-color-primary, #1d4ed8));
 	border-color: var(--nce-color-primary-500, var(--nce-color-primary, #1d4ed8));
+}
+.nce-size-choice.nce-size-choice-outline:hover {
+	background: var(--nce-color-primary-100, #dbeafe);
+	color: var(--nce-color-primary-100-fg, var(--nce-color-primary, #1d4ed8));
 }
 .nce-interaction-preview[data-focus-ring-enabled="1"] .nce-size-choice:focus-visible,
 .nce-interaction-preview[data-focus-ring-enabled="1"] .nce-size-choice.is-selected {

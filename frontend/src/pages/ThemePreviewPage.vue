@@ -470,8 +470,18 @@ function handleMessage(event: MessageEvent) {
 	}
 }
 
-onMounted(() => window.addEventListener("message", handleMessage))
-onUnmounted(() => window.removeEventListener("message", handleMessage))
+const channel = new BroadcastChannel("nce-theme-preview")
+channel.onmessage = handleMessage
+
+onMounted(() => {
+	window.addEventListener("message", handleMessage)
+	window.opener?.postMessage({ type: "nce-preview-ready" }, "*")
+	channel.postMessage({ type: "nce-preview-ready" })
+})
+onUnmounted(() => {
+	window.removeEventListener("message", handleMessage)
+	channel.close()
+})
 </script>
 
 <style scoped>

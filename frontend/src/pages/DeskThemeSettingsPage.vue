@@ -58,7 +58,7 @@ Desk Theme Editor for NCE Desk Theme colours, shape, typography, Gantt, and live
 					:class="
 						activeTab === tab.id
 							? 'border-blue-600 text-blue-600'
-							: 'border-transparent text-gray-500 hover:text-gray-700'
+							: 'border-transparent editor-tab-idle'
 					"
 					@click="activeTab = tab.id"
 				>
@@ -1333,6 +1333,14 @@ onMounted(() => {
 	gap: 1rem;
 	width: 100%;
 }
+
+.editor-tab-idle {
+	color: var(--nce-color-text, #374151);
+}
+
+.editor-tab-idle:hover {
+	color: var(--nce-color-text, #374151);
+}
 .editor-header {
 	margin-bottom: 1.25rem;
 }
@@ -1355,7 +1363,7 @@ onMounted(() => {
 	color: var(--nce-color-warning, #d97706);
 }
 .editor-header :deep(.editor-muted) {
-	color: var(--nce-color-muted, #9ca3af);
+	color: var(--nce-color-text, #374151);
 }
 .editor-header :deep(.theme-select) {
 	flex: 1 1 auto;

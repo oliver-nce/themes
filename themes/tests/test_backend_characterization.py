@@ -275,6 +275,10 @@ class TestWebPublishTail(unittest.TestCase):
                 return_value=bundled_payload,
             ), patch(
                 "themes.utils.frappe_ui_bridge.publish_frappe_ui_bridge_css",
+            ), patch(
+                "themes.utils.component_css_writer.publish_component_css",
+            ), patch(
+                "themes.utils.app_theme_files.refresh_applied_exports",
             ):
                 from themes.utils.css_writer import publish_theme
 

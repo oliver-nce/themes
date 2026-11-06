@@ -110,6 +110,13 @@ class TestCssSnapshots(unittest.TestCase):
             expected = hash_path.read_text().strip()
             self.assertEqual(_css_hash(css), expected, f"{name} hash mismatch")
 
+    def test_generate_site_css_emits_themes_app_block(self):
+        themes_app = {"primary_color": "#123456"}
+        css = generate_site_css(self.payloads["default"], [], themes_app)
+        idx = css.index("#themes-app {")
+        self.assertIn("--nce-color-primary: #123456;", css)
+        self.assertNotIn("#123456", css[:idx])
+
 
 if __name__ == "__main__":
     unittest.main()

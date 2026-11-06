@@ -143,7 +143,7 @@ const totalRows = computed(() =>
 .catalog-status {
 	margin: 0 0 0.75rem;
 	font-size: calc(var(--nce-font-size, 14px) * 0.875);
-	color: var(--nce-color-muted, #6b7280);
+	color: var(--nce-color-text, #374151);
 }
 
 .catalog-error { color: #dc2626; }
@@ -170,7 +170,7 @@ const totalRows = computed(() =>
 
 .catalog-count {
 	font-size: calc(var(--nce-font-size, 14px) * 0.8125);
-	color: var(--nce-color-muted, #6b7280);
+	color: var(--nce-color-text, #374151);
 	white-space: nowrap;
 }
 
@@ -206,7 +206,7 @@ const totalRows = computed(() =>
 
 .catalog-table th {
 	font-weight: 600;
-	color: var(--nce-color-muted, #6b7280);
+	color: var(--nce-color-text, #374151);
 	white-space: nowrap;
 }
 

@@ -79,7 +79,7 @@
 	border-radius: 8px;
 	border: 1px solid var(--nce-color-border, #d1d5db);
 	background: var(--nce-color-surface, #fff);
-	color: var(--nce-color-muted, #4b5563);
+	color: var(--nce-color-text, #374151);
 	cursor: pointer;
 }
 .dd-tab-active {
@@ -90,7 +90,7 @@
 .dd-instance-id {
 	margin: 4px 0 0;
 	font-size: 12px;
-	color: var(--nce-color-muted, #6b7280);
+	color: var(--nce-color-text, #374151);
 	font-family: ui-monospace, monospace;
 }
 .dd-row-inherited .dd-class {
@@ -110,22 +110,25 @@
 	font-weight: 700;
 	letter-spacing: 0.06em;
 	text-transform: uppercase;
-	color: var(--nce-color-muted, #6b7280);
+	color: var(--nce-color-text, #374151);
 }
-.dd-row {
-	display: grid;
-	grid-template-columns: 130px 64px 1fr auto;
-	align-items: center;
-	gap: 12px;
-	padding: 10px 8px;
-	margin: 0 -8px;
-	border-bottom: 1px solid var(--nce-color-border, #e5e7eb);
+.dd-style-table {
+	width: 100%;
+	margin: 4px 0 8px;
 }
-.dd-row-alt {
-	background: rgba(0, 0, 0, 0.045);
+.dd-style-table td {
+	vertical-align: middle;
+	padding: 8px 10px;
 }
-.dd-class-wide {
-	grid-column: 2 / 4;
+.dd-swatch-cell {
+	width: 72px;
+}
+.dd-actions {
+	white-space: nowrap;
+	text-align: right;
+}
+.dd-actions .dd-btn + .dd-btn {
+	margin-left: 6px;
 }
 .dd-opts {
 	padding: 8px 18px 10px;
@@ -133,9 +136,6 @@
 }
 .dd-opts .dd-check {
 	margin: 6px 0;
-}
-.dd-row:last-child {
-	border-bottom: 0;
 }
 .dd-row-label {
 	font-weight: 600;
@@ -166,7 +166,7 @@
 .dd-class {
 	font-family: ui-monospace, monospace;
 	font-size: 12.5px;
-	color: var(--nce-color-muted, #4b5563);
+	color: var(--nce-color-text, #374151);
 	word-break: break-all;
 	display: flex;
 	flex-direction: column;
@@ -250,7 +250,7 @@
 .dd-desk-source {
 	font-family: var(--nce-font-family, system-ui, sans-serif);
 	font-size: 12px;
-	color: var(--nce-color-muted, #6b7280);
+	color: var(--nce-color-text, #374151);
 }
 .dd-desk-link {
 	align-self: flex-start;
@@ -278,7 +278,7 @@
 }
 .dd-orig-file {
 	font-size: 12px;
-	color: var(--nce-color-muted, #6b7280);
+	color: var(--nce-color-text, #374151);
 }
 .dd-orig-badge {
 	font-size: 11px;
@@ -294,7 +294,7 @@
 }
 .dd-orig-row span:first-child {
 	font-weight: 600;
-	color: var(--nce-color-muted, #4b5563);
+	color: var(--nce-color-text, #374151);
 }
 
 .dd-orig-conflict { padding: 6px 0; border-bottom: 1px solid rgba(0,0,0,0.08); }

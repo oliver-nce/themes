@@ -35,9 +35,15 @@ export default defineConfig({
 			output: {
 				// Entry is cache-busted via ?v= in themes.html; chunks need content hashes
 				// or browsers keep serving stale lazy-loaded bundles after deploy.
-				entryFileNames: "assets/themes.js",
+				entryFileNames: "assets/themes-entry-[hash].js",
 				chunkFileNames: "assets/themes-[name]-[hash].js",
-				assetFileNames: "assets/themes[extname]",
+				assetFileNames(assetInfo) {
+					const sourceName = (assetInfo.names && assetInfo.names[0]) || assetInfo.name || ""
+					if (sourceName.endsWith(".css")) {
+						return "assets/[name]-[hash][extname]"
+					}
+					return "assets/themes[extname]"
+				},
 			},
 		},
 	},

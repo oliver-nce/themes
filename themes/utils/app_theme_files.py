@@ -61,6 +61,44 @@ def apply_to_app(app: str, slug: str) -> dict:
 	}
 
 
+def refresh_applied_exports(slug: str | None = None) -> list[str]:
+	"""Rebuild nce-themes export files for every recorded app in *applied* state.
+
+	Does not touch hooks.py or change slug / applied_on on record entries.
+	"""
+	record = _read_record()
+	rewritten: list[str] = []
+	for app in list(record.keys()):
+		try:
+			if app_status(app) != "applied":
+				continue
+			entry = record.get(app) or {}
+			entry_slug = entry.get("slug")
+			if slug is not None and entry_slug != slug:
+				continue
+			pkg = Path(frappe.get_app_path(app))
+			public_root = pkg / "public"
+			theme_name = _active_theme_name_for_slug(entry_slug)
+			items = _load_theme_rows([theme_name])
+			fonts_dir = Path(frappe.get_app_path("themes")) / "public" / "fonts"
+			export_files = build_export_files(
+				items,
+				theme_name,
+				include_bridge=True,
+				fonts_dir=fonts_dir,
+				scope_slug=entry_slug,
+			)
+			_write_export_files(public_root, export_files)
+			relative_paths = _relative_paths_for_export(export_files)
+			entry["files"] = relative_paths
+			record[app] = entry
+			_write_record(record)
+			rewritten.append(app)
+		except Exception:
+			frappe.log_error(title="Refresh applied theme export failed")
+	return rewritten
+
+
 def remove_from_app(app: str) -> dict:
 	"""Remove recorded export files and the managed hooks block from *app*."""
 	record = _read_record()

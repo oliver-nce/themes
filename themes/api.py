@@ -3,7 +3,7 @@
 
 AGENT NAVIGATION — grep "AGENT:" in this file
   AGENT:web-read      — get_theme_editor, get_base_theme_editor, get_base_theme_payload
-  AGENT:web-write     — save_theme, create_theme, save_as_base_theme
+  AGENT:web-write     — save_theme, create_theme, save_as_base_theme, save_as_themes_theme
   AGENT:web-maintain  — list/rename/delete/regenerate_theme_css
   AGENT:web-deprecated — get_active_theme_editor, save_active_theme
   AGENT:desk-*        — parallel desk_* endpoints (DESK_FAMILY)
@@ -141,6 +141,21 @@ def save_as_base_theme(theme: str, password: str):
     """Set base theme, publish CSS, and bundle payload into app source files."""
     _require_system_manager()
     return svc.save_as_base(WEB_FAMILY, theme, password)
+
+
+@frappe.whitelist()
+def save_as_themes_theme(theme: str):
+    """Store an NCE Theme snapshot on Site Theme Config for #themes-app CSS."""
+    _require_system_manager()
+    if not frappe.db.exists("NCE Theme", theme):
+        frappe.throw(_("NCE Theme {0} does not exist").format(theme))
+    theme_json = frappe.db.get_value("NCE Theme", theme, "theme_json")
+    if not theme_json or not str(theme_json).strip():
+        frappe.throw(_("NCE Theme {0} has no theme_json").format(theme))
+    cfg = frappe.get_single("Site Theme Config")
+    cfg.themes_theme_json = theme_json
+    cfg.save(ignore_permissions=True)
+    return {"status": "ok", "theme": theme}
 
 
 # ─── AGENT:web-deprecated ─── legacy aliases; grep callers before removing

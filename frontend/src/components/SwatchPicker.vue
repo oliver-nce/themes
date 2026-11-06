@@ -1,5 +1,5 @@
 <!--
-Popover for picking a primary, secondary, or gray shade, or typing a custom hex.
+Popover for picking a primary, secondary, or gray shade, or a custom colour refined from a starting grid with hue and brightness.
 
 -->
 
@@ -98,16 +98,71 @@ Popover for picking a primary, secondary, or gray shade, or typing a custom hex.
 
 				<template v-else>
 					<div class="custom-title">Custom colour</div>
-					<div class="custom-preview" :style="{ backgroundColor: customHex }" />
-					<label class="custom-field-label">
-						<span>Pick</span>
+					<div class="row-label">Start</div>
+					<div class="start-grid">
+						<button
+							v-for="(hex, index) in startColours"
+							:key="'c-' + index"
+							type="button"
+							class="swatch"
+							:class="{ 'swatch-active': norm(customHex) === hex }"
+							:style="{ backgroundColor: hex }"
+							:title="hex"
+							@click="pickStart(hex)"
+						/>
+					</div>
+					<div class="start-grid">
+						<button
+							v-for="(hex, index) in startNeutrals"
+							:key="'n-' + index"
+							type="button"
+							class="swatch"
+							:class="{ 'swatch-active': norm(customHex) === hex }"
+							:style="{ backgroundColor: hex }"
+							:title="hex"
+							@click="pickStart(hex)"
+						/>
+					</div>
+					<label class="hue-field">
+						<span>Hue</span>
 						<input
-							type="color"
-							class="custom-native"
-							:value="customHex"
-							@input="onNativeInput"
+							type="range"
+							class="refine-slider"
+							:min="hueAnchor - HUE_WINDOW"
+							:max="hueAnchor + HUE_WINDOW"
+							step="1"
+							:value="hue"
+							:style="{ background: hueTrack }"
+							@input="onHueInput"
 						/>
 					</label>
+					<label class="hue-field">
+						<span>Saturation</span>
+						<input
+							type="range"
+							class="refine-slider"
+							min="0"
+							max="100"
+							step="1"
+							:value="Math.round(sat * 100)"
+							:style="{ background: satTrack }"
+							@input="onSatInput"
+						/>
+					</label>
+					<label class="hue-field">
+						<span>Brightness</span>
+						<input
+							type="range"
+							class="refine-slider"
+							min="0"
+							max="100"
+							step="1"
+							:value="Math.round(light * 100)"
+							:style="{ background: lightTrack }"
+							@input="onLightInput"
+						/>
+					</label>
+					<div class="custom-preview" :style="{ backgroundColor: customHex }" />
 					<label class="custom-field-label">
 						<span>Hex</span>
 						<input
@@ -118,6 +173,16 @@ Popover for picking a primary, secondary, or gray shade, or typing a custom hex.
 							placeholder="#000000"
 							@change="normalizeCustomHex"
 						/>
+						<button
+							v-if="canEyedrop"
+							type="button"
+							class="eyedropper-btn"
+							aria-label="Eyedropper"
+							title="Pick from screen"
+							@click="pickFromScreen"
+						>
+							<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m2 22 1-1h3l9-9"/><path d="M3 21v-3l9-9"/><path d="m15 6 3.4-3.4a2.1 2.1 0 1 1 3 3L18 9l.4.4a2.1 2.1 0 1 1-3 3l-3.8-3.8a2.1 2.1 0 1 1 3-3l.4.4"/></svg>
+						</button>
 					</label>
 					<div class="popover-footer">
 						<Button
@@ -144,6 +209,26 @@ Popover for picking a primary, secondary, or gray shade, or typing a custom hex.
 <script setup lang="ts">
 import { ref, computed } from "vue"
 import { generateShades } from "@/utils/color-shades"
+import { hexToHsl, hslToHex, hsvToHex } from "@/utils/hsv-color"
+
+const HUE_WINDOW = 24
+
+const canEyedrop =
+	typeof window !== "undefined" && "EyeDropper" in window
+
+const START_HUES = [0, 36, 72, 108, 144, 180, 216, 252, 288, 324]
+const START_ROWS = [
+	{ s: 1, v: 1 },
+	{ s: 0.55, v: 1 },
+	{ s: 1, v: 0.72 },
+	{ s: 1, v: 0.42 },
+]
+const startColours = START_ROWS.flatMap((row) =>
+	START_HUES.map((h) => hsvToHex(h, row.s, row.v)),
+)
+const startNeutrals = [1, 0.92, 0.8, 0.65, 0.5, 0.35, 0.22, 0.12, 0.06, 0].map(
+	(v) => hsvToHex(0, 0, v),
+)
 
 const props = defineProps<{
 	label: string
@@ -164,6 +249,30 @@ const emit = defineEmits<{
 const open = ref(false)
 const view = ref<"grid" | "custom">("grid")
 const customHex = ref("#000000")
+const hue = ref(0)
+const hueAnchor = ref(0)
+const sat = ref(0)
+const light = ref(1)
+
+const hueTrack = computed(() => {
+	const parts: string[] = []
+	for (let i = 0; i < 9; i++) {
+		const h =
+			hueAnchor.value - HUE_WINDOW + (i / 8) * (2 * HUE_WINDOW)
+		parts.push(`${hsvToHex(h, 1, 1)} ${(i / 8) * 100}%`)
+	}
+	return `linear-gradient(to right, ${parts.join(", ")})`
+})
+
+const satTrack = computed(
+	() =>
+		`linear-gradient(to right, ${hslToHex(hue.value, 0, light.value)}, ${hslToHex(hue.value, 1, light.value)})`,
+)
+
+const lightTrack = computed(
+	() =>
+		`linear-gradient(to right, ${hslToHex(hue.value, sat.value, 0)}, ${hslToHex(hue.value, sat.value, 0.5)}, ${hslToHex(hue.value, sat.value, 1)})`,
+)
 
 function norm(hex: string) {
 	return (hex || "").toUpperCase()
@@ -198,22 +307,65 @@ function useDefault() {
 	closePicker()
 }
 
+function syncFromHex(hex: string) {
+	const hsl = hexToHsl(hex)
+	hue.value = hsl.h
+	sat.value = hsl.s
+	light.value = hsl.l
+	hueAnchor.value = hue.value
+	const normalized = norm(hex)
+	if (/^#[0-9A-F]{6}$/.test(normalized)) {
+		customHex.value = normalized
+	} else {
+		customHex.value = hslToHex(hue.value, sat.value, light.value)
+	}
+}
+
 function openCustom() {
-	customHex.value = norm(props.modelValue || props.defaultValue || "#000000")
+	syncFromHex(norm(props.modelValue || props.defaultValue || "#000000"))
 	view.value = "custom"
 }
 
-function onNativeInput(e: Event) {
-	customHex.value = norm((e.target as HTMLInputElement).value)
+function pickStart(hex: string) {
+	syncFromHex(hex)
+}
+
+function onHueInput(e: Event) {
+	hue.value = Number((e.target as HTMLInputElement).value)
+	customHex.value = hslToHex(hue.value, sat.value, light.value)
+}
+
+function onSatInput(e: Event) {
+	sat.value = Number((e.target as HTMLInputElement).value) / 100
+	customHex.value = hslToHex(hue.value, sat.value, light.value)
+}
+
+function onLightInput(e: Event) {
+	light.value = Number((e.target as HTMLInputElement).value) / 100
+	customHex.value = hslToHex(hue.value, sat.value, light.value)
+}
+
+async function pickFromScreen() {
+	const win = window as {
+		EyeDropper?: new () => { open: () => Promise<{ sRGBHex: string }> }
+	}
+	const Ctor = win.EyeDropper
+	if (!Ctor) return
+	try {
+		const result = await new Ctor().open()
+		syncFromHex(norm(result.sRGBHex))
+	} catch {
+		/* user cancelled */
+	}
 }
 
 function normalizeCustomHex() {
 	const raw = customHex.value.trim()
 	if (/^#[0-9A-Fa-f]{6}$/.test(raw)) {
-		customHex.value = norm(raw)
+		syncFromHex(norm(raw))
 		return
 	}
-	customHex.value = norm(props.modelValue || props.defaultValue || "#000000")
+	customHex.value = hslToHex(hue.value, sat.value, light.value)
 }
 
 function applyCustom() {
@@ -260,6 +412,8 @@ const grayShades = [
 	padding: 0.75rem;
 	width: 18rem;
 	max-width: calc(100vw - 2rem);
+	max-height: calc(100vh - 2rem);
+	overflow-y: auto;
 }
 
 .row-label {
@@ -346,6 +500,59 @@ const grayShades = [
 	margin-bottom: 0.625rem;
 }
 
+.start-grid {
+	display: grid;
+	grid-template-columns: repeat(10, minmax(0, 1fr));
+	gap: 3px;
+	margin-bottom: 0.5rem;
+}
+
+.hue-field {
+	display: flex;
+	flex-direction: column;
+	align-items: stretch;
+	gap: 0.35rem;
+	margin-bottom: 0.625rem;
+	font-size: 0.75rem;
+	font-weight: 500;
+	color: #374151;
+}
+
+.refine-slider {
+	appearance: none;
+	-webkit-appearance: none;
+	width: 100%;
+	height: 0.75rem;
+	border-radius: 999px;
+	outline: none;
+	cursor: pointer;
+	border: none;
+	padding: 0;
+}
+
+.hue-slider::-webkit-slider-thumb,
+.refine-slider::-webkit-slider-thumb {
+	appearance: none;
+	-webkit-appearance: none;
+	width: 14px;
+	height: 14px;
+	border-radius: 50%;
+	background: #fff;
+	border: 2px solid #111;
+	cursor: pointer;
+}
+
+.hue-slider::-moz-range-thumb,
+.refine-slider::-moz-range-thumb {
+	appearance: none;
+	width: 14px;
+	height: 14px;
+	border-radius: 50%;
+	background: #fff;
+	border: 2px solid #111;
+	cursor: pointer;
+}
+
 .custom-preview {
 	height: 3rem;
 	border-radius: 0.375rem;
@@ -364,16 +571,6 @@ const grayShades = [
 	color: #374151;
 }
 
-.custom-native {
-	width: 3rem;
-	height: 2rem;
-	padding: 0;
-	border: 1px solid #e5e7eb;
-	border-radius: 0.25rem;
-	cursor: pointer;
-	background: transparent;
-}
-
 .custom-hex {
 	flex: 1;
 	font-family: ui-monospace, monospace;
@@ -381,5 +578,25 @@ const grayShades = [
 	border: 1px solid #e5e7eb;
 	border-radius: 0.25rem;
 	padding: 0.375rem 0.5rem;
+}
+
+.eyedropper-btn {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 28px;
+	height: 28px;
+	padding: 0;
+	margin: 0;
+	border: none;
+	border-radius: 0.25rem;
+	background: transparent;
+	color: #4b5563;
+	cursor: pointer;
+	flex-shrink: 0;
+}
+
+.eyedropper-btn:hover {
+	background: #f3f4f6;
 }
 </style>

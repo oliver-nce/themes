@@ -215,6 +215,93 @@ class TestAppThemeFilesApply(unittest.TestCase):
                     mod.apply_to_app("nce_events", "ocean")
 
 
+class TestRefreshAppliedExports(unittest.TestCase):
+    def setUp(self) -> None:
+        self.fx = AppThemeFilesFixture()
+
+    def tearDown(self) -> None:
+        self.fx.cleanup()
+
+    def test_refresh_rewrites_css_only_and_slug_filter_skips(self) -> None:
+        """Refresh rebuilds export bytes and record files; hooks, slug, applied_on stay put.
+
+        Filter slug="ocean" skips entries whose record slug differs.
+        """
+        MINIMAL_REFRESH = {
+            k: (b"/* refreshed */" if k.endswith(".css") else v)
+            for k, v in MINIMAL_EXPORT.items()
+        }
+        mod = _load_app_theme_files()
+        with fake_frappe() as frappe_mock:
+            self.fx.paths_for(frappe_mock)
+            frappe_mock.get_all.return_value = [{"name": "Ocean"}]
+            with patch(
+                "themes.utils.app_theme_files.build_export_files",
+                return_value=dict(MINIMAL_EXPORT),
+            ), patch(
+                "themes.utils.app_theme_files._load_theme_rows",
+                return_value=list(MINIMAL_ITEMS),
+            ):
+                with patch(
+                    "themes.component_api._is_frappe_branded",
+                    return_value=False,
+                ):
+                    mod.apply_to_app("nce_events", "ocean")
+
+        hooks_before = (self.fx.target_app / "hooks.py").read_text(encoding="utf-8")
+        record_path = self.fx.site_private / "nce-themes-applied.json"
+        record_before = json.loads(record_path.read_text(encoding="utf-8"))
+        applied_on_before = record_before["nce_events"]["applied_on"]
+        slug_before = record_before["nce_events"]["slug"]
+
+        with fake_frappe() as frappe_mock:
+            self.fx.paths_for(frappe_mock)
+            frappe_mock.get_all.return_value = [{"name": "Ocean"}]
+            with patch(
+                "themes.utils.app_theme_files.build_export_files",
+                return_value=dict(MINIMAL_REFRESH),
+            ), patch(
+                "themes.utils.app_theme_files._load_theme_rows",
+                return_value=list(MINIMAL_ITEMS),
+            ):
+                rewritten = mod.refresh_applied_exports()
+
+        self.assertEqual(rewritten, ["nce_events"])
+        css_path = self.fx.target_app / "public" / "nce-themes" / "nce-themes.css"
+        self.assertEqual(css_path.read_bytes(), b"/* refreshed */")
+        self.assertEqual(
+            (self.fx.target_app / "hooks.py").read_text(encoding="utf-8"),
+            hooks_before,
+        )
+        record_after = json.loads(record_path.read_text(encoding="utf-8"))
+        self.assertEqual(record_after["nce_events"]["slug"], slug_before)
+        self.assertEqual(record_after["nce_events"]["applied_on"], applied_on_before)
+
+        # Different slug in record: filtered refresh must not rewrite files.
+        record_mut = json.loads(record_path.read_text(encoding="utf-8"))
+        record_mut["nce_events"]["slug"] = "forest"
+        record_path.write_text(json.dumps(record_mut, indent=2) + "\n", encoding="utf-8")
+
+        MINIMAL_OTHER = {
+            k: (b"/* other */" if k.endswith(".css") else v)
+            for k, v in MINIMAL_EXPORT.items()
+        }
+        with fake_frappe() as frappe_mock:
+            self.fx.paths_for(frappe_mock)
+            frappe_mock.get_all.return_value = [{"name": "Ocean"}]
+            with patch(
+                "themes.utils.app_theme_files.build_export_files",
+                return_value=dict(MINIMAL_OTHER),
+            ), patch(
+                "themes.utils.app_theme_files._load_theme_rows",
+                return_value=list(MINIMAL_ITEMS),
+            ):
+                rewritten2 = mod.refresh_applied_exports(slug="ocean")
+
+        self.assertEqual(rewritten2, [])
+        self.assertEqual(css_path.read_bytes(), b"/* refreshed */")
+
+
 class TestAppThemeFilesRemoveAndStatus(unittest.TestCase):
     def setUp(self) -> None:
         self.fx = AppThemeFilesFixture()
